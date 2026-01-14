@@ -1,0 +1,141 @@
+<!-- Dashboard Component -->
+<div class="p-4 mx-auto max-w-screen-2xl md:p-6">
+  <div class="grid grid-cols-12 gap-4 md:gap-6">
+    
+    <!-- Left Column -->
+    <div class="col-span-12 space-y-6 xl:col-span-7">
+      
+      <!-- Metric Group One -->
+      <div class="grid grid-cols-2 gap-4 md:gap-6">
+        <!-- Metric 1 -->
+        <div class="col-span-1">
+          <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-theme-sm font-medium text-gray-500 dark:text-gray-400">
+                  Total Revenue
+                </span>
+                <h3 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+                  $45,2K
+                </h3>
+              </div>
+              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/10">
+                <svg class="fill-brand-500" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+                </svg>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center gap-2">
+              <span class="text-theme-sm font-medium text-green-500">+2.5%</span>
+              <span class="text-theme-sm text-gray-500 dark:text-gray-400">vs last month</span>
+            </div>
+          </div>
+        </div>
+        <!-- Metric 1 -->
+
+        <!-- Metric 2 -->
+        <div class="col-span-1">
+          <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-theme-sm font-medium text-gray-500 dark:text-gray-400">
+                  Total Orders
+                </span>
+                <h3 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+                  1,258
+                </h3>
+              </div>
+              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10">
+                <svg class="fill-green-500" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center gap-2">
+              <span class="text-theme-sm font-medium text-green-500">+5.2%</span>
+              <span class="text-theme-sm text-gray-500 dark:text-gray-400">vs last month</span>
+            </div>
+          </div>
+        </div>
+        <!-- Metric 2 -->
+      </div>
+      <!-- Metric Group One -->
+
+<!-- Chart One Container -->
+<div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+      Revenue Overview
+    </h3>
+    <select class="rounded-lg border border-gray-200 bg-transparent px-3 py-2 text-sm dark:border-gray-800">
+      <option>This Week</option>
+      <option>This Month</option>
+      <option>This Year</option>
+    </select>
+  </div>
+  <div id="chartOne"></div> <!-- Chart container -->
+</div>
+
+<!-- Chart Two Container -->
+<div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+  <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+    Sales Distribution
+  </h3>
+  <div id="chartTwo"></div> <!-- Chart container -->
+</div>
+
+<!-- Chart Three Container -->
+<div class="col-span-12">
+  <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+    <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+      Monthly Performance
+    </h3>
+    <div id="chartThree"></div> <!-- Chart container -->
+  </div>
+</div>
+
+
+
+
+    <!-- Table Column -->
+    <div class="col-span-12 xl:col-span-7">
+      <!-- Table One Placeholder -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Recent Orders
+          </h3>
+          <button class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
+            View All
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[640px]">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-800">
+                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Order ID</th>
+                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Customer</th>
+                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Amount</th>
+                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of recentOrders" class="border-b border-gray-200 dark:border-gray-800">
+                <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">#{{order.id}}</td>
+                <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">{{order.customer}}</td>
+                <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">${{order.amount}}</td>
+                <td class="px-4 py-3">
+                  <span [class]="getStatusClass(order.status)" class="inline-flex rounded-full px-3 py-1 text-xs font-medium">
+                    {{order.status}}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Table One End -->
+    </div>
+    <!-- Table Column -->
+  </div>
+</div>

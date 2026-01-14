@@ -1,0 +1,21 @@
+<div class="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+  <app-preloader></app-preloader>
+  
+  <!-- Show sidebar only on dashboard/profile routes -->
+  <app-sidebar *ngIf="showLayout()" [isSidebarOpen]="isSidebarOpen"></app-sidebar>
+  
+  <div class="flex w-full flex-col">
+    <!-- Show header only on dashboard/profile routes -->
+    <app-header *ngIf="showLayout()"></app-header>
+    
+    <app-overlay 
+      *ngIf="showLayout()"
+      [isVisible]="isSidebarOpen" 
+      (overlayClick)="toggleSidebar()">
+    </app-overlay>
+    
+    <main [class]="showLayout() ? 'flex-1 overflow-x-hidden overflow-y-auto' : 'w-full'">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

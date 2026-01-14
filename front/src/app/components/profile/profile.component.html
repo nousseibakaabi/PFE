@@ -1,0 +1,418 @@
+<!-- ===== Main Content Start ===== -->
+<main>
+  <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+    <!-- Breadcrumb Start -->
+    <div>
+      <nav class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-2">
+          <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
+              <svg class="w-3 h-3 mr-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
+              </svg>
+              Dashboard
+            </a>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <svg class="w-3 h-3 mx-1 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+              </svg>
+              <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2 dark:text-gray-400">Profile</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+    <!-- Breadcrumb End -->
+
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
+      <h3 class="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
+        Profile
+      </h3>
+
+      <!-- Profile Header Section -->
+      <div class="p-5 mb-6 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+        <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+          <div class="flex flex-col items-center w-full gap-6 xl:flex-row">
+            <div class="h-20 w-20 overflow-hidden rounded-full border-2 border-gray-300 dark:border-gray-700">
+  <img [src]="getAvatarUrl()" 
+       alt="Profile"
+       class="h-full w-full object-cover"
+       (error)="handleImageError($event)">
+</div>
+            <div class="order-3 xl:order-2">
+              <h4 class="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
+                {{ getUserFullName() }}
+              </h4>
+              <div class="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ getUserRole() }}
+                </p>
+                <div class="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ user?.department || 'No department specified' }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center order-2 gap-2 grow xl:order-3 xl:justify-end">
+             
+
+              
+            </div>
+          </div>
+
+          
+        </div>
+      </div>
+
+      <!-- Personal Information Section -->
+      <div class="p-5 mb-6 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+              Personal Information
+            </h4>
+
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+              <div>
+                <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  First Name
+                </p>
+                <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {{ user?.firstName || 'Not provided' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Last Name
+                </p>
+                <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {{ user?.lastName || 'Not provided' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Email address
+                </p>
+                <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {{ user?.email || 'Not provided' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Phone
+                </p>
+                <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {{ user?.phone || 'Not provided' }}
+                </p>
+              </div>
+
+           
+
+             
+            </div>
+          </div>
+
+          <button
+            (click)="isProfileInfoModal = true"
+            class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+          >
+            <svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M15.0911 2.78206C14.2125 1.90338 12.7878 1.90338 11.9092 2.78206L4.57524 10.116C4.26682 10.4244 4.0547 10.8158 3.96468 11.2426L3.31231 14.3352C3.25997 14.5833 3.33653 14.841 3.51583 15.0203C3.69512 15.1996 3.95286 15.2761 4.20096 15.2238L7.29355 14.5714C7.72031 14.4814 8.11172 14.2693 8.42013 13.9609L15.7541 6.62695C16.6327 5.74827 16.6327 4.32365 15.7541 3.44497L15.0911 2.78206ZM12.9698 3.84272C13.2627 3.54982 13.7376 3.54982 14.0305 3.84272L14.6934 4.50563C14.9863 4.79852 14.9863 5.2734 14.6934 5.56629L14.044 6.21573L12.3204 4.49215L12.9698 3.84272ZM11.2597 5.55281L5.6359 11.1766C5.53309 11.2794 5.46238 11.4099 5.43238 11.5522L5.01758 13.5185L6.98394 13.1037C7.1262 13.0737 7.25666 13.003 7.35947 12.9002L12.9833 7.27639L11.2597 5.55281Z" fill=""/>
+            </svg>
+            Edit
+          </button>
+        </div>
+      </div>
+
+      <!-- Address Section (Optional) -->
+      <div class="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+              Account Information
+            </h4>
+
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+              <div>
+                <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Account Created
+                </p>
+                <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {{ user?.createdAt | date:'medium' || 'Not available' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Last Login
+                </p>
+                <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {{ user?.lastLogin | date:'medium' || 'Never logged in' }}
+                </p>
+              </div>
+
+              <div>
+                <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Account Status
+                </p>
+                <span *ngIf="user?.enabled" class="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-green-700 bg-green-100 rounded-full dark:bg-green-900/30 dark:text-green-400">
+                  Active
+                </span>
+                <span *ngIf="user && !user.enabled" class="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-red-700 bg-red-100 rounded-full dark:bg-red-900/30 dark:text-red-400">
+                  Disabled
+                </span>
+                <span *ngIf="!user" class="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-gray-700 bg-gray-100 rounded-full dark:bg-gray-900/30 dark:text-gray-400">
+                  Loading...
+                </span>
+              </div>
+
+              <div>
+                <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+                  Username
+                </p>
+                <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+                  {{ user?.username || 'Not provided' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            (click)="isPasswordModal = true"
+            class="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
+          >
+            <svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M8.828 1a5 5 0 0 1 5 5v2h.5A1.5 1.5 0 0 1 15.5 9.5v5A1.5 1.5 0 0 1 14 16H4a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 4 8h.5V6a5 5 0 0 1 5-5zm4.5 7H4a.5.5 0 0 0-.5.5v5a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5v-5a.5.5 0 0 0-.5-.5h-1zm-3.5 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0zM8.828 2a4 4 0 0 0-4 4v2h8V6a4 4 0 0 0-4-4z" fill=""/>
+            </svg>
+            Change Password
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<!-- ===== Main Content End ===== -->
+
+<!-- Profile Info Modal -->
+<div *ngIf="isProfileInfoModal" class="fixed inset-0 z-99999 flex items-center justify-center bg-gray-900/50 px-4 py-5">
+  <div class="w-full max-w-[600px] rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 lg:p-6">
+    <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-800">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+        Edit Personal Information
+      </h3>
+      <button (click)="closeProfileInfoModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+        <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.21967 7.28131C5.92678 6.98841 5.92678 6.51354 6.21967 6.22065C6.51256 5.92775 6.98744 5.92775 7.28033 6.22065L11.999 10.9393L16.7176 6.22078C17.0105 5.92789 17.4854 5.92788 17.7782 6.22078C18.0711 6.51367 18.0711 6.98855 17.7782 7.28144L13.0597 12L17.7782 16.7186C18.0711 17.0115 18.0711 17.4863 17.7782 17.7792C17.4854 18.0721 17.0105 18.0721 16.7176 17.7792L11.999 13.0607L7.28033 17.7794C6.98744 18.0722 6.51256 18.0722 6.21967 17.7794C5.92678 17.4865 5.92678 17.0116 6.21967 16.7187L10.9384 12L6.21967 7.28131Z" fill=""/>
+        </svg>
+      </button>
+    </div>
+
+    
+    <div class="py-5">
+      <form [formGroup]="personalInfoForm" (ngSubmit)="updatePersonalInfo()">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          
+          
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-800 dark:text-white/90">First Name</label>
+            <input type="text" formControlName="firstName" 
+                   class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
+            <div *ngIf="personalInfoForm.get('firstName')?.invalid && personalInfoForm.get('firstName')?.touched" 
+                 class="mt-1 text-sm text-red-500">
+              First name is required
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-800 dark:text-white/90">Last Name</label>
+            <input type="text" formControlName="lastName" 
+                   class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
+            <div *ngIf="personalInfoForm.get('lastName')?.invalid && personalInfoForm.get('lastName')?.touched" 
+                 class="mt-1 text-sm text-red-500">
+              Last name is required
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-800 dark:text-white/90">Email</label>
+<input type="email" formControlName="email" 
+       class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" readonly>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-800 dark:text-white/90">Phone</label>
+            <input type="tel" formControlName="phone" 
+                   class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
+          </div>
+
+<div class="sm:col-span-2">
+  <label class="mb-2 block text-sm font-medium text-gray-800 dark:text-white/90">Profile Picture</label>
+  <div class="flex items-center gap-4">
+    <div class="h-20 w-20 overflow-hidden rounded-full border-2 border-gray-300 dark:border-gray-700">
+      <!-- CHANGE THIS LINE: Use getAvatarUrl() instead of user.profileImage -->
+<img [src]="avatarPreview || getAvatarUrl()" 
+     alt="Profile"
+     class="h-full w-full object-cover"
+     (error)="handleImageError($event)">
+    </div>
+    <div>
+      <input type="file" 
+             accept="image/*" 
+             (change)="onFileSelected($event)"
+             class="hidden"
+             #fileInput>
+      <button type="button"
+              (click)="fileInput.click()"
+              class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+        Change Photo
+      </button>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        JPG, PNG or GIF. Max 2MB.
+      </p>
+      <p *ngIf="selectedFile" class="mt-1 text-xs text-green-600 dark:text-green-400">
+        New photo selected. Click "Save Changes" to upload.
+      </p>
+    </div>
+  </div>
+</div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="error" class="mt-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
+          <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+        </div>
+
+        <!-- Success Message -->
+        <div *ngIf="personalInfoSuccess" class="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
+          <p class="text-sm text-green-600 dark:text-green-400">Personal information updated successfully!</p>
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3">
+          
+
+          <button type="button" (click)="closeProfileInfoModal()" 
+                  class="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700">
+            Cancel
+          </button>
+          <button type="submit" [disabled]="personalInfoLoading || personalInfoForm.invalid"
+                  class="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+            <span *ngIf="personalInfoLoading" class="inline-flex items-center">
+              <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Updating...
+            </span>
+            <span *ngIf="!personalInfoLoading">Save Changes</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Password Change Modal -->
+<div *ngIf="isPasswordModal" class="fixed inset-0 z-99999 flex items-center justify-center bg-gray-900/50 px-4 py-5">
+  <div class="w-full max-w-[500px] rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 lg:p-6">
+    <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-800">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
+        Change Password
+      </h3>
+      <button (click)="closePasswordModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+        <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.21967 7.28131C5.92678 6.98841 5.92678 6.51354 6.21967 6.22065C6.51256 5.92775 6.98744 5.92775 7.28033 6.22065L11.999 10.9393L16.7176 6.22078C17.0105 5.92789 17.4854 5.92788 17.7782 6.22078C18.0711 6.51367 18.0711 6.98855 17.7782 7.28144L13.0597 12L17.7782 16.7186C18.0711 17.0115 18.0711 17.4863 17.7782 17.7792C17.4854 18.0721 17.0105 18.0721 16.7176 17.7792L11.999 13.0607L7.28033 17.7794C6.98744 18.0722 6.51256 18.0722 6.21967 17.7794C5.92678 17.4865 5.92678 17.0116 6.21967 16.7187L10.9384 12L6.21967 7.28131Z" fill=""/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="py-5">
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+        <div class="space-y-4">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-800 dark:text-white/90">Current Password</label>
+            <input type="password" formControlName="currentPassword" 
+                   class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
+            <div *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched" 
+                 class="mt-1 text-sm text-red-500">
+              Current password is required
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-800 dark:text-white/90">New Password</label>
+            <input type="password" formControlName="newPassword" 
+                   class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
+            <div *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched" 
+                 class="mt-1 text-sm text-red-500">
+              Password must be at least 6 characters
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-800 dark:text-white/90">Confirm New Password</label>
+            <input type="password" formControlName="confirmPassword" 
+                   class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30">
+          </div>
+        </div>
+
+        <!-- Password Requirements -->
+        <div class="mt-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <p class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Password Requirements:</p>
+          <ul class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+            <li class="flex items-center">
+              <svg class="mr-2 h-3 w-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              At least 6 characters
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-3 w-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              Should contain letters and numbers
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-3 w-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              Avoid common passwords
+            </li>
+          </ul>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="error" class="mt-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20">
+          <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+        </div>
+
+        <!-- Success Message -->
+        <div *ngIf="passwordSuccess" class="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
+          <p class="text-sm text-green-600 dark:text-green-400">Password changed successfully!</p>
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" (click)="closePasswordModal()" 
+                  class="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700">
+            Cancel
+          </button>
+          <button type="submit" [disabled]="passwordLoading || passwordForm.invalid"
+                  class="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+            <span *ngIf="passwordLoading" class="inline-flex items-center">
+              <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Changing...
+            </span>
+            <span *ngIf="!passwordLoading">Change Password</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

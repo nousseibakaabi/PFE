@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    image: toutou11/springboot-backend-app:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=jdbc:postgresql://host.docker.internal:5432/DataBase
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=noussa
+      - FILE_UPLOAD_DIR=/app/uploads
+      - SERVER_URL=http://localhost:8081  # IMPORTANT for avatar URLs!
+    networks:
+      - app-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./back/uploads:/app/uploads  # Map local folder
+
+  frontend:
+    image: toutou11/angular-frontend-app:latest
+    ports:
+      - "4200:80"
+    environment:
+      - API_URL=http://backend:8081
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    stdin_open: true
+    tty: true
+
+networks:
+  app-network:
+    driver: bridge
