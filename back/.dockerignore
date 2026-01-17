@@ -4,3 +4,5 @@ target/
 .gitignore
 .idea
 *.iml
+Dockerfile*
+docker-compose*
