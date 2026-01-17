@@ -1,8 +1,0 @@
-[build]
-builder = "NIXPACKS"
-buildCommand = "echo 'Using Docker directly'"
-
-[deploy]
-startCommand = ""
-healthCheckPath = "/actuator/health"
-healthCheckTimeout = 60
