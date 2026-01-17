@@ -1,11 +1,16 @@
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# COPIE TOUT LE CONTENU DU DOSSIER BACK
-COPY . .
+# Copie d'abord SEULEMENT le pom.xml
+COPY pom.xml .
 
-# Build (le pom.xml et src/ sont déjà copiés)
+# Télécharge les dépendances
 RUN mvn dependency:go-offline -B
+
+# Maintenant copie le reste (src/)
+COPY src ./src
+
+# Build
 RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jre-alpine
