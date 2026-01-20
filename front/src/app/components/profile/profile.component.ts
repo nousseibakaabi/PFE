@@ -289,4 +289,39 @@ closeProfileInfoModal(): void {
   console.log('getAvatarUrl():', this.getAvatarUrl());
   console.log('avatarPreview:', this.avatarPreview);
 }
+
+// In profile.component.ts, add these methods:
+getAccountStatus(): string {
+  if (!this.user) return 'Loading...';
+  
+  if (this.user.lockedByAdmin) {
+    return 'Locked by Administrator';
+  } else if (this.user.accountLockedUntil) {
+    const lockDate = new Date(this.user.accountLockedUntil);
+    if (lockDate > new Date()) {
+      return `Temporarily Locked until ${lockDate.toLocaleString()}`;
+    }
+  } else if (this.user.failedLoginAttempts && this.user.failedLoginAttempts > 0) {
+    return `${this.user.failedLoginAttempts} failed login attempt(s)`;
+  }
+  
+  return this.user.enabled ? 'Active' : 'Disabled';
+}
+
+getStatusClass(): string {
+  if (!this.user) return 'bg-gray-100 text-gray-700';
+  
+  if (this.user.lockedByAdmin) {
+    return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+  } else if (this.user.accountLockedUntil && new Date(this.user.accountLockedUntil) > new Date()) {
+    return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+  } else if (this.user.failedLoginAttempts && this.user.failedLoginAttempts > 0) {
+    return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+  }
+  
+  return this.user.enabled 
+    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+}
+
 }

@@ -625,32 +625,91 @@ toggleDarkMode(): void {
   }
 
   // ===================== LOGIN FORM METHODS =====================
+
+
   onSubmit(): void {
-    this.submitted = true;
+  this.submitted = true;
 
-    if (this.loginForm.invalid) {
-      return;
-    }
-
-    this.loading = true;
-    this.authService.login({
-      usernameOrEmail: this.f['usernameOrEmail'].value,
-      password: this.f['password'].value
-    })
-    .pipe(first())
-    .subscribe({
-      next: () => {
-        this.celebrateLogin();
-        // INSTANT navigation - no delay
-        this.router.navigate([this.returnUrl]);
-      },
-      error: error => {
-        this.error = error.error?.message || 'Login failed';
-        this.loading = false;
-        this.showLoginError();
-      }
-    });
+  if (this.loginForm.invalid) {
+    return;
   }
+
+  this.loading = true;
+  this.authService.login({
+    usernameOrEmail: this.f['usernameOrEmail'].value,
+    password: this.f['password'].value
+  })
+  .pipe(first())
+  .subscribe({
+    next: (response) => {
+      this.celebrateLogin();
+      
+      const user = this.authService.currentUserValue;
+      if (user && this.authService.isAdmin()) {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate([this.returnUrl]);
+      }
+    },
+    error: (error: any) => {
+      console.log('Login error details:', error);
+      
+      const backendError = error.error || error;
+      const remainingAttempts = backendError.remainingAttempts;
+      const errorType = backendError.error;
+      
+      // Clear any previous error
+      this.error = '';
+      
+      // 1. Account temporarily locked
+      if (errorType === 'AccountTemporarilyLocked') {
+        if (backendError.lockUntil) {
+          const lockUntilDate = new Date(backendError.lockUntil);
+          const now = new Date();
+          const minutesRemaining = Math.ceil((lockUntilDate.getTime() - now.getTime()) / (1000 * 60));
+          
+          if (minutesRemaining > 0) {
+            this.error = `Account locked for ${minutesRemaining} minute(s) due to too many failed attempts`;
+          } else {
+            this.error = 'Account was temporarily locked. Please try again.';
+          }
+        } else {
+          this.error = 'Account locked for 15 minutes due to too many failed attempts';
+        }
+      }
+      // 2. Last attempt warning
+      else if (errorType === 'LastAttemptWarning' || backendError.isLastAttempt === true) {
+        this.error = '⚠️ WARNING: One more failed attempt will lock your account for 15 minutes!';
+      }
+      // 3. Normal failed attempts
+      else if (errorType === 'BadCredentials' || errorType === 'InvalidCredentials') {
+        if (remainingAttempts === 2) {
+          this.error = 'Invalid credentials. 2 attempts remaining';
+        } else if (remainingAttempts === 1) {
+          // Should show warning instead
+          this.error = 'Invalid credentials. 1 attempt remaining';
+        } else {
+          this.error = 'Invalid credentials';
+        }
+      }
+      // 4. Account locked by admin
+      else if (errorType === 'AccountLocked' && backendError.lockType === 'ADMIN') {
+        this.error = 'Account locked by administrator. Contact admin to unlock.';
+      }
+      // 5. Use userMessage if available
+      else if (backendError.userMessage) {
+        this.error = backendError.userMessage;
+      }
+      // 6. Any other error
+      else {
+        this.error = backendError.message || 'Login failed. Please try again.';
+      }
+      
+      this.loading = false;
+      this.showLoginError();
+    }
+  });
+}
 
   forgotPassword(): void {
     this.router.navigate(['/forget-password']);

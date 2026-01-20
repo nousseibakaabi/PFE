@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -25,9 +26,18 @@ public class UserDetailsImpl implements UserDetails {
     private String lastName;
     private Collection<? extends GrantedAuthority> authorities;
 
+    private Boolean accountNonLocked;
+    private boolean enabled;
+    private boolean accountNonExpired;
+    private boolean credentialsNonExpired;
+
     public UserDetailsImpl(Long id, String username, String email, String password,
                            String firstName, String lastName,
-                           Collection<? extends GrantedAuthority> authorities) {
+                           Collection<? extends GrantedAuthority> authorities,
+                           boolean accountNonLocked,
+                           boolean enabled,
+                           boolean accountNonExpired,
+                           boolean credentialsNonExpired) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -35,12 +45,32 @@ public class UserDetailsImpl implements UserDetails {
         this.firstName = firstName;
         this.lastName = lastName;
         this.authorities = authorities;
+        this.accountNonLocked = accountNonLocked;
+        this.enabled = enabled;
+        this.accountNonExpired = accountNonExpired;
+        this.credentialsNonExpired = credentialsNonExpired;
     }
+
 
     public static UserDetailsImpl build(User user) {
         List<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().toString()))
                 .collect(Collectors.toList());
+
+        // FIX: Handle all null values properly
+        boolean isAccountNonLocked = true;
+
+        // Check lockedByAdmin - handle null safely
+        Boolean lockedByAdmin = user.getLockedByAdmin();
+        if (lockedByAdmin != null && lockedByAdmin.booleanValue()) {
+            isAccountNonLocked = false;
+        }
+
+        // Check temporary lock
+        LocalDateTime accountLockedUntil = user.getAccountLockedUntil();
+        if (accountLockedUntil != null && accountLockedUntil.isAfter(LocalDateTime.now())) {
+            isAccountNonLocked = false;
+        }
 
         return new UserDetailsImpl(
                 user.getId(),
@@ -49,7 +79,13 @@ public class UserDetailsImpl implements UserDetails {
                 user.getPassword(),
                 user.getFirstName(),
                 user.getLastName(),
-                authorities);
+                authorities,
+                isAccountNonLocked,
+                // Handle all null values with defaults
+                user.getEnabled() != null ? user.getEnabled().booleanValue() : true,
+                user.getAccountNonExpired() != null ? user.getAccountNonExpired().booleanValue() : true,
+                user.getCredentialsNonExpired() != null ? user.getCredentialsNonExpired().booleanValue() : true
+        );
     }
 
     @Override
@@ -83,25 +119,7 @@ public class UserDetailsImpl implements UserDetails {
         return username;
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -111,5 +129,30 @@ public class UserDetailsImpl implements UserDetails {
             return false;
         UserDetailsImpl user = (UserDetailsImpl) o;
         return Objects.equals(id, user.id);
+    }
+
+
+
+
+
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return accountNonExpired;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return accountNonLocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return credentialsNonExpired;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
     }
 }

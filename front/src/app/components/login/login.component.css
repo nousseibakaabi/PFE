@@ -749,3 +749,16 @@
 .dark-mode-icon {
   font-size: 16px;
 }
+
+
+.warning-banner {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  border-left: 4px solid #ffc107;
+}
+
+.warning-banner span:first-child {
+  margin-right: 8px;
+  font-size: 1.2em;
+}

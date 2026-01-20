@@ -89,7 +89,11 @@ public class ProfileControllerTest {
         UserDetailsImpl userDetails = new UserDetailsImpl(
                 1L, "testuser", "test@email.com", "password",
                 "Test", "User",
-                Set.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_COMMERCIAL_METIER"))
+                Set.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_COMMERCIAL_METIER")),
+                true,   // accountNonLocked
+                true,   // enabled
+                true,   // accountNonExpired
+                true    // credentialsNonExpired
         );
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(

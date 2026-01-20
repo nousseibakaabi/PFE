@@ -37,9 +37,11 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-  login(loginRequest: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, loginRequest)
-      .pipe(map(response => {
+ 
+login(loginRequest: LoginRequest): Observable<AuthResponse> {
+  return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, loginRequest)
+    .pipe(
+      map(response => {
         // Store user details and jwt token in local storage
         localStorage.setItem('token', response.token);
         const user: User = {
@@ -53,8 +55,57 @@ export class AuthService {
         localStorage.setItem('currentUser', JSON.stringify(user));
         this.currentUserSubject.next(user);
         return response;
-      }));
-  }
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.log('Login error details:', error);
+        
+        // Extract error message from backend response
+        let errorMessage = 'Login failed';
+        let remainingAttempts: number | undefined;
+        let lockType: string | undefined;
+        let lockUntil: string | undefined;
+        let isLastAttempt: boolean = false;
+        
+        if (error.error) {
+          const backendError = error.error;
+          
+          if (backendError.message) {
+            errorMessage = backendError.message;
+          }
+          
+          if (backendError.remainingAttempts !== undefined) {
+            remainingAttempts = backendError.remainingAttempts;
+          }
+          
+          if (backendError.lockType) {
+            lockType = backendError.lockType;
+          }
+          
+          if (backendError.lockUntil) {
+            lockUntil = backendError.lockUntil;
+          }
+          
+          if (backendError.isLastAttempt !== undefined) {
+            isLastAttempt = backendError.isLastAttempt;
+          }
+          
+          if (backendError.error === 'LastAttemptWarning') {
+            isLastAttempt = true;
+          }
+        }
+        
+        // Create a custom error with all info
+        const customError = new Error(errorMessage);
+        (customError as any).remainingAttempts = remainingAttempts;
+        (customError as any).lockType = lockType;
+        (customError as any).lockUntil = lockUntil;
+        (customError as any).isLastAttempt = isLastAttempt;
+        (customError as any).errorCode = error.error?.error;
+        
+        return throwError(() => customError);
+      })
+    );
+}
 
   register(registerRequest: RegisterRequest): Observable<MessageResponse> {
     return this.http.post<MessageResponse>(`${this.apiUrl}/auth/register`, registerRequest);

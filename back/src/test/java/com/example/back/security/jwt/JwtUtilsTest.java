@@ -38,7 +38,11 @@ public class JwtUtilsTest {
         UserDetailsImpl userDetails = new UserDetailsImpl(
                 1L, "testuser", "test@email.com", "password",
                 "Test", "User",
-                Set.of(new SimpleGrantedAuthority("ROLE_USER"))
+                Set.of(new SimpleGrantedAuthority("ROLE_USER")),
+                true,   // accountNonLocked
+                true,   // enabled
+                true,   // accountNonExpired
+                true    // credentialsNonExpired
         );
         when(authentication.getPrincipal()).thenReturn(userDetails);
 
@@ -57,7 +61,11 @@ public class JwtUtilsTest {
         UserDetailsImpl userDetails = new UserDetailsImpl(
                 1L, "testuser", "test@email.com", "password",
                 "Test", "User",
-                Set.of(new SimpleGrantedAuthority("ROLE_USER"))
+                Set.of(new SimpleGrantedAuthority("ROLE_USER")),
+                true,   // accountNonLocked
+                true,   // enabled
+                true,   // accountNonExpired
+                true    // credentialsNonExpired
         );
         when(authentication.getPrincipal()).thenReturn(userDetails);
 
@@ -77,7 +85,11 @@ public class JwtUtilsTest {
         UserDetailsImpl userDetails = new UserDetailsImpl(
                 1L, "testuser", "test@email.com", "password",
                 "Test", "User",
-                Set.of(new SimpleGrantedAuthority("ROLE_USER"))
+                Set.of(new SimpleGrantedAuthority("ROLE_USER")),
+                true,   // accountNonLocked
+                true,   // enabled
+                true,   // accountNonExpired
+                true    // credentialsNonExpired
         );
         when(authentication.getPrincipal()).thenReturn(userDetails);
 
@@ -110,7 +122,11 @@ public class JwtUtilsTest {
         UserDetailsImpl userDetails = new UserDetailsImpl(
                 1L, "testuser", "test@email.com", "password",
                 "Test", "User",
-                Set.of(new SimpleGrantedAuthority("ROLE_USER"))
+                Set.of(new SimpleGrantedAuthority("ROLE_USER")),
+                true,   // accountNonLocked
+                true,   // enabled
+                true,   // accountNonExpired
+                true    // credentialsNonExpired
         );
         when(authentication.getPrincipal()).thenReturn(userDetails);
 

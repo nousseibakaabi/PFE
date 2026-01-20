@@ -24,6 +24,10 @@ export interface User {
   createdAt?: string;
   lastLogin?: string;
   profileImage?: string;
+
+  failedLoginAttempts?: number;
+  accountLockedUntil?: string;
+  lockedByAdmin?: boolean;
 }
 
 export interface LoginUser {

@@ -150,10 +150,12 @@
           </div>
         </div>
 
-        <!-- Error Banner -->
-        <div class="error-banner" *ngIf="error">
-          <span>{{ error }}</span>
-        </div>
+      <!-- Error Banner -->
+<div class="error-banner" *ngIf="error" 
+     [class]="error.includes('WARNING') ? 'warning-banner' : 'error-banner'">
+  <span *ngIf="error.includes('WARNING')"></span>
+  <span>{{ error }}</span>
+</div>
 
         <!-- Login Form -->
         <form 

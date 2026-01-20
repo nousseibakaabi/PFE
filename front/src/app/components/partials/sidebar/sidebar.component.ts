@@ -3,6 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { LayoutService } from '../services/layout.service';
+import { AuthService } from '../../../services/auth.service'; // Add this import
 
 @Component({
   selector: 'app-sidebar',
@@ -14,14 +15,18 @@ export class SidebarComponent implements OnInit {
   selected: string = 'Dashboard';
   currentPage: string = 'ecommerce'; 
 
-  constructor(private router: Router ,     private layoutService: LayoutService
-) {}
+  constructor(
+    private router: Router,
+    private layoutService: LayoutService,
+    private authService: AuthService // Inject AuthService
+  ) {}
 
   ngOnInit(): void {
     // Get current page from URL
     this.layoutService.sidebarOpen$.subscribe((isOpen) => {
       this.isSidebarOpen = isOpen;
     });
+    
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
@@ -39,7 +44,9 @@ export class SidebarComponent implements OnInit {
 
   updateCurrentPage(): void {
     const url = this.router.url;
-    if (url.includes('calendar')) {
+    if (url.includes('admin')) {
+      this.currentPage = 'adminUsers';
+    } else if (url.includes('calendar')) {
       this.currentPage = 'calendar';
     } else if (url.includes('profile')) {
       this.currentPage = 'profile';
@@ -74,6 +81,25 @@ export class SidebarComponent implements OnInit {
     } else {
       this.currentPage = 'ecommerce';
     }
+  }
+
+  // Add this method to check if user is admin
+  isAdminUser(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  // Add logout method
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/']);
+      },
+      error: (error) => {
+        console.error('Logout error:', error);
+        this.authService.clearLocalStorage();
+        this.router.navigate(['/']);
+      }
+    });
   }
 
   toggleSelected(item: string): void {

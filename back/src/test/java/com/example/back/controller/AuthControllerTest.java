@@ -98,7 +98,11 @@ public class AuthControllerTest {
         UserDetailsImpl userDetails = new UserDetailsImpl(
                 1L, "testuser", "test@email.com", "password",
                 "Test", "User",
-                Set.of(new SimpleGrantedAuthority("ROLE_COMMERCIAL_METIER"))
+                Set.of(new SimpleGrantedAuthority("ROLE_COMMERCIAL_METIER")),
+                true,   // accountNonLocked
+                true,   // enabled
+                true,   // accountNonExpired
+                true    // credentialsNonExpired
         );
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))

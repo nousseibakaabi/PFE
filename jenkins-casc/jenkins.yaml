@@ -1,0 +1,29 @@
+jenkins:
+  systemMessage: "CI/CD Pipeline for Spring Boot + Angular App"
+  numExecutors: 2
+  
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin123"
+  
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Overall/Administer:admin"
+        - "Overall/Read:authenticated"
+
+unclassified:
+  location:
+    url: "http://localhost:8083/"  # CHANGED PORT
+
+tool:
+  installations:
+    jdk:
+      - name: "jdk-17"
+        home: "/usr/lib/jvm/java-17-openjdk-amd64"
+    maven:
+      - name: "maven-3"
+        home: "/usr/share/maven"

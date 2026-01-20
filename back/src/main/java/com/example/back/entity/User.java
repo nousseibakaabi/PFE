@@ -84,6 +84,19 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+
+    @Setter
+    @Column(name = "failed_login_attempts")
+    private Integer failedLoginAttempts = 0;
+
+    @Setter
+    @Column(name = "account_locked_until")
+    private LocalDateTime accountLockedUntil;
+
+    @Setter
+    @Column(name = "locked_by_admin")
+    private Boolean lockedByAdmin = false; // Default to false, not null
+
     @Setter
     @Getter
     @Column(name = "last_login")
@@ -99,6 +112,8 @@ public class User {
     @Setter
     @Column(name = "profile_image", length = 255)
     private String profileImage;
+
+
 
     // Lifecycle Callbacks
     @PrePersist
@@ -171,33 +186,21 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    public Boolean getCredentialsNonExpired() {
-        return credentialsNonExpired;
-    }
 
     public void setCredentialsNonExpired(Boolean credentialsNonExpired) {
         this.credentialsNonExpired = credentialsNonExpired;
     }
 
-    public Boolean getAccountNonLocked() {
-        return accountNonLocked;
-    }
 
     public void setAccountNonLocked(Boolean accountNonLocked) {
         this.accountNonLocked = accountNonLocked;
     }
 
-    public Boolean getAccountNonExpired() {
-        return accountNonExpired;
-    }
 
     public void setAccountNonExpired(Boolean accountNonExpired) {
         this.accountNonExpired = accountNonExpired;
     }
 
-    public Boolean getEnabled() {
-        return enabled;
-    }
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
@@ -266,4 +269,43 @@ public class User {
     public void setId(Long id) {
         this.id = id;
     }
+
+    // In User entity, update getters:
+    public Boolean getLockedByAdmin() {
+        return lockedByAdmin != null ? lockedByAdmin : false;
+    }
+
+    public Boolean getEnabled() {
+        return enabled != null ? enabled : true;
+    }
+
+    public Boolean getAccountNonExpired() {
+        return accountNonExpired != null ? accountNonExpired : true;
+    }
+
+    public Boolean getAccountNonLocked() {
+        return accountNonLocked != null ? accountNonLocked : true;
+    }
+
+    public Boolean getCredentialsNonExpired() {
+        return credentialsNonExpired != null ? credentialsNonExpired : true;
+    }
+
+
+    // In User entity, add these getters if missing:
+    public Integer getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public LocalDateTime getAccountLockedUntil() {
+        return accountLockedUntil;
+    }
+
+
+
+
+
+
+
+
 }

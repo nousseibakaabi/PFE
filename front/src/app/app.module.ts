@@ -19,6 +19,7 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { RegisterComponent } from './components/register/register.component';
 import { LoginComponent } from './components/login/login.component';
 import { HttpClientModule } from '@angular/common/http';
+import { AdminUsersComponent } from './components/admin-users/admin-users.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import { HttpClientModule } from '@angular/common/http';
     ForgetPasswordComponent,
     ResetPasswordComponent,
     EmailSendComponent,
-    NotFoundComponent
+    NotFoundComponent,
+    AdminUsersComponent
   ],
   imports: [
     BrowserModule,
