@@ -183,12 +183,57 @@
             />
           </svg>
         </button>
-        <!-- Dark Mode Toggler -->
+
+        <!-- Language Selector -->
+        <div class="relative" *ngIf="translationActive">
+          <button
+            class="hover:text-dark-900 relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            (click)="toggleLanguageDropdown()"
+            [title]="'Current language: ' + getCurrentLanguageName()"
+          >
+            <span class="text-lg">{{ getCurrentLanguageFlag() }}</span>
+            <span *ngIf="translationActive" class="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500"></span>
+          </button>
+
+          <!-- Language Dropdown -->
+          <div *ngIf="isLanguageDropdownOpen" class="shadow-theme-lg dark:bg-gray-dark absolute right-0 mt-[17px] flex w-48 flex-col rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-800 z-50">
+            <div class="mb-2 border-b border-gray-100 pb-2 dark:border-gray-800">
+              <h5 class="text-sm font-semibold text-gray-800 dark:text-white/90">{{ 'Select Language' | translate }}</h5>
+            </div>
+            
+            <ul class="space-y-1">
+              <li *ngFor="let lang of languages">
+                <button
+  (click)="changeLanguage(lang.code)"
+  class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+  [ngClass]="{'bg-gray-100 dark:bg-gray-800': currentLanguage === lang.code}"
+>
+  <span class="text-lg">{{ lang.flag }}</span>
+  <span>{{ lang.name }}</span>
+  <span *ngIf="currentLanguage === lang.code" class="ml-auto text-blue-500">
+    <i class="fas fa-check"></i>
+  </span>
+</button>
+              </li>
+            </ul>
+            
+            <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ 'Powered by LibreTranslate' | translate }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Warning if translation server not running -->
+        <div *ngIf="!translationActive" class="mr-2">
+          <button class="relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-yellow-50 text-yellow-600 dark:border-gray-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                  title="Translation server not running"
+                  (click)="openTranslationHelp()">
+            <i class="fas fa-language"></i>
+          </button>
+        </div>
 
         <!-- Notification Menu Area -->
-        <div
-          class="relative"
-        >
+        <div class="relative">
           <button
             class="hover:text-dark-900 relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
             (click)="toggleNotifications()"
@@ -229,7 +274,7 @@
               <h5
                 class="text-lg font-semibold text-gray-800 dark:text-white/90"
               >
-                Notification
+                {{ 'Notification' | translate }}
               </h5>
 
               <button
@@ -282,8 +327,9 @@
                       <span class="font-medium text-gray-800 dark:text-white/90"
                         >{{notification.userName}}</span
                       >
-                      requests permission to change
-                      <span class="font-medium text-gray-800 dark:text-white/90"
+{{'requests permission to change' | translate}}
+
+ <span class="font-medium text-gray-800 dark:text-white/90"
                         >{{notification.project}}</span
                       >
                     </span>
@@ -304,55 +350,53 @@
               href="#"
               class="text-theme-sm shadow-theme-xs mt-3 flex justify-center rounded-lg border border-gray-300 bg-white p-3 font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
             >
-              View All Notification
+              {{ 'View All Notification' | translate }}
             </a>
           </div>
           <!-- Dropdown End -->
         </div>
-        <!-- Notification Menu Area -->
       </div>
 
-   <!-- User Area -->
-<div class="relative">
-  <button
-    class="flex items-center focus:outline-none"
-    (click)="toggleUserDropdown($event)"
-  >
-    <div class="mr-3 h-11 w-11 overflow-hidden rounded-full border-2 border-white shadow-sm">
-      <!-- Use getAvatarUrl() -->
-      <img [src]="getAvatarUrl()" 
-           [alt]="getUserFullName()"
-           class="h-full w-full object-cover">
-    </div>
-  </button>
-  <!-- Dropdown Start -->
-  <div
-    *ngIf="isUserDropdownOpen"
-    class="shadow-theme-lg dark:bg-gray-dark absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-800"
-  >
-    <div>
-      <span
-        class="text-theme-sm block font-medium text-gray-700 dark:text-gray-400"
-      >
-        {{ getUserFullName() }}
-      </span>
-      <span
-        class="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400"
-      >
-        {{ currentUser?.email || 'No email' }}
-      </span>
-     
-    </div>
-
-    <ul
-      class="flex flex-col gap-1 border-b border-gray-200 pt-4 pb-3 dark:border-gray-800"
-    >
-      <li>
-        <a
-          [routerLink]="['/profile']"
-          class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+      <!-- User Area -->
+      <div class="relative">
+        <button
+          class="flex items-center focus:outline-none"
+          (click)="toggleUserDropdown($event)"
         >
-         <svg
+          <div class="mr-3 h-11 w-11 overflow-hidden rounded-full border-2 border-white shadow-sm">
+            <!-- Use getAvatarUrl() -->
+            <img [src]="getAvatarUrl()" 
+                 [alt]="getUserFullName()"
+                 class="h-full w-full object-cover">
+          </div>
+        </button>
+        <!-- Dropdown Start -->
+        <div
+          *ngIf="isUserDropdownOpen"
+          class="shadow-theme-lg dark:bg-gray-dark absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-800"
+        >
+          <div>
+            <span
+              class="text-theme-sm block font-medium text-gray-700 dark:text-gray-400"
+            >
+              {{ getUserFullName() }}
+            </span>
+            <span
+              class="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400"
+            >
+              {{ currentUser?.email || 'No email' }}
+            </span>
+          </div>
+
+          <ul
+            class="flex flex-col gap-1 border-b border-gray-200 pt-4 pb-3 dark:border-gray-800"
+          >
+            <li>
+              <a
+                [routerLink]="['/profile']"
+                class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              >
+                <svg
                   class="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
                   width="24"
                   height="24"
@@ -367,16 +411,15 @@
                     fill=""
                   />
                 </svg>
-
-        Edit profile
-        </a>
-      </li>
-      <li>
-        <a
-          [routerLink]="['/messages']"
-          class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-        >
-                        <svg
+                {{ 'Edit profile' | translate }}
+              </a>
+            </li>
+            <li>
+              <a
+                [routerLink]="['/messages']"
+                class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              >
+                <svg
                   class="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
                   width="24"
                   height="24"
@@ -391,15 +434,15 @@
                     fill=""
                   />
                 </svg>
-          Account settings
-        </a>
-      </li>
-      <li>
-        <a
-          [routerLink]="['/settings']"
-          class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-        >
-<svg
+                {{ 'Account settings' | translate }}
+              </a>
+            </li>
+            <li>
+              <a
+                [routerLink]="['/settings']"
+                class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+              >
+                <svg
                   class="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
                   width="24"
                   height="24"
@@ -414,15 +457,15 @@
                     fill=""
                   />
                 </svg>
-          Support
-        </a>
-      </li>
-    </ul>
-    <button
-      (click)="onSignOut()"
-      class="group text-theme-sm mt-3 flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-    >
-                <svg
+                {{ 'Support' | translate }}
+              </a>
+            </li>
+          </ul>
+          <button
+            (click)="onSignOut()"
+            class="group text-theme-sm mt-3 flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+          >
+            <svg
               class="fill-gray-500 group-hover:fill-gray-700 dark:group-hover:fill-gray-300"
               width="24"
               height="24"
@@ -437,11 +480,10 @@
                 fill=""
               />
             </svg>
-      Sign out
-    </button>
-  </div>
-</div>
-
+            {{ 'Sign out' | translate }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </header>

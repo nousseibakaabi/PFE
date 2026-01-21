@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit ,HostListener } from '@angular/core';
+import { Component, OnInit, AfterViewInit, HostListener } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -6,6 +6,7 @@ import { environment } from 'src/environments/environment';
 import { ChartService } from '../partials/services/chart.service';
 import { MapService } from '../partials/services/map.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { TranslationService } from '../partials/traduction/translation.service';
 
 interface AdminUser {
   id: number;
@@ -41,7 +42,25 @@ export class AdminUsersComponent implements OnInit, AfterViewInit {
   successMessage: string = '';
   baseUrl = environment.baseUrl || 'http://localhost:8081';
 
+  
+  // In AdminUsersComponent class
+currentPage = 1;
+pageSize = 6;
+totalPages = 1;
+paginatedUsers: AdminUser[] = [];
   showFilterDropdown = false;
+  Math = Math; // Add this line
+
+// In AdminUsersComponent class
+showSuccessMessage = false;
+showErrorMessage = false;
+successMessageType: 'success' | 'info' | 'warning' | null = null;
+  showConfirmModal = false;
+confirmTitle = '';
+confirmMessage = '';
+confirmAction: 'lock' | 'unlock' | null = null;
+userToConfirm: AdminUser | null = null;
+
 roleFilter: string = '';
 statusFilter: string = '';
 allUsers: AdminUser[] = []; // Store all users for filtering
@@ -79,7 +98,8 @@ allUsers: AdminUser[] = []; // Store all users for filtering
     private apiService: ApiService,
     private chartService: ChartService,
     private mapService: MapService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private trasnlationService: TranslationService
   ) {
     // Initialize forms
     this.addUserForm = this.fb.group({
@@ -100,7 +120,11 @@ allUsers: AdminUser[] = []; // Store all users for filtering
     this.editRoleForm = this.fb.group({
       roles: [[], Validators.required]
     });
+
+
   }
+
+
 
   ngOnInit(): void {
     this.loadUsers();
@@ -214,13 +238,13 @@ loadUsers(): void {
   this.http.get<AdminUser[]>(`${this.apiUrl}/admin/users`, { headers })
     .subscribe({
       next: (users) => {
-        // Store all users
         this.allUsers = users.map(user => ({
           ...user,
           roles: this.extractRoleNames(user)
         }));
         
-        // Apply filters if any
+        // Reset to first page when loading new users
+        this.currentPage = 1;
         this.applyFilters();
         this.loading = false;
       },
@@ -247,16 +271,61 @@ onRoleRadioChange(roleValue: string): void {
   this.editRoleForm.get('roles')?.updateValueAndValidity();
 }
 
+
+
+getPageNumbers(): number[] {
+  const pages: number[] = [];
+  const maxVisiblePages = 5;
+  
+  if (this.totalPages <= maxVisiblePages) {
+    // Show all pages if total pages are less than or equal to maxVisiblePages
+    for (let i = 1; i <= this.totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    // Always show first page
+    pages.push(1);
+    
+    // Calculate start and end of visible pages
+    let start = Math.max(2, this.currentPage - 1);
+    let end = Math.min(this.totalPages - 1, this.currentPage + 1);
+    
+    // Adjust if we're near the beginning
+    if (this.currentPage <= 2) {
+      end = 4;
+    }
+    
+    // Adjust if we're near the end
+    if (this.currentPage >= this.totalPages - 1) {
+      start = this.totalPages - 3;
+    }
+    
+    // Add visible pages
+    for (let i = start; i <= end; i++) {
+      if (!pages.includes(i)) {
+        pages.push(i);
+      }
+    }
+    
+    // Add last page if not already included
+    if (!pages.includes(this.totalPages)) {
+      pages.push(this.totalPages);
+    }
+  }
+  
+  return pages;
+}
+
+
 applyFilters(): void {
   let filteredUsers = [...this.allUsers];
   
   // Apply role filter (direct display name comparison)
   if (this.roleFilter) {
     filteredUsers = filteredUsers.filter(user => 
-      user.roles.some(role => {
-        // Case-insensitive comparison
-        return role.toLowerCase() === this.roleFilter.toLowerCase();
-      })
+      user.roles.some(role => 
+        role.toLowerCase() === this.roleFilter.toLowerCase()
+      )
     );
   }
   
@@ -269,7 +338,6 @@ applyFilters(): void {
           (!user.accountLockedUntil || new Date(user.accountLockedUntil) <= new Date())
         );
         break;
-      
       case 'temporarily_locked':
         filteredUsers = filteredUsers.filter(user => 
           !user.lockedByAdmin && 
@@ -284,6 +352,37 @@ applyFilters(): void {
   }
   
   this.users = filteredUsers;
+  this.totalPages = Math.ceil(this.users.length / this.pageSize);
+  this.updatePaginatedUsers();
+}
+
+// Add this new method:
+updatePaginatedUsers(): void {
+  const startIndex = (this.currentPage - 1) * this.pageSize;
+  const endIndex = startIndex + this.pageSize;
+  this.paginatedUsers = this.users.slice(startIndex, endIndex);
+}
+
+
+goToPage(page: number): void {
+  if (page >= 1 && page <= this.totalPages) {
+    this.currentPage = page;
+    this.updatePaginatedUsers();
+  }
+}
+
+previousPage(): void {
+  if (this.currentPage > 1) {
+    this.currentPage--;
+    this.updatePaginatedUsers();
+  }
+}
+
+nextPage(): void {
+  if (this.currentPage < this.totalPages) {
+    this.currentPage++;
+    this.updatePaginatedUsers();
+  }
 }
 
 clearFilters(): void {
@@ -310,7 +409,7 @@ lockUser(userId: number): void {
       next: (response: any) => {
         console.log('Lock response:', response);
         if (response.success) {
-          this.successMessage = response.message;
+this.showSuccess(response.message);
           // Update the specific user in allUsers array
           const userIndex = this.allUsers.findIndex(u => u.id === userId);
           if (userIndex !== -1) {
@@ -323,12 +422,11 @@ lockUser(userId: number): void {
             this.successMessage = '';
           }, 5000);
         } else {
-          this.error = response.message || 'Failed to lock user';
         }
       },
       error: (error) => {
         console.error('Lock user error:', error);
-        this.error = error.error?.message || 'Failed to lock user';
+this.showError(error.error?.message || 'Failed to lock user');
       }
     });
 }
@@ -349,7 +447,7 @@ unlockUser(userId: number): void {
       next: (response: any) => {
         console.log('Unlock response:', response);
         if (response.success) {
-          this.successMessage = response.message;
+this.showSuccess(response.message);
           // Update the specific user in allUsers array
           const userIndex = this.allUsers.findIndex(u => u.id === userId);
           if (userIndex !== -1) {
@@ -367,7 +465,7 @@ unlockUser(userId: number): void {
       },
       error: (error) => {
         console.error('Unlock user error:', error);
-        this.error = error.error?.message || 'Failed to unlock user';
+this.showError(error.error?.message || 'Failed to unlock user');
       }
     });
 }
@@ -529,7 +627,7 @@ isRoleChecked(roleValue: string): boolean {
     .subscribe({
       next: (response: any) => {
         if (response.success) {
-          this.successMessage = response.message;
+this.showSuccess(response.message);
           this.loadUsers();
           this.closeAddUserModal();
           
@@ -566,7 +664,7 @@ isRoleChecked(roleValue: string): boolean {
         .subscribe({
     next: (response: any) => {
       if (response.success) {
-        this.successMessage = response.message;
+this.showSuccess(response.message);
         this.loadUsers();
         this.closeEditDepartmentModal();
         
@@ -603,7 +701,7 @@ isRoleChecked(roleValue: string): boolean {
       .subscribe({
     next: (response: any) => {
       if (response.success) {
-        this.successMessage = response.message;
+this.showSuccess(response.message);
         this.loadUsers();
         this.closeEditRoleModal();
         
@@ -793,5 +891,86 @@ handleImageError(event: any, user: AdminUser) {
   // Set to default avatar
   event.target.src = this.generateAvatarUrl(user);
   event.target.onerror = null; // Prevent infinite loop
+}
+
+
+// In AdminUsersComponent class, add these methods:
+
+// Open confirmation modal
+openConfirmModal(user: AdminUser, action: 'lock' | 'unlock'): void {
+  this.userToConfirm = user;
+  this.confirmAction = action;
+  
+  if (action === 'lock') {
+    this.confirmTitle = 'Confirm Lock User';
+    this.confirmMessage = `Are you sure you want to lock ${user.firstName} ${user.lastName}? They will not be able to access their account until unlocked.`;
+  } else {
+    this.confirmTitle = 'Confirm Unlock User';
+    this.confirmMessage = `Are you sure you want to unlock ${user.firstName} ${user.lastName}? They will regain access to their account.`;
+  }
+  
+  this.showConfirmModal = true;
+}
+
+// Close confirmation modal
+closeConfirmModal(): void {
+  this.showConfirmModal = false;
+  this.userToConfirm = null;
+  this.confirmAction = null;
+  this.confirmTitle = '';
+  this.confirmMessage = '';
+}
+
+// Execute the confirmed action
+executeConfirmedAction(): void {
+  if (!this.userToConfirm || !this.confirmAction) return;
+  
+  if (this.confirmAction === 'lock') {
+    this.lockUser(this.userToConfirm.id);
+  } else {
+    this.unlockUser(this.userToConfirm.id);
+  }
+  
+  this.closeConfirmModal();
+}
+
+// Replace your existing success/error message setting with these methods
+
+showSuccess(msg: string, type: 'success' | 'info' | 'warning' = 'success'): void {
+  this.successMessage = msg;
+  this.successMessageType = type;
+  this.showSuccessMessage = true;
+  this.showErrorMessage = false;
+  
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    this.hideSuccessMessage();
+  }, 5000);
+}
+
+showError(msg: string): void {
+  this.error = msg;
+  this.showErrorMessage = true;
+  this.showSuccessMessage = false;
+  
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    this.hideErrorMessage();
+  }, 5000);
+}
+
+hideSuccessMessage(): void {
+  this.showSuccessMessage = false;
+  setTimeout(() => {
+    this.successMessage = '';
+    this.successMessageType = null;
+  }, 300);
+}
+
+hideErrorMessage(): void {
+  this.showErrorMessage = false;
+  setTimeout(() => {
+    this.error = '';
+  }, 300);
 }
 }

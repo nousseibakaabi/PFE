@@ -5,6 +5,7 @@ import { AuthService } from '../../../services/auth.service';
 import { User } from '../../../models/user'; 
 import { Subscription } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { TranslationService } from '../traduction/translation.service';
 
 @Component({
   selector: 'app-header',
@@ -21,6 +22,12 @@ export class HeaderComponent implements OnInit {
   searchQuery: string = '';
   currentUser: User | null = null;
   private userSubscription!: Subscription;
+
+  isLanguageDropdownOpen = false;
+  currentLanguage = 'en';
+  languages: any[] = [];
+  translationActive = false;
+
 
   notifications = [
     {
@@ -58,7 +65,7 @@ export class HeaderComponent implements OnInit {
   ];
 
   constructor(private router: Router ,private layoutService: LayoutService
-, private authService: AuthService
+, private authService: AuthService,    private translationService: TranslationService 
 ) {}
 
 
@@ -83,6 +90,18 @@ ngOnInit(): void {
         console.log('Header user updated:', this.currentUser?.profileImage);
       }
     );
+
+  this.languages = this.translationService.languages;
+    this.currentLanguage = this.translationService.getCurrentLanguage();
+    
+    // Test translation server
+    this.translationService.testConnection().subscribe(isActive => {
+      this.translationActive = isActive;
+      if (!isActive) {
+        console.warn('Translation server is not running on localhost:5000');
+      }
+    });  
+  
   }
 
   ngOnDestroy(): void {
@@ -252,4 +271,50 @@ getAvatarUrl(): string {
     return 'data:image/svg+xml;base64,' + btoa(svg);
   }
 
+
+   toggleLanguageDropdown(): void {
+    this.isLanguageDropdownOpen = !this.isLanguageDropdownOpen;
+  }
+
+  changeLanguage(langCode: string): void {
+    this.translationService.setLanguage(langCode);
+    this.currentLanguage = langCode;
+    this.isLanguageDropdownOpen = false;
+    
+    // Show success message
+    const langName = this.translationService.getLanguageName(langCode);
+    console.log(`Language changed to ${langName}`);
+  }
+
+  getCurrentLanguageFlag(): string {
+    return this.translationService.getLanguageFlag(this.currentLanguage);
+  }
+
+  getCurrentLanguageName(): string {
+    return this.translationService.getLanguageName(this.currentLanguage);
+  }
+
+
+  // Add this method to the HeaderComponent class
+openTranslationHelp(): void {
+  const helpMessage = `
+    Translation server not running!
+    
+    To enable translations, please run:
+    
+    1. Open Command Prompt/Terminal
+    2. Install: pip install libretranslate
+    3. Run: libretranslate --host 127.0.0.1 --port 5000
+    4. Keep the window open
+    
+    OR
+    
+    1. Run in background:
+       nohup libretranslate --host 127.0.0.1 --port 5000 > translate.log 2>&1 &
+    
+    Then refresh this page.
+  `;
+  
+  alert(helpMessage);
+}
 }

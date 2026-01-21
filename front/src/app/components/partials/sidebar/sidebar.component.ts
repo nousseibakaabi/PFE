@@ -3,7 +3,8 @@ import { Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { LayoutService } from '../services/layout.service';
-import { AuthService } from '../../../services/auth.service'; // Add this import
+import { AuthService } from '../../../services/auth.service';
+import { TranslationService } from '../traduction/translation.service'; 
 
 @Component({
   selector: 'app-sidebar',
@@ -11,14 +12,15 @@ import { AuthService } from '../../../services/auth.service'; // Add this import
   styleUrls: ['./sidebar.component.css']
 })
 export class SidebarComponent implements OnInit {
-   @Input() isSidebarOpen: boolean = false; 
+  @Input() isSidebarOpen: boolean = false; 
   selected: string = 'Dashboard';
   currentPage: string = 'ecommerce'; 
 
   constructor(
     private router: Router,
     private layoutService: LayoutService,
-    private authService: AuthService // Inject AuthService
+    private authService: AuthService,
+    private translationService: TranslationService // Inject TranslationService
   ) {}
 
   ngOnInit(): void {

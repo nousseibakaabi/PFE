@@ -20,6 +20,9 @@ import { RegisterComponent } from './components/register/register.component';
 import { LoginComponent } from './components/login/login.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AdminUsersComponent } from './components/admin-users/admin-users.component';
+import { TranslatePipe } from './components/partials/traduction/translate.pipe';
+import { AsyncTranslatePipe } from './components/partials/traduction/async-translate.pipe';
+import { TranslationService } from './components/partials/traduction/translation.service';
 
 @NgModule({
   declarations: [
@@ -36,7 +39,9 @@ import { AdminUsersComponent } from './components/admin-users/admin-users.compon
     ResetPasswordComponent,
     EmailSendComponent,
     NotFoundComponent,
-    AdminUsersComponent
+    AdminUsersComponent,
+    TranslatePipe,
+    AsyncTranslatePipe,
   ],
   imports: [
     BrowserModule,
@@ -47,7 +52,8 @@ import { AdminUsersComponent } from './components/admin-users/admin-users.compon
     ReactiveFormsModule
   ],
   providers: [
-    LayoutService
+    LayoutService,
+    TranslationService
   ],
   bootstrap: [AppComponent]
 })

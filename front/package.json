@@ -23,6 +23,8 @@
     "@fullcalendar/interaction": "^6.1.15",
     "@fullcalendar/list": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
+    "@ngx-translate/core": "^17.0.0",
+    "@ngx-translate/http-loader": "^17.0.0",
     "apexcharts": "^3.54.1",
     "chart.js": "^4.5.1",
     "dropzone": "^6.0.0-beta.2",
