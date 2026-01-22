@@ -10,6 +10,8 @@ import { EmailSendComponent } from './components/email-send/email-send.component
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { ForgetPasswordComponent } from './components/forget-password/forget-password.component';
 import { AdminUsersComponent } from './components/admin-users/admin-users.component';
+import { AdminNomenclaturesComponent } from './components/admin-nomenclatures/admin-nomenclatures.component';
+import { AdminComponent } from './components/admin/admin.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -19,9 +21,22 @@ const routes: Routes = [
   { path: 'forget-password', component: ForgetPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'email-sent', component: EmailSendComponent },
-  { 
+  
+   { 
     path: 'admin', 
+    component: AdminComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_ADMIN'] } 
+  },
+  { 
+    path: 'admin/users', 
     component: AdminUsersComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_ADMIN'] } 
+  },
+  { 
+    path: 'admin/nomenclatures', 
+    component: AdminNomenclaturesComponent, 
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_ADMIN'] } 
   },

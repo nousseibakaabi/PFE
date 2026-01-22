@@ -31,6 +31,86 @@ export class TranslationService {
     this.setLanguage(savedLang);
   }
 
+
+   private arabicTranslations: {[key: string]: string} = {
+    'Email': 'البريد الإلكتروني',
+    'User': 'المستخدم',
+    'Username': 'اسم المستخدم',
+    'Showing': 'عرض',
+    'Search': 'بحث',
+    'Lock': 'قفل',
+    'Unlock': 'فتح القفل',
+    'Edit Department': 'تعديل القسم',
+    'Edit Role': 'تعديل الدور',
+    'Status': 'الحالة',
+    'Role': 'الدور',
+    'Actions': 'الإجراءات',
+    'Previous': 'السابق',
+    'Next': 'التالي',
+    'to': 'إلى',
+    'of': 'من',
+    'entries': 'إدخالات',
+    'results': 'نتائج',
+    'Dashboard': 'لوحة التحكم',
+    'Admin': 'مدير',
+    'Profile': 'الملف الشخصي',
+    'Calendar': 'التقويم',
+    'Forms': 'النماذج',
+    'Tables': 'الجداول',
+    'Pages': 'الصفحات',
+    'Charts': 'الرسوم البيانية',
+    'UI Elements': 'عناصر الواجهة',
+    'Authentication': 'المصادقة',
+    'Admin Dashboard': 'لوحة تحكم المدير',
+    'Manage users and monitor system metrics': 'إدارة المستخدمين ومراقبة مقاييس النظام',
+    'Total Users': 'إجمالي المستخدمين',
+    'Locked Users': 'المستخدمون المقفلون',
+    'Total Failed Attempts': 'إجمالي المحاولات الفاشلة',
+    'Active Users': 'المستخدمون النشطون',
+    'User Management': 'إدارة المستخدمين',
+    'Filter by Role': 'تصفية حسب الدور',
+    'Filter by Status': 'تصفية حسب الحالة',
+    'All Roles': 'جميع الأدوار',
+    'All Status': 'جميع الحالات',
+    'Active': 'نشط',
+    'Temporarily Locked': 'مقفل مؤقتاً',
+    'Locked by Admin': 'مقفل من قبل المدير',
+    'Clear Filters': 'مسح الفلاتر',
+    'Close': 'إغلاق',
+    'Department': 'القسم',
+    'No users found': 'لم يتم العثور على مستخدمين',
+    'No users have been created yet. Click "Add User" to create one.': 'لم يتم إنشاء مستخدمين بعد. انقر على "إضافة مستخدم" لإنشاء واحد.',
+    'Access Denied': 'تم رفض الوصول',
+    'You don\'t have permission to access the admin dashboard. Please contact an administrator if you believe this is an error.': 'ليس لديك إذن للوصول إلى لوحة تحكم المدير. يرجى الاتصال بالمسؤول إذا كنت تعتقد أن هذا خطأ.',
+    'Return to Dashboard': 'العودة إلى لوحة التحكم',
+      'Commercial Métier': 'التجاري المتخصص',
+  'Décideur': 'صانع القرار',
+  'Chef de Projet': 'رئيس المشروع',
+ 
+  'failed attempts': 'محاولات فاشلة',
+  
+  // Other translations
+  'Not assigned': 'غير مخصص',
+  'No role': 'لا يوجد دور', 
+   'Applications': 'التطبيقات',
+      'Application': 'التطبيق',
+      'Structure': 'الهيكل',
+       "Current Password": "كلمة المرور الحالية",
+  "New Password": "كلمة مرور جديدة",
+  "Confirm New Password": "تأكيد كلمة المرور الجديدة",
+  "Password Requirements": "متطلبات كلمة المرور",
+  "At least 6 characters": "على الأقل 6 أحرف",
+  "Should contain letters and numbers": "يجب أن تحتوي على أحرف وأرقام",
+  "Avoid common passwords": "تجنب كلمات المرور الشائعة",
+  'First Name': 'الاسم ',
+  'Last Name': 'اسم العائلة',
+
+
+
+  };
+
+ 
+
   translate(text: string): Observable<string> {
     if (!text || text.trim() === '') return of('');
     
@@ -45,6 +125,12 @@ export class TranslationService {
     // If already in target language, return as is
     if (lang === 'en') {
       const result = of(text);
+      this.cache.set(cacheKey, result);
+      return result;
+    }
+
+     if (lang === 'ar' && this.arabicTranslations[text]) {
+      const result = of(this.arabicTranslations[text]);
       this.cache.set(cacheKey, result);
       return result;
     }

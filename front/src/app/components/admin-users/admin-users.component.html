@@ -3,7 +3,7 @@
   <div class="p-4 mx-auto max-w-screen-2xl md:p-6">
     <div class="mb-6">
 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-  {{ 'Admin Dashboard' | translate }}
+  {{ 'User management' | translate }}
 </h1>
       <p class="text-gray-600 dark:text-gray-400">{{ 'Manage users and monitor system metrics   ' | translate }}
 </p>
@@ -333,23 +333,25 @@
       </div>
     </td>
     <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">{{ user.email }}</td>
-              <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                {{ user.department || 'Not assigned' }}
-                <button (click)="openEditDepartmentModal(user)" class="ml-2 text-blue-500 hover:text-blue-700">
-                  <i class="fas fa-edit text-xs"></i>
-                </button>
-              </td>
-              <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                {{ getUserRolesDisplay(user) }}
-                <button (click)="openEditRoleModal(user)" class="ml-2 text-blue-500 hover:text-blue-700">
-                  <i class="fas fa-edit text-xs"></i>
-                </button>
-              </td>
-              <td class="px-4 py-3">
-                <span [class]="getLockStatusClass(getLockStatus(user))" class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
-                  {{ getLockStatus(user) }}
-                </span>
-              </td>
+<td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+  {{ (user.department ? user.department : 'Not assigned') | translate }}
+  <button (click)="openEditDepartmentModal(user)" class="ml-2 text-blue-500 hover:text-blue-700">
+    <i class="fas fa-edit text-xs"></i>
+  </button>
+</td>
+<td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+  {{ getUserRolesDisplay(user) | translate }}
+  <button (click)="openEditRoleModal(user)" class="ml-2 text-blue-500 hover:text-blue-700">
+    <i class="fas fa-edit text-xs"></i>
+  </button>
+</td>
+<td class="px-4 py-3">
+  <span [class]="getLockStatusClass(getLockStatus(user))" class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
+    {{ getLockStatus(user) | translate }}
+  </span>
+</td>
+
+
              <td class="px-4 py-3">
   <div class="flex gap-2">
     <button 
@@ -557,26 +559,28 @@
           </div>
         </div>
 
-        <!-- Row 5: Roles -->
-        <div>
-          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {{ 'Roles ' | translate }} *
-          </label>
-          <div class="flex flex-wrap gap-2">
-            <label *ngFor="let role of availableRoles" class="inline-flex items-center text-xs">
-              <input type="checkbox" [value]="role.value" 
-                (change)="onRoleCheckboxChange($event, role.value)"
-                [checked]="addUserForm.get('roles')?.value?.includes(role.value)"
-                class="h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:bg-gray-700">
-              <span class="ml-1 text-gray-700 dark:text-gray-300">{{ role.label }}</span>
-            </label>
-          </div>
-          <div *ngIf="addUserForm.get('roles')?.invalid && addUserForm.get('roles')?.touched" 
-            class="text-red-500 text-xs mt-1">
-            <span *ngIf="addUserForm.get('roles')?.errors?.['required']">{{ 'At least one role is required' | translate }}</span>
-          </div>
-        </div>
-
+   <div>
+  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+    {{ 'Roles ' | translate }} *
+  </label>
+  <div class="space-y-1">
+    <label *ngFor="let role of availableRoles" 
+      class="flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+      <input type="radio" [value]="role.value" 
+        (change)="onRoleRadioChange($event, role.value)"
+        [checked]="addUserForm.get('roles')?.value?.includes(role.value)"
+        name="roleSelection"
+        class="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:bg-gray-700">
+      <span class="ml-2 text-xs text-gray-700 dark:text-gray-300 font-medium">
+        {{ role.label | translate }}
+      </span>
+    </label>
+  </div>
+  <div *ngIf="addUserForm.get('roles')?.invalid && addUserForm.get('roles')?.touched" 
+    class="text-red-500 text-xs mt-1">
+    <span *ngIf="addUserForm.get('roles')?.errors?.['required']">{{ 'At least one role is required' | translate }}</span>
+  </div>
+</div>
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button type="button" (click)="closeAddUserModal()" 
             class="px-4 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
@@ -670,7 +674,7 @@
   <label *ngFor="let role of availableRoles" 
     class="flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
     <input type="radio" [value]="role.value" 
-      (change)="onRoleRadioChange(role.value)"
+      (change)="onRoleRadio(role.value)"
       [checked]="isRoleChecked(role.value)"
       name="roleSelection"
       class="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:bg-gray-700">

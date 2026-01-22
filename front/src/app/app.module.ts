@@ -23,6 +23,8 @@ import { AdminUsersComponent } from './components/admin-users/admin-users.compon
 import { TranslatePipe } from './components/partials/traduction/translate.pipe';
 import { AsyncTranslatePipe } from './components/partials/traduction/async-translate.pipe';
 import { TranslationService } from './components/partials/traduction/translation.service';
+import { AdminNomenclaturesComponent } from './components/admin-nomenclatures/admin-nomenclatures.component';
+import { AdminComponent } from './components/admin/admin.component';
 
 @NgModule({
   declarations: [
@@ -42,6 +44,8 @@ import { TranslationService } from './components/partials/traduction/translation
     AdminUsersComponent,
     TranslatePipe,
     AsyncTranslatePipe,
+    AdminNomenclaturesComponent,
+    AdminComponent,
   ],
   imports: [
     BrowserModule,

@@ -44,46 +44,36 @@ export class SidebarComponent implements OnInit {
     }
   }
 
-  updateCurrentPage(): void {
-    const url = this.router.url;
-    if (url.includes('admin')) {
-      this.currentPage = 'adminUsers';
-    } else if (url.includes('calendar')) {
-      this.currentPage = 'calendar';
-    } else if (url.includes('profile')) {
-      this.currentPage = 'profile';
-    } else if (url.includes('form-elements')) {
-      this.currentPage = 'formElements';
-    } else if (url.includes('basic-tables')) {
-      this.currentPage = 'basicTables';
-    } else if (url.includes('blank')) {
-      this.currentPage = 'blank';
-    } else if (url.includes('404')) {
-      this.currentPage = 'page404';
-    } else if (url.includes('line-chart')) {
-      this.currentPage = 'lineChart';
-    } else if (url.includes('bar-chart')) {
-      this.currentPage = 'barChart';
-    } else if (url.includes('alerts')) {
-      this.currentPage = 'alerts';
-    } else if (url.includes('avatars')) {
-      this.currentPage = 'avatars';
-    } else if (url.includes('badge')) {
-      this.currentPage = 'badge';
-    } else if (url.includes('buttons')) {
-      this.currentPage = 'buttons';
-    } else if (url.includes('images')) {
-      this.currentPage = 'images';
-    } else if (url.includes('videos')) {
-      this.currentPage = 'videos';
-    } else if (url.includes('signin')) {
-      this.currentPage = 'signin';
-    } else if (url.includes('signup')) {
-      this.currentPage = 'signup';
-    } else {
-      this.currentPage = 'ecommerce';
-    }
-  }
+ updateCurrentPage(): void {
+  const url = this.router.url;
+  
+  // Définit un mapping URL -> currentPage
+  const routeMapping = [
+    { path: 'admin/nomenclatures', page: 'Nomenclatures' },
+    { path: 'admin/users', page: 'Users' },
+    { path: 'admin', page: 'admin' },
+    { path: 'calendar', page: 'calendar' },
+    { path: 'profile', page: 'profile' },
+    { path: 'form-elements', page: 'formElements' },
+    { path: 'basic-tables', page: 'basicTables' },
+    { path: 'blank', page: 'blank' },
+    { path: '404', page: 'page404' },
+    { path: 'line-chart', page: 'lineChart' },
+    { path: 'bar-chart', page: 'barChart' },
+    { path: 'alerts', page: 'alerts' },
+    { path: 'avatars', page: 'avatars' },
+    { path: 'badge', page: 'badge' },
+    { path: 'buttons', page: 'buttons' },
+    { path: 'images', page: 'images' },
+    { path: 'videos', page: 'videos' },
+    { path: 'signin', page: 'signin' },
+    { path: 'signup', page: 'signup' }
+  ];
+  
+  // Cherche le premier match
+  const matchedRoute = routeMapping.find(route => url.includes(route.path));
+  this.currentPage = matchedRoute ? matchedRoute.page : 'ecommerce';
+}
 
   // Add this method to check if user is admin
   isAdminUser(): boolean {

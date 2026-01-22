@@ -211,21 +211,7 @@ private mapDisplayToBackend(displayRole: string): string {
     this.addUserForm.get('roles')?.updateValueAndValidity();
   }
 
-  onRoleEditCheckboxChange(event: any, roleValue: string): void {
-    const roles = this.editRoleForm.get('roles')?.value || [];
-    if (event.target.checked) {
-      // Add role
-      this.editRoleForm.patchValue({
-        roles: [...roles, roleValue]
-      });
-    } else {
-      // Remove role
-      this.editRoleForm.patchValue({
-        roles: roles.filter((r: string) => r !== roleValue)
-      });
-    }
-    this.editRoleForm.get('roles')?.updateValueAndValidity();
-  }
+
 
 loadUsers(): void {
   this.loading = true;
@@ -262,14 +248,7 @@ toggleFilterDropdown(): void {
 }
 
 
-// Replace onRoleEditCheckboxChange with this:
-onRoleRadioChange(roleValue: string): void {
-  // For radio buttons, set the form value to an array with just this role
-  this.editRoleForm.patchValue({
-    roles: [roleValue] // Single role in array
-  });
-  this.editRoleForm.get('roles')?.updateValueAndValidity();
-}
+
 
 
 
@@ -752,7 +731,7 @@ private markFormGroupTouched(formGroup: FormGroup): void {
 getUserRolesDisplay(user: AdminUser): string {
   if (!user.roles || user.roles.length === 0) return 'No role';
   
-  // Since extractRoleNames already formats them nicely, just join them
+  // Return the role(s) - they will be translated in the template
   return user.roles.join(', ');
 }
 
@@ -774,15 +753,53 @@ getUserRolesDisplay(user: AdminUser): string {
   }
 
   getLockStatus(user: AdminUser): string {
-    if (user.lockedByAdmin) {
-      return 'Locked by Admin';
-    } else if (user.accountLockedUntil && new Date(user.accountLockedUntil) > new Date()) {
-      return 'Temporarily Locked';
-    } else if (user.failedLoginAttempts > 0) {
-      return `${user.failedLoginAttempts} failed attempts`;
-    }
-    return 'Active';
+  if (user.lockedByAdmin) {
+    return 'Locked by Admin';
+  } else if (user.accountLockedUntil && new Date(user.accountLockedUntil) > new Date()) {
+    return 'Temporarily Locked';
+  } else if (user.failedLoginAttempts > 0) {
+    return `${user.failedLoginAttempts} failed attempts`;
   }
+  return 'Active';
+}
+
+getTranslatedLockStatus(user: AdminUser): string {
+  const status = this.getLockStatus(user);
+  
+  // If it's a failed attempts status, we need special handling
+  if (status.includes('failed attempts')) {
+    const attempts = user.failedLoginAttempts || 0;
+    // Use the translation service directly
+    let translatedText = 'failed attempts';
+    
+    // Check if we're in Arabic and use manual translation
+    if (this.trasnlationService.getCurrentLanguage() === 'ar') {
+      translatedText = 'محاولات فاشلة';
+    }
+    
+    return `${attempts} ${translatedText}`;
+  }
+  
+  // For other statuses, return as is - they will be translated in the template
+  return status;
+}
+
+onRoleRadioChange(event: any, roleValue: string): void {
+  // For radio buttons, set the form value to an array with just this role
+  this.addUserForm.patchValue({
+    roles: [roleValue] // Single role in array
+  });
+  this.addUserForm.get('roles')?.updateValueAndValidity();
+}
+
+
+onRoleRadio(roleValue: string): void {
+  // For radio buttons, set the form value to an array with just this role
+  this.editRoleForm.patchValue({
+    roles: [roleValue] // Single role in array
+  });
+  this.editRoleForm.get('roles')?.updateValueAndValidity();
+}
 
   isAdmin(): boolean {
     return this.authService.isAdmin();
