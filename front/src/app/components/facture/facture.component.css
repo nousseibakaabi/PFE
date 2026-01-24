@@ -1,0 +1,65 @@
+/* Invoice theme styling */
+:host {
+  display: block;
+}
+
+/* Status badges */
+.bg-green-100 { background-color: #d1fae5; }
+.text-green-800 { color: #065f46; }
+.bg-yellow-100 { background-color: #fef3c7; }
+.text-yellow-800 { color: #92400e; }
+.bg-red-100 { background-color: #fee2e2; }
+.text-red-800 { color: #991b1b; }
+.bg-gray-100 { background-color: #f3f4f6; }
+.text-gray-800 { color: #374151; }
+
+/* Dark mode support */
+.dark .bg-green-100 { background-color: #065f46; }
+.dark .text-green-800 { color: #a7f3d0; }
+.dark .bg-yellow-100 { background-color: #92400e; }
+.dark .text-yellow-800 { color: #fef3c7; }
+.dark .bg-red-100 { background-color: #991b1b; }
+.dark .text-red-800 { color: #fca5a5; }
+.dark .bg-gray-100 { background-color: #374151; }
+.dark .text-gray-800 { color: #d1d5db; }
+
+/* Overdue invoice styling */
+.bg-red-50 {
+  background-color: #fef2f2;
+}
+
+.dark .bg-red-900\/20 {
+  background-color: rgba(153, 27, 27, 0.2);
+}
+
+/* Stats cards */
+.stats-card {
+  transition: transform 0.2s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Currency formatting */
+.currency-positive {
+  color: #10b981;
+}
+
+.currency-negative {
+  color: #ef4444;
+}
+
+/* Payment button pulse animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.payment-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

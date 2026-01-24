@@ -18,13 +18,16 @@ import { ForgetPasswordComponent } from './components/forget-password/forget-pas
 import { ProfileComponent } from './components/profile/profile.component';
 import { RegisterComponent } from './components/register/register.component';
 import { LoginComponent } from './components/login/login.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule ,HTTP_INTERCEPTORS} from '@angular/common/http';
 import { AdminUsersComponent } from './components/admin-users/admin-users.component';
 import { TranslatePipe } from './components/partials/traduction/translate.pipe';
 import { AsyncTranslatePipe } from './components/partials/traduction/async-translate.pipe';
 import { TranslationService } from './components/partials/traduction/translation.service';
 import { AdminNomenclaturesComponent } from './components/admin-nomenclatures/admin-nomenclatures.component';
 import { AdminComponent } from './components/admin/admin.component';
+import { FactureComponent } from './components/facture/facture.component';
+import { ConventionComponent } from './components/convention/convention.component';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -46,6 +49,8 @@ import { AdminComponent } from './components/admin/admin.component';
     AsyncTranslatePipe,
     AdminNomenclaturesComponent,
     AdminComponent,
+    FactureComponent,
+    ConventionComponent,
   ],
   imports: [
     BrowserModule,
@@ -57,7 +62,12 @@ import { AdminComponent } from './components/admin/admin.component';
   ],
   providers: [
     LayoutService,
-    TranslationService
+    TranslationService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    },
   ],
   bootstrap: [AppComponent]
 })

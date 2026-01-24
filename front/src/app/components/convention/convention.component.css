@@ -1,0 +1,52 @@
+/* Add invoice theme styling */
+:host {
+  display: block;
+}
+
+/* Status badges */
+.bg-blue-100 { background-color: #dbeafe; }
+.text-blue-800 { color: #1e40af; }
+.bg-green-100 { background-color: #d1fae5; }
+.text-green-800 { color: #065f46; }
+.bg-red-100 { background-color: #fee2e2; }
+.text-red-800 { color: #991b1b; }
+.bg-gray-100 { background-color: #f3f4f6; }
+.text-gray-800 { color: #374151; }
+
+/* Dark mode support */
+.dark .bg-blue-100 { background-color: #1e3a8a; }
+.dark .text-blue-800 { color: #93c5fd; }
+.dark .bg-green-100 { background-color: #065f46; }
+.dark .text-green-800 { color: #a7f3d0; }
+.dark .bg-red-100 { background-color: #991b1b; }
+.dark .text-red-800 { color: #fca5a5; }
+.dark .bg-gray-100 { background-color: #374151; }
+.dark .text-gray-800 { color: #d1d5db; }
+
+/* Table styling */
+.table-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Modal animation */
+.modal-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.modal-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.modal-exit {
+  opacity: 1;
+}
+
+.modal-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 300ms, transform 300ms;
+}

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,12 @@ public class NomenclatureController {
 
     @Autowired
     private StructureRepository structureRepository;
+
+    @Autowired
+    private FactureRepository factureRepository;
+
+    @Autowired
+    private ConventionRepository conventionRepository;
 
     // ==================== APPLICATIONS ====================
 
@@ -432,6 +439,38 @@ public class NomenclatureController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch stats"));
+        }
+    }
+
+    @GetMapping("/commercial/stats")
+    public ResponseEntity<?> getCommercialStats() {
+        try {
+            // Get convention stats
+            long conventionsCount = conventionRepository.count();
+            long conventionsEnCours = conventionRepository.findByEtat("EN_COURS").size();
+            long conventionsExpirees = conventionRepository.findConventionsExpirees(LocalDate.now()).size();
+
+            // Get invoice stats
+            long facturesCount = factureRepository.count();
+            long facturesPayees = factureRepository.findByStatutPaiement("PAYE").size();
+            long facturesNonPayees = factureRepository.findByStatutPaiement("NON_PAYE").size();
+            long facturesEnRetard = factureRepository.findFacturesEnRetard(LocalDate.now()).size();
+
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("conventionsTotal", conventionsCount);
+            stats.put("conventionsEnCours", conventionsEnCours);
+            stats.put("conventionsExpirees", conventionsExpirees);
+            stats.put("facturesTotal", facturesCount);
+            stats.put("facturesPayees", facturesPayees);
+            stats.put("facturesNonPayees", facturesNonPayees);
+            stats.put("facturesEnRetard", facturesEnRetard);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", stats);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch commercial stats"));
         }
     }
 }

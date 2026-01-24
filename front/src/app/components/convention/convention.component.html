@@ -1,0 +1,396 @@
+<div class="p-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Gestion des Conventions</h2>
+    <p class="text-gray-600 dark:text-gray-400">Gérez toutes vos conventions commerciales</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+      </svg>
+      <span class="text-green-700">{{ successMessage }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+      </svg>
+      <span class="text-red-700">{{ errorMessage }}</span>
+    </div>
+  </div>
+
+  <!-- Filters and Actions -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex flex-col sm:flex-row gap-4 flex-1">
+        <!-- Search -->
+        <div class="relative flex-1">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="searchConventions()"
+            placeholder="Rechercher par référence, libellé..."
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          />
+          <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+
+        <!-- Status Filter -->
+        <select
+          [(ngModel)]="filterEtat"
+          (ngModelChange)="applyFilters()"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="">Tous les états</option>
+          <option *ngFor="let etat of etats" [value]="etat">{{ getEtatLabel(etat) }}</option>
+        </select>
+      </div>
+
+      <!-- Create Button -->
+      <button
+        *ngIf="canEdit()"
+        (click)="openCreateModal()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+      >
+        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nouvelle Convention
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <p class="mt-2 text-gray-600 dark:text-gray-400">Chargement...</p>
+  </div>
+
+  <!-- Conventions Table -->
+  <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Référence
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Libellé
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Structure
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Dates
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Montant
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              État
+            </th>
+            <th *ngIf="canEdit()" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tr *ngFor="let convention of filteredConventions" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="font-medium text-gray-900 dark:text-white">{{ convention.reference }}</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="text-gray-900 dark:text-white">{{ convention.libelle }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-gray-900 dark:text-white">{{ convention.structure?.name }}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">{{ convention.gouvernorat?.name }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900 dark:text-white">
+                Début: {{ convention.dateDebut | date:'dd/MM/yyyy' }}
+              </div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">
+                Fin: {{ convention.dateFin | date:'dd/MM/yyyy' }}
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-gray-900 dark:text-white font-medium">
+                {{ convention.montantTotal | currency:'TND':'symbol':'1.2-2' }}
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getEtatClass(convention.etat)">
+                {{ getEtatLabel(convention.etat) }}
+              </span>
+            </td>
+            <td *ngIf="canEdit()" class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <div class="flex space-x-2">
+                <button
+                  (click)="openEditModal(convention)"
+                  class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  (click)="deleteConvention(convention.id)"
+                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredConventions.length === 0">
+            <td colspan="7" class="px-6 py-12 text-center">
+              <div class="text-gray-500 dark:text-gray-400">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium">Aucune convention trouvée</h3>
+                <p class="mt-1 text-sm">Commencez par créer une nouvelle convention.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal" class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <!-- Background -->
+      <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+      </div>
+
+      <!-- Modal Panel -->
+      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <!-- Header -->
+        <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+            {{ isEditing ? 'Modifier Convention' : 'Nouvelle Convention' }}
+          </h3>
+        </div>
+
+        <!-- Form -->
+        <form (ngSubmit)="saveConvention()" class="px-6 py-4">
+          <div class="space-y-4">
+            <!-- Reference -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Référence *
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="formData.reference"
+                name="reference"
+                required
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                placeholder="REF-XXXX"
+              />
+            </div>
+
+            <!-- Libellé -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Libellé *
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="formData.libelle"
+                name="libelle"
+                required
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Libellé de la convention"
+              />
+            </div>
+
+            <!-- Dates -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date Début *
+                </label>
+                <input
+                  type="date"
+                  [(ngModel)]="formData.dateDebut"
+                  name="dateDebut"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date Fin
+                </label>
+                <input
+                  type="date"
+                  [(ngModel)]="formData.dateFin"
+                  name="dateFin"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date Signature
+                </label>
+                <input
+                  type="date"
+                  [(ngModel)]="formData.dateSignature"
+                  name="dateSignature"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <!-- Structure and Gouvernorat -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Structure *
+                </label>
+                <select
+  [(ngModel)]="formData.structureId"
+  name="structureId"
+  required
+  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+>
+  <option value="">Sélectionner une structure</option>
+  <option *ngFor="let structure of structures" [value]="structure.id">
+    {{ structure.code }} - {{ structure.name }}
+  </option>
+</select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Gouvernorat *
+                </label>
+                <select
+  [(ngModel)]="formData.gouvernoratId"
+  name="gouvernoratId"
+  required
+  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+>
+  <option value="">Sélectionner un gouvernorat</option>
+  <option *ngFor="let gouvernorat of gouvernorats" [value]="gouvernorat.id">
+    {{ gouvernorat.code }} - {{ gouvernorat.name }}
+  </option>
+</select>
+              </div>
+            </div>
+
+            <!-- Montant and Périodicité -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Montant Total (TND)
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="formData.montantTotal"
+                  name="montantTotal"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Périodicité
+                </label>
+                <select
+                  [(ngModel)]="formData.periodicite"
+                  name="periodicite"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">Sélectionner</option>
+                  <option *ngFor="let periodicite of periodicites" [value]="periodicite">
+                    {{ periodicite }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- État and Modalités -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  État
+                </label>
+                <select
+                  [(ngModel)]="formData.etat"
+                  name="etat"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option *ngFor="let etat of etats" [value]="etat">
+                    {{ getEtatLabel(etat) }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Modalités Paiement -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Modalités de Paiement
+              </label>
+              <textarea
+                [(ngModel)]="formData.modalitesPaiement"
+                name="modalitesPaiement"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Détails des modalités de paiement..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Form Error -->
+          <div *ngIf="errorMessage" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-sm text-red-600">{{ errorMessage }}</p>
+          </div>
+
+          <!-- Actions -->
+          <div class="mt-6 flex justify-end space-x-3">
+            <button
+              type="button"
+              (click)="closeModal()"
+              class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="loading"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span *ngIf="loading">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Enregistrement...
+              </span>
+              <span *ngIf="!loading">
+                {{ isEditing ? 'Mettre à jour' : 'Créer' }}
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

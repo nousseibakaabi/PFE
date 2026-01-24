@@ -12,6 +12,8 @@ import { ForgetPasswordComponent } from './components/forget-password/forget-pas
 import { AdminUsersComponent } from './components/admin-users/admin-users.component';
 import { AdminNomenclaturesComponent } from './components/admin-nomenclatures/admin-nomenclatures.component';
 import { AdminComponent } from './components/admin/admin.component';
+import { FactureComponent } from './components/facture/facture.component';
+import { ConventionComponent } from './components/convention/convention.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -34,11 +36,24 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_ADMIN'] } 
   },
+
   { 
     path: 'admin/nomenclatures', 
     component: AdminNomenclaturesComponent, 
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_ADMIN'] } 
+  },
+    { 
+    path: 'conventions', 
+    component: ConventionComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_ADMIN', 'ROLE_COMMERCIAL_METIER'] } 
+  },
+  { 
+    path: 'factures', 
+    component: FactureComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_ADMIN', 'ROLE_COMMERCIAL_METIER'] } 
   },
   { path: '**', component: NotFoundComponent } // Keep this last
 ];

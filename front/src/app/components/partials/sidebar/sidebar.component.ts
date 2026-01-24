@@ -52,6 +52,8 @@ export class SidebarComponent implements OnInit {
     { path: 'admin/nomenclatures', page: 'Nomenclatures' },
     { path: 'admin/users', page: 'Users' },
     { path: 'admin', page: 'admin' },
+     { path: 'conventions', page: 'conventions' },
+  { path: 'factures', page: 'factures' },
     { path: 'calendar', page: 'calendar' },
     { path: 'profile', page: 'profile' },
     { path: 'form-elements', page: 'formElements' },
@@ -79,6 +81,10 @@ export class SidebarComponent implements OnInit {
   isAdminUser(): boolean {
     return this.authService.isAdmin();
   }
+
+isCommercialUser(): boolean {
+  return this.authService.isCommercial() || this.authService.isAdmin();
+}
 
   // Add logout method
   logout(): void {

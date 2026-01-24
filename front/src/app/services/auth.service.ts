@@ -205,6 +205,7 @@ login(loginRequest: LoginRequest): Observable<AuthResponse> {
     return user.roles.includes(role);
   }
 
+
   isAdmin(): boolean {
     return this.hasRole('ROLE_ADMIN');
   }
