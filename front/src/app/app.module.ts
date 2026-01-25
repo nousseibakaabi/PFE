@@ -28,6 +28,10 @@ import { AdminComponent } from './components/admin/admin.component';
 import { FactureComponent } from './components/facture/facture.component';
 import { ConventionComponent } from './components/convention/convention.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { CommercialComponent } from './components/commercial/commercial.component';
+import { DecideurComponent } from './components/decideur/decideur.component';
+import { ChefProjetComponent } from './components/chef-projet/chef-projet.component';
+import { StatsService } from './services/stats.service';
 
 @NgModule({
   declarations: [
@@ -51,6 +55,9 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     AdminComponent,
     FactureComponent,
     ConventionComponent,
+    CommercialComponent,
+    DecideurComponent,
+    ChefProjetComponent,
   ],
   imports: [
     BrowserModule,
@@ -58,7 +65,8 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     FormsModule, 
     RouterModule,
     HttpClientModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    
   ],
   providers: [
     LayoutService,
@@ -68,6 +76,7 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
       useClass: AuthInterceptor,
       multi: true
     },
+    StatsService
   ],
   bootstrap: [AppComponent]
 })

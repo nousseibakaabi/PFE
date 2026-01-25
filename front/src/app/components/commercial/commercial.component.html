@@ -1,0 +1,231 @@
+<div class="commercial-dashboard">
+  <div class="dashboard-header">
+    <h1><i class="fas fa-chart-bar"></i> Tableau de Bord Commercial</h1>
+    <button (click)="refreshStats()" class="btn btn-primary">
+      <i class="fas fa-sync-alt"></i> Actualiser
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-spinner">
+    <i class="fas fa-spinner fa-spin"></i> Chargement des statistiques...
+  </div>
+
+  <div *ngIf="!isLoading">
+    <!-- Quick Stats -->
+    <div class="stats-summary">
+      <div class="summary-card">
+        <div class="card-icon bg-primary">
+          <i class="fas fa-file-contract"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{summaryStats.totalConventions || 0}}</h3>
+          <p>Conventions Total</p>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="card-icon bg-success">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{summaryStats.conventionsToday || 0}}</h3>
+          <p>Nouvelles Aujourd'hui</p>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="card-icon bg-info">
+          <i class="fas fa-receipt"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{summaryStats.totalFactures || 0}}</h3>
+          <p>Factures Total</p>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="card-icon bg-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="card-content">
+          <h3>{{summaryStats.dueToday || 0}}</h3>
+          <p>Échéances Aujourd'hui</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Convention Statistics -->
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-chart-pie"></i> Statut des Conventions</h3>
+          </div>
+          <div class="card-body">
+            <canvas #conventionStatusChart></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-chart-line"></i> Évolution Mensuelle</h3>
+          </div>
+          <div class="card-body">
+            <canvas #monthlyConventionsChart></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Facture Statistics -->
+    <div class="row mt-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-credit-card"></i> Statut des Paiements</h3>
+          </div>
+          <div class="card-body">
+            <canvas #paymentStatusChart></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-money-check-alt"></i> Méthodes de Paiement</h3>
+          </div>
+          <div class="card-body">
+            <canvas #paymentMethodChart></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Structure Type Chart -->
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-building"></i> Conventions par Type de Structure</h3>
+          </div>
+          <div class="card-body">
+            <canvas #structureTypeChart></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Overview -->
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-chart-area"></i> Revenus par Mois</h3>
+          </div>
+          <div class="card-body">
+            <canvas #revenueByMonthChart></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Tables -->
+    <div class="row mt-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-exclamation-circle"></i> Factures en Retard</h3>
+            <span class="badge badge-danger">{{getOverdueInvoices().length}}</span>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Numéro</th>
+                  <th>Convention</th>
+                  <th>Montant</th>
+                  <th>Jours Retard</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let invoice of getOverdueInvoices()">
+                  <td>{{invoice.numero}}</td>
+                  <td>{{invoice.convention}}</td>
+                  <td>{{formatCurrency(invoice.montant)}}</td>
+                  <td><span class="badge badge-danger">{{invoice.joursRetard}} jours</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-trophy"></i> Top Structures</h3>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Structure</th>
+                  <th>Type</th>
+                  <th>Conventions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let structure of getTopStructures()">
+                  <td>{{structure.structure}}</td>
+                  <td><span class="badge badge-info">{{structure.type || 'N/A'}}</span></td>
+                  <td><strong>{{structure.count}}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Insights -->
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-lightbulb"></i> Insights</h3>
+          </div>
+          <div class="card-body">
+            <div class="insights-grid">
+              <div class="insight-item" *ngIf="factureStats.overdueDetails?.length > 0">
+                <i class="fas fa-exclamation-triangle text-danger"></i>
+                <div>
+                  <h4>Attention: Factures en Retard</h4>
+                  <p>{{factureStats.overdueDetails.length}} factures nécessitent un suivi immédiat</p>
+                </div>
+              </div>
+              
+              <div class="insight-item" *ngIf="conventionStats.topStructures?.length > 0">
+                <i class="fas fa-star text-warning"></i>
+                <div>
+                  <h4>Top Partenaire</h4>
+                  <p>{{conventionStats.topStructures[0]?.structure}} avec {{conventionStats.topStructures[0]?.count}} conventions</p>
+                </div>
+              </div>
+              
+              <div class="insight-item" *ngIf="summaryStats.conventionsToday > 0">
+                <i class="fas fa-rocket text-success"></i>
+                <div>
+                  <h4>Bonne Performance</h4>
+                  <p>{{summaryStats.conventionsToday}} nouvelles conventions aujourd'hui</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

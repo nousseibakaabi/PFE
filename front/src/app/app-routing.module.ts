@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { ProfileComponent } from './components/profile/profile.component';
@@ -14,12 +13,14 @@ import { AdminNomenclaturesComponent } from './components/admin-nomenclatures/ad
 import { AdminComponent } from './components/admin/admin.component';
 import { FactureComponent } from './components/facture/facture.component';
 import { ConventionComponent } from './components/convention/convention.component';
+import { ChefProjetComponent } from './components/chef-projet/chef-projet.component';
+import { CommercialComponent } from './components/commercial/commercial.component';
+import { DecideurComponent } from './components/decideur/decideur.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'forget-password', component: ForgetPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'email-sent', component: EmailSendComponent },
@@ -30,6 +31,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_ADMIN'] } 
   },
+
   { 
     path: 'admin/users', 
     component: AdminUsersComponent, 
@@ -55,6 +57,26 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_ADMIN', 'ROLE_COMMERCIAL_METIER'] } 
   },
+
+     { 
+    path: 'chef', 
+    component: ChefProjetComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_CHEF_PROJET'] } 
+  },
+     { 
+    path: 'commercial', 
+    component: CommercialComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_COMMERCIAL_METIER'] } 
+  },
+  { 
+    path: 'decideur', 
+    component: DecideurComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_DECIDEUR'] } 
+  },
+
   { path: '**', component: NotFoundComponent } // Keep this last
 ];
 

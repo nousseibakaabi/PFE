@@ -39,7 +39,7 @@ export class AppComponent implements OnInit {
   
   // Show layout (header/sidebar) only on these routes
   showLayout(): boolean {
-    const layoutRoutes = ['/dashboard', '/profile','/admin','/conventions','/factures'];
+    const layoutRoutes = ['/profile','/admin','/conventions','/factures','/commercial','/decideur','/chef'];
     return layoutRoutes.some(route => this.currentRoute.includes(route));
   }
 }

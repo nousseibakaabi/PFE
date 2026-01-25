@@ -11,6 +11,7 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^16.2.0",
+    "@angular/cdk": "^16.2.12",
     "@angular/common": "^16.2.0",
     "@angular/compiler": "^16.2.0",
     "@angular/core": "^16.2.0",
@@ -26,7 +27,7 @@
     "@ngx-translate/core": "^17.0.0",
     "@ngx-translate/http-loader": "^17.0.0",
     "apexcharts": "^3.54.1",
-    "chart.js": "^4.5.1",
+    "chart.js": "^3.9.1",
     "dropzone": "^6.0.0-beta.2",
     "flatpickr": "^4.6.13",
     "gsap": "^3.14.2",

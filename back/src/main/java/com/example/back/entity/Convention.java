@@ -1,5 +1,6 @@
 package com.example.back.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,6 +17,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Add this
 public class Convention {
 
     @Id
@@ -39,10 +41,12 @@ public class Convention {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "structure_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Add this
     private Structure structure; // Structure partenaire
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "zone_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Add this
     private ZoneGeographique gouvernorat; // Gouvernorat
 
     @Column(name = "montant_total", precision = 10, scale = 2)

@@ -44,7 +44,7 @@ export class SidebarComponent implements OnInit {
     }
   }
 
- updateCurrentPage(): void {
+updateCurrentPage(): void {
   const url = this.router.url;
   
   // Définit un mapping URL -> currentPage
@@ -52,38 +52,35 @@ export class SidebarComponent implements OnInit {
     { path: 'admin/nomenclatures', page: 'Nomenclatures' },
     { path: 'admin/users', page: 'Users' },
     { path: 'admin', page: 'admin' },
-     { path: 'conventions', page: 'conventions' },
-  { path: 'factures', page: 'factures' },
-    { path: 'calendar', page: 'calendar' },
+    { path: 'conventions', page: 'conventions' },
+    { path: 'factures', page: 'factures' },
+    { path: 'commercial', page: 'commercial' },
+    { path: 'decideur', page: 'decideur' },
+    { path: 'chef', page: 'chefProjet' },
     { path: 'profile', page: 'profile' },
-    { path: 'form-elements', page: 'formElements' },
-    { path: 'basic-tables', page: 'basicTables' },
-    { path: 'blank', page: 'blank' },
-    { path: '404', page: 'page404' },
-    { path: 'line-chart', page: 'lineChart' },
-    { path: 'bar-chart', page: 'barChart' },
-    { path: 'alerts', page: 'alerts' },
-    { path: 'avatars', page: 'avatars' },
-    { path: 'badge', page: 'badge' },
-    { path: 'buttons', page: 'buttons' },
-    { path: 'images', page: 'images' },
-    { path: 'videos', page: 'videos' },
-    { path: 'signin', page: 'signin' },
-    { path: 'signup', page: 'signup' }
   ];
   
-  // Cherche le premier match
+  // Cherche le premier match (exact or partial)
   const matchedRoute = routeMapping.find(route => url.includes(route.path));
   this.currentPage = matchedRoute ? matchedRoute.page : 'ecommerce';
+  
+  console.log('Current URL:', url, 'Current Page:', this.currentPage); // Debug log
 }
 
-  // Add this method to check if user is admin
-  isAdminUser(): boolean {
-    return this.authService.isAdmin();
-  }
+isAdminUser(): boolean {
+  return this.authService.isAdmin();
+}
 
 isCommercialUser(): boolean {
-  return this.authService.isCommercial() || this.authService.isAdmin();
+  return this.authService.isCommercial() ;
+}
+
+isDecideurUser(): boolean {
+  return this.authService.isDecideur() ;
+}
+
+isChefProjetUser(): boolean {
+  return this.authService.isChefProjet() ;
 }
 
   // Add logout method

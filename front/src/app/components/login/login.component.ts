@@ -112,7 +112,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     gsap.registerPlugin(MorphSVGPlugin);
     
     if (this.authService.currentUserValue) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/']);
     }
   }
 
@@ -152,7 +152,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       password: ['', Validators.required]
     });
 
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
     
     // Check dark mode on initialization
     this.checkDarkMode();
@@ -647,7 +647,15 @@ toggleDarkMode(): void {
       const user = this.authService.currentUserValue;
       if (user && this.authService.isAdmin()) {
         this.router.navigate(['/admin']);
-      } else {
+      } else if (user && this.authService.isCommercial()){
+        this.router.navigate(['/commercial']);
+      } else if (user && this.authService.isChefProjet()){
+        this.router.navigate(['/chef']);
+      } else if (user && this.authService.isDecideur()){
+        this.router.navigate(['/decideur']);
+      }
+      
+      else {
         this.router.navigate([this.returnUrl]);
       }
     },

@@ -41,6 +41,7 @@ public class NomenclatureController {
     // ==================== APPLICATIONS ====================
 
     @GetMapping("/applications")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
     public ResponseEntity<?> getAllApplications() {
         try {
             List<Application> applications = applicationRepository.findAll();
@@ -55,6 +56,7 @@ public class NomenclatureController {
     }
 
     @GetMapping("/applications/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
     public ResponseEntity<?> getApplicationById(@PathVariable Long id) {
         try {
             Optional<Application> application = applicationRepository.findById(id);
@@ -164,6 +166,7 @@ public class NomenclatureController {
     // ==================== ZONES GÉOGRAPHIQUES ====================
 
     @GetMapping("/zones")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
     public ResponseEntity<?> getAllZones() {
         try {
             List<ZoneGeographique> zones = zoneGeographiqueRepository.findAll();
@@ -178,6 +181,7 @@ public class NomenclatureController {
     }
 
     @GetMapping("/zones/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
     public ResponseEntity<?> getZoneById(@PathVariable Long id) {
         try {
             Optional<ZoneGeographique> zone = zoneGeographiqueRepository.findById(id);
@@ -285,6 +289,7 @@ public class NomenclatureController {
     // ==================== STRUCTURES ====================
 
     @GetMapping("/structures")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
     public ResponseEntity<?> getAllStructures() {
         try {
             List<Structure> structures = structureRepository.findAll();
@@ -299,6 +304,7 @@ public class NomenclatureController {
     }
 
     @GetMapping("/structures/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
     public ResponseEntity<?> getStructureById(@PathVariable Long id) {
         try {
             Optional<Structure> structure = structureRepository.findById(id);
