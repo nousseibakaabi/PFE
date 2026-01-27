@@ -12,5 +12,5 @@ COPY --from=build /app/target/*.jar app.jar
 # Just set environment variable - directory will be created by Java code
 ENV FILE_UPLOAD_DIR=/app/uploads
 
-EXPOSE 8081
+EXPOSE 8084
 ENTRYPOINT ["java", "-jar", "app.jar"]

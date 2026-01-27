@@ -105,7 +105,7 @@ public class AvatarService {
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
-    @Value("${server.url:http://localhost:8081}")
+    @Value("${server.url:http://localhost:8084}")
     private String serverUrl;
 
     @PostConstruct

@@ -176,7 +176,7 @@ public class ProfileController {
                 if (Files.exists(filePath)) {
                     try {
                         debugInfo.put("fileSize", Files.size(filePath));
-                        debugInfo.put("fileUrl", "http://localhost:8081" + user.getProfileImage());
+                        debugInfo.put("fileUrl", "http://localhost:8084" + user.getProfileImage());
                     } catch (IOException e) {
                         debugInfo.put("fileSizeError", e.getMessage());
                     }
