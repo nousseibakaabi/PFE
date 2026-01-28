@@ -4,8 +4,11 @@ import com.example.back.entity.Convention;
 import com.example.back.entity.Facture;
 import com.example.back.payload.request.FactureRequest;
 import com.example.back.payload.request.PaiementRequest;
+import com.example.back.payload.response.FactureResponse;
 import com.example.back.repository.ConventionRepository;
 import com.example.back.repository.FactureRepository;
+import com.example.back.service.ConventionService;
+import com.example.back.service.mapper.FactureMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +16,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/factures")
-@PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
+@PreAuthorize("hasAnyRole('COMMERCIAL_METIER')")
 @Slf4j
 public class FactureController {
 
@@ -31,6 +36,12 @@ public class FactureController {
     @Autowired
     private ConventionRepository conventionRepository;
 
+    @Autowired
+    private ConventionService conventionService;
+
+    @Autowired
+    private FactureMapper factureMapper;
+
     // CRUD Operations
 
     @GetMapping
@@ -38,19 +49,26 @@ public class FactureController {
         try {
             List<Facture> factures = factureRepository.findAll();
 
-            // Add color coding for overdue invoices
+            // Update status for overdue invoices
             for (Facture facture : factures) {
-                if (facture.isEnRetard()) {
+                if (facture.isEnRetard() && "NON_PAYE".equals(facture.getStatutPaiement())) {
                     facture.setStatutPaiement("EN_RETARD");
+                    factureRepository.save(facture);
                 }
             }
 
+            // Convert to DTOs
+            List<FactureResponse> factureResponses = factures.stream()
+                    .map(factureMapper::toResponse)
+                    .collect(Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", factures);
-            response.put("count", factures.size());
+            response.put("data", factureResponses);
+            response.put("count", factureResponses.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.error("Error fetching invoices: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch invoices"));
         }
     }
@@ -70,17 +88,20 @@ public class FactureController {
                 factureRepository.save(f);
             }
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", f);
-            return ResponseEntity.ok(response);
+            FactureResponse response = factureMapper.toResponse(f);
+
+            Map<String, Object> apiResponse = new HashMap<>();
+            apiResponse.put("success", true);
+            apiResponse.put("data", response);
+            return ResponseEntity.ok(apiResponse);
         } catch (Exception e) {
+            log.error("Error fetching invoice: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch invoice"));
         }
     }
 
     @PostMapping("/generate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
+    @PreAuthorize("hasAnyRole('COMMERCIAL_METIER')")
     public ResponseEntity<?> generateFacture(@Valid @RequestBody FactureRequest request) {
         try {
             Optional<Convention> convention = conventionRepository.findById(request.getConventionId());
@@ -101,34 +122,39 @@ public class FactureController {
                     request.getDateFacturation() : LocalDate.now());
             facture.setDateEcheance(request.getDateEcheance());
             facture.setMontantHT(request.getMontantHT());
-            facture.setTva(request.getTva() != null ? request.getTva() : facture.getTva());
+            facture.setTva(request.getTva() != null ? request.getTva() : new BigDecimal("19.00"));
             facture.setNotes(request.getNotes());
+            facture.setStatutPaiement("NON_PAYE");
 
             // Calculate TTC
             if (request.getMontantHT() != null && facture.getTva() != null) {
-                facture.setMontantTTC(
-                        request.getMontantHT().add(
-                                request.getMontantHT().multiply(facture.getTva())
-                                        .divide(java.math.BigDecimal.valueOf(100))
-                        )
-                );
+                BigDecimal tvaMontant = request.getMontantHT()
+                        .multiply(facture.getTva())
+                        .divide(new BigDecimal("100"));
+                facture.setMontantTTC(request.getMontantHT().add(tvaMontant));
             }
 
             Facture saved = factureRepository.save(facture);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Invoice generated successfully");
-            response.put("data", saved);
-            return ResponseEntity.ok(response);
+            // Update convention status
+            conventionService.updateConventionStatusRealTime(saved.getConvention().getId());
+
+            FactureResponse response = factureMapper.toResponse(saved);
+
+            Map<String, Object> apiResponse = new HashMap<>();
+            apiResponse.put("success", true);
+            apiResponse.put("message", "Invoice generated successfully");
+            apiResponse.put("data", response);
+            return ResponseEntity.ok(apiResponse);
         } catch (Exception e) {
             log.error("Error generating invoice: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to generate invoice"));
         }
     }
 
+
     @PostMapping("/payer")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMPTABLE')")
+    @PreAuthorize("hasAnyRole('COMMERCIAL_METIER')")
     public ResponseEntity<?> registerPaiement(@Valid @RequestBody PaiementRequest request) {
         try {
             Optional<Facture> factureOpt = factureRepository.findById(request.getFactureId());
@@ -141,18 +167,22 @@ public class FactureController {
 
             // Update payment information
             facture.setStatutPaiement("PAYE");
-            facture.setModePaiement(request.getModePaiement());
             facture.setReferencePaiement(request.getReferencePaiement());
             facture.setDatePaiement(request.getDatePaiement() != null ?
                     request.getDatePaiement() : LocalDate.now());
 
             Facture updated = factureRepository.save(facture);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Payment registered successfully");
-            response.put("data", updated);
-            return ResponseEntity.ok(response);
+            // IMPORTANT: Update convention status immediately
+            conventionService.updateConventionStatusRealTime(facture.getConvention().getId());
+
+            FactureResponse response = factureMapper.toResponse(updated);
+
+            Map<String, Object> apiResponse = new HashMap<>();
+            apiResponse.put("success", true);
+            apiResponse.put("message", "Payment registered successfully");
+            apiResponse.put("data", response);
+            return ResponseEntity.ok(apiResponse);
         } catch (Exception e) {
             log.error("Error registering payment: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to register payment"));
@@ -171,12 +201,18 @@ public class FactureController {
                 }
             }
 
+            // Convert to DTOs
+            List<FactureResponse> factureResponses = factures.stream()
+                    .map(factureMapper::toResponse)
+                    .collect(Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", factures);
-            response.put("count", factures.size());
+            response.put("data", factureResponses);
+            response.put("count", factureResponses.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.error("Error fetching invoices by convention: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch invoices"));
         }
     }
@@ -186,12 +222,18 @@ public class FactureController {
         try {
             List<Facture> factures = factureRepository.findByStatutPaiement(statut);
 
+            // Convert to DTOs
+            List<FactureResponse> factureResponses = factures.stream()
+                    .map(factureMapper::toResponse)
+                    .collect(Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", factures);
-            response.put("count", factures.size());
+            response.put("data", factureResponses);
+            response.put("count", factureResponses.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.error("Error fetching invoices by status: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch invoices"));
         }
     }
@@ -201,12 +243,18 @@ public class FactureController {
         try {
             List<Facture> factures = factureRepository.findFacturesEnRetard(LocalDate.now());
 
+            // Convert to DTOs
+            List<FactureResponse> factureResponses = factures.stream()
+                    .map(factureMapper::toResponse)
+                    .collect(Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", factures);
-            response.put("count", factures.size());
+            response.put("data", factureResponses);
+            response.put("count", factureResponses.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.error("Error fetching overdue invoices: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch overdue invoices"));
         }
     }
@@ -230,7 +278,162 @@ public class FactureController {
             response.put("data", stats);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.error("Error fetching invoice statistics: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch stats"));
+        }
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('COMMERCIAL_METIER')")
+    public ResponseEntity<?> updateFacture(@PathVariable Long id,
+                                           @Valid @RequestBody FactureRequest request) {
+        try {
+            Optional<Facture> factureOpt = factureRepository.findById(id);
+            if (factureOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Facture facture = factureOpt.get();
+
+            // Update fields
+            if (request.getDateFacturation() != null) {
+                facture.setDateFacturation(request.getDateFacturation());
+            }
+            if (request.getDateEcheance() != null) {
+                facture.setDateEcheance(request.getDateEcheance());
+            }
+            if (request.getMontantHT() != null) {
+                facture.setMontantHT(request.getMontantHT());
+                // Recalculate TTC if needed
+                if (facture.getTva() != null) {
+                    BigDecimal tvaMontant = request.getMontantHT()
+                            .multiply(facture.getTva())
+                            .divide(new BigDecimal("100"));
+                    facture.setMontantTTC(request.getMontantHT().add(tvaMontant));
+                }
+            }
+            if (request.getTva() != null) {
+                facture.setTva(request.getTva());
+                // Recalculate TTC if needed
+                if (facture.getMontantHT() != null) {
+                    BigDecimal tvaMontant = facture.getMontantHT()
+                            .multiply(request.getTva())
+                            .divide(new BigDecimal("100"));
+                    facture.setMontantTTC(facture.getMontantHT().add(tvaMontant));
+                }
+            }
+            if (request.getNotes() != null) {
+                facture.setNotes(request.getNotes());
+            }
+
+            Facture updated = factureRepository.save(facture);
+
+            // Update convention status if needed
+            conventionService.updateConventionStatusRealTime(updated.getConvention().getId());
+
+            FactureResponse response = factureMapper.toResponse(updated);
+
+            Map<String, Object> apiResponse = new HashMap<>();
+            apiResponse.put("success", true);
+            apiResponse.put("message", "Invoice updated successfully");
+            apiResponse.put("data", response);
+            return ResponseEntity.ok(apiResponse);
+        } catch (Exception e) {
+            log.error("Error updating invoice: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to update invoice"));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('COMMERCIAL_METIER')")
+    public ResponseEntity<?> deleteFacture(@PathVariable Long id) {
+        try {
+            Optional<Facture> factureOpt = factureRepository.findById(id);
+            if (factureOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Facture facture = factureOpt.get();
+
+            // Save convention ID before deletion for status update
+            Long conventionId = facture.getConvention().getId();
+
+            factureRepository.delete(facture);
+
+            // Update convention status
+            conventionService.updateConventionStatusRealTime(conventionId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Invoice deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error deleting invoice: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to delete invoice"));
+        }
+    }
+
+    @GetMapping("/recent")
+    public ResponseEntity<?> getRecentFactures() {
+        try {
+            // Get invoices from the last 30 days
+            LocalDate thirtyDaysAgo = LocalDate.now().minusDays(30);
+
+            // This query needs to be implemented in your repository
+            // For now, we'll get all and filter in memory (not efficient for large datasets)
+            List<Facture> allFactures = factureRepository.findAll();
+            List<Facture> recentFactures = allFactures.stream()
+                    .filter(f -> f.getDateFacturation() != null &&
+                            !f.getDateFacturation().isBefore(thirtyDaysAgo))
+                    .collect(Collectors.toList());
+
+            // Convert to DTOs
+            List<FactureResponse> factureResponses = recentFactures.stream()
+                    .map(factureMapper::toResponse)
+                    .collect(Collectors.toList());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", factureResponses);
+            response.put("count", factureResponses.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error fetching recent invoices: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch recent invoices"));
+        }
+    }
+
+    @GetMapping("/montant-total")
+    public ResponseEntity<?> getMontantTotal() {
+        try {
+            // Calculate total amount for paid invoices
+            List<Facture> facturesPayees = factureRepository.findByStatutPaiement("PAYE");
+
+            BigDecimal totalMontant = facturesPayees.stream()
+                    .map(Facture::getMontantTTC)
+                    .filter(amount -> amount != null)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            // Calculate total amount for unpaid invoices
+            List<Facture> facturesNonPayees = factureRepository.findByStatutPaiement("NON_PAYE");
+
+            BigDecimal totalMontantNonPaye = facturesNonPayees.stream()
+                    .map(Facture::getMontantTTC)
+                    .filter(amount -> amount != null)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalPaye", totalMontant);
+            stats.put("totalNonPaye", totalMontantNonPaye);
+            stats.put("totalGeneral", totalMontant.add(totalMontantNonPaye));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", stats);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error calculating total amounts: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to calculate total amounts"));
         }
     }
 

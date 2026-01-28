@@ -150,7 +150,14 @@ public class NomenclatureController {
                 return ResponseEntity.notFound().build();
             }
 
-            // TODO: Check if application is used in conventions before deleting
+            // Check if application is used in conventions
+            Long conventionCount = conventionRepository.countByApplicationId(id);
+            if (conventionCount > 0) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse(
+                                String.format("Cannot delete application. It is used in %d convention(s).",
+                                        conventionCount)));
+            }
 
             applicationRepository.deleteById(id);
 
@@ -273,7 +280,14 @@ public class NomenclatureController {
                 return ResponseEntity.notFound().build();
             }
 
-            // TODO: Check if zone is used in conventions before deleting
+            // Check if zone is used in conventions
+            Long conventionCount = conventionRepository.countByZoneId(id);
+            if (conventionCount > 0) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse(
+                                String.format("Cannot delete zone. It is used in %d convention(s).",
+                                        conventionCount)));
+            }
 
             zoneGeographiqueRepository.deleteById(id);
 
@@ -404,7 +418,15 @@ public class NomenclatureController {
                 return ResponseEntity.notFound().build();
             }
 
-            // TODO: Check if structure is used in conventions before deleting
+            // Check if structure is used in conventions (as interne or externe)
+            Long totalCount = conventionRepository.countByStructureInterneIdOrStructureExterneId(id);
+
+            if (totalCount > 0) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse(
+                                String.format("Cannot delete structure. It is used in %d convention(s).",
+                                        totalCount)));
+            }
 
             structureRepository.deleteById(id);
 
@@ -454,7 +476,15 @@ public class NomenclatureController {
             // Get convention stats
             long conventionsCount = conventionRepository.count();
             long conventionsEnCours = conventionRepository.findByEtat("EN_COURS").size();
-            long conventionsExpirees = conventionRepository.findConventionsExpirees(LocalDate.now()).size();
+
+            // Find expired conventions manually using streams
+            long conventionsExpirees = conventionRepository.findAll().stream()
+                    .filter(c -> c.getDateFin() != null &&
+                            c.getDateFin().isBefore(LocalDate.now()) &&
+                            !"TERMINE".equals(c.getEtat()) &&
+                            !"ARCHIVE".equals(c.getEtat()) &&
+                            !Boolean.TRUE.equals(c.getArchived()))
+                    .count();
 
             // Get invoice stats
             long facturesCount = factureRepository.count();

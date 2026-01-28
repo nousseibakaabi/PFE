@@ -2,39 +2,42 @@ package com.example.back.payload.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
 public class ConventionRequest {
 
-    @NotBlank(message = "La référence est obligatoire")
-    private String reference;
+    @NotBlank(message = "Reference convention is required")
+    private String referenceConvention;
 
-    @NotBlank(message = "Le libellé est obligatoire")
+    private String referenceERP;
+
+    @NotBlank(message = "Libelle is required")
     private String libelle;
 
+    @NotNull(message = "Start date is required")
     private LocalDate dateDebut;
 
     private LocalDate dateFin;
-
     private LocalDate dateSignature;
 
-    @NotNull(message = "La structure est obligatoire")
-    private Long structureId;
+    @NotNull(message = "Internal structure is required")
+    private Long structureInterneId;
 
-    @NotNull(message = "Le gouvernorat est obligatoire")
-    private Long gouvernoratId;
+    @NotNull(message = "External structure is required")
+    private Long structureExterneId;
+
+    @NotNull(message = "Zone is required")
+    private Long zoneId;
+
+    @NotNull(message = "Application is required")
+    private Long applicationId;
 
     private BigDecimal montantTotal;
 
-    private String modalitesPaiement;
+    private String periodicite; // MENSUEL, TRIMESTRIEL, SEMESTRIEL, ANNUEL
 
-    private String periodicite;
-
-    private String etat = "EN_COURS";
+    // No etat field - it will be set automatically
 }

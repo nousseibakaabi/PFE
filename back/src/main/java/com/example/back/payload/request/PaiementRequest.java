@@ -14,8 +14,6 @@ public class PaiementRequest {
     @NotNull(message = "La facture ID est obligatoire")
     private Long factureId;
 
-    @NotBlank(message = "Le mode de paiement est obligatoire")
-    private String modePaiement;
 
     private String referencePaiement;
 

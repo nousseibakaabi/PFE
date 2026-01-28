@@ -218,9 +218,6 @@
           </li>
 
 
-          <!-- Add this after the Dashboard menu item in the Commercial Metier section -->
-
-
 
 <!-- Conventions -->
 <li>
@@ -289,6 +286,42 @@
   </a>
 </li>
 
+
+<li>
+        <a
+          routerLink="/conventions/archives"
+          (click)="toggleSelected('ArchivedConventions')"
+          class="menu-item group"
+          [class]="currentPage === 'conventions/archives' ? 'menu-item-active' : 'menu-item-inactive'"
+        >
+          <svg
+            [class]="currentPage === 'conventions/archives' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+         stroke="currentColor" 
+  stroke-width="2"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+              fill="none"
+            />
+          </svg>
+
+
+
+ 
+          <span
+            class="menu-item-text"
+            [class]="isSidebarOpen ? 'lg:hidden' : ''"
+          >
+            {{ ' Archive' | translate }}
+          </span>
+        </a>
+      </li>
           
 
          

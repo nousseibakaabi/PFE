@@ -52,6 +52,7 @@ updateCurrentPage(): void {
     { path: 'admin/nomenclatures', page: 'Nomenclatures' },
     { path: 'admin/users', page: 'Users' },
     { path: 'admin', page: 'admin' },
+    { path: 'conventions/archives', page: 'conventions/archives' }, 
     { path: 'conventions', page: 'conventions' },
     { path: 'factures', page: 'factures' },
     { path: 'commercial', page: 'commercial' },

@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -89,12 +90,19 @@ public class StatsController {
 
             // Status Distribution
             List<Map<String, Object>> statusDistribution = new ArrayList<>();
-            List<String> etats = Arrays.asList("EN_COURS", "TERMINE", "RESILIE", "EN_ATTENTE", "EXPIRE");
+            List<String> etats = Arrays.asList(null, "EN_COURS", "TERMINE", "RESILIE", "EN_RETARD", "ARCHIVE");
 
             for (String etat : etats) {
-                long count = conventionRepository.findByEtat(etat).size();
+                long count;
+                if (etat == null) {
+                    count = conventionRepository.findAll().stream()
+                            .filter(c -> c.getEtat() == null)
+                            .count();
+                } else {
+                    count = conventionRepository.findByEtat(etat).size();
+                }
                 Map<String, Object> status = new HashMap<>();
-                status.put("name", etat);
+                status.put("name", etat != null ? etat : "NO_STATUS");
                 status.put("count", count);
                 statusDistribution.add(status);
             }
@@ -118,11 +126,11 @@ public class StatsController {
             }
             stats.put("monthlyConventions", monthlyConventions);
 
-            // By Structure Type
+            // By Structure Type (using interne structure)
             Map<String, Long> byStructureType = conventionRepository.findAll().stream()
-                    .filter(c -> c.getStructure() != null && c.getStructure().getTypeStructure() != null)
+                    .filter(c -> c.getStructureInterne() != null && c.getStructureInterne().getTypeStructure() != null)
                     .collect(Collectors.groupingBy(
-                            c -> c.getStructure().getTypeStructure(),
+                            c -> c.getStructureInterne().getTypeStructure(),
                             Collectors.counting()
                     ));
             stats.put("byStructureType", byStructureType);
@@ -130,18 +138,18 @@ public class StatsController {
             // Amount by Status
             Map<String, BigDecimal> amountByStatus = new HashMap<>();
             for (Convention convention : conventionRepository.findAll()) {
-                String etat = convention.getEtat();
+                String etat = convention.getEtat() != null ? convention.getEtat() : "NO_STATUS";
                 BigDecimal montant = convention.getMontantTotal() != null ? convention.getMontantTotal() : BigDecimal.ZERO;
 
                 amountByStatus.merge(etat, montant, BigDecimal::add);
             }
             stats.put("amountByStatus", amountByStatus);
 
-            // Top Structures by Convention Count
+            // Top Structures (interne) by Convention Count
             List<Map<String, Object>> topStructures = conventionRepository.findAll().stream()
-                    .filter(c -> c.getStructure() != null)
+                    .filter(c -> c.getStructureInterne() != null)
                     .collect(Collectors.groupingBy(
-                            c -> c.getStructure(),
+                            Convention::getStructureInterne,
                             Collectors.counting()
                     ))
                     .entrySet().stream()
@@ -155,6 +163,24 @@ public class StatsController {
                     })
                     .collect(Collectors.toList());
             stats.put("topStructures", topStructures);
+
+            // By Zone
+            Map<String, Long> byZone = conventionRepository.findAll().stream()
+                    .filter(c -> c.getZone() != null)
+                    .collect(Collectors.groupingBy(
+                            c -> c.getZone().getName(),
+                            Collectors.counting()
+                    ));
+            stats.put("byZone", byZone);
+
+            // By Application
+            Map<String, Long> byApplication = conventionRepository.findAll().stream()
+                    .filter(c -> c.getApplication() != null)
+                    .collect(Collectors.groupingBy(
+                            c -> c.getApplication().getName(),
+                            Collectors.counting()
+                    ));
+            stats.put("byApplication", byApplication);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -223,13 +249,14 @@ public class StatsController {
             stats.put("monthlyAmounts", monthlyAmounts);
 
             // Overdue Invoices Details
-            List<Map<String, Object>> overdueDetails = factureRepository.findFacturesEnRetard(LocalDate.now()).stream()
+            List<Facture> overdueInvoices = factureRepository.findFacturesEnRetard(LocalDate.now());
+            List<Map<String, Object>> overdueDetails = overdueInvoices.stream()
                     .sorted(Comparator.comparing(Facture::getDateEcheance))
                     .limit(10)
                     .map(f -> {
                         Map<String, Object> detail = new HashMap<>();
                         detail.put("numero", f.getNumeroFacture());
-                        detail.put("convention", f.getConvention().getReference());
+                        detail.put("convention", f.getConvention().getReferenceConvention());
                         detail.put("montant", f.getMontantTTC());
                         detail.put("dateEcheance", f.getDateEcheance());
                         detail.put("joursRetard",
@@ -239,14 +266,28 @@ public class StatsController {
                     .collect(Collectors.toList());
             stats.put("overdueDetails", overdueDetails);
 
-            // Payment Method Distribution
-            Map<String, Long> paymentMethods = factureRepository.findAll().stream()
-                    .filter(f -> f.getModePaiement() != null && f.getStatutPaiement().equals("PAYE"))
+
+
+            // Top Convention by Invoice Amount
+            List<Map<String, Object>> topConventionAmounts = factureRepository.findAll().stream()
+                    .filter(f -> f.getConvention() != null)
                     .collect(Collectors.groupingBy(
-                            Facture::getModePaiement,
-                            Collectors.counting()
-                    ));
-            stats.put("paymentMethods", paymentMethods);
+                            Facture::getConvention,
+                            Collectors.reducing(BigDecimal.ZERO,
+                                    f -> f.getMontantTTC() != null ? f.getMontantTTC() : BigDecimal.ZERO,
+                                    BigDecimal::add)
+                    ))
+                    .entrySet().stream()
+                    .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                    .limit(5)
+                    .map(entry -> {
+                        Map<String, Object> conv = new HashMap<>();
+                        conv.put("convention", entry.getKey().getReferenceConvention());
+                        conv.put("totalAmount", entry.getValue());
+                        return conv;
+                    })
+                    .collect(Collectors.toList());
+            stats.put("topConventionAmounts", topConventionAmounts);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -272,15 +313,6 @@ public class StatsController {
                             Collectors.counting()
                     ));
             stats.put("roleDistribution", roleDistribution);
-
-            // Department Distribution
-            Map<String, Long> departmentDistribution = userRepository.findAll().stream()
-                    .filter(user -> user.getDepartment() != null)
-                    .collect(Collectors.groupingBy(
-                            User::getDepartment,
-                            Collectors.counting()
-                    ));
-            stats.put("departmentDistribution", departmentDistribution);
 
             // User Activity
             Map<String, Long> userActivity = new HashMap<>();
@@ -327,7 +359,7 @@ public class StatsController {
                         userInfo.put("username", user.getUsername());
                         userInfo.put("fullName", user.getFirstName() + " " + user.getLastName());
                         userInfo.put("lastLogin", user.getLastLogin());
-                        userInfo.put("department", user.getDepartment());
+                        userInfo.put("email", user.getEmail());
                         userInfo.put("roles", user.getRoles().stream()
                                 .map(role -> role.getName().name())
                                 .collect(Collectors.toList()));
@@ -363,9 +395,9 @@ public class StatsController {
 
             // Conventions by Zone
             Map<String, Long> conventionsByZone = conventionRepository.findAll().stream()
-                    .filter(c -> c.getGouvernorat() != null)
+                    .filter(c -> c.getZone() != null)
                     .collect(Collectors.groupingBy(
-                            c -> c.getGouvernorat().getName(),
+                            c -> c.getZone().getName(),
                             Collectors.counting()
                     ));
             stats.put("conventionsByZone", conventionsByZone);
@@ -373,8 +405,8 @@ public class StatsController {
             // Amount by Zone
             Map<String, BigDecimal> amountByZone = new HashMap<>();
             for (Convention convention : conventionRepository.findAll()) {
-                if (convention.getGouvernorat() != null && convention.getMontantTotal() != null) {
-                    String zoneName = convention.getGouvernorat().getName();
+                if (convention.getZone() != null && convention.getMontantTotal() != null) {
+                    String zoneName = convention.getZone().getName();
                     BigDecimal montant = convention.getMontantTotal();
 
                     amountByZone.merge(zoneName, montant, BigDecimal::add);
@@ -385,13 +417,17 @@ public class StatsController {
             // Structures with Most Conventions
             List<Map<String, Object>> topStructuresWithConventions = structureRepository.findAll().stream()
                     .map(structure -> {
-                        long conventionCount = conventionRepository.findByStructureId(structure.getId()).size();
+                        long conventionCount = conventionRepository.findAll().stream()
+                                .filter(c -> (c.getStructureInterne() != null && c.getStructureInterne().getId().equals(structure.getId())) ||
+                                        (c.getStructureExterne() != null && c.getStructureExterne().getId().equals(structure.getId())))
+                                .count();
                         Map<String, Object> structInfo = new HashMap<>();
                         structInfo.put("structure", structure.getName());
                         structInfo.put("type", structure.getTypeStructure());
                         structInfo.put("conventionCount", conventionCount);
                         return structInfo;
                     })
+                    .filter(s -> (Long) s.get("conventionCount") > 0)
                     .sorted((s1, s2) -> Long.compare(
                             (Long) s2.get("conventionCount"),
                             (Long) s1.get("conventionCount")))
@@ -405,6 +441,23 @@ public class StatsController {
             nomenclatureCounts.put("zones", zoneGeographiqueRepository.count());
             nomenclatureCounts.put("structures", structureRepository.count());
             stats.put("nomenclatureCounts", nomenclatureCounts);
+
+            // Usage statistics
+            Map<String, Object> usageStats = new HashMap<>();
+            usageStats.put("structuresUsedInConventions", structureRepository.findAll().stream()
+                    .filter(s -> conventionRepository.findAll().stream()
+                            .anyMatch(c -> (c.getStructureInterne() != null && c.getStructureInterne().getId().equals(s.getId())) ||
+                                    (c.getStructureExterne() != null && c.getStructureExterne().getId().equals(s.getId()))))
+                    .count());
+            usageStats.put("zonesUsedInConventions", zoneGeographiqueRepository.findAll().stream()
+                    .filter(z -> conventionRepository.findAll().stream()
+                            .anyMatch(c -> c.getZone() != null && c.getZone().getId().equals(z.getId())))
+                    .count());
+            usageStats.put("applicationsUsedInConventions", applicationRepository.findAll().stream()
+                    .filter(a -> conventionRepository.findAll().stream()
+                            .anyMatch(c -> c.getApplication() != null && c.getApplication().getId().equals(a.getId())))
+                    .count());
+            stats.put("usageStats", usageStats);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -476,9 +529,9 @@ public class StatsController {
                     .limit(5)
                     .map(c -> {
                         Map<String, Object> conventionInfo = new HashMap<>();
-                        conventionInfo.put("reference", c.getReference());
+                        conventionInfo.put("reference", c.getReferenceConvention());
                         conventionInfo.put("libelle", c.getLibelle());
-                        conventionInfo.put("structure", c.getStructure() != null ? c.getStructure().getName() : "N/A");
+                        conventionInfo.put("structureInterne", c.getStructureInterne() != null ? c.getStructureInterne().getName() : "N/A");
                         conventionInfo.put("montantTotal", c.getMontantTotal());
                         conventionInfo.put("etat", c.getEtat());
                         return conventionInfo;
@@ -492,8 +545,14 @@ public class StatsController {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             double collectionRate = totalInvoiced.compareTo(BigDecimal.ZERO) > 0 ?
-                    totalRevenue.divide(totalInvoiced, 4, BigDecimal.ROUND_HALF_UP).doubleValue() * 100 : 0;
+                    totalRevenue.divide(totalInvoiced, 4, RoundingMode.HALF_UP).doubleValue() * 100 : 0;
             stats.put("collectionRate", collectionRate);
+
+            // Average Invoice Amount
+            long invoiceCount = factureRepository.count();
+            BigDecimal averageInvoiceAmount = invoiceCount > 0 ?
+                    totalInvoiced.divide(BigDecimal.valueOf(invoiceCount), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+            stats.put("averageInvoiceAmount", averageInvoiceAmount);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -512,16 +571,39 @@ public class StatsController {
         Map<String, Object> stats = new HashMap<>();
 
         long totalConventions = conventionRepository.count();
-        long activeConventions = conventionRepository.findByEtat("EN_COURS").size();
-        long expiredConventions = conventionRepository.findConventionsExpirees(LocalDate.now()).size();
+        List<Convention> enCoursConventions = conventionRepository.findByEtat("EN_COURS");
+        long activeConventions = enCoursConventions.size();
+
+        // Find expired conventions (dateFin < today and not TERMINE or ARCHIVE)
+        List<Convention> expiredConventions = conventionRepository.findAll().stream()
+                .filter(c -> c.getDateFin() != null &&
+                        c.getDateFin().isBefore(LocalDate.now()) &&
+                        !"TERMINE".equals(c.getEtat()) &&
+                        !"ARCHIVE".equals(c.getEtat()) &&
+                        !Boolean.TRUE.equals(c.getArchived()))
+                .collect(Collectors.toList());
+
+        long expiredConventionsCount = expiredConventions.size();
         long terminatedConventions = conventionRepository.findByEtat("TERMINE").size();
 
         stats.put("totalConventions", totalConventions);
         stats.put("activeConventions", activeConventions);
-        stats.put("expiredConventions", expiredConventions);
+        stats.put("expiredConventions", expiredConventionsCount);
         stats.put("terminatedConventions", terminatedConventions);
         stats.put("conventionCompletionRate",
                 totalConventions > 0 ? ((double) terminatedConventions / totalConventions) * 100 : 0);
+
+        // Late conventions
+        long lateConventions = conventionRepository.findAll().stream()
+                .filter(c -> "EN_RETARD".equals(c.getEtat()))
+                .count();
+        stats.put("lateConventions", lateConventions);
+
+        // Conventions with no status
+        long noStatusConventions = conventionRepository.findAll().stream()
+                .filter(c -> c.getEtat() == null)
+                .count();
+        stats.put("noStatusConventions", noStatusConventions);
 
         return stats;
     }
@@ -540,6 +622,17 @@ public class StatsController {
         stats.put("overdueFactures", overdueFactures);
         stats.put("paymentRate",
                 totalFactures > 0 ? ((double) paidFactures / totalFactures) * 100 : 0);
+
+        // Total amounts
+        BigDecimal totalPaidAmount = factureRepository.findByStatutPaiement("PAYE").stream()
+                .map(f -> f.getMontantTTC() != null ? f.getMontantTTC() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        stats.put("totalPaidAmount", totalPaidAmount);
+
+        BigDecimal totalUnpaidAmount = factureRepository.findByStatutPaiement("NON_PAYE").stream()
+                .map(f -> f.getMontantTTC() != null ? f.getMontantTTC() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        stats.put("totalUnpaidAmount", totalUnpaidAmount);
 
         return stats;
     }
@@ -623,10 +716,10 @@ public class StatsController {
 
         if (lastMonthRevenue.compareTo(BigDecimal.ZERO) > 0) {
             return currentMonthRevenue.subtract(lastMonthRevenue)
-                    .divide(lastMonthRevenue, 4, BigDecimal.ROUND_HALF_UP)
+                    .divide(lastMonthRevenue, 4, RoundingMode.HALF_UP)
                     .doubleValue() * 100;
         }
-        return 0.0;
+        return currentMonthRevenue.compareTo(BigDecimal.ZERO) > 0 ? 100.0 : 0.0;
     }
 
     private Map<String, Object> getRecentActivity() {
@@ -638,11 +731,11 @@ public class StatsController {
                 .limit(5)
                 .map(c -> {
                     Map<String, Object> conv = new HashMap<>();
-                    conv.put("reference", c.getReference());
+                    conv.put("reference", c.getReferenceConvention());
                     conv.put("libelle", c.getLibelle());
-                    conv.put("structure", c.getStructure() != null ? c.getStructure().getName() : "N/A");
+                    conv.put("structureInterne", c.getStructureInterne() != null ? c.getStructureInterne().getName() : "N/A");
                     conv.put("dateSignature", c.getDateSignature());
-                    conv.put("etat", c.getEtat());
+                    conv.put("etat", c.getEtat() != null ? c.getEtat() : "NO_STATUS");
                     conv.put("createdAt", c.getCreatedAt());
                     return conv;
                 })
@@ -655,7 +748,7 @@ public class StatsController {
                 .map(f -> {
                     Map<String, Object> inv = new HashMap<>();
                     inv.put("numero", f.getNumeroFacture());
-                    inv.put("convention", f.getConvention().getReference());
+                    inv.put("convention", f.getConvention().getReferenceConvention());
                     inv.put("montant", f.getMontantTTC());
                     inv.put("statut", f.getStatutPaiement());
                     inv.put("dateEcheance", f.getDateEcheance());
@@ -697,8 +790,20 @@ public class StatsController {
             revenueTrends.put(month.format(DateTimeFormatter.ofPattern("MMM")), revenue);
         }
 
+        // Invoice count trends
+        Map<String, Long> invoiceTrends = new HashMap<>();
+        for (int i = 0; i < 6; i++) {
+            YearMonth month = YearMonth.now().minusMonths(i);
+            long count = factureRepository.findAll().stream()
+                    .filter(f -> f.getCreatedAt() != null &&
+                            YearMonth.from(f.getCreatedAt().toLocalDate()).equals(month))
+                    .count();
+            invoiceTrends.put(month.format(DateTimeFormatter.ofPattern("MMM")), count);
+        }
+
         trends.put("conventionTrends", conventionTrends);
         trends.put("revenueTrends", revenueTrends);
+        trends.put("invoiceTrends", invoiceTrends);
 
         return trends;
     }
@@ -731,9 +836,21 @@ public class StatsController {
                             f.getDateEcheance().equals(today))
                     .count();
 
+            long overdueFacturesToday = factureRepository.findFacturesEnRetard(today).size();
+
             summary.put("conventionsToday", conventionsCreatedToday);
             summary.put("facturesToday", facturesCreatedToday);
             summary.put("dueToday", facturesDueToday);
+            summary.put("overdueToday", overdueFacturesToday);
+
+            // Financial summary for today
+            BigDecimal todayRevenue = factureRepository.findAll().stream()
+                    .filter(f -> "PAYE".equals(f.getStatutPaiement()) &&
+                            f.getDatePaiement() != null &&
+                            f.getDatePaiement().equals(today))
+                    .map(f -> f.getMontantTTC() != null ? f.getMontantTTC() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            summary.put("todayRevenue", todayRevenue);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -743,6 +860,59 @@ public class StatsController {
         } catch (Exception e) {
             log.error("Error fetching summary stats: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch summary statistics"));
+        }
+    }
+
+    @GetMapping("/overdue/alert")
+    public ResponseEntity<?> getOverdueAlerts() {
+        try {
+            List<Map<String, Object>> alerts = new ArrayList<>();
+
+            // Overdue invoices
+            List<Facture> overdueInvoices = factureRepository.findFacturesEnRetard(LocalDate.now());
+            for (Facture invoice : overdueInvoices) {
+                Map<String, Object> alert = new HashMap<>();
+                alert.put("type", "INVOICE_OVERDUE");
+                alert.put("message", String.format("Facture %s en retard de %d jours",
+                        invoice.getNumeroFacture(),
+                        java.time.temporal.ChronoUnit.DAYS.between(invoice.getDateEcheance(), LocalDate.now())));
+                alert.put("convention", invoice.getConvention().getReferenceConvention());
+                alert.put("amount", invoice.getMontantTTC());
+                alert.put("dueDate", invoice.getDateEcheance());
+                alert.put("priority", "HIGH");
+                alerts.add(alert);
+            }
+
+            // Expired conventions
+            List<Convention> expiredConventions = conventionRepository.findAll().stream()
+                    .filter(c -> c.getDateFin() != null &&
+                            c.getDateFin().isBefore(LocalDate.now()) &&
+                            !"TERMINE".equals(c.getEtat()) &&
+                            !"ARCHIVE".equals(c.getEtat()) &&
+                            !Boolean.TRUE.equals(c.getArchived()))
+                    .collect(Collectors.toList());
+
+            for (Convention convention : expiredConventions) {
+                Map<String, Object> alert = new HashMap<>();
+                alert.put("type", "CONVENTION_EXPIRED");
+                alert.put("message", String.format("Convention %s expirée depuis %d jours",
+                        convention.getReferenceConvention(),
+                        java.time.temporal.ChronoUnit.DAYS.between(convention.getDateFin(), LocalDate.now())));
+                alert.put("convention", convention.getReferenceConvention());
+                alert.put("endDate", convention.getDateFin());
+                alert.put("priority", "MEDIUM");
+                alerts.add(alert);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", alerts);
+            response.put("count", alerts.size());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error fetching overdue alerts: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch overdue alerts"));
         }
     }
 

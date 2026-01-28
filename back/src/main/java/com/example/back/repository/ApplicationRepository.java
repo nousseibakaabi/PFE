@@ -8,7 +8,8 @@ import java.util.Optional;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
-    Optional<Application> findByCode(String code);
+
     boolean existsByCode(String code);
     boolean existsByName(String name);
+    Optional<Application> findByCode(String code);
 }

@@ -83,8 +83,10 @@ public class SecurityConfig {
                         .requestMatchers("/profile/update-with-avatar").authenticated()
                         .requestMatchers("/profile/upload-avatar").authenticated()
 
-                        // Test endpoints with roles
-                        .requestMatchers("/test/user").hasAnyRole("USER", "ADMIN", "COMMERCIAL_METIER", "DECIDEUR", "CHEF_PROJET")
+
+
+                        // In SecurityConfig.java
+                        .requestMatchers("/test/user").hasAnyRole("ADMIN", "COMMERCIAL_METIER", "DECIDEUR", "CHEF_PROJET")
                         .requestMatchers("/test/admin").hasRole("ADMIN")
                         .requestMatchers("/test/commercial").hasRole("COMMERCIAL_METIER")
                         .requestMatchers("/test/decideur").hasRole("DECIDEUR")

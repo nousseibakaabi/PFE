@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { LayoutService } from '../services/layout.service';
 import { AuthService } from '../../../services/auth.service'; 
@@ -12,7 +12,7 @@ import { TranslationService } from '../traduction/translation.service';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   isMenuOpen: boolean = false;
   isNotificationsOpen: boolean = false;
   isUserDropdownOpen: boolean = false;
@@ -23,53 +23,25 @@ export class HeaderComponent implements OnInit {
   currentUser: User | null = null;
   private userSubscription!: Subscription;
 
+  // WebSocket properties
+ 
+
   isLanguageDropdownOpen = false;
   currentLanguage = 'en';
   languages: any[] = [];
   translationActive = false;
 
+  // UPDATED: Real notifications array
+  notifications: any[] = [];
 
-  notifications = [
-    {
-      userName: 'Terry Franci',
-      userImage: 'assets/images/user/user-02.jpg',
-      project: 'Project - Nganter App',
-      type: 'Project',
-      time: '5 min',
-      status: 'online'
-    },
-    {
-      userName: 'Alena Franci',
-      userImage: 'assets/images/user/user-03.jpg',
-      project: 'Project - Nganter App',
-      type: 'Project',
-      time: '8 min',
-      status: 'online'
-    },
-    {
-      userName: 'Jocelyn Kenter',
-      userImage: 'assets/images/user/user-04.jpg',
-      project: 'Project - Nganter App',
-      type: 'Project',
-      time: '15 min',
-      status: 'online'
-    },
-    {
-      userName: 'Brandon Philips',
-      userImage: 'assets/images/user/user-05.jpg',
-      project: 'Project - Nganter App',
-      type: 'Project',
-      time: '1 hr',
-      status: 'offline'
-    }
-  ];
+  constructor(
+    private router: Router,
+    private layoutService: LayoutService,
+    private authService: AuthService,
+    private translationService: TranslationService,
+  ) {}
 
-  constructor(private router: Router ,private layoutService: LayoutService
-, private authService: AuthService,    private translationService: TranslationService 
-) {}
-
-
-ngOnInit(): void {
+  ngOnInit(): void {
     this.checkScreenSize();
     
     // Check for saved dark mode preference
@@ -91,7 +63,7 @@ ngOnInit(): void {
       }
     );
 
-  this.languages = this.translationService.languages;
+    this.languages = this.translationService.languages;
     this.currentLanguage = this.translationService.getCurrentLanguage();
     
     // Test translation server
@@ -101,15 +73,32 @@ ngOnInit(): void {
         console.warn('Translation server is not running on localhost:5000');
       }
     });  
-  
+
   }
+
+  
+
+
+
+ 
+
+
+ 
+
+ 
+
+  
+
 
   ngOnDestroy(): void {
     // Unsubscribe to prevent memory leaks
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
     }
+    
+   
   }
+
 
    loadCurrentUser(): void {
     this.currentUser = this.authService.currentUserValue;

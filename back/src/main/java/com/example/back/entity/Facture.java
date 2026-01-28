@@ -22,7 +22,7 @@ public class Facture {
     private Long id;
 
     @Column(name = "numero_facture", nullable = false, unique = true)
-    private String numeroFacture; // Numéro unique de facture
+    private String numeroFacture;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "convention_id", nullable = false)
@@ -34,29 +34,36 @@ public class Facture {
     @Column(name = "date_echeance", nullable = false)
     private LocalDate dateEcheance;
 
-    @Column(name = "montant_ht", precision = 10, scale = 2)
+    @Column(name = "montant_ht", precision = 15, scale = 2)
     private BigDecimal montantHT;
 
-    @Column(name = "tva", precision = 5, scale = 2)
-    private BigDecimal tva = BigDecimal.valueOf(19.00); // TVA par défaut 19%
-
-    @Column(name = "montant_ttc", precision = 10, scale = 2)
+    @Column(name = "montant_ttc", precision = 15, scale = 2)
     private BigDecimal montantTTC;
 
+    @Column(name = "tva", precision = 5, scale = 2)
+    private BigDecimal tva = BigDecimal.valueOf(19.00);
+
+
     @Column(name = "statut_paiement")
-    private String statutPaiement = "NON_PAYE"; // PAYE, NON_PAYE, EN_RETARD
+    private String statutPaiement = "NON_PAYE";
 
     @Column(name = "date_paiement")
     private LocalDate datePaiement;
 
-    @Column(name = "mode_paiement")
-    private String modePaiement; // Virement, Chèque, Espèces
+
 
     @Column(name = "reference_paiement")
     private String referencePaiement;
 
     @Column(name = "notes", length = 2000)
     private String notes;
+
+    // New fields for archiving
+    @Column(name = "archived", nullable = false)
+    private Boolean archived = false;
+
+    @Column(name = "archived_at")
+    private LocalDateTime archivedAt;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -69,7 +76,6 @@ public class Facture {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
 
-        // Calcul automatique du montant TTC si montant HT et TVA sont présents
         if (montantHT != null && tva != null) {
             BigDecimal tvaMontant = montantHT.multiply(tva).divide(BigDecimal.valueOf(100));
             montantTTC = montantHT.add(tvaMontant);
@@ -81,7 +87,12 @@ public class Facture {
         updatedAt = LocalDateTime.now();
     }
 
-    // Méthode pour vérifier si la facture est en retard
+    // Method to archive invoice
+    public void archive() {
+        this.archived = true;
+        this.archivedAt = LocalDateTime.now();
+    }
+
     @Transient
     public boolean isEnRetard() {
         return "NON_PAYE".equals(statutPaiement) &&

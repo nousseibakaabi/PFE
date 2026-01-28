@@ -299,59 +299,13 @@
               </button>
             </div>
 
-            <ul class="custom-scrollbar flex h-auto flex-col overflow-y-auto">
-              <!-- Notification items would go here -->
-              <li *ngFor="let notification of notifications">
-                <a
-                  class="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
-                  href="#"
-                >
-                  <span
-                    class="relative z-1 block h-10 w-full max-w-10 rounded-full"
-                  >
-                    <img
-                      [src]="notification.userImage"
-                      alt="User"
-                      class="overflow-hidden rounded-full"
-                    />
-                    <span
-                      [class]="notification.status === 'online' ? 'bg-success-500' : 'bg-error-500'"
-                      class="absolute right-0 bottom-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"
-                    ></span>
-                  </span>
+           <!-- Replace the existing notification list with this -->
 
-                  <span class="block">
-                    <span
-                      class="text-theme-sm mb-1.5 block text-gray-500 dark:text-gray-400"
-                    >
-                      <span class="font-medium text-gray-800 dark:text-white/90"
-                        >{{notification.userName}}</span
-                      >
-{{'requests permission to change' | translate}}
 
- <span class="font-medium text-gray-800 dark:text-white/90"
-                        >{{notification.project}}</span
-                      >
-                    </span>
+         
 
-                    <span
-                      class="text-theme-xs flex items-center gap-2 text-gray-500 dark:text-gray-400"
-                    >
-                      <span>{{notification.type}}</span>
-                      <span class="h-1 w-1 rounded-full bg-gray-400"></span>
-                      <span>{{notification.time}} ago</span>
-                    </span>
-                  </span>
-                </a>
-              </li>
-            </ul>
 
-            <a
-              href="#"
-              class="text-theme-sm shadow-theme-xs mt-3 flex justify-center rounded-lg border border-gray-300 bg-white p-3 font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
-            >
-              {{ 'View All Notification' | translate }}
-            </a>
+
           </div>
           <!-- Dropdown End -->
         </div>

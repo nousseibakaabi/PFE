@@ -14,7 +14,6 @@ export interface Facture {
   montantTTC: number;
   statutPaiement: string;
   datePaiement: string;
-  modePaiement: string;
   referencePaiement: string;
   notes: string;
   createdAt: string;
@@ -32,7 +31,6 @@ export interface FactureRequest {
 
 export interface PaiementRequest {
   factureId: number;
-  modePaiement: string;
   referencePaiement: string;
   datePaiement: string;
 }

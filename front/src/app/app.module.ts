@@ -32,6 +32,7 @@ import { CommercialComponent } from './components/commercial/commercial.componen
 import { DecideurComponent } from './components/decideur/decideur.component';
 import { ChefProjetComponent } from './components/chef-projet/chef-projet.component';
 import { StatsService } from './services/stats.service';
+import { ConventionArchiveComponent } from './components/convention-archive/convention-archive.component';
 
 @NgModule({
   declarations: [
@@ -58,6 +59,7 @@ import { StatsService } from './services/stats.service';
     CommercialComponent,
     DecideurComponent,
     ChefProjetComponent,
+    ConventionArchiveComponent,
   ],
   imports: [
     BrowserModule,

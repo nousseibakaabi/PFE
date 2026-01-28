@@ -16,6 +16,7 @@ import { ConventionComponent } from './components/convention/convention.componen
 import { ChefProjetComponent } from './components/chef-projet/chef-projet.component';
 import { CommercialComponent } from './components/commercial/commercial.component';
 import { DecideurComponent } from './components/decideur/decideur.component';
+import { ConventionArchiveComponent } from './components/convention-archive/convention-archive.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -49,13 +50,20 @@ const routes: Routes = [
     path: 'conventions', 
     component: ConventionComponent, 
     canActivate: [AuthGuard],
-    data: { roles: ['ROLE_ADMIN', 'ROLE_COMMERCIAL_METIER'] } 
+    data: { roles: ['ROLE_COMMERCIAL_METIER'] } 
+  },
+
+   { 
+    path: 'conventions/archives', 
+    component: ConventionArchiveComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_COMMERCIAL_METIER'] } 
   },
   { 
     path: 'factures', 
     component: FactureComponent, 
     canActivate: [AuthGuard],
-    data: { roles: ['ROLE_ADMIN', 'ROLE_COMMERCIAL_METIER'] } 
+    data: { roles: [ 'ROLE_COMMERCIAL_METIER'] } 
   },
 
      { 

@@ -18,16 +18,36 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
 
     boolean existsByNumeroFacture(String numeroFacture);
 
-    List<Facture> findByConventionId(Long conventionId);
 
     List<Facture> findByStatutPaiement(String statutPaiement);
 
-    @Query("SELECT f FROM Facture f WHERE f.dateEcheance < :date AND f.statutPaiement = 'NON_PAYE'")
-    List<Facture> findFacturesEnRetard(@Param("date") LocalDate date);
+
 
     @Query("SELECT SUM(f.montantTTC) FROM Facture f WHERE f.statutPaiement = 'PAYE' AND YEAR(f.datePaiement) = :year AND MONTH(f.datePaiement) = :month")
     BigDecimal findTotalPayeParMois(@Param("year") int year, @Param("month") int month);
 
-    @Query("SELECT f FROM Facture f WHERE f.convention.structure.id = :structureId")
-    List<Facture> findByStructureId(@Param("structureId") Long structureId);
+
+
+
+
+    @Query("SELECT f.statutPaiement, COUNT(f) as count FROM Facture f WHERE f.convention.id = :conventionId GROUP BY f.statutPaiement")
+    List<Object[]> findInvoiceStatusesByConventionId(@Param("conventionId") Long conventionId);
+
+    // Or use this simpler method
+    @Query("SELECT COUNT(f) FROM Facture f WHERE f.convention.id = :conventionId")
+    Long countInvoicesByConvention(@Param("conventionId") Long conventionId);
+
+    @Query("SELECT COUNT(f) FROM Facture f WHERE f.convention.id = :conventionId AND f.statutPaiement != 'PAYE'")
+    Long countUnpaidInvoicesByConvention(@Param("conventionId") Long conventionId);
+
+    @Query("SELECT f FROM Facture f WHERE f.convention.id = :conventionId")
+    List<Facture> findByConventionId(@Param("conventionId") Long conventionId);
+
+
+    @Query("SELECT f FROM Facture f WHERE f.dateEcheance < :currentDate AND f.statutPaiement = 'NON_PAYE'")
+    List<Facture> findOverdueInvoices(@Param("currentDate") LocalDate currentDate);
+
+    // You can keep the existing method too, or rename it
+    @Query("SELECT f FROM Facture f WHERE f.dateEcheance < :date AND f.statutPaiement = 'NON_PAYE'")
+    List<Facture> findFacturesEnRetard(@Param("date") LocalDate date);
 }

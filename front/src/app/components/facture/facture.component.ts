@@ -40,7 +40,6 @@ export class FactureComponent implements OnInit {
   // Payment form
   paymentForm: PaiementRequest = {
     factureId: 0,
-    modePaiement: '',
     referencePaiement: '',
     datePaiement: ''
   };
@@ -154,7 +153,6 @@ export class FactureComponent implements OnInit {
     this.selectedFacture = facture;
     this.paymentForm = {
       factureId: facture.id,
-      modePaiement: '',
       referencePaiement: '',
       datePaiement: new Date().toISOString().split('T')[0]
     };
@@ -192,9 +190,7 @@ export class FactureComponent implements OnInit {
   }
 
   registerPayment(): void {
-    if (!this.validatePaymentForm()) {
-      return;
-    }
+    
 
     this.loading = true;
     this.factureService.registerPayment(this.paymentForm).subscribe({
@@ -229,13 +225,7 @@ export class FactureComponent implements OnInit {
     return true;
   }
 
-  validatePaymentForm(): boolean {
-    if (!this.paymentForm.modePaiement) {
-      this.errorMessage = 'Mode de paiement est requis';
-      return false;
-    }
-    return true;
-  }
+  
 
   clearMessages(): void {
     this.errorMessage = '';

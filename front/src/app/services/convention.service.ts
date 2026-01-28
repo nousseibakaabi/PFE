@@ -5,33 +5,64 @@ import { environment } from '../../environments/environment';
 
 export interface Convention {
   id: number;
-  reference: string;
+  referenceConvention: string;
+  referenceERP: string;
   libelle: string;
   dateDebut: string;
   dateFin: string;
   dateSignature: string;
-  structure: any;
-  gouvernorat: any;
   montantTotal: number;
-  modalitesPaiement: string;
   periodicite: string;
   etat: string;
+  archived: boolean;
+  archivedAt: string;
+  archivedBy: string;
+  archivedReason: string;
   createdAt: string;
   updatedAt: string;
+  
+  // CHANGED: Now these are just IDs and names, not full objects
+  structureInterneId: number;
+  structureInterneName: string;
+  structureInterneCode: string;
+  
+  structureExterneId: number;
+  structureExterneName: string;
+  structureExterneCode: string;
+  
+  zoneId: number;
+  zoneName: string;
+  zoneCode: string;
+  
+  applicationId: number;
+  applicationName: string;
+  applicationCode: string;
+  
+  // Invoices array if needed
+  factures?: any[];
+  totalFactures?: number;
+  facturesPayees?: number;
+  facturesNonPayees?: number;
+  facturesEnRetard?: number;
 }
 
 export interface ConventionRequest {
-  reference: string;
+  referenceConvention: string;
+  referenceERP: string;
   libelle: string;
   dateDebut: string;
   dateFin: string;
   dateSignature: string;
-  structureId: number;
-  gouvernoratId: number;
+  structureInterneId: number;
+  structureExterneId: number;
+  zoneId: number;
+  applicationId: number;
   montantTotal: number;
-  modalitesPaiement: string;
   periodicite: string;
-  etat: string;
+}
+
+export interface ArchiveConventionRequest {
+  reason: string;
 }
 
 @Injectable({
@@ -42,9 +73,29 @@ export class ConventionService {
 
   constructor(private http: HttpClient) {}
 
-  // Get all conventions
-  getAllConventions(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/api/conventions`);
+  getAllConventions(showArchived: boolean = false): Observable<any> {
+    const params = showArchived ? `?showArchived=${showArchived}` : '';
+    return this.http.get(`${this.apiUrl}/api/conventions${params}`);
+  }
+
+  // Get only active conventions
+  getActiveConventions(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/api/conventions/active`);
+  }
+
+  // Get archived conventions
+  getArchivedConventions(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/api/conventions/archives`);
+  }
+
+  // Archive a convention
+  archiveConvention(id: number, reason: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/conventions/${id}/archive`, { reason });
+  }
+
+  // Restore an archived convention
+  restoreConvention(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/conventions/${id}/restore`, {});
   }
 
   // Get convention by ID
