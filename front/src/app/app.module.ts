@@ -33,6 +33,8 @@ import { DecideurComponent } from './components/decideur/decideur.component';
 import { ChefProjetComponent } from './components/chef-projet/chef-projet.component';
 import { StatsService } from './services/stats.service';
 import { ConventionArchiveComponent } from './components/convention-archive/convention-archive.component';
+import { AdminProjectComponent } from './components/admin-project/admin-project.component';
+import { ProjectComponent } from './components/project/project.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +62,8 @@ import { ConventionArchiveComponent } from './components/convention-archive/conv
     DecideurComponent,
     ChefProjetComponent,
     ConventionArchiveComponent,
+    AdminProjectComponent,
+    ProjectComponent,
   ],
   imports: [
     BrowserModule,

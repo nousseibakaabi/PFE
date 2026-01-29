@@ -12,6 +12,7 @@ public class ConventionRequest {
     @NotBlank(message = "Reference convention is required")
     private String referenceConvention;
 
+    @NotBlank(message = "Reference ERP is required")
     private String referenceERP;
 
     @NotBlank(message = "Libelle is required")
@@ -32,8 +33,8 @@ public class ConventionRequest {
     @NotNull(message = "Zone is required")
     private Long zoneId;
 
-    @NotNull(message = "Application is required")
-    private Long applicationId;
+    @NotNull(message = "Project is required")
+    private Long projectId;
 
     private BigDecimal montantTotal;
 

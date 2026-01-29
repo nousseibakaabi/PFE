@@ -11,4 +11,6 @@ public interface StructureRepository extends JpaRepository<Structure, Long> {
     Optional<Structure> findByCode(String code);
     boolean existsByCode(String code);
     boolean existsByName(String name);
+
+    Optional<Structure> findByName(String clientName);
 }

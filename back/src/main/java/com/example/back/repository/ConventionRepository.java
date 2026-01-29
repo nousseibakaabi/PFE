@@ -34,8 +34,13 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     List<Convention> findLateConventions(@Param("currentDate") LocalDate currentDate);
 
     // Count methods for deletion validation
-    @Query("SELECT COUNT(c) FROM Convention c WHERE c.application.id = :applicationId")
-    Long countByApplicationId(@Param("applicationId") Long applicationId);
+    @Query("SELECT COUNT(c) FROM Convention c WHERE c.project.id = :projectId")
+    Long countByProjectId(@Param("projectId") Long projectId);
+
+
+
+
+
 
     @Query("SELECT COUNT(c) FROM Convention c WHERE c.structureInterne.id = :structureId OR c.structureExterne.id = :structureId")
     Long countByStructureInterneIdOrStructureExterneId(@Param("structureId") Long structureId);
@@ -62,4 +67,9 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     // Find conventions that should transition from EN_ATTENTE to EN_COURS
     @Query("SELECT c FROM Convention c WHERE c.dateDebut <= :date AND c.etat = 'EN_ATTENTE' AND c.archived = false")
     List<Convention> findConventionsStartingOnOrBefore(@Param("date") LocalDate date);
+
+    List<Convention> findByProjectId(Long projectId);
+    List<Convention> findByProjectIdAndArchivedFalse(Long projectId);
+
+
 }

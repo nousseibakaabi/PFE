@@ -121,6 +121,10 @@ login(loginRequest: LoginRequest): Observable<AuthResponse> {
     }
   }
 
+  getCurrentUser(): User | null {
+    return this.currentUserValue;
+  }
+
   // ADD THIS METHOD: Refresh user data from backend
   refreshUser(): Observable<User> {
     const headers = new HttpHeaders({

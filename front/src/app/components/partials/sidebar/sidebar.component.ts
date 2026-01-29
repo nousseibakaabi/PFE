@@ -51,12 +51,14 @@ updateCurrentPage(): void {
   const routeMapping = [
     { path: 'admin/nomenclatures', page: 'Nomenclatures' },
     { path: 'admin/users', page: 'Users' },
+    {path:'admin/projects', page:'admin/projects'},
     { path: 'admin', page: 'admin' },
     { path: 'conventions/archives', page: 'conventions/archives' }, 
     { path: 'conventions', page: 'conventions' },
     { path: 'factures', page: 'factures' },
     { path: 'commercial', page: 'commercial' },
     { path: 'decideur', page: 'decideur' },
+    { path: 'chef/projet', page: 'projet' },
     { path: 'chef', page: 'chefProjet' },
     { path: 'profile', page: 'profile' },
   ];
@@ -106,4 +108,11 @@ isChefProjetUser(): boolean {
     }
     localStorage.setItem('sidebarSelected', this.selected);
   }
+
+
+isAdminOrChefProjet(): boolean {
+  return this.isAdminUser() || this.isChefProjetUser();
+}
+
+
 }

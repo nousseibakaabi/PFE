@@ -4,12 +4,9 @@ import com.example.back.entity.*;
 import com.example.back.payload.request.ArchiveConventionRequest;
 import com.example.back.payload.request.ConventionRequest;
 import com.example.back.payload.response.ConventionResponse;
-import com.example.back.repository.ConventionRepository;
-import com.example.back.repository.StructureRepository;
-import com.example.back.repository.ZoneGeographiqueRepository;
-import com.example.back.repository.ApplicationRepository;
-import com.example.back.repository.FactureRepository;
+import com.example.back.repository.*;
 import com.example.back.service.ConventionService;
+import com.example.back.service.ProjectService;
 import com.example.back.service.mapper.ConventionMapper;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -52,6 +49,12 @@ public class ConventionController {
     @Autowired
     private ConventionMapper conventionMapper;
 
+    @Autowired
+    private ProjectService projectService;
+
+    @Autowired
+    private ProjectRepository projectRepository;
+
     // CRUD Operations
 
     @GetMapping("/{id}")
@@ -75,6 +78,7 @@ public class ConventionController {
         }
     }
 
+    // In ConventionController.java - UPDATED createConvention method
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
     public ResponseEntity<?> createConvention(@Valid @RequestBody ConventionRequest request) {
@@ -98,12 +102,12 @@ public class ConventionController {
             Optional<Structure> structureInterne = structureRepository.findById(request.getStructureInterneId());
             Optional<Structure> structureExterne = structureRepository.findById(request.getStructureExterneId());
             Optional<ZoneGeographique> zone = zoneGeographiqueRepository.findById(request.getZoneId());
-            Optional<Application> application = applicationRepository.findById(request.getApplicationId());
+            Optional<Project> project = projectRepository.findById(request.getProjectId());
 
             if (structureInterne.isEmpty() || structureExterne.isEmpty() ||
-                    zone.isEmpty() || application.isEmpty()) {
+                    zone.isEmpty() || project.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Invalid structure, zone, or application"));
+                        .body(createErrorResponse("Invalid structure, zone, or project"));
             }
 
             // Create new convention
@@ -117,7 +121,7 @@ public class ConventionController {
             convention.setStructureInterne(structureInterne.get());
             convention.setStructureExterne(structureExterne.get());
             convention.setZone(zone.get());
-            convention.setApplication(application.get());
+            convention.setProject(project.get()); // Set project instead of application
             convention.setMontantTotal(request.getMontantTotal());
             convention.setPeriodicite(request.getPeriodicite());
 
@@ -130,6 +134,13 @@ public class ConventionController {
             } catch (Exception e) {
                 log.error("Failed to generate invoices for convention {}: {}",
                         saved.getReferenceConvention(), e.getMessage());
+            }
+
+            // Update project progress
+            try {
+                projectService.calculateProjectProgress(saved.getProject().getId());
+            } catch (Exception e) {
+                log.error("Failed to update project progress: {}", e.getMessage());
             }
 
             // Trigger immediate status update
@@ -185,10 +196,10 @@ public class ConventionController {
             Optional<Structure> structureInterne = structureRepository.findById(request.getStructureInterneId());
             Optional<Structure> structureExterne = structureRepository.findById(request.getStructureExterneId());
             Optional<ZoneGeographique> zone = zoneGeographiqueRepository.findById(request.getZoneId());
-            Optional<Application> application = applicationRepository.findById(request.getApplicationId());
+            Optional<Project> project = projectRepository.findById(request.getProjectId());
 
             if (structureInterne.isEmpty() || structureExterne.isEmpty() ||
-                    zone.isEmpty() || application.isEmpty()) {
+                    zone.isEmpty() || project.isEmpty()) {
                 log.warn("Invalid structure, zone, or application");
                 return ResponseEntity.badRequest()
                         .body(createErrorResponse("Invalid structure, zone, or application"));
@@ -204,7 +215,7 @@ public class ConventionController {
             convention.setStructureInterne(structureInterne.get());
             convention.setStructureExterne(structureExterne.get());
             convention.setZone(zone.get());
-            convention.setApplication(application.get());
+            convention.setProject(project.get());
             convention.setMontantTotal(request.getMontantTotal());
             convention.setPeriodicite(request.getPeriodicite());
 
@@ -726,5 +737,24 @@ public class ConventionController {
         response.put("success", false);
         response.put("message", message);
         return response;
+    }
+
+
+
+    @GetMapping("/projects/{projectId}/client-structure")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
+    public ResponseEntity<?> getClientStructureFromProject(@PathVariable Long projectId) {
+        try {
+            Structure clientStructure = projectService.getOrCreateStructureForProject(projectId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", clientStructure);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error getting client structure from project: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
     }
 }

@@ -5,6 +5,7 @@ import { NomenclatureService, Structure } from '../../services/nomenclature.serv
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { ProjectService } from 'src/app/services/project.service';
 
 @Component({
   selector: 'app-convention',
@@ -26,9 +27,12 @@ export class ConventionComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   showArchived = false;
+  projects: any[] = []; 
   
   // Archive form
   archiveReason = '';
+
+
   
   // For showing invoice details
   showInvoicesModal = false;
@@ -46,10 +50,14 @@ export class ConventionComponent implements OnInit {
     structureInterneId: 0,
     structureExterneId: 0,
     zoneId: 0,
-    applicationId: 0,
+  projectId: 0,  
     montantTotal: 0,
     periodicite: 'MENSUEL'
   };
+
+  conventionForm = {
+  structureExterneId: 0
+};
 
   periodicites = ['MENSUEL', 'TRIMESTRIEL', 'SEMESTRIEL', 'ANNUEL'];
 etats = [null, 'EN_ATTENTE', 'EN_COURS', 'EN_RETARD', 'TERMINE'];
@@ -65,7 +73,8 @@ etats = [null, 'EN_ATTENTE', 'EN_COURS', 'EN_RETARD', 'TERMINE'];
     private conventionService: ConventionService,
     private factureService: FactureService,
     private nomenclatureService: NomenclatureService,
-    private authService: AuthService
+    private authService: AuthService,
+    private projectService : ProjectService
   ) {}
 
   ngOnInit(): void {
@@ -73,6 +82,7 @@ etats = [null, 'EN_ATTENTE', 'EN_COURS', 'EN_RETARD', 'TERMINE'];
     this.loadStructures();
     this.loadZones(); // CHANGED FROM "loadGouvernorats"
     this.loadApplications(); // ADD THIS
+    this.loadProjects();
   }
 
 
@@ -96,6 +106,45 @@ etats = [null, 'EN_ATTENTE', 'EN_COURS', 'EN_RETARD', 'TERMINE'];
       }
     });
   }
+
+
+loadProjects(): void {
+  this.projectService.getAllProjects().subscribe({
+    next: (response) => {
+      console.log('Projects response:', response); // Debug log
+      if (response.success) {
+        this.projects = response.data; 
+        console.log('Projects loaded:', this.projects); // Debug log
+      } else {
+        console.error('Error in response:', response);
+      }
+    },
+    error: (error) => {
+      console.error('Error loading projects:', error);
+      console.error('Error details:', error.error); // More details
+    }
+  });
+}
+
+
+onProjectSelected(projectId: number): void {
+  if (projectId) {
+    this.projectService.getClientStructureForProject(projectId).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          // Auto-fill external structure with client
+          this.formData.structureExterneId = response.data.id;
+          
+          // Also, update the structures dropdown to show the selected client
+          // You might need to reload structures or ensure the client structure is in the list
+        }
+      },
+      error: (error) => {
+        console.error('Error getting client structure:', error);
+      }
+    });
+  }
+}
 
   loadApplications(): void {
     this.nomenclatureService.getApplications().subscribe({
@@ -266,25 +315,25 @@ searchConventions(): void {
     }
   }
 
-  openCreateModal(): void {
-    this.isEditing = false;
-    this.formData = {
-      referenceConvention: '',
-      referenceERP: '',
-      libelle: '',
-      dateDebut: '',
-      dateFin: '',
-      dateSignature: '',
-      structureInterneId: 0,
-      structureExterneId: 0,
-      zoneId: 0,
-      applicationId: 0,
-      montantTotal: 0,
-      periodicite: 'MENSUEL'
-    };
-    this.showModal = true;
-    this.errorMessage = '';
-  }
+ openCreateModal(): void {
+  this.isEditing = false;
+  this.formData = {
+    referenceConvention: '',
+    referenceERP: '',
+    libelle: '',
+    dateDebut: '',
+    dateFin: '',
+    dateSignature: '',
+    structureInterneId: 0,
+    structureExterneId: 0,
+    zoneId: 0,
+    projectId: 0, // Add this!
+    montantTotal: 0,
+    periodicite: 'MENSUEL'
+  };
+  this.showModal = true;
+  this.errorMessage = '';
+}
 
 openEditModal(convention: Convention): void {
   this.isEditing = true;
@@ -296,11 +345,10 @@ openEditModal(convention: Convention): void {
     dateDebut: convention.dateDebut,
     dateFin: convention.dateFin || '',
     dateSignature: convention.dateSignature || '',
-    // Use the ID fields directly
     structureInterneId: convention.structureInterneId || 0,
     structureExterneId: convention.structureExterneId || 0,
     zoneId: convention.zoneId || 0,
-    applicationId: convention.applicationId || 0,
+    projectId: convention.projectId || 0, // Add this!
     montantTotal: convention.montantTotal || 0,
     periodicite: convention.periodicite || 'MENSUEL'
   };
@@ -468,7 +516,7 @@ openEditModal(convention: Convention): void {
       this.errorMessage = 'Zone est requise';
       return false;
     }
-    if (!this.formData.applicationId) { // ADD THIS
+    if (!this.formData.projectId) { // ADD THIS
       this.errorMessage = 'Application est requise';
       return false;
     }

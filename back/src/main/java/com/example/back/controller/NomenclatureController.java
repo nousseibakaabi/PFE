@@ -151,7 +151,7 @@ public class NomenclatureController {
             }
 
             // Check if application is used in conventions
-            Long conventionCount = conventionRepository.countByApplicationId(id);
+            Long conventionCount = conventionRepository.countByProjectId(id);
             if (conventionCount > 0) {
                 return ResponseEntity.badRequest()
                         .body(createErrorResponse(

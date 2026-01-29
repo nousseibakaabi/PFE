@@ -1,0 +1,814 @@
+<!-- src/app/components/project/project.component.html -->
+<div class="p-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
+      Mes Projets
+    </h2>
+    <p class="text-gray-600 dark:text-gray-400">
+      Gérez vos projets assignés
+    </p>
+    
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+      </svg>
+      <span class="text-green-700">{{ successMessage }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+      </svg>
+      <span class="text-red-700">{{ errorMessage }}</span>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div class="flex items-center">
+        <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900 mr-4">
+          <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Mes Projets</p>
+          <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ getTotalProjectsCount() }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div class="flex items-center">
+        <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900 mr-4">
+          <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">En Cours</p>
+          <p class="text-2xl font-bold text-gray-800 dark:text-white">
+            {{ getEnCoursCount() }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div class="flex items-center">
+        <div class="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-900 mr-4">
+          <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Planifiés</p>
+          <p class="text-2xl font-bold text-gray-800 dark:text-white">
+            {{ getPlanifieCount() }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div class="flex items-center">
+        <div class="p-3 rounded-lg bg-red-100 dark:bg-red-900 mr-4">
+          <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">En Retard</p>
+          <p class="text-2xl font-bold text-gray-800 dark:text-white">
+            {{ getDelayedCount() }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Actions -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex flex-col sm:flex-row gap-4 flex-1">
+        <!-- Search -->
+        <div class="relative flex-1">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="searchProjects()"
+            placeholder="Rechercher par code, nom, client..."
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          />
+          <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+
+        <!-- Status Filter -->
+        <select
+          [(ngModel)]="filterStatus"
+          (ngModelChange)="applyFilters()"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="">Tous les statuts</option>
+          <option *ngFor="let status of statusOptions" [value]="status.value">{{ status.label }}</option>
+        </select>
+      </div>
+
+      <!-- Add Project Button -->
+      <button
+        (click)="openAddModal()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center"
+      >
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nouveau Projet
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <p class="mt-2 text-gray-600 dark:text-gray-400">Chargement...</p>
+  </div>
+
+  <!-- Projects Table -->
+  <div *ngIf="!loading && filteredProjects.length > 0" class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Code & Nom
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Client & Application
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Dates & Échéance
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Progression
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Statut
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tr *ngFor="let project of filteredProjects" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4">
+              <div class="font-medium text-gray-900 dark:text-white">{{ project.code }}</div>
+              <div class="text-sm text-gray-900 dark:text-white font-semibold">{{ project.name }}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ project.description }}</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="text-gray-900 dark:text-white font-medium">{{ project.clientName }}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">{{ project.clientEmail }}</div>
+              <div class="mt-2">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300">
+                  {{ project.applicationName }}
+                </span>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900 dark:text-white">
+                <span class="font-medium">Début:</span> {{ project.dateDebut | date:'dd/MM/yyyy' }}
+              </div>
+              <div class="text-sm text-gray-900 dark:text-white">
+                <span class="font-medium">Fin:</span> {{ project.dateFin | date:'dd/MM/yyyy' }}
+              </div>
+              <div class="text-sm mt-2" [class.text-red-600]="project.isDelayed" [class.text-green-600]="!project.isDelayed">
+                {{ project.timeRemainingString }}
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mr-2">
+                  <div 
+                    class="h-2.5 rounded-full transition-all duration-300"
+                    [class]="getProgressClass(project.progress)"
+                    [style.width.%]="project.progress"
+                  ></div>
+                </div>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ project.progress }}%
+                </span>
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Basé sur le temps: {{ project.timeBasedProgress }}%
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusClass(project.status)">
+                {{ getStatusLabel(project.status) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <div class="flex space-x-2">
+                <button 
+                  (click)="openEditModal(project)"
+                  class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                  title="Modifier"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button 
+                  (click)="incrementProgress(project)"
+                  class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                  title="Augmenter progression"
+                  [disabled]="project.progress >= 100"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                </button>
+                <button 
+                  (click)="openDeleteModal(project)"
+                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                  title="Supprimer"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- No Projects -->
+  <div *ngIf="!loading && filteredProjects.length === 0" class="text-center p-8">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Aucun projet trouvé</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Commencez par créer un nouveau projet.</p>
+    <button
+      (click)="openAddModal()"
+      class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    >
+      <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Créer un projet
+    </button>
+  </div>
+
+  <!-- Add Project Modal -->
+  <div *ngIf="showAddModal" class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+      </div>
+      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Créer un Nouveau Projet</h3>
+        </div>
+        <form (ngSubmit)="createProject()" class="px-6 py-4">
+          <div class="space-y-6">
+            <!-- Basic Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Code Projet *
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="projectForm.code"
+                  name="code"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="PROJ-2024-001"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Nom du Projet *
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="projectForm.name"
+                  name="name"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Nom du projet"
+                />
+              </div>
+            </div>
+
+              <!-- Budget and Status -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Budget (€)
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="projectForm.budget"
+                  name="budget"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+
+               <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Application *
+                </label>
+                <select
+                  [(ngModel)]="projectForm.applicationId"
+                  name="applicationId"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">Sélectionner une application</option>
+                  <option *ngFor="let app of applications" [value]="app.id">
+                    {{ app.name }} ({{ app.code }})
+                  </option>
+                </select>
+              </div>
+            
+            </div>
+
+            <!-- Client Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Client *
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="projectForm.clientName"
+                  name="clientName"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Nom du client"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Email Client
+                </label>
+                <input
+                  type="email"
+                  [(ngModel)]="projectForm.clientEmail"
+                  name="clientEmail"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="client@entreprise.com"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Téléphone Client
+                </label>
+                <input
+                  type="tel"
+                  [(ngModel)]="projectForm.clientPhone"
+                  name="clientPhone"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="+33 1 23 45 67 89"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Adresse Client
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="projectForm.clientAddress"
+                  name="clientAddress"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Adresse complète"
+                />
+              </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date de Début
+                </label>
+                <input
+                  type="date"
+                  [(ngModel)]="projectForm.dateDebut"
+                  name="dateDebut"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date de Fin
+                </label>
+                <input
+                  type="date"
+                  [(ngModel)]="projectForm.dateFin"
+                  name="dateFin"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+
+          
+
+            <!-- Description -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Description
+              </label>
+              <textarea
+                [(ngModel)]="projectForm.description"
+                name="description"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Description du projet..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div *ngIf="errorMessage" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-sm text-red-600">{{ errorMessage }}</p>
+          </div>
+
+          <div class="mt-6 flex justify-end space-x-3">
+            <button
+              type="button"
+              (click)="closeModal()"
+              class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="loading"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span *ngIf="loading">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Création...
+              </span>
+              <span *ngIf="!loading">Créer</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Project Modal -->
+  <div *ngIf="showEditModal && selectedProject" class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+      </div>
+      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Modifier le Projet</h3>
+        </div>
+        <form (ngSubmit)="updateProject()" class="px-6 py-4">
+          <div class="space-y-6">
+            <!-- Basic Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Code Projet *
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="projectForm.code"
+                  name="code"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="PROJ-2024-001"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Nom du Projet *
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="projectForm.name"
+                  name="name"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Nom du projet"
+                />
+              </div>
+            </div>
+
+            <!-- Application -->
+            <div class="grid grid-cols-1 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Application *
+                </label>
+                <select
+                  [(ngModel)]="projectForm.applicationId"
+                  name="applicationId"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">Sélectionner une application</option>
+                  <option *ngFor="let app of applications" [value]="app.id">
+                    {{ app.name }} ({{ app.code }})
+                  </option>
+                </select>
+              </div>
+              
+     
+            </div>
+
+            <!-- Client Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Client *
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="projectForm.clientName"
+                  name="clientName"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Nom du client"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Email Client
+                </label>
+                <input
+                  type="email"
+                  [(ngModel)]="projectForm.clientEmail"
+                  name="clientEmail"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="client@entreprise.com"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Téléphone Client
+                </label>
+                <input
+                  type="tel"
+                  [(ngModel)]="projectForm.clientPhone"
+                  name="clientPhone"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="+33 1 23 45 67 89"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Adresse Client
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="projectForm.clientAddress"
+                  name="clientAddress"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="Adresse complète"
+                />
+              </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date de Début
+                </label>
+                <input
+                  type="date"
+                  [(ngModel)]="projectForm.dateDebut"
+                  name="dateDebut"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date de Fin
+                </label>
+                <input
+                  type="date"
+                  [(ngModel)]="projectForm.dateFin"
+                  name="dateFin"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+
+           <!-- Budget, Progress and Status -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      Budget (€)
+    </label>
+    <input
+      type="number"
+      [(ngModel)]="projectForm.budget"
+      name="budget"
+      step="0.01"
+      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+      placeholder="0.00"
+    />
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      Progression (%)
+    </label>
+    <!-- FIXED: Use proper two-way binding -->
+    <input
+      type="range"
+      [(ngModel)]="projectForm.progress"
+      name="progress"
+      min="0"
+      max="100"
+      step="1"
+      class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+      (input)="updateProgressValue($event)"
+    />
+    <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+      <span>0%</span>
+      <span class="font-medium">{{ projectForm.progress }}%</span>
+      <span>100%</span>
+    </div>
+  </div>
+
+  <div>
+  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+    Statut
+  </label>
+  
+  <!-- If project is TERMINÉ, show read-only -->
+  <div *ngIf="projectForm.status === 'TERMINE'"
+       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+    {{ getStatusLabel(projectForm.status) }}
+    <span class="text-xs text-gray-500 dark:text-gray-400 block mt-1">
+      (Projet terminé - statut final)
+    </span>
+  </div>
+  
+  <!-- If project is PLANIFIÉ or EN COURS, show dropdown with all manual options -->
+  <select
+    *ngIf="projectForm.status === 'PLANIFIE' || projectForm.status === 'EN_COURS'"
+    [(ngModel)]="projectForm.status"
+    name="status"
+    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+  >
+    <!-- Keep current auto-status as first option -->
+    <option [value]="projectForm.status">{{ getStatusLabel(projectForm.status) }} </option>
+    <!-- Manual status options -->
+    <option value="SUSPENDU">Suspendu </option>
+    <option value="ANNULE">Annulé </option>
+  </select>
+  
+  <!-- If project is already SUSPENDU or ANNULÉ, show dropdown to change between them -->
+  <select
+    *ngIf="projectForm.status === 'SUSPENDU' || projectForm.status === 'ANNULE'"
+    [(ngModel)]="projectForm.status"
+    name="status"
+    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+  >
+    <option value="SUSPENDU">Suspendu</option>
+    <option value="ANNULE">Annulé</option>
+    <!-- Option to return to auto-status? Maybe only if dates are valid -->
+    <option *ngIf="canReturnToAutoStatus()" value="EN_COURS">Reprendre (retour au statut automatique)</option>
+  </select>
+</div>
+
+  </div>
+            <!-- Description -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Description
+              </label>
+              <textarea
+                [(ngModel)]="projectForm.description"
+                name="description"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Description du projet..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div *ngIf="errorMessage" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-sm text-red-600">{{ errorMessage }}</p>
+          </div>
+
+          <div class="mt-6 flex justify-end space-x-3">
+            <button
+              type="button"
+              (click)="closeModal()"
+              class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="loading"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span *ngIf="loading">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Mise à jour...
+              </span>
+              <span *ngIf="!loading">Mettre à jour</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div *ngIf="showDeleteModal && selectedProject" class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+      </div>
+      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="bg-white dark:bg-gray-800 px-6 py-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+              <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L4.872 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                Confirmer la suppression
+              </h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Êtes-vous sûr de vouloir supprimer le projet <strong>{{ selectedProject.name }}</strong> ({{ selectedProject.code }}) ?
+                </p>
+                <p class="text-sm text-red-600 dark:text-red-400 mt-2">
+                  Cette action est irréversible. Toutes les conventions associées devront être supprimées ou réaffectées.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+            <button
+              type="button"
+              (click)="deleteProject()"
+              [disabled]="loading"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span *ngIf="loading">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Suppression...
+              </span>
+              <span *ngIf="!loading">Supprimer</span>
+            </button>
+            <button
+              type="button"
+              (click)="closeModal()"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

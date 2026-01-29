@@ -255,7 +255,51 @@
 
 <!-- Two structures -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
   <div>
+  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+    Projet *
+  </label>
+  <select 
+    [(ngModel)]="formData.projectId" 
+    name="projectId" 
+    required
+    (change)="onProjectSelected(formData.projectId)" 
+    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+  >
+    <option value="">Sélectionner un projet</option>
+    <option *ngFor="let project of projects" [value]="project.id">
+      {{ project.code }} - {{ project.name }} ({{ project.clientName }})
+    </option>
+  </select>
+</div>
+
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      Structure Externe (Payer) *
+    </label>
+    <select
+      [(ngModel)]="formData.structureExterneId"
+      name="structureExterneId"
+      required
+      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+    >
+      <option value="">Sélectionner une structure externe</option>
+      <option *ngFor="let structure of structures" [value]="structure.id">
+        {{ structure.code }} - {{ structure.name }}
+      </option>
+    </select>
+  </div>
+
+
+</div>
+
+<!-- Zone and Application -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    <div>
     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
       Structure Interne (CNI) *
     </label>
@@ -273,26 +317,6 @@
   </div>
   <div>
     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      Structure Externe (Payer) *
-    </label>
-    <select
-      [(ngModel)]="formData.structureExterneId"
-      name="structureExterneId"
-      required
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-    >
-      <option value="">Sélectionner une structure externe</option>
-      <option *ngFor="let structure of structures" [value]="structure.id">
-        {{ structure.code }} - {{ structure.name }}
-      </option>
-    </select>
-  </div>
-</div>
-
-<!-- Zone and Application -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
       Zone *
     </label>
     <select
@@ -307,22 +331,8 @@
       </option>
     </select>
   </div>
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      Application *
-    </label>
-    <select
-      [(ngModel)]="formData.applicationId"
-      name="applicationId"
-      required
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-    >
-      <option value="">Sélectionner une application</option>
-      <option *ngFor="let app of applications" [value]="app.id">
-        {{ app.code }} - {{ app.name }}
-      </option>
-    </select>
-  </div>
+ 
+  
 </div>
 
 

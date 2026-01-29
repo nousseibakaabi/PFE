@@ -17,6 +17,8 @@ import { ChefProjetComponent } from './components/chef-projet/chef-projet.compon
 import { CommercialComponent } from './components/commercial/commercial.component';
 import { DecideurComponent } from './components/decideur/decideur.component';
 import { ConventionArchiveComponent } from './components/convention-archive/convention-archive.component';
+import { AdminProjectComponent } from './components/admin-project/admin-project.component';
+import { ProjectComponent } from './components/project/project.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -72,6 +74,13 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_CHEF_PROJET'] } 
   },
+
+  { 
+    path: 'chef/projet', 
+    component: ProjectComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_CHEF_PROJET'] } 
+  },
      { 
     path: 'commercial', 
     component: CommercialComponent, 
@@ -84,6 +93,16 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_DECIDEUR'] } 
   },
+
+
+  { 
+    path: 'admin/projects', 
+    component: AdminProjectComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_ADMIN'] } 
+  },
+
+
 
   { path: '**', component: NotFoundComponent } // Keep this last
 ];

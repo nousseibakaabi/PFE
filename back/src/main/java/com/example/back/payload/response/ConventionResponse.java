@@ -1,3 +1,4 @@
+// ConventionResponse.java - UPDATED
 package com.example.back.payload.response;
 
 import lombok.Data;
@@ -38,9 +39,20 @@ public class ConventionResponse {
     private String zoneName;
     private String zoneCode;
 
+    // CHANGED: Project info instead of Application
+    private Long projectId;
+    private String projectCode;
+    private String projectName;
+    private String projectClientName;
+
+    // Application info through project
     private Long applicationId;
     private String applicationName;
     private String applicationCode;
+
+    // Chef de projet info through project
+    private Long chefDeProjetId;
+    private String chefDeProjetName;
 
     // Invoices
     private List<FactureResponse> factures;

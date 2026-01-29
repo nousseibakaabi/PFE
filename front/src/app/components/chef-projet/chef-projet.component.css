@@ -1,0 +1,134 @@
+
+.chef-projet-dashboard .dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stats-summary .bg-blue-100 {
+  background-color: #dbeafe;
+}
+
+.stats-summary .bg-green-100 {
+  background-color: #d1fae5;
+}
+
+.stats-summary .bg-yellow-100 {
+  background-color: #fef3c7;
+}
+
+.dark .stats-summary .bg-blue-900 {
+  background-color: #1e3a8a;
+}
+
+.dark .stats-summary .bg-green-900 {
+  background-color: #065f46;
+}
+
+.dark .stats-summary .bg-yellow-900 {
+  background-color: #92400e;
+}
+
+.bg-blue-100 {
+  background-color: #dbeafe;
+}
+
+.bg-green-100 {
+  background-color: #d1fae5;
+}
+
+.bg-red-100 {
+  background-color: #fee2e2;
+}
+
+.bg-yellow-100 {
+  background-color: #fef3c7;
+}
+
+.dark .bg-blue-900 {
+  background-color: #1e3a8a;
+}
+
+.dark .bg-green-900 {
+  background-color: #065f46;
+}
+
+.dark .bg-red-900 {
+  background-color: #7f1d1d;
+}
+
+.dark .bg-yellow-900 {
+  background-color: #92400e;
+}
+
+/* Status badge colors */
+.bg-blue-100.text-blue-800 {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.bg-green-100.text-green-800 {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.bg-gray-100.text-gray-800 {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.bg-yellow-100.text-yellow-800 {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.bg-red-100.text-red-800 {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.dark .bg-blue-100.text-blue-800 {
+  background-color: #1e3a8a;
+  color: #93c5fd;
+}
+
+.dark .bg-green-100.text-green-800 {
+  background-color: #065f46;
+  color: #6ee7b7;
+}
+
+.dark .bg-gray-100.text-gray-800 {
+  background-color: #374151;
+  color: #d1d5db;
+}
+
+.dark .bg-yellow-100.text-yellow-800 {
+  background-color: #92400e;
+  color: #fcd34d;
+}
+
+.dark .bg-red-100.text-red-800 {
+  background-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+/* Progress bar colors */
+.bg-green-500 {
+  background-color: #10b981;
+}
+
+.bg-blue-500 {
+  background-color: #3b82f6;
+}
+
+.bg-yellow-500 {
+  background-color: #f59e0b;
+}
+
+.bg-orange-500 {
+  background-color: #f97316;
+}
+
+.bg-red-500 {
+  background-color: #ef4444;
+}

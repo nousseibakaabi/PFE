@@ -1,3 +1,4 @@
+// FactureMapper.java - UPDATED
 package com.example.back.service.mapper;
 
 import com.example.back.entity.Facture;
@@ -34,7 +35,7 @@ public class FactureMapper {
             response.setConventionReference(facture.getConvention().getReferenceConvention());
             response.setConventionLibelle(facture.getConvention().getLibelle());
 
-            // Get related convention info
+            // Get structure info
             if (facture.getConvention().getStructureInterne() != null) {
                 response.setStructureInterneName(facture.getConvention().getStructureInterne().getName());
             }
@@ -44,8 +45,26 @@ public class FactureMapper {
             if (facture.getConvention().getZone() != null) {
                 response.setZoneName(facture.getConvention().getZone().getName());
             }
-            if (facture.getConvention().getApplication() != null) {
-                response.setApplicationName(facture.getConvention().getApplication().getName());
+
+            // Get project info (NEW)
+            if (facture.getConvention().getProject() != null) {
+                response.setProjectId(facture.getConvention().getProject().getId());
+                response.setProjectCode(facture.getConvention().getProject().getCode());
+                response.setProjectName(facture.getConvention().getProject().getName());
+                response.setProjectClientName(facture.getConvention().getProject().getClientName());
+
+                // Get application info through project
+                if (facture.getConvention().getProject().getApplication() != null) {
+                    response.setApplicationId(facture.getConvention().getProject().getApplication().getId());
+                    response.setApplicationName(facture.getConvention().getProject().getApplication().getName());
+                    response.setApplicationCode(facture.getConvention().getProject().getApplication().getCode());
+                }
+
+                // Get chef de projet info through project
+                if (facture.getConvention().getProject().getChefDeProjet() != null) {
+                    response.setChefDeProjetId(facture.getConvention().getProject().getChefDeProjet().getId());
+                    response.setChefDeProjetName(facture.getConvention().getProject().getChefProjetName());
+                }
             }
         }
 

@@ -1,0 +1,29 @@
+/* src/app/components/project/project.component.css */
+.project-container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.dark .project-container {
+  background-color: #111827;
+}
+
+.project-table {
+  min-width: 100%;
+}
+
+.project-table th {
+  background-color: #f9fafb;
+}
+
+.dark .project-table th {
+  background-color: #1f2937;
+}
+
+.project-table tr:hover {
+  background-color: #f3f4f6;
+}
+
+.dark .project-table tr:hover {
+  background-color: #374151;
+}

@@ -1,3 +1,4 @@
+// FactureResponse.java - UPDATED
 package com.example.back.payload.response;
 
 import lombok.Data;
@@ -24,14 +25,28 @@ public class FactureResponse {
     private LocalDateTime updatedAt;
     private boolean enRetard;
 
-    // Convention reference (without circular dependency)
+    // Convention reference
     private Long conventionId;
     private String conventionReference;
     private String conventionLibelle;
 
-    // Additional useful fields for display
+    // Project info (through convention)
+    private Long projectId;
+    private String projectCode;
+    private String projectName;
+    private String projectClientName;
+
+    // Application info (through project)
+    private Long applicationId;
+    private String applicationName;
+    private String applicationCode;
+
+    // Chef de projet info (through project)
+    private Long chefDeProjetId;
+    private String chefDeProjetName;
+
+    // Structure info (through convention)
     private String structureInterneName;
     private String structureExterneName;
     private String zoneName;
-    private String applicationName;
 }

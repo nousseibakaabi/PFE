@@ -1,5 +1,6 @@
 package com.example.back.repository;
 
+import com.example.back.entity.ERole;
 import com.example.back.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,4 +25,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByAccountLockedUntilBeforeAndLockedByAdminFalse(LocalDateTime dateTime);
 
+    List<User> findByRoles_Name(ERole role);
 }

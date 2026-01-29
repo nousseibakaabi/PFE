@@ -7,6 +7,7 @@ import { ChartService } from '../partials/services/chart.service';
 import { MapService } from '../partials/services/map.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslationService } from '../partials/traduction/translation.service';
+import { ProjectService } from 'src/app/services/project.service';
 
 interface AdminUser {
   id: number;
@@ -65,6 +66,11 @@ roleFilter: string = '';
 statusFilter: string = '';
 allUsers: AdminUser[] = []; // Store all users for filtering
 
+unassignedProjects: any[] = [];
+  selectedUserForAssignment: AdminUser | null = null;
+  showAssignmentModal = false;
+  projectsToAssign: any[] = []; // For storing selected projects
+
   addUserError = '';
   editDepartmentError = '';
   editRoleError = '';
@@ -99,7 +105,8 @@ allUsers: AdminUser[] = []; // Store all users for filtering
     private chartService: ChartService,
     private mapService: MapService,
     private fb: FormBuilder,
-    private trasnlationService: TranslationService
+    private trasnlationService: TranslationService,
+    private projectService: ProjectService
   ) {
     // Initialize forms
     this.addUserForm = this.fb.group({
@@ -793,14 +800,21 @@ onRoleRadioChange(event: any, roleValue: string): void {
 }
 
 
-onRoleRadio(roleValue: string): void {
-  // For radio buttons, set the form value to an array with just this role
-  this.editRoleForm.patchValue({
-    roles: [roleValue] // Single role in array
-  });
-  this.editRoleForm.get('roles')?.updateValueAndValidity();
-}
+// onRoleRadio(roleValue: string): void {
+//   // For radio buttons, set the form value to an array with just this role
+//   this.editRoleForm.patchValue({
+//     roles: [roleValue] // Single role in array
+//   });
+//   this.editRoleForm.get('roles')?.updateValueAndValidity();
+// }
 
+
+// Add this method to your AdminUsersComponent class
+getTotalSelectedBudget(): number {
+  return this.projectsToAssign.reduce((total, project) => {
+    return total + (project.budget || 0);
+  }, 0);
+}
   isAdmin(): boolean {
     return this.authService.isAdmin();
   }
@@ -990,4 +1004,114 @@ hideErrorMessage(): void {
     this.error = '';
   }, 300);
 }
+
+
+showAssignProjectsModal(user: AdminUser): void {
+    this.selectedUserForAssignment = user;
+    
+    // Fetch unassigned projects
+    this.projectService.getUnassignedProjects().subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.unassignedProjects = response.data;
+          this.projectsToAssign = []; // Reset selections
+          this.showAssignmentModal = true;
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching unassigned projects:', error);
+        this.showError('Failed to load unassigned projects');
+      }
+    });
+  }
+
+  // Handle project selection in modal
+  toggleProjectSelection(project: any): void {
+    const index = this.projectsToAssign.findIndex(p => p.id === project.id);
+    if (index === -1) {
+      this.projectsToAssign.push(project);
+    } else {
+      this.projectsToAssign.splice(index, 1);
+    }
+  }
+
+  // Check if project is selected
+  isProjectSelected(project: any): boolean {
+    return this.projectsToAssign.some(p => p.id === project.id);
+  }
+
+  // Assign selected projects to chef de projet
+  assignSelectedProjects(): void {
+    if (!this.selectedUserForAssignment || this.projectsToAssign.length === 0) {
+      return;
+    }
+
+    const chefId = this.selectedUserForAssignment.id;
+    let completedAssignments = 0;
+    let failedAssignments = 0;
+
+    // Show loading
+    this.loading = true;
+
+    // Assign each selected project
+    this.projectsToAssign.forEach((project, index) => {
+      this.projectService.assignChefDeProjet(project.id, chefId).subscribe({
+        next: () => {
+          completedAssignments++;
+          console.log(`Project ${project.code} assigned successfully`);
+          
+          // Remove from unassigned projects list
+          this.unassignedProjects = this.unassignedProjects.filter(p => p.id !== project.id);
+          
+          if (completedAssignments + failedAssignments === this.projectsToAssign.length) {
+            this.loading = false;
+            this.showAssignmentModal = false;
+            this.projectsToAssign = [];
+            
+            if (failedAssignments === 0) {
+              this.showSuccess(`Successfully assigned ${completedAssignments} project(s) to ${this.selectedUserForAssignment?.firstName} ${this.selectedUserForAssignment?.lastName}`);
+            } else {
+              this.showError(`Assigned ${completedAssignments} project(s), failed to assign ${failedAssignments} project(s)`);
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error assigning project:', error);
+          failedAssignments++;
+          
+          if (completedAssignments + failedAssignments === this.projectsToAssign.length) {
+            this.loading = false;
+            if (completedAssignments > 0) {
+              this.showSuccess(`Partially assigned ${completedAssignments} project(s), ${failedAssignments} failed`);
+            } else {
+              this.showError('Failed to assign projects');
+            }
+          }
+        }
+      });
+    });
+  }
+
+  // Close assignment modal
+  closeAssignmentModal(): void {
+    this.showAssignmentModal = false;
+    this.selectedUserForAssignment = null;
+    this.unassignedProjects = [];
+    this.projectsToAssign = [];
+  }
+
+  // Update the onRoleRadio method to trigger project assignment when role changes
+  onRoleRadio(roleValue: string): void {
+    // For radio buttons, set the form value to an array with just this role
+    this.editRoleForm.patchValue({
+      roles: [roleValue]
+    });
+    this.editRoleForm.get('roles')?.updateValueAndValidity();
+    
+    // If changing to Chef de Projet, offer to assign projects
+    if (roleValue === 'chef_projet' && this.selectedUser) {
+      // You could optionally call showAssignProjectsModal here
+      // or add a button in the UI to assign projects
+    }
+  }
 }

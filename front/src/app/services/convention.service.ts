@@ -44,6 +44,10 @@ export interface Convention {
   facturesPayees?: number;
   facturesNonPayees?: number;
   facturesEnRetard?: number;
+
+  projectId: number;
+  projectName: string;
+  projectCode: string;
 }
 
 export interface ConventionRequest {
@@ -56,7 +60,7 @@ export interface ConventionRequest {
   structureInterneId: number;
   structureExterneId: number;
   zoneId: number;
-  applicationId: number;
+  projectId: number; 
   montantTotal: number;
   periodicite: string;
 }

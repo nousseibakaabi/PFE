@@ -21,7 +21,7 @@ public class Convention {
     @Column(unique = true, nullable = false)
     private String referenceConvention;
 
-    @Column(unique = true)
+    @Column(name = "reference_erp", unique = true, nullable = false)
     private String referenceERP;
 
     @Column(nullable = false)
@@ -45,9 +45,9 @@ public class Convention {
     @JoinColumn(name = "zone_id", nullable = false)
     private ZoneGeographique zone;
 
-    @ManyToOne
-    @JoinColumn(name = "application_id", nullable = false)
-    private Application application;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "project_id")
+    private Project project;
 
     private java.math.BigDecimal montantTotal;
     private String periodicite;
@@ -487,9 +487,7 @@ public class Convention {
             return false;
         }
 
-        if (zone == null || application == null) {
-            return false;
-        }
+
 
         // If end date is provided, it must be after start date
         if (dateFin != null && !dateFin.isAfter(dateDebut)) {
@@ -559,5 +557,48 @@ public class Convention {
                 ", etat='" + etat + '\'' +
                 ", archived=" + archived +
                 '}';
+    }
+
+
+    /**
+     * Get application through project
+     */
+    public Application getApplication() {
+        return project != null ? project.getApplication() : null;
+    }
+
+    /**
+     * Get application name through project
+     */
+    public String getApplicationName() {
+        return project != null ? project.getApplicationName() : null;
+    }
+
+    /**
+     * Get client name from project
+     */
+    public String getClientNameFromProject() {
+        return project != null ? project.getClientName() : null;
+    }
+
+    /**
+     * Get chef de projet from project
+     */
+    public User getChefDeProjet() {
+        return project != null ? project.getChefDeProjet() : null;
+    }
+
+    /**
+     * Get project code
+     */
+    public String getProjectCode() {
+        return project != null ? project.getCode() : null;
+    }
+
+    /**
+     * Get project name
+     */
+    public String getProjectName() {
+        return project != null ? project.getName() : null;
     }
 }
