@@ -95,7 +95,14 @@ public class Facture {
 
     @Transient
     public boolean isEnRetard() {
-        return "NON_PAYE".equals(statutPaiement) &&
-                LocalDate.now().isAfter(dateEcheance);
+        if ("PAYE".equals(statutPaiement)) {
+            return false; // Paid invoices are not overdue
+        }
+
+        if (dateEcheance == null) {
+            return false;
+        }
+
+        return LocalDate.now().isAfter(dateEcheance);
     }
 }

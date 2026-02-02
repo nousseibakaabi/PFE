@@ -35,6 +35,8 @@ import { StatsService } from './services/stats.service';
 import { ConventionArchiveComponent } from './components/convention-archive/convention-archive.component';
 import { AdminProjectComponent } from './components/admin-project/admin-project.component';
 import { ProjectComponent } from './components/project/project.component';
+import { CalendarComponent } from './components/calendar/calendar.component';
+import { FullCalendarModule } from '@fullcalendar/angular';
 
 @NgModule({
   declarations: [
@@ -64,6 +66,7 @@ import { ProjectComponent } from './components/project/project.component';
     ConventionArchiveComponent,
     AdminProjectComponent,
     ProjectComponent,
+    CalendarComponent,
   ],
   imports: [
     BrowserModule,
@@ -72,6 +75,8 @@ import { ProjectComponent } from './components/project/project.component';
     RouterModule,
     HttpClientModule,
     ReactiveFormsModule,
+    FullCalendarModule
+
     
   ],
   providers: [

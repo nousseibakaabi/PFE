@@ -50,4 +50,24 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
     // You can keep the existing method too, or rename it
     @Query("SELECT f FROM Facture f WHERE f.dateEcheance < :date AND f.statutPaiement = 'NON_PAYE'")
     List<Facture> findFacturesEnRetard(@Param("date") LocalDate date);
+
+
+    @Query("SELECT f FROM Facture f WHERE f.dateEcheance = :date")
+    List<Facture> findByDateEcheance(@Param("date") LocalDate date);
+
+    @Query("SELECT f FROM Facture f WHERE f.dateEcheance BETWEEN :startDate AND :endDate")
+    List<Facture> findByDateEcheanceBetween(@Param("startDate") LocalDate startDate,
+                                            @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT f FROM Facture f WHERE f.dateEcheance BETWEEN :startDate AND :endDate AND f.statutPaiement != :status")
+    List<Facture> findByDateEcheanceBetweenAndStatutPaiementNot(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("status") String status);
+
+    @Query("SELECT f FROM Facture f WHERE f.dateEcheance BETWEEN :startDate AND :endDate AND f.statutPaiement = :status")
+    List<Facture> findByDateEcheanceBetweenAndStatutPaiement(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("status") String status);
 }

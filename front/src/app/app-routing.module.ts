@@ -19,6 +19,7 @@ import { DecideurComponent } from './components/decideur/decideur.component';
 import { ConventionArchiveComponent } from './components/convention-archive/convention-archive.component';
 import { AdminProjectComponent } from './components/admin-project/admin-project.component';
 import { ProjectComponent } from './components/project/project.component';
+import { CalendarComponent } from './components/calendar/calendar.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -27,6 +28,12 @@ const routes: Routes = [
   { path: 'forget-password', component: ForgetPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'email-sent', component: EmailSendComponent },
+    { 
+    path: 'commercial/calendar', 
+    component: CalendarComponent,
+   canActivate: [AuthGuard],
+    data: { roles: ['ROLE_COMMERCIAL_METIER'] }
+  } ,
   
    { 
     path: 'admin', 
@@ -101,6 +108,8 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_ADMIN'] } 
   },
+
+
 
 
 
