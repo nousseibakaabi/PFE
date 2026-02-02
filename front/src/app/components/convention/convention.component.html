@@ -1,83 +1,19 @@
-<div class="p-6">
-  <!-- Header -->
-  <div class="mb-6">
-    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Gestion des Conventions</h2>
-    <p class="text-gray-600 dark:text-gray-400">Gérez toutes vos conventions commerciales</p>
-  </div>
-
-  <!-- Messages -->
-  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-    <div class="flex items-center">
-      <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-      </svg>
-      <span class="text-green-700">{{ successMessage }}</span>
-    </div>
-  </div>
-<!-- Replace the current error message display with: -->
-<div *ngIf="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-  <div class="flex">
-    <svg class="w-5 h-5 text-red-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-    </svg>
-    <div class="flex-1">
-      <p class="text-red-700 font-medium">{{ errorMessage }}</p>
-      <div *ngIf="selectedConventionForInvoices && relatedInvoices.length > 0" class="mt-2">
-        <button 
-          (click)="showInvoicesModal = true"
-          class="text-sm text-blue-600 hover:text-blue-800 underline"
-        >
-          Voir les {{ relatedInvoices.length }} facture(s) associée(s)
-        </button>
+<div class="container mx-auto p-3 md:p-4">
+  <!-- Header - Compact -->
+  <div class="mb-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Gestion des Conventions</h2>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">Gérez vos conventions commerciales</p>
       </div>
-    </div>
-    <button 
-      (click)="errorMessage = ''"
-      class="text-red-500 hover:text-red-700"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </button>
-  </div>
-</div>
-
-  <!-- Filters and Actions -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div class="flex flex-col sm:flex-row gap-4 flex-1">
-        <!-- Search -->
-        <div class="relative flex-1">
-          <input
-            type="text"
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="searchConventions()"
-            placeholder="Rechercher par référence, libellé..."
-            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          />
-          <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-
-        <!-- Status Filter -->
-<select
-  [(ngModel)]="filterEtat"
-  (ngModelChange)="applyFilters()"
-  class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
->
-  <option value="">Tous les états</option>
-  <option *ngFor="let etat of etats" [value]="etat">{{ getEtatLabel(etat) }}</option>
-</select>
-      </div>
-
-      <!-- Create Button -->
+      
+      <!-- Create Button - Cuter -->
       <button
         *ngIf="canEdit()"
         (click)="openCreateModal()"
-        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+        class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center"
       >
-        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         Nouvelle Convention
@@ -85,541 +21,568 @@
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="text-center py-8">
-    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    <p class="mt-2 text-gray-600 dark:text-gray-400">Chargement...</p>
+  <!-- Messages - Cuter -->
+  <div *ngIf="successMessage" class="mb-4 p-3 bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-900/5 border border-green-200 dark:border-green-800/30 rounded-xl">
+    <div class="flex items-center">
+      <div class="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center mr-3">
+        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <span class="text-green-700 dark:text-green-300 text-sm font-medium">{{ successMessage }}</span>
+    </div>
   </div>
 
-  <!-- Conventions Table -->
-  <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+  <!-- Error Message - Compact -->
+  <div *ngIf="errorMessage" class="mb-4 p-3 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-900/10 dark:to-red-900/5 border border-red-200 dark:border-red-800/30 rounded-xl">
+    <div class="flex">
+      <div class="w-8 h-8 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
+        <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-red-700 dark:text-red-300 text-sm font-medium">{{ errorMessage }}</p>
+        <div *ngIf="selectedConventionForInvoices && relatedInvoices.length > 0" class="mt-1.5">
+          <button 
+            (click)="showInvoicesModal = true"
+            class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
+          >
+            Voir les {{ relatedInvoices.length }} facture(s) associée(s)
+          </button>
+        </div>
+      </div>
+      <button 
+        (click)="errorMessage = ''"
+        class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2 flex-shrink-0"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters - Compact -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-5 p-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div class="flex flex-col sm:flex-row gap-3 flex-1">
+        <!-- Search -->
+        <div class="relative flex-1">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="searchConventions()"
+            placeholder="Rechercher..."
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          />
+          <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+
+        <!-- Status Filter -->
+        <select
+          [(ngModel)]="filterEtat"
+          (ngModelChange)="applyFilters()"
+          class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm min-w-[140px]"
+        >
+          <option value="">Tous les états</option>
+          <option *ngFor="let etat of etats" [value]="etat">{{ getEtatLabel(etat) }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+    <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">Chargement...</p>
+  </div>
+
+  <!-- Conventions Table - Compact -->
+  <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <!-- Update the table header and body -->
-<thead class="bg-gray-50 dark:bg-gray-700">
-  <tr>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-      Référence Convention
-    </th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-      Référence ERP
-    </th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-      Libellé
-    </th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-      Structures
-    </th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-      Dates
-    </th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-      Montant
-    </th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-      État
-    </th>
-    <th *ngIf="canEdit()" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-      Actions
-    </th>
-  </tr>
-</thead>
-<tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-  <tr *ngFor="let convention of filteredConventions" class="hover:bg-gray-50 dark:hover:bg-gray-700">
-    <td class="px-6 py-4 whitespace-nowrap">
-      <div class="font-medium text-gray-900 dark:text-white">{{ convention.referenceConvention }}</div>
-    </td>
-    <td class="px-6 py-4 whitespace-nowrap">
-      <div class="text-gray-900 dark:text-white">{{ convention.referenceERP || '-' }}</div>
-    </td>
-    <td class="px-6 py-4">
-      <div class="text-gray-900 dark:text-white">{{ convention.libelle }}</div>
-    </td>
-    <td class="px-6 py-4">
-      <div class="text-sm">
-        <div class="text-gray-900 dark:text-white">
-          <span class="font-medium">Interne:</span> {{ convention.structureInterneName || '-' }}
-        </div>
-        <div class="text-gray-500 dark:text-gray-400">
-          <span class="font-medium">Externe:</span> {{ convention.structureExterneName || '-' }}
-        </div>
-      </div>
-    </td>
-    <td class="px-6 py-4 whitespace-nowrap">
-      <div class="text-sm text-gray-900 dark:text-white">
-        Début: {{ convention.dateDebut | date:'dd/MM/yyyy' }}
-      </div>
-      <div class="text-sm text-gray-500 dark:text-gray-400">
-        Fin: {{ convention.dateFin | date:'dd/MM/yyyy' }}
-      </div>
-    </td>
-    <td class="px-6 py-4 whitespace-nowrap">
-      <div class="text-gray-900 dark:text-white font-medium">
-        {{ convention.montantTotal | currency:'TND':'symbol':'1.2-2' }}
-      </div>
-    </td>
-    <td class="px-6 py-4 whitespace-nowrap">
-      <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getEtatClass(convention.etat)">
-        {{ getEtatLabel(convention.etat) }}
-      </span>
-    </td>
-    <td *ngIf="canEdit()" class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-      <div class="flex space-x-2">
-        <button
-          (click)="openEditModal(convention)"
-          class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-          [disabled]="convention.archived"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        </button>
-        
-        <!-- Archive button for active conventions -->
-        <button
-          *ngIf="!convention.archived"
-          (click)="openArchiveModal(convention)"
-          class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-          </svg>
-        </button>
-        
-        <!-- Restore button for archived conventions -->
-        <button
-          *ngIf="convention.archived"
-          (click)="openRestoreModal(convention)"
-          class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
-      </div>
-    </td>
-  </tr>
-</tbody>
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Référence</th>
+            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Libellé</th>
+            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Structures</th>
+            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Dates</th>
+            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Montant</th>
+            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">État</th>
+            <th *ngIf="canEdit()" class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300"></th>
+          </tr>
+        </thead>
+        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tr *ngFor="let convention of filteredConventions" 
+              class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            
+            <td class="px-4 py-3">
+              <div class="font-medium text-gray-800 dark:text-white">{{ convention.referenceConvention }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ convention.referenceERP || '-' }}</div>
+            </td>
+            
+            <td class="px-4 py-3">
+              <div class="text-gray-800 dark:text-white">{{ convention.libelle }}</div>
+            </td>
+            
+            <td class="px-4 py-3">
+              <div class="text-xs">
+                <div class="text-gray-800 dark:text-white truncate max-w-[120px]">
+                  <span class="font-medium">I:</span> {{ convention.structureInterneName || '-' }}
+                </div>
+                <div class="text-gray-500 dark:text-gray-400 truncate max-w-[120px]">
+                  <span class="font-medium">E:</span> {{ convention.structureExterneName || '-' }}
+                </div>
+              </div>
+            </td>
+            
+            <td class="px-4 py-3">
+              <div class="text-xs">
+                <div class="text-gray-800 dark:text-white">D: {{ convention.dateDebut | date:'dd/MM' }}</div>
+                <div class="text-gray-500 dark:text-gray-400">F: {{ convention.dateFin | date:'dd/MM' }}</div>
+              </div>
+            </td>
+            
+            <td class="px-4 py-3">
+              <div class="font-medium text-blue-600 dark:text-blue-400">
+                {{ convention.montantTotal | currency:'TND':'symbol':'1.2-2' }}
+              </div>
+            </td>
+            
+            <td class="px-4 py-3">
+              <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getEtatClass(convention.etat)">
+                {{ getEtatLabel(convention.etat) }}
+              </span>
+            </td>
+            
+            <td *ngIf="canEdit()" class="px-4 py-3">
+              <div class="flex items-center space-x-1">
+                <button
+                  (click)="openEditModal(convention)"
+                  class="p-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                  [disabled]="convention.archived"
+                  title="Modifier"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                
+                <!-- Archive button -->
+                <button
+                  *ngIf="!convention.archived"
+                  (click)="openArchiveModal(convention)"
+                  class="p-1.5 text-yellow-600 hover:text-yellow-700 dark:text-yellow-400 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors"
+                  title="Archiver"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                  </svg>
+                </button>
+                
+                <!-- Restore button -->
+                <button
+                  *ngIf="convention.archived"
+                  (click)="openRestoreModal(convention)"
+                  class="p-1.5 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                  title="Restaurer"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Modal -->
-  <div *ngIf="showModal" class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <!-- Background -->
-      <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-      </div>
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredConventions.length === 0" class="text-center py-12">
+    <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+      <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-1">Aucune convention trouvée</h3>
+    <p class="text-gray-500 dark:text-gray-400 text-sm">Commencez par créer votre première convention</p>
+    <button *ngIf="canEdit()"
+            (click)="openCreateModal()"
+            class="mt-4 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow">
+      Créer une convention
+    </button>
+  </div>
+</div>
 
-      <!-- Modal Panel -->
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-        <!-- Header -->
-        <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-            {{ isEditing ? 'Modifier Convention' : 'Nouvelle Convention' }}
-          </h3>
+<!-- Create/Edit Modal - Cuter -->
+<div *ngIf="showModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full p-5 animate-fadeIn">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white">
+          {{ isEditing ? 'Modifier Convention' : 'Nouvelle Convention' }}
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">Remplissez les informations</p>
+      </div>
+      <button (click)="closeModal()" 
+              class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <form (ngSubmit)="saveConvention()" class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+      <!-- Reference fields -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Référence Convention *
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="formData.referenceConvention"
+            name="referenceConvention"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+            placeholder="CONV-2024-001"
+          />
         </div>
-
-        <!-- Form -->
-        <form (ngSubmit)="saveConvention()" class="px-6 py-4">
-          <div class="space-y-4">
-           <!-- Reference fields -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      Référence Convention *
-    </label>
-    <input
-      type="text"
-      [(ngModel)]="formData.referenceConvention"
-      name="referenceConvention"
-      required
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-      placeholder="CONV-2024-001"
-    />
-  </div>
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      Référence ERP
-    </label>
-    <input
-      type="text"
-      [(ngModel)]="formData.referenceERP"
-      name="referenceERP"
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-      placeholder="ERP-REF-001"
-    />
-  </div>
-</div>
-
-<!-- Two structures -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-
-  <div>
-  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-    Projet *
-  </label>
-  <select 
-    [(ngModel)]="formData.projectId" 
-    name="projectId" 
-    required
-    (change)="onProjectSelected(formData.projectId)" 
-    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-  >
-    <option value="">Sélectionner un projet</option>
-    <option *ngFor="let project of projects" [value]="project.id">
-      {{ project.code }} - {{ project.name }} ({{ project.clientName }})
-    </option>
-  </select>
-</div>
-
-
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      Structure Externe (Payer) *
-    </label>
-    <select
-      [(ngModel)]="formData.structureExterneId"
-      name="structureExterneId"
-      required
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-    >
-      <option value="">Sélectionner une structure externe</option>
-      <option *ngFor="let structure of structures" [value]="structure.id">
-        {{ structure.code }} - {{ structure.name }}
-      </option>
-    </select>
-  </div>
-
-
-</div>
-
-<!-- Zone and Application -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-    <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      Structure Interne (CNI) *
-    </label>
-    <select
-      [(ngModel)]="formData.structureInterneId"
-      name="structureInterneId"
-      required
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-    >
-      <option value="">Sélectionner une structure interne</option>
-      <option *ngFor="let structure of structures" [value]="structure.id">
-        {{ structure.code }} - {{ structure.name }}
-      </option>
-    </select>
-  </div>
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      Zone *
-    </label>
-    <select
-      [(ngModel)]="formData.zoneId"
-      name="zoneId"
-      required
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-    >
-      <option value="">Sélectionner une zone</option>
-      <option *ngFor="let zone of zones" [value]="zone.id">
-        {{ zone.code }} - {{ zone.name }}
-      </option>
-    </select>
-  </div>
- 
-  
-</div>
-
-
-
-            <!-- Libellé -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Libellé *
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="formData.libelle"
-                name="libelle"
-                required
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Libellé de la convention"
-              />
-            </div>
-
-            <!-- Dates -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Date Début *
-                </label>
-                <input
-                  type="date"
-                  [(ngModel)]="formData.dateDebut"
-                  name="dateDebut"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Date Fin
-                </label>
-                <input
-                  type="date"
-                  [(ngModel)]="formData.dateFin"
-                  name="dateFin"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Date Signature
-                </label>
-                <input
-                  type="date"
-                  [(ngModel)]="formData.dateSignature"
-                  name="dateSignature"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-            </div>
-
-           
-            <!-- Montant and Périodicité -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Montant Total (TND)
-                </label>
-                <input
-                  type="number"
-                  [(ngModel)]="formData.montantTotal"
-                  name="montantTotal"
-                  step="0.01"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="0.00"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Modalités de Paiement
-                </label>
-                <select
-                  [(ngModel)]="formData.periodicite"
-                  name="periodicite"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="">Sélectionner</option>
-                  <option *ngFor="let periodicite of periodicites" [value]="periodicite">
-                    {{ periodicite }}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-           
-
-            
-          </div>
-
-          <!-- Form Error -->
-          <div *ngIf="errorMessage" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p class="text-sm text-red-600">{{ errorMessage }}</p>
-          </div>
-
-          <!-- Actions -->
-          <div class="mt-6 flex justify-end space-x-3">
-            <button
-              type="button"
-              (click)="closeModal()"
-              class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              [disabled]="loading"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span *ngIf="loading">
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Enregistrement...
-              </span>
-              <span *ngIf="!loading">
-                {{ isEditing ? 'Mettre à jour' : 'Créer' }}
-              </span>
-            </button>
-          </div>
-        </form>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Référence ERP
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="formData.referenceERP"
+            name="referenceERP"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+            placeholder="ERP-REF-001"
+          />
+        </div>
       </div>
-    </div>
-  </div>
 
-
-  <!-- Add this after the existing modal (before the closing </div>) -->
-
-<!-- Invoices Modal -->
-<div *ngIf="showInvoicesModal" class="fixed inset-0 z-50 overflow-y-auto">
-  <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-    <!-- Background -->
-    <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-      <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-    </div>
-
-    <!-- Modal Panel -->
-    <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-      <!-- Header -->
-      <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-        <div class="flex justify-between items-center">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-            Factures de la Convention
-          </h3>
-          <button 
-            (click)="closeInvoicesModal()"
-            class="text-gray-400 hover:text-gray-500"
+      <!-- Structures -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Projet *
+          </label>
+          <select 
+            [(ngModel)]="formData.projectId" 
+            name="projectId" 
+            required
+            (change)="onProjectSelected(formData.projectId)" 
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
           >
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+            <option value="">Sélectionner un projet</option>
+            <option *ngFor="let project of projects" [value]="project.id">
+              {{ project.code }} - {{ project.name }}
+            </option>
+          </select>
         </div>
-        <p *ngIf="selectedConventionForInvoices" class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Structure Externe *
+          </label>
+          <select
+            [(ngModel)]="formData.structureExterneId"
+            name="structureExterneId"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          >
+            <option value="">Sélectionner une structure externe</option>
+            <option *ngFor="let structure of structures" [value]="structure.id">
+              {{ structure.code }} - {{ structure.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- More fields -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Structure Interne *
+          </label>
+          <select
+            [(ngModel)]="formData.structureInterneId"
+            name="structureInterneId"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          >
+            <option value="">Sélectionner une structure interne</option>
+            <option *ngFor="let structure of structures" [value]="structure.id">
+              {{ structure.code }} - {{ structure.name }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Zone *
+          </label>
+          <select
+            [(ngModel)]="formData.zoneId"
+            name="zoneId"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          >
+            <option value="">Sélectionner une zone</option>
+            <option *ngFor="let zone of zones" [value]="zone.id">
+              {{ zone.code }} - {{ zone.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Libellé -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          Libellé *
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="formData.libelle"
+          name="libelle"
+          required
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          placeholder="Libellé de la convention"
+        />
+      </div>
+
+      <!-- Dates -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Date Début *
+          </label>
+          <input
+            type="date"
+            [(ngModel)]="formData.dateDebut"
+            name="dateDebut"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Date Fin
+          </label>
+          <input
+            type="date"
+            [(ngModel)]="formData.dateFin"
+            name="dateFin"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Date Signature
+          </label>
+          <input
+            type="date"
+            [(ngModel)]="formData.dateSignature"
+            name="dateSignature"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          />
+        </div>
+      </div>
+
+      <!-- Montant and Périodicité -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Montant Total (TND)
+          </label>
+          <input
+            type="number"
+            [(ngModel)]="formData.montantTotal"
+            name="montantTotal"
+            step="0.01"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+            placeholder="0.00"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Modalités de Paiement
+          </label>
+          <select
+            [(ngModel)]="formData.periodicite"
+            name="periodicite"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          >
+            <option value="">Sélectionner</option>
+            <option *ngFor="let periodicite of periodicites" [value]="periodicite">
+              {{ periodicite }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="p-3 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-900/10 dark:to-red-900/5 border border-red-200 dark:border-red-800/30 rounded-xl">
+        <p class="text-sm text-red-600 dark:text-red-300">{{ errorMessage }}</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex space-x-3 pt-2">
+        <button type="button" (click)="closeModal()" 
+                class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm">
+          Annuler
+        </button>
+        <button type="submit" [disabled]="loading" 
+                class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+          <span *ngIf="loading">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Enregistrement...
+          </span>
+          <span *ngIf="!loading">{{ isEditing ? 'Mettre à jour' : 'Créer' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Invoices Modal - Cuter -->
+<div *ngIf="showInvoicesModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full p-5 animate-fadeIn">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white">Factures Associées</h3>
+        <p *ngIf="selectedConventionForInvoices" class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
           {{ selectedConventionForInvoices.referenceConvention }} - {{ selectedConventionForInvoices.libelle }}
         </p>
       </div>
-
-      <!-- Invoices List -->
-      <div class="px-6 py-4 max-h-96 overflow-y-auto">
-        <div *ngIf="relatedInvoices.length === 0" class="text-center py-8">
-          <p class="text-gray-500 dark:text-gray-400">Aucune facture trouvée pour cette convention.</p>
+      <button (click)="closeInvoicesModal()" 
+              class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <div class="max-h-[60vh] overflow-y-auto pr-2">
+      <div *ngIf="relatedInvoices.length === 0" class="text-center py-8">
+        <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         </div>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Aucune facture trouvée pour cette convention.</p>
+      </div>
 
-        <div *ngIf="relatedInvoices.length > 0" class="space-y-4">
-          <div *ngFor="let invoice of relatedInvoices" 
-               class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-            <div class="flex justify-between items-start">
-              <div>
-                <h4 class="font-medium text-gray-900 dark:text-white">
-                  {{ invoice.numeroFacture }}
-                </h4>
-                <div class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  <div>Date facturation: {{ invoice.dateFacturation | date:'dd/MM/yyyy' }}</div>
-                  <div>Date échéance: {{ invoice.dateEcheance | date:'dd/MM/yyyy' }}</div>
-                  <div>Montant TTC: {{ invoice.montantTTC | currency:'TND':'symbol':'1.2-2' }}</div>
-                </div>
-              </div>
-              <div>
-                <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getInvoiceStatusClass(invoice.statutPaiement)">
-                  {{ getInvoiceStatusLabel(invoice.statutPaiement) }}
-                </span>
+      <div *ngIf="relatedInvoices.length > 0" class="space-y-3">
+        <div *ngFor="let invoice of relatedInvoices" 
+             class="bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-900/10 dark:to-gray-900/5 p-3 rounded-xl border border-gray-200 dark:border-gray-700/50">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="font-medium text-gray-800 dark:text-white text-sm">{{ invoice.numeroFacture }}</h4>
+              <div class="mt-1 text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
+                <div>Fact: {{ invoice.dateFacturation | date:'dd/MM/yyyy' }}</div>
+                <div>Éch: {{ invoice.dateEcheance | date:'dd/MM/yyyy' }}</div>
+                <div class="font-medium text-blue-600 dark:text-blue-400">{{ invoice.montantTTC | currency:'TND':'symbol':'1.2-2' }}</div>
               </div>
             </div>
-            <div *ngIf="invoice.notes" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              <span class="font-medium">Notes:</span> {{ invoice.notes }}
+            <div>
+              <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getInvoiceStatusClass(invoice.statutPaiement)">
+                {{ getInvoiceStatusLabel(invoice.statutPaiement) }}
+              </span>
             </div>
-            <div *ngIf="invoice.statutPaiement === 'PAYE'" class="mt-2 text-sm text-green-600">
-              <span class="font-medium">Payée le:</span> {{ invoice.datePaiement | date:'dd/MM/yyyy' }}
-              <span *ngIf="invoice.modePaiement"> - {{ invoice.modePaiement }}</span>
-            </div>
+          </div>
+          <div *ngIf="invoice.notes" class="mt-2 text-xs text-gray-600 dark:text-gray-400">
+            <span class="font-medium">Notes:</span> {{ invoice.notes }}
+          </div>
+          <div *ngIf="invoice.statutPaiement === 'PAYE'" class="mt-2 text-xs text-green-600 dark:text-green-400">
+            <span class="font-medium">Payée le:</span> {{ invoice.datePaiement | date:'dd/MM/yyyy' }}
+            <span *ngIf="invoice.modePaiement"> - {{ invoice.modePaiement }}</span>
           </div>
         </div>
       </div>
-
-      <!-- Footer -->
-      <div class="bg-gray-50 dark:bg-gray-700 px-6 py-3 border-t border-gray-200 dark:border-gray-600">
-        <div class="flex justify-end">
-          <button
-            (click)="closeInvoicesModal()"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Fermer
-          </button>
-        </div>
-      </div>
+    </div>
+    
+    <div class="flex justify-end pt-4">
+      <button (click)="closeInvoicesModal()"
+              class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-sm font-medium transition-all duration-200">
+        Fermer
+      </button>
     </div>
   </div>
 </div>
 
-<div *ngIf="showArchiveModal" class="fixed inset-0 z-50 overflow-y-auto">
-  <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-    <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-      <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-    </div>
-    
-    <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-      <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-          Archiver la Convention
-        </h3>
-        <p *ngIf="selectedConvention" class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+<!-- Archive Modal - Cuter -->
+<div *ngIf="showArchiveModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-5 animate-fadeIn">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white">Archiver la Convention</h3>
+        <p *ngIf="selectedConvention" class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
           {{ selectedConvention.referenceConvention }} - {{ selectedConvention.libelle }}
         </p>
       </div>
-      
-      <div class="px-6 py-4">
-        <div class="mb-4">
-  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-    Raison de l'archivage *
-    <span class="text-red-500">(minimum 5 caractères)</span>
-  </label>
-  <textarea
-    [(ngModel)]="archiveReason"
-    rows="3"
-    minlength="5"
-    maxlength="500"
-    #reasonInput="ngModel"
-    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-    placeholder="Pourquoi archivez-vous cette convention ? "
-    required
-  ></textarea>
-  
-  <!-- Show validation errors -->
-  <div *ngIf="reasonInput.invalid && (reasonInput.dirty || reasonInput.touched)" class="mt-1 text-sm text-red-600">
-    <div *ngIf="reasonInput.errors?.['required']">
-      La raison est requise
+      <button (click)="closeArchiveModal()" 
+              class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
-    <div *ngIf="reasonInput.errors?.['minlength']">
-      La raison doit contenir au moins 5 caractères
-    </div>
-    <div *ngIf="reasonInput.errors?.['maxlength']">
-      La raison ne doit pas dépasser 500 caractères
-    </div>
-  </div>
-  
-  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-    Note: Toutes les factures associées doivent être payées pour archiver.
-  </p>
-</div>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Raison de l'archivage *
+          <span class="text-red-500 text-xs">(minimum 5 caractères)</span>
+        </label>
+        <textarea
+          [(ngModel)]="archiveReason"
+          rows="3"
+          minlength="5"
+          maxlength="500"
+          #reasonInput="ngModel"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          placeholder="Pourquoi archivez-vous cette convention ?"
+          required
+        ></textarea>
         
-        <div class="mt-6 flex justify-end space-x-3">
-          <button
-            type="button"
-            (click)="closeArchiveModal()"
-            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            Annuler
-          </button>
-          <button
-            (click)="archiveConvention()"
-            [disabled]="loading || !archiveReason.trim()"
-            class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Archiver
-          </button>
+        <div *ngIf="reasonInput.invalid && (reasonInput.dirty || reasonInput.touched)" class="mt-1.5 text-xs text-red-600 space-y-0.5">
+          <div *ngIf="reasonInput.errors?.['required']">La raison est requise</div>
+          <div *ngIf="reasonInput.errors?.['minlength']">Minimum 5 caractères</div>
+          <div *ngIf="reasonInput.errors?.['maxlength']">Maximum 500 caractères</div>
         </div>
+        
+        <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+          Note: Toutes les factures associées doivent être payées pour archiver.
+        </p>
+      </div>
+      
+      <div class="flex space-x-3 pt-2">
+        <button type="button" (click)="closeArchiveModal()" 
+                class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm">
+          Annuler
+        </button>
+        <button (click)="archiveConvention()"
+                [disabled]="loading || !archiveReason.trim() || archiveReason.trim().length < 5"
+                class="flex-1 px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+          <span *ngIf="loading">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Archivage...
+          </span>
+          <span *ngIf="!loading">Archiver</span>
+        </button>
       </div>
     </div>
   </div>
-</div>
-
-
 </div>

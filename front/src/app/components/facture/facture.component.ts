@@ -27,6 +27,10 @@ export class FactureComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+    currentPage = 1;
+  itemsPerPage = 7;
+  paginatedFactures: Facture[] = [];
+
   // Invoice form
   invoiceForm: FactureRequest = {
     conventionId: 0,
@@ -64,23 +68,59 @@ export class FactureComponent implements OnInit {
     this.loadStructures(); // Optional: for reference
   }
 
-  loadFactures(): void {
-    this.loading = true;
-    this.factureService.getAllFactures().subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.factures = response.data;
-          this.filteredFactures = [...this.factures];
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading invoices:', error);
-        this.errorMessage = 'Failed to load invoices';
-        this.loading = false;
-      }
-    });
+
+
+searchFactures(): void {
+  if (!this.searchTerm.trim()) {
+    this.filteredFactures = this.filterByStatut(this.factures);
+    this.currentPage = 1;
+    this.updatePagination();
+    return;
   }
+
+  const term = this.searchTerm.toLowerCase();
+  this.filteredFactures = this.filterByStatut(this.factures).filter(facture =>
+    facture.numeroFacture.toLowerCase().includes(term) ||
+    facture.conventionReference?.toLowerCase().includes(term) ||
+    facture.conventionLibelle?.toLowerCase().includes(term) ||
+    facture.structureInterneName?.toLowerCase().includes(term) ||
+    facture.structureExterneName?.toLowerCase().includes(term) ||
+    facture.statutPaiement.toLowerCase().includes(term) ||
+    facture.datePaiement?.toLowerCase().includes(term) ||
+    (facture.referencePaiement?.toLowerCase().includes(term))
+  );
+  this.currentPage = 1;
+  this.updatePagination();
+}
+applyFilters(): void {
+  this.filteredFactures = this.filterByStatut(this.factures);
+  if (this.searchTerm.trim()) {
+    this.searchFactures();
+  } else {
+    this.currentPage = 1; // Reset to first page
+    this.updatePagination();
+  }
+}
+
+loadFactures(): void {
+  this.loading = true;
+  this.factureService.getAllFactures().subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.factures = response.data;
+        this.filteredFactures = [...this.factures];
+        this.currentPage = 1; // Reset to first page
+        this.updatePagination();
+      }
+      this.loading = false;
+    },
+    error: (error) => {
+      console.error('Error loading invoices:', error);
+      this.errorMessage = 'Failed to load invoices';
+      this.loading = false;
+    }
+  });
+}
 
   loadConventions(): void {
     this.conventionService.getAllConventions().subscribe({
@@ -107,20 +147,6 @@ export class FactureComponent implements OnInit {
     });
   }
 
-  searchFactures(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredFactures = this.filterByStatut(this.factures);
-      return;
-    }
-
-    const term = this.searchTerm.toLowerCase();
-    this.filteredFactures = this.filterByStatut(this.factures).filter(facture =>
-      facture.numeroFacture.toLowerCase().includes(term) ||
-      facture.convention?.reference?.toLowerCase().includes(term) ||
-      facture.convention?.libelle?.toLowerCase().includes(term) ||
-      (facture.referencePaiement?.toLowerCase().includes(term))
-    );
-  }
 
   filterByStatut(factures: Facture[]): Facture[] {
     if (!this.filterStatut) {
@@ -129,13 +155,11 @@ export class FactureComponent implements OnInit {
     return factures.filter(facture => facture.statutPaiement === this.filterStatut);
   }
 
-  applyFilters(): void {
-    this.filteredFactures = this.filterByStatut(this.factures);
-    if (this.searchTerm.trim()) {
-      this.searchFactures();
-    }
-  }
 
+  getMath(): any {
+  return Math;
+}
+ 
   openInvoiceModal(): void {
     this.invoiceForm = {
       conventionId: 0,
@@ -289,6 +313,47 @@ get facturesNonPayeesCount(): number {
 
 get facturesEnRetardCount(): number {
   return this.factures.filter(f => this.isOverdue(f)).length;
+}
+
+
+updatePagination(): void {
+  const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+  const endIndex = startIndex + this.itemsPerPage;
+  this.paginatedFactures = this.filteredFactures.slice(startIndex, endIndex);
+}
+
+// Get total pages
+get totalPages(): number {
+  return Math.ceil(this.filteredFactures.length / this.itemsPerPage);
+}
+
+// Get page numbers to display
+get pageNumbers(): number[] {
+  const pages = [];
+  const total = this.totalPages;
+  const current = this.currentPage;
+  
+  // Show up to 5 page numbers
+  let start = Math.max(1, current - 2);
+  let end = Math.min(total, start + 4);
+  
+  if (end - start < 4) {
+    start = Math.max(1, end - 4);
+  }
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  
+  return pages;
+}
+
+// Change page
+goToPage(page: number): void {
+  if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+    this.currentPage = page;
+    this.updatePagination();
+  }
 }
 
 }
