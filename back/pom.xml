@@ -18,6 +18,17 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>back</name>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <url>http://localhost:8081/repository/maven-snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>nexus-releases</id>
+            <url>http://localhost:8081/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>
+
     <properties>
         <java.version>17</java.version>
         <jjwt.version>0.11.5</jjwt.version>
@@ -114,8 +125,6 @@
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-
-
 
     </dependencies>
 
