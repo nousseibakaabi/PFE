@@ -60,4 +60,8 @@ public class ConventionResponse {
     private int facturesPayees;
     private int facturesNonPayees;
     private int facturesEnRetard;
+
+    private Long createdById;
+    private String createdByUsername;
+    private String createdByFullName;
 }

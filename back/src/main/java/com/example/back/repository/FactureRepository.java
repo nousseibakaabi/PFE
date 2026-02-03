@@ -1,6 +1,7 @@
 package com.example.back.repository;
 
 import com.example.back.entity.Facture;
+import com.example.back.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -70,4 +71,20 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("status") String status);
+
+
+
+
+
+    @Query("SELECT f FROM Facture f WHERE f.convention.createdBy = :user")
+    List<Facture> findByConventionCreatedBy(@Param("user") User user);
+
+    // Find invoices from conventions created by a specific user with status
+    @Query("SELECT f FROM Facture f WHERE f.convention.createdBy = :user AND f.statutPaiement = :statut")
+    List<Facture> findByConventionCreatedByAndStatutPaiement(@Param("user") User user,
+                                                             @Param("statut") String statut);
+
+    // Count invoices from conventions created by a specific user
+    @Query("SELECT COUNT(f) FROM Facture f WHERE f.convention.createdBy = :user")
+    Long countByConventionCreatedBy(@Param("user") User user);
 }

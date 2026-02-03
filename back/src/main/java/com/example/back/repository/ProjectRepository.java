@@ -24,7 +24,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     boolean existsByName(String name);
 
     // Find projects by Chef de Projet
-    List<Project> findByChefDeProjetId(Long chefDeProjetId);
     List<Project> findByChefDeProjet(User chefDeProjet);
 
     // Find projects by application
@@ -85,12 +84,26 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
 
 
-    @Query("SELECT p FROM Project p WHERE p.dateFin IS NOT NULL AND p.dateFin <= :endDate AND p.status = 'EN_COURS'")
-    List<Project> findProjectsEndingSoon(@Param("endDate") LocalDate endDate);
-
     List<Project> findByChefDeProjetIsNull();
 
     // Or with a custom query if needed
     @Query("SELECT p FROM Project p WHERE p.chefDeProjet IS NULL ORDER BY p.createdAt DESC")
     List<Project> findUnassignedProjects();
+
+
+    // In ProjectRepository.java, add:
+    @Query("SELECT p FROM Project p WHERE p.dateFin IS NOT NULL AND p.dateFin <= :endDate AND p.status = 'EN_COURS'")
+    List<Project> findProjectsEndingSoon(@Param("endDate") LocalDate endDate);
+
+
+    List<Project> findByChefDeProjetId(Long chefDeProjetId);
+
+
+
+
+    // Find projects with conventions created by specific user
+    @Query("SELECT DISTINCT p FROM Project p " +
+            "JOIN p.conventions c " +
+            "WHERE c.createdBy.id = :userId")
+    List<Project> findProjectsWithConventionsByUser(@Param("userId") Long userId);
 }

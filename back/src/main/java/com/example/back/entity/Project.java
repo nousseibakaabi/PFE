@@ -220,6 +220,8 @@ public class Project {
         return isPastDue && isNotCompleted;
     }
 
+
+
     // Get project status color for UI
     public String getStatusColor() {
         switch (status) {

@@ -3,6 +3,10 @@ package com.example.back.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -70,12 +74,25 @@ public class Convention {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id")
+    private User createdBy;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
 
-        // Set initial status based on date
+        // Get current user from security context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                // Here you would fetch the User entity and set it
+                // For now, we'll handle this in the service layer
+            }
+        }
+
         updateStatus();
     }
 
@@ -84,6 +101,7 @@ public class Convention {
         updatedAt = LocalDateTime.now();
         updateStatus();
     }
+
 
     /**
      * Update convention status based on dates and invoice payments
@@ -601,4 +619,6 @@ public class Convention {
     public String getProjectName() {
         return project != null ? project.getName() : null;
     }
+
+
 }

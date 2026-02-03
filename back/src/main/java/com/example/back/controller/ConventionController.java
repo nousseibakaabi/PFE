@@ -55,6 +55,9 @@ public class ConventionController {
     @Autowired
     private ProjectRepository projectRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     // CRUD Operations
 
     @GetMapping("/{id}")
@@ -78,11 +81,14 @@ public class ConventionController {
         }
     }
 
-    // In ConventionController.java - UPDATED createConvention method
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
     public ResponseEntity<?> createConvention(@Valid @RequestBody ConventionRequest request) {
         try {
+            // Get current user
+            String currentUsername = getCurrentUsername();
+            User currentUser = userRepository.findByUsername(currentUsername)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             log.info("Creating convention with reference: {}", request.getReferenceConvention());
 
             // Check if reference already exists
@@ -121,11 +127,15 @@ public class ConventionController {
             convention.setStructureInterne(structureInterne.get());
             convention.setStructureExterne(structureExterne.get());
             convention.setZone(zone.get());
-            convention.setProject(project.get()); // Set project instead of application
+            convention.setProject(project.get());
             convention.setMontantTotal(request.getMontantTotal());
             convention.setPeriodicite(request.getPeriodicite());
 
+            // Set the creator
+            convention.setCreatedBy(currentUser);
+
             Convention saved = conventionRepository.save(convention);
+
 
             // Generate invoices automatically
             try {
@@ -416,7 +426,19 @@ public class ConventionController {
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
     public ResponseEntity<?> getActiveConventions() {
         try {
-            List<Convention> activeConventions = conventionRepository.findByArchivedFalse();
+            String currentUsername = getCurrentUsername();
+            User currentUser = userRepository.findByUsername(currentUsername)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            List<Convention> activeConventions;
+
+            if (currentUser.getRoles().stream().anyMatch(r ->
+                    r.getName() == ERole.ROLE_ADMIN)) {
+                activeConventions = conventionRepository.findByArchivedFalse();
+            } else {
+                activeConventions = conventionRepository.findByCreatedByAndArchivedFalse(currentUser);
+            }
+
 
             List<ConventionResponse> conventionResponses = activeConventions.stream()
                     .map(conventionMapper::toResponse)
@@ -435,17 +457,36 @@ public class ConventionController {
         }
     }
 
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
     public ResponseEntity<?> getAllConventions(
             @RequestParam(required = false) Boolean showArchived) {
         try {
+            String currentUsername = getCurrentUsername();
+            User currentUser = userRepository.findByUsername(currentUsername)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
             List<Convention> conventions;
 
             if (Boolean.TRUE.equals(showArchived)) {
-                conventions = conventionRepository.findAll();
+                // For ADMIN or users with special permission, show all
+                if (currentUser.getRoles().stream().anyMatch(r ->
+                        r.getName() == ERole.ROLE_ADMIN)) {
+                    conventions = conventionRepository.findAll();
+                } else {
+                    // For COMMERCIAL_METIER, show only their own conventions
+                    conventions = conventionRepository.findByCreatedByAndArchivedTrue(currentUser);
+                }
             } else {
-                conventions = conventionRepository.findByArchivedFalse();
+                // For ADMIN or users with special permission, show all
+                if (currentUser.getRoles().stream().anyMatch(r ->
+                        r.getName() == ERole.ROLE_ADMIN)) {
+                    conventions = conventionRepository.findByArchivedFalse();
+                } else {
+                    // For COMMERCIAL_METIER, show only their own conventions
+                    conventions = conventionRepository.findByCreatedByAndArchivedFalse(currentUser);
+                }
             }
 
             List<ConventionResponse> conventionResponses = conventions.stream()

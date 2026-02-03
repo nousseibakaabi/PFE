@@ -15,4 +15,7 @@ public class CalendarEventDTO {
     private String type; // "INVOICE" or "PROJECT"
     private String color;
     private Map<String, Object> extendedProps = new HashMap<>();
+
+    private Long createdById;
+    private String createdByName;
 }

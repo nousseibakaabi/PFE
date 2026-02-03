@@ -26,4 +26,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByAccountLockedUntilBeforeAndLockedByAdminFalse(LocalDateTime dateTime);
 
     List<User> findByRoles_Name(ERole role);
+
+
+    @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName")
+    List<User> findByRoleName(@Param("roleName") String roleName);
+
+    @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name != 'ROLE_ADMIN'")
+    List<User> findAllNonAdminUsers();
+
+    @Query("SELECT COUNT(u) FROM User u JOIN u.roles r WHERE r.name = :roleName")
+    Long countByRoleName(@Param("roleName") String roleName);
+
+
 }

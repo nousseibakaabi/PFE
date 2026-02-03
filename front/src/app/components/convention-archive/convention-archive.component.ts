@@ -27,11 +27,12 @@ export class ConventionArchiveComponent implements OnInit {
     this.loadArchivedConventions();
   }
 
-  loadArchivedConventions(): void {
+loadArchivedConventions(): void {
     this.loading = true;
     this.conventionService.getArchivedConventions().subscribe({
       next: (response) => {
         if (response.success) {
+          // The backend already filters by current user
           this.archivedConventions = response.data;
           this.filteredConventions = [...this.archivedConventions];
         }

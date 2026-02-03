@@ -1,6 +1,7 @@
 package com.example.back.repository;
 
 import com.example.back.entity.Convention;
+import com.example.back.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -70,6 +71,19 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
 
     List<Convention> findByProjectId(Long projectId);
     List<Convention> findByProjectIdAndArchivedFalse(Long projectId);
+
+
+    // Method to check if a convention belongs to a user
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END " +
+            "FROM Convention c WHERE c.id = :conventionId AND c.createdBy = :user")
+    boolean existsByIdAndCreatedBy(@Param("conventionId") Long conventionId,
+                                   @Param("user") User user);
+
+
+    List<Convention> findByCreatedByAndArchivedTrue(User createdBy);
+    List<Convention> findByCreatedByAndArchivedFalse(User createdBy);
+    List<Convention> findByCreatedBy(User createdBy);
+
 
 
 }

@@ -105,6 +105,13 @@ public class ConventionMapper {
             response.setFacturesEnRetard(0);
         }
 
+        if (convention.getCreatedBy() != null) {
+            response.setCreatedById(convention.getCreatedBy().getId());
+            response.setCreatedByUsername(convention.getCreatedBy().getUsername());
+            response.setCreatedByFullName(convention.getCreatedBy().getFirstName() + " " +
+                    convention.getCreatedBy().getLastName());
+        }
+
         return response;
     }
 

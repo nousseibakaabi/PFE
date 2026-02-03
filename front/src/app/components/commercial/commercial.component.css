@@ -264,3 +264,58 @@ canvas {
 .card-body {
   min-height: 350px;
 }
+
+.text-2xs {
+  font-size: 0.625rem; /* 10px */
+  line-height: 0.75rem; /* 12px */
+}
+
+
+/* Ultra small chart styling */
+.small-chart {
+  max-height: 130px !important;
+}
+
+/* Make chart.js labels smaller */
+.chartjs-size-monitor,
+.chartjs-size-monitor-expand,
+.chartjs-size-monitor-shrink {
+  position: absolute;
+  direction: ltr;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+  z-index: -1;
+}
+
+/* Override Chart.js default styles for smaller charts */
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Small shadow */
+.shadow-xs {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Extra small text utility */
+.text-2xs {
+  font-size: 0.625rem; /* 10px */
+  line-height: 0.75rem; /* 12px */
+}
+
+/* Make sure charts are responsive */
+@media (max-width: 768px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .h-32 {
+    height: 120px !important;
+  }
+}
