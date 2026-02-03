@@ -1,21 +1,29 @@
 <!-- convention-archive.component.html -->
 <div class="container mx-auto p-3 md:p-4">
-  <!-- Header -->
-  <div class="mb-5 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/80 dark:to-gray-800/60 rounded-2xl shadow-sm p-4">
+ 
+
+
+  
+   <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        
-     
+        <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+             
+          <svg class="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+</svg>
 
+        </div>
         <div>
-        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Conventions Archivées</h2>
-        <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">            Documents conservés dans l'archive
-</p>
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white">Conventions Archivées</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5"> Documents conservés dans l'archive</p>
+        </div>
       </div>
-      </div>
+
       <div class="text-sm text-gray-500 dark:text-gray-400">
         {{ filteredConventions.length }} convention(s)
       </div>
+      
     </div>
   </div>
 

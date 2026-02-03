@@ -1,4 +1,5 @@
-<div class="container mx-auto p-3 md:p-4">
+  <div class="container mx-auto p-3 md:p-4 ">
+
   <!-- Loading Spinner -->
   <div *ngIf="isLoading" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50">
     <div class="bg-white p-5 rounded-2xl shadow-xl">
@@ -88,28 +89,50 @@
 
   <!-- Calendar Header - Compact -->
   <div class="mb-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Invoice Calendar</h2>
-        <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">Track due dates & payments</p>
+  
+
+
+     <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+         <svg class="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+</svg>
+        </div>
+       
+        <div>
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white">Invoice Calendar</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">Track due dates & payments</p>
+        </div>
       </div>
-      
-      <!-- Compact Filter Buttons -->
-      <div class="flex items-center space-x-2">
-        <button (click)="loadUpcomingInvoices()"
-                class="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow">
-          Upcoming
-        </button>
-        <button (click)="loadOverdueInvoices()"
-                class="px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow">
-          Overdue
-        </button>
-        <button (click)="refreshCalendar()"
-                class="px-3 py-1.5 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow">
-          <i class="fas fa-sync-alt text-xs"></i>
-        </button>
-      </div>
+
+            <div class="flex items-center space-x-2">
+
+      <button (click)="loadUpcomingInvoices()"
+              class="px-3.5 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center group">
+        <svg class="w-3.5 h-3.5 mr-1.5 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Upcoming
+      </button>
+
+      <button (click)="loadOverdueInvoices()"
+              class="px-3.5 py-1.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-blue-600 hover:to-red-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center group">
+        
+        Overdue
+      </button>
+
+      <button (click)="refreshCalendar()"
+              class="px-3.5 py-1.5 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center group">
+                  <i class="fas fa-sync-alt text-xs"></i>
+
+      </button>
+</div>
+
     </div>
+  </div>
+
 
    <!-- White Stats Cards - replace the grid section -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
@@ -166,6 +189,9 @@
   </div>
 </div>
   </div>
+
+
+  
 
   <!-- Compact Calendar Container -->
   <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden mb-5">
