@@ -1190,3 +1190,15 @@ span.flatpickr-weekday,
   opacity: 0.8;
   cursor: grabbing;
 }
+
+
+/* In your main layout component CSS or global styles */
+.main-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* When sidebar is open on mobile, prevent body scroll */
+body.sidebar-open {
+  overflow: hidden;
+}

@@ -23,6 +23,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   private userSubscription!: Subscription;
 
+  isSidebarOpen: boolean = false;
+
+
   // WebSocket properties
  
 
@@ -41,55 +44,46 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
   ) {}
 
-  ngOnInit(): void {
-    this.checkScreenSize();
-    
-    // Check for saved dark mode preference
-    const savedDarkMode = localStorage.getItem('darkMode');
-    if (savedDarkMode) {
-      this.isDarkMode = savedDarkMode === 'true';
-      this.applyDarkMode();
-    } else {
-      // Check system preference
-      this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      this.applyDarkMode();
-    }
-    
-    // Subscribe to user changes
-    this.userSubscription = this.authService.currentUser.subscribe(
-      user => {
-        this.currentUser = user;
-        console.log('Header user updated:', this.currentUser?.profileImage);
-      }
-    );
-
-    this.languages = this.translationService.languages;
-    this.currentLanguage = this.translationService.getCurrentLanguage();
-    
-    // Test translation server
-    this.translationService.testConnection().subscribe(isActive => {
-      this.translationActive = isActive;
-      if (!isActive) {
-        console.warn('Translation server is not running on localhost:5000');
-      }
-    });  
-
+ngOnInit(): void {
+  this.checkScreenSize();
+  
+  // Check for saved dark mode preference
+  const savedDarkMode = localStorage.getItem('darkMode');
+  if (savedDarkMode) {
+    this.isDarkMode = savedDarkMode === 'true';
+    this.applyDarkMode();
+  } else {
+    // Check system preference
+    this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    this.applyDarkMode();
   }
+  
+  // Subscribe to user changes
+  this.userSubscription = this.authService.currentUser.subscribe(
+    user => {
+      this.currentUser = user;
+      console.log('Header user updated:', this.currentUser?.profileImage);
+    }
+  );
+
+  this.languages = this.translationService.languages;
+  this.currentLanguage = this.translationService.getCurrentLanguage();
+  
+  // Test translation server
+  this.translationService.testConnection().subscribe(isActive => {
+    this.translationActive = isActive;
+    if (!isActive) {
+      console.warn('Translation server is not running on localhost:5000');
+    }
+  });
+
+  // ADD THIS: Subscribe to sidebar state
+  this.layoutService.sidebarOpen$.subscribe((isOpen) => {
+    this.isSidebarOpen = isOpen;
+  });
+}
 
   
-
-
-
- 
-
-
- 
-
- 
-
-  
-
-
   ngOnDestroy(): void {
     // Unsubscribe to prevent memory leaks
     if (this.userSubscription) {
@@ -217,9 +211,8 @@ getAvatarUrl(): string {
       return profileImage;
     }
     
-    // If it's a relative path starting with /uploads/, prepend base URL
     if (profileImage.startsWith('/uploads/')) {
-      const baseUrl = environment.baseUrl || 'http://localhost:8081';
+      const baseUrl = environment.baseUrl || 'http://localhost:8084';
       return baseUrl + profileImage;
     }
     

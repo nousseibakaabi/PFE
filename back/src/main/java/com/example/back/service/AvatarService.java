@@ -135,7 +135,7 @@ public class AvatarService {
             // Create SVG content
             String svg = String.format(
                     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>" +
-                            "<circle cx='50' cy='50' r='48' fill='#4F46E5'/>" +
+                            "<circle cx='50' cy='50' r='48' fill='#e9d709'/>" +
                             "<text x='50' y='58' text-anchor='middle' font-family='Arial' font-size='38' fill='white'>%s</text>" +
                             "</svg>",
                     initials
@@ -181,7 +181,7 @@ public class AvatarService {
         // Fallback: Generate Base64 encoded SVG
         String svg = String.format(
                 "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>" +
-                        "<circle cx='50' cy='50' r='48' fill='#4F46E5'/>" +
+                        "<circle cx='50' cy='50' r='48' fill='#e9d709'/>" +
                         "<text x='50' y='58' text-anchor='middle' font-family='Arial,sans-serif' font-size='38' fill='white' font-weight='bold'>%s</text>" +
                         "</svg>",
                 initials

@@ -1,0 +1,72 @@
+/* Add to your global styles.css */
+.menu-item {
+  @apply flex items-center gap-3 rounded-lg px-4 py-3 transition-all duration-300 relative overflow-hidden;
+  border: 1px solid transparent;
+}
+
+.menu-item-active {
+  @apply bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800 shadow-sm;
+}
+
+.menu-item-inactive {
+  @apply hover:bg-gray-50 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300 border-transparent;
+}
+
+.menu-item-icon-active {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+.menu-item-icon-inactive {
+  @apply text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400;
+}
+
+.menu-item-text {
+  @apply text-sm font-medium;
+}
+
+/* User profile section styles */
+.user-profile-section {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-900/50 border border-gray-200 dark:border-gray-700;
+}
+
+.user-avatar {
+  @apply h-10 w-10 rounded-full border-2 border-white dark:border-gray-800 shadow-sm;
+}
+
+.user-info {
+  @apply flex-1 min-w-0;
+}
+
+.user-name {
+  @apply text-sm font-semibold text-gray-800 dark:text-white truncate;
+}
+
+.user-email {
+  @apply text-xs text-gray-500 dark:text-gray-400 truncate;
+}
+
+.session-timer {
+  @apply text-xs text-amber-600 dark:text-amber-400 font-medium;
+}
+
+
+/* Add to your sidebar.component.css or global CSS */
+.menu-item {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: #f3f4f6; /* light gray on hover */
+  transform: translateX(2px); /* slight movement */
+}
+
+.menu-item-active:hover {
+  background-color: #4f46e5; /* keep active color on hover */
+  transform: translateX(2px);
+}
+
+.menu-item-inactive:hover {
+  background-color: #f3f4f6;
+  transform: translateX(2px);
+}

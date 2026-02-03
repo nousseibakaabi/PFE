@@ -100,123 +100,179 @@
     <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">Chargement...</p>
   </div>
 
-  <!-- Conventions Table - Compact -->
-  <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-        <thead class="bg-gray-50 dark:bg-gray-700">
-          <tr>
-            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Référence</th>
-            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Libellé</th>
-            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Structures</th>
-            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Dates</th>
-            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Montant</th>
-            <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">État</th>
-            <th *ngIf="canEdit()" class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300"></th>
-          </tr>
-        </thead>
-        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-          <tr *ngFor="let convention of filteredConventions" 
-              class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            
-            <td class="px-4 py-3">
-              <div class="font-medium text-gray-800 dark:text-white">{{ convention.referenceConvention }}</div>
-              <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ convention.referenceERP || '-' }}</div>
-            </td>
-            
-            <td class="px-4 py-3">
-              <div class="text-gray-800 dark:text-white">{{ convention.libelle }}</div>
-            </td>
-            
-            <td class="px-4 py-3">
-              <div class="text-xs">
-                <div class="text-gray-800 dark:text-white truncate max-w-[120px]">
-                  <span class="font-medium">I:</span> {{ convention.structureInterneName || '-' }}
-                </div>
-                <div class="text-gray-500 dark:text-gray-400 truncate max-w-[120px]">
-                  <span class="font-medium">E:</span> {{ convention.structureExterneName || '-' }}
-                </div>
-              </div>
-            </td>
-            
-            <td class="px-4 py-3">
-              <div class="text-xs">
-                <div class="text-gray-800 dark:text-white">D: {{ convention.dateDebut | date:'dd/MM' }}</div>
-                <div class="text-gray-500 dark:text-gray-400">F: {{ convention.dateFin | date:'dd/MM' }}</div>
-              </div>
-            </td>
-            
-            <td class="px-4 py-3">
-              <div class="font-medium text-blue-600 dark:text-blue-400">
-                {{ convention.montantTotal | currency:'TND':'symbol':'1.2-2' }}
-              </div>
-            </td>
-            
-            <td class="px-4 py-3">
-              <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getEtatClass(convention.etat)">
-                {{ getEtatLabel(convention.etat) }}
-              </span>
-            </td>
-            
-            <td *ngIf="canEdit()" class="px-4 py-3">
-              <div class="flex items-center space-x-1">
-                <button
-                  (click)="openEditModal(convention)"
-                  class="p-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                  [disabled]="convention.archived"
-                  title="Modifier"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                
-                <!-- Archive button -->
-                <button
-                  *ngIf="!convention.archived"
-                  (click)="openArchiveModal(convention)"
-                  class="p-1.5 text-yellow-600 hover:text-yellow-700 dark:text-yellow-400 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors"
-                  title="Archiver"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                  </svg>
-                </button>
-                
-                <!-- Restore button -->
-                <button
-                  *ngIf="convention.archived"
-                  (click)="openRestoreModal(convention)"
-                  class="p-1.5 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
-                  title="Restaurer"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <!-- Conventions Grid - Cute Cards -->
+<div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div *ngFor="let convention of filteredConventions" 
+       class="bg-gradient-to-br from-white to-white/95 dark:from-gray-800/95 dark:to-gray-800/90 rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/30 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+    
+    <!-- Card Header -->
+    <div class="p-4 border-b border-gray-200/50 dark:border-gray-700/30">
+      <div class="flex items-start justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-2">
+            <h3 class="text-sm font-bold text-gray-800 dark:text-white truncate">
+              {{ convention.referenceConvention }}
+            </h3>
+            <span [class]="'px-2 py-0.5 text-xs font-medium rounded-full ' + getEtatClass(convention.etat)">
+              {{ getEtatLabel(convention.etat) }}
+            </span>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ convention.libelle }}</p>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div *ngIf="canEdit()" class="flex items-center gap-1">
+          <button
+            (click)="openEditModal(convention)"
+            [disabled]="convention.archived"
+            class="p-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+            title="Modifier"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
+          
+          <button
+            *ngIf="!convention.archived"
+            (click)="openArchiveModal(convention)"
+            class="p-1.5 text-yellow-600 hover:text-yellow-700 dark:text-yellow-400 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors"
+            title="Archiver"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+          </button>
+          
+          <button
+            *ngIf="convention.archived"
+            (click)="openRestoreModal(convention)"
+            class="p-1.5 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+            title="Restaurer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- ERP Reference -->
+      <div *ngIf="convention.referenceERP" class="mt-2">
+        <p class="text-xs text-gray-500 dark:text-gray-400">ERP: {{ convention.referenceERP }}</p>
+      </div>
     </div>
-  </div>
+    
+    <!-- Card Body -->
+    <div class="p-4">
+      <!-- Structures -->
+      <div class="mb-4">
+        <div class="flex items-center gap-2 mb-2">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Structures</p>
+        </div>
+        <div class="space-y-1 pl-6">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+           
+            <div class="text-xs text-gray-700 dark:text-gray-300">
+        <span class="font-medium">Interne:</span> {{ convention.structureInterneName || '-' }}
+      </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+           
+             <div class="text-xs text-gray-700 dark:text-gray-300">
+        <span class="font-medium">Externe:</span> {{ convention.structureExterneName || '-' }}
+      </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Dates & Amount -->
+      <div class="grid grid-cols-2 gap-3">
+  <!-- Dates -->
+  <div>
+ 
 
-  <!-- Empty State -->
-  <div *ngIf="!loading && filteredConventions.length === 0" class="text-center py-12">
-    <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
-      <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+<div class="flex items-center gap-2 mb-2">
+          <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
-    </div>
-    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-1">Aucune convention trouvée</h3>
-    <p class="text-gray-500 dark:text-gray-400 text-sm">Commencez par créer votre première convention</p>
-    <button *ngIf="canEdit()"
-            (click)="openCreateModal()"
-            class="mt-4 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow">
-      Créer une convention
-    </button>
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Dates</p>
+        </div>
+        <div class="space-y-1 pl-6">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+           
+            <div class="text-xs text-gray-700 dark:text-gray-300">
+        <span class="font-medium">Déb:</span> {{ convention.dateDebut | date:'dd/MM/YY' }}
+      </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+           
+             <div class="text-xs text-gray-700 dark:text-gray-300">
+        <span class="font-medium">Fin:</span> {{ convention.dateFin | date:'dd/MM/YY' }}
+      </div>
+          </div>
+        </div>
+
   </div>
+  
+
+</div>
+      
+      <!-- Additional Info -->
+      <div class="mt-4 pt-4 border-t border-gray-200/50 dark:border-gray-700/30">
+        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div class="flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ convention.periodicite || 'Périodicité non définie' }}</span>
+          </div>
+            <!-- Amount -->
+  <div>
+   
+    <div class="pl-4">
+     
+      <p class="text-sm font-bold text-blue-600 dark:text-blue-400">
+        {{ convention.montantTotal }} TND
+      </p>
+    </div>
+  </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+ <!-- Empty State -->
+<div *ngIf="!loading && filteredConventions.length === 0" class="text-center py-12">
+  <div class="w-20 h-20 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  </div>
+  <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Aucune convention trouvée</h3>
+  <p class="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto mb-4">
+    Commencez par créer votre première convention pour gérer vos partenariats commerciaux
+  </p>
+  <button *ngIf="canEdit()"
+          (click)="openCreateModal()"
+          class="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center mx-auto">
+    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    </svg>
+    Créer une convention
+  </button>
+</div>
+
+
+
 </div>
 
 <!-- Create/Edit Modal - Cuter -->
@@ -490,7 +546,7 @@
               <div class="mt-1 text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
                 <div>Fact: {{ invoice.dateFacturation | date:'dd/MM/yyyy' }}</div>
                 <div>Éch: {{ invoice.dateEcheance | date:'dd/MM/yyyy' }}</div>
-                <div class="font-medium text-blue-600 dark:text-blue-400">{{ invoice.montantTTC | currency:'TND':'symbol':'1.2-2' }}</div>
+                <div class="font-medium text-blue-600 dark:text-blue-400">{{ invoice.montantTTC  }} TND</div>
               </div>
             </div>
             <div>
