@@ -55,7 +55,7 @@ public class User {
     private String lastName;
 
     @Setter
-    @Column(name = "phone", length = 20)
+    @Column(name = "phone", length = 20 , unique = true)
     private String phone;
 
     @Setter
@@ -112,6 +112,11 @@ public class User {
     @Setter
     @Column(name = "profile_image", length = 255)
     private String profileImage;
+
+    @Setter
+    @Column(name = "notif_mode", length = 10)
+    private String notifMode = "email";
+
 
 
 
@@ -292,7 +297,6 @@ public class User {
     }
 
 
-    // In User entity, add these getters if missing:
     public Integer getFailedLoginAttempts() {
         return failedLoginAttempts;
     }
@@ -302,10 +306,8 @@ public class User {
     }
 
 
-
-
-
-
-
+    public String getNotifMode() {
+        return notifMode != null ? notifMode : "email";
+    }
 
 }

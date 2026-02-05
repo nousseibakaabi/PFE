@@ -26,6 +26,16 @@ export interface Facture {
 
   archived: boolean;
   enRetard: boolean;
+
+   joursRetard?: number;
+  joursRestants?: number;
+  statutPaiementDetail?: string;
+  statutPaiementColor?: string;
+
+  paiementType?: string; 
+  joursDetails?: string;
+  joursNumber?: number;
+ 
 }
 
 export interface FactureRequest {

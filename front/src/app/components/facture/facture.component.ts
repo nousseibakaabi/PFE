@@ -5,6 +5,7 @@ import { NomenclatureService } from '../../services/nomenclature.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { TimeFormatService } from '../../services/time-format.service';
 
 @Component({
   selector: 'app-facture',
@@ -56,7 +57,9 @@ export class FactureComponent implements OnInit {
     private factureService: FactureService,
     private conventionService: ConventionService,
     private nomenclatureService: NomenclatureService,
-    private authService: AuthService
+    private authService: AuthService,
+      private timeFormat: TimeFormatService
+
   ) {}
 
   ngOnInit(): void {
@@ -68,6 +71,53 @@ export class FactureComponent implements OnInit {
     this.loadStructures(); // Optional: for reference
   }
 
+
+
+
+  getPaymentStatus(facture: Facture): string {
+  return this.timeFormat.formatPaymentStatus(facture);
+}
+
+getPaymentStatusClass(facture: Facture): string {
+  return this.timeFormat.getPaymentStatusColor(facture);
+}
+
+
+
+// Add a helper method for detailed display
+getPaymentDetails(facture: Facture): any {
+  if (facture.statutPaiement === 'PAYE' && facture.datePaiement && facture.dateEcheance) {
+    const paymentDate = new Date(facture.datePaiement);
+    const dueDate = new Date(facture.dateEcheance);
+    
+    if (paymentDate < dueDate) {
+      const diffTime = dueDate.getTime() - paymentDate.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 3600 * 24));
+      return {
+        type: 'advance',
+        days: diffDays,
+        formatted: this.timeFormat.formatDaysToHumanReadable(diffDays),
+        icon: 'fast_forward'
+      };
+    } else if (paymentDate > dueDate) {
+      const diffTime = paymentDate.getTime() - dueDate.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 3600 * 24));
+      return {
+        type: 'late',
+        days: diffDays,
+        formatted: this.timeFormat.formatDaysToHumanReadable(diffDays),
+      };
+    } else {
+      return {
+        type: 'ontime',
+        days: 0,
+        formatted: 'À la date d\'échéance',
+        icon: 'schedule'
+      };
+    }
+  }
+  return null;
+}
 
 
 searchFactures(): void {
@@ -301,6 +351,47 @@ loadFactures(): void {
     return this.isAdmin() || this.isCommercial();
   }
 
+
+
+
+
+
+
+getDaysUntilDue(dateEcheance: string): number {
+  if (!dateEcheance) return 0;
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to beginning of day
+  
+  const echeance = new Date(dateEcheance);
+  echeance.setHours(0, 0, 0, 0); // Set to beginning of day
+  
+  // Calculate difference in milliseconds
+  const diffTime = echeance.getTime() - today.getTime();
+  
+  // Convert to days
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays;
+}
+
+// Also add a method to get the color class based on days
+getDaysUntilDueClass(days: number): string {
+  if (days <= 0) return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
+  if (days <= 3) return 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300';
+  if (days <= 7) return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
+  return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300';
+}
+
+// Add a method to get the status text
+getDaysUntilDueText(days: number): string {
+  if (days === 0) return "Aujourd'hui";
+  if (days === 1) return "1 jour";
+  if (days === -1) return "1 jour de retard";
+  
+  if (days > 0) return `${days} jours`;
+  return `${Math.abs(days)} jours de retard`;
+}
 
   // Ajoutez ces propriétés calculées
 get facturesPayeesCount(): number {

@@ -41,7 +41,7 @@ export class AdminUsersComponent implements OnInit, AfterViewInit {
   loading = false;
   error = '';
   successMessage: string = '';
-  baseUrl = environment.baseUrl || 'http://localhost:8081';
+  baseUrl = environment.baseUrl || 'http://localhost:8084';
 
   
   // In AdminUsersComponent class
@@ -625,9 +625,13 @@ this.showSuccess(response.message);
         }
       },
       error: (error) => {
-        console.error('Add user error:', error);
-        this.addUserError = error.error?.message || 'Failed to add user'; // Change to modal-specific error
-      }
+  console.error('Add user error:', error);
+  if (error.error?.message?.includes('Phone number')) {
+    this.addUserError = error.error.message;
+  } else {
+    this.addUserError = error.error?.message || 'Failed to add user';
+  }
+}
     });
 }
 

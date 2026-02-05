@@ -140,26 +140,29 @@ export class ProjectComponent implements OnInit {
     }
   }
 
-  openAddModal(): void {
-    this.projectForm = {
-      code: '',
-      name: '',
-      description: '',
-      applicationId: 0,
-      chefDeProjetId: this.currentUser?.id || 0, // Auto-fill with current user
-      clientName: '',
-      clientEmail: '',
-      clientPhone: '',
-      clientAddress: '',
-      dateDebut: new Date().toISOString().split('T')[0],
-      dateFin: '',
-      progress: 0,
-      budget: 0,
-      status: 'PLANIFIE'
-    };
-    this.showAddModal = true;
-    this.errorMessage = '';
-  }
+openAddModal(): void {
+  this.projectForm = {
+    code: '',
+    name: '',
+    description: '',
+    applicationId: 0,
+    chefDeProjetId: this.currentUser?.id || 0,
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    clientAddress: '',
+    dateDebut: new Date().toISOString().split('T')[0],
+    dateFin: '',
+    progress: 0,
+    budget: 0,
+    status: 'PLANIFIE'
+  };
+  
+  this.loadSuggestedProjectCode();
+  
+  this.showAddModal = true;
+  this.errorMessage = '';
+}
 
 openEditModal(project: Project): void {
   // Check if project belongs to current user
@@ -299,11 +302,17 @@ updateProject(): void {
     });
   }
 
-validateProjectForm(): boolean {
+  validateProjectForm(): boolean {
   if (!this.projectForm.code.trim()) {
     this.errorMessage = 'Le code du projet est requis';
     return false;
   }
+  
+  // Add code format validation
+  if (!this.validateProjectCode()) {
+    return false; // This will set the error message in validateProjectCode
+  }
+  
   if (!this.projectForm.name.trim()) {
     this.errorMessage = 'Le nom du projet est requis';
     return false;
@@ -459,4 +468,33 @@ canReturnToAutoStatus(): boolean {
     if (!this.currentUser) return '';
     return `${this.currentUser.firstName} ${this.currentUser.lastName}`;
   }
+
+
+
+loadSuggestedProjectCode(): void {
+  this.projectService.getSuggestedProjectCode().subscribe({
+    next: (response: any) => {
+      if (response.success && response.suggestedCode) {
+        // Direct assignment instead of patchValue
+        this.projectForm.code = response.suggestedCode;
+      }
+    },
+    error: (error) => {
+      console.error('Failed to load suggested code:', error);
+    }
+  });
+}
+
+
+
+validateProjectCode(): boolean {
+  const code = this.projectForm.code; 
+  const pattern = /^PROJ-\d{4}-\d{3}$/;
+  
+  if (!pattern.test(code)) {
+    this.errorMessage = 'Format de code invalide. Utilisez PROJ-AAAA-XXX (ex: PROJ-2024-001)';
+    return false;
+  }
+  return true;
+}
 }

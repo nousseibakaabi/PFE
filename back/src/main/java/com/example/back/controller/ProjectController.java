@@ -276,4 +276,22 @@ public class ProjectController {
             return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
+
+
+    @GetMapping("/generate-code")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")
+    public ResponseEntity<?> generateProjectCode() {
+        try {
+            String suggestedCode = projectService.generateSuggestedProjectCode();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("suggestedCode", suggestedCode);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error generating project code: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
 }

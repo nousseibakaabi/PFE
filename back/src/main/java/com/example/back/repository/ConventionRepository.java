@@ -13,8 +13,6 @@ import java.util.List;
 @Repository
 public interface ConventionRepository extends JpaRepository<Convention, Long> {
 
-    boolean existsByReferenceConvention(String referenceConvention);
-    boolean existsByReferenceERP(String referenceERP);
 
     // Find conventions that need status update
     @Query("SELECT c FROM Convention c WHERE c.archived = false AND c.etat IS NOT NULL")
@@ -84,6 +82,33 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     List<Convention> findByCreatedByAndArchivedFalse(User createdBy);
     List<Convention> findByCreatedBy(User createdBy);
 
+
+
+    // Add this method to find the highest sequence number for a year
+    @Query("SELECT MAX(CAST(SUBSTRING(c.referenceConvention, LENGTH(:prefix) + 1) AS integer)) " +
+            "FROM Convention c " +
+            "WHERE c.referenceConvention LIKE :prefix%")
+    Integer findMaxSequenceNumber(@Param("prefix") String prefix);
+
+
+
+
+
+
+    @Query("SELECT CAST(SUBSTRING(c.referenceConvention, LENGTH(:prefix) + 1) AS integer) " +
+            "FROM Convention c " +
+            "WHERE c.referenceConvention LIKE CONCAT(:prefix, '%') " +
+            "ORDER BY CAST(SUBSTRING(c.referenceConvention, LENGTH(:prefix) + 1) AS integer)")
+    List<Integer> findUsedSequencesByYear(@Param("prefix") String prefix);
+
+    // Alternative: Get all references for a year
+    @Query("SELECT c.referenceConvention FROM Convention c " +
+            "WHERE c.referenceConvention LIKE CONCAT('CONV-', :year, '-%') " +
+            "ORDER BY c.referenceConvention")
+    List<String> findReferencesByYear(@Param("year") String year);
+
+    // Keep the existing methods for backward compatibility
+    Boolean existsByReferenceConvention(String reference);
 
 
 }

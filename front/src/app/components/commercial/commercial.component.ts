@@ -34,7 +34,17 @@ structureCountsChart: any = null;
 
   
 
+currentPage: number = 1;
+itemsPerPage: number = 10;
+totalItems: number = 0;
 
+// Filter properties
+priorityFilter: string = 'ALL'; // 'ALL', 'CRITIQUE', 'ÉLEVÉE', 'MOYEN'
+sortBy: string = 'joursRetard'; // 'joursRetard', 'montant', 'dateEcheance'
+sortDirection: string = 'desc'; // 'asc' or 'desc'
+
+// Filtered and paginated data
+filteredOverdueInvoices: any[] = [];
   dashboardStats: any = {}; 
 financialStats: any = {};
 overdueAlerts: any[] = [];
@@ -73,6 +83,95 @@ quickStats = {
   }
 
 
+
+  updateFilteredData(): void {
+  let invoices = this.getOverdueInvoices();
+  
+  // Apply priority filter
+  if (this.priorityFilter !== 'ALL') {
+    invoices = invoices.filter(invoice => {
+      const daysAgo = this.getDaysAgo(invoice.dateEcheance);
+      const priority = this.getPriorityLabel(daysAgo);
+      return priority === this.priorityFilter;
+    });
+  }
+  
+  // Apply sorting
+  invoices = this.sortInvoices(invoices, this.sortBy, this.sortDirection);
+  
+  // Update totals
+  this.totalItems = invoices.length;
+  
+  // Apply pagination
+  const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+  this.filteredOverdueInvoices = invoices.slice(startIndex, startIndex + this.itemsPerPage);
+}
+
+// Sort invoices
+sortInvoices(invoices: any[], sortBy: string, direction: string): any[] {
+  return [...invoices].sort((a, b) => {
+    let valueA, valueB;
+    
+    switch (sortBy) {
+      case 'joursRetard':
+        valueA = this.getDaysAgo(a.dateEcheance);
+        valueB = this.getDaysAgo(b.dateEcheance);
+        break;
+      case 'montant':
+        valueA = a.montant || 0;
+        valueB = b.montant || 0;
+        break;
+      case 'dateEcheance':
+        valueA = new Date(a.dateEcheance).getTime();
+        valueB = new Date(b.dateEcheance).getTime();
+        break;
+      default:
+        valueA = a[sortBy] || 0;
+        valueB = b[sortBy] || 0;
+    }
+    
+    if (direction === 'asc') {
+      return valueA > valueB ? 1 : -1;
+    } else {
+      return valueA < valueB ? 1 : -1;
+    }
+  });
+}
+
+// Get priority label from days
+getPriorityLabel(days: number): string {
+  if (days > 30) return 'CRITIQUE';
+  if (days > 15) return 'ÉLEVÉE';
+  return 'MOYEN';
+}
+
+// Change page
+changePage(page: number): void {
+  if (page < 1 || page > this.getTotalPages()) return;
+  this.currentPage = page;
+  this.updateFilteredData();
+}
+
+// Get total pages
+getTotalPages(): number {
+  return Math.ceil(this.totalItems / this.itemsPerPage);
+}
+
+// Change items per page
+changeItemsPerPage(count: number): void {
+  this.itemsPerPage = count;
+  this.currentPage = 1;
+  this.updateFilteredData();
+}
+
+// Reset filters
+resetFilters(): void {
+  this.priorityFilter = 'ALL';
+  this.sortBy = 'joursRetard';
+  this.sortDirection = 'desc';
+  this.currentPage = 1;
+  this.updateFilteredData();
+}
  
 
   calculateQuickStats(): void {
@@ -133,7 +232,7 @@ loadCommercialStats(): void {
   Promise.all([
     this.statsService.getConventionDetailedStats().toPromise(),
     this.statsService.getFactureDetailedStats().toPromise(),
-    this.statsService.getFinancialDetailedStats().toPromise(), // Financial stats are based on their factures
+    this.statsService.getFinancialDetailedStats().toPromise(),
     this.statsService.getSummaryStats().toPromise(),
     this.statsService.getOverdueAlerts().toPromise()
   ]).then((results: any[]) => {
@@ -166,6 +265,8 @@ loadCommercialStats(): void {
     
     this.isLoading = false;
     
+     this.updateFilteredData();
+
     // Calculate quick stats from loaded data
     this.calculateQuickStats();
     
@@ -180,6 +281,62 @@ loadCommercialStats(): void {
   });
 }
 
+
+
+// Add this method to your CommercialComponent class
+getCurrentPageEnd(): number {
+  const end = this.currentPage * this.itemsPerPage;
+  return Math.min(end, this.totalItems);
+}
+
+getCurrentPageStart(): number {
+  return (this.currentPage - 1) * this.itemsPerPage + 1;
+}
+
+
+getPageNumbers(): number[] {
+  const totalPages = this.getTotalPages();
+  const current = this.currentPage;
+  const pages: number[] = [];
+  
+  if (totalPages <= 7) {
+    // Show all pages
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    // Show first page, last page, and pages around current
+    if (current <= 4) {
+      // Near the beginning
+      for (let i = 1; i <= 5; i++) pages.push(i);
+      pages.push(-1); // Use -1 for ellipsis
+      pages.push(totalPages);
+    } else if (current >= totalPages - 3) {
+      // Near the end
+      pages.push(1);
+      pages.push(-1); // Use -1 for ellipsis
+      for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
+    } else {
+      // In the middle
+      pages.push(1);
+      pages.push(-1); // Use -1 for ellipsis
+      pages.push(current - 1);
+      pages.push(current);
+      pages.push(current + 1);
+      pages.push(-1); // Use -1 for ellipsis
+      pages.push(totalPages);
+    }
+  }
+  
+  return pages;
+}
+
+// Add priority class helper
+getPriorityClass(days: number): string {
+  if (days > 30) return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
+  if (days > 15) return 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300';
+  return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
+}
 
 renderCharts(): void {
   // 1. Convention Status Chart (Pie) - SMALLER

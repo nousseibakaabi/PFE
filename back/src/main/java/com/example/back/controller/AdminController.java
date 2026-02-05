@@ -171,6 +171,16 @@ public class AdminController {
                 return ResponseEntity.badRequest().body(response);
             }
 
+
+            if (signUpRequest.getPhone() != null && !signUpRequest.getPhone().trim().isEmpty()) {
+                if (userRepository.existsByPhone(signUpRequest.getPhone())) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", false);
+                    response.put("message", "Phone number is already in use!");
+                    return ResponseEntity.badRequest().body(response);
+                }
+            }
+
             String avatarUrl = avatarService.generateAvatarUrlForSignup(
                     signUpRequest.getFirstName(),
                     signUpRequest.getLastName(),
@@ -186,6 +196,8 @@ public class AdminController {
             user.setPhone(signUpRequest.getPhone());
             user.setDepartment(signUpRequest.getDepartment());
             user.setProfileImage(avatarUrl);
+            user.setNotifMode("email");
+
 
             Set<String> strRoles = signUpRequest.getRoles();
             Set<Role> roles = new HashSet<>();

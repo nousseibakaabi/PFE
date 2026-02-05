@@ -380,7 +380,6 @@ public class StatsController {
 
             List<Map<String, Object>> overdueDetails = overdueInvoices.stream()
                     .sorted(Comparator.comparing(Facture::getDateEcheance))
-                    .limit(10)
                     .map(f -> {
                         Map<String, Object> detail = new HashMap<>();
                         detail.put("numero", f.getNumeroFacture());

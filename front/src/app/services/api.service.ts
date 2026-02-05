@@ -12,7 +12,6 @@ export class ApiService {
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
-  // UPDATE THIS METHOD to refresh user after update
   updateProfile(profileData: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/profile/update`, profileData, { 
       headers: this.getHeaders() 
@@ -94,4 +93,20 @@ export class ApiService {
       'Authorization': token ? `Bearer ${token}` : ''
     });
   }
+
+
+updateNotificationPreferences(notifData: any): Observable<any> {
+  const token = this.authService.token;
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+    'Authorization': token ? `Bearer ${token}` : ''
+  });
+  
+  return this.http.put(`${this.apiUrl}/profile/update-notification`, notifData, { headers }).pipe(
+    tap(() => {
+      // Refresh user data after update
+      this.authService.refreshUser().subscribe();
+    })
+  );
+}
 }

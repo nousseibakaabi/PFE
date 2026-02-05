@@ -97,12 +97,7 @@ public class ConventionController {
                         .body(createErrorResponse("Convention with this reference already exists"));
             }
 
-            // Check if ERP reference exists
-            if (request.getReferenceERP() != null &&
-                    conventionRepository.existsByReferenceERP(request.getReferenceERP())) {
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ERP reference already exists"));
-            }
+
 
             // Fetch related entities
             Optional<Structure> structureInterne = structureRepository.findById(request.getStructureInterneId());
@@ -194,13 +189,7 @@ public class ConventionController {
                         .body(createErrorResponse("Convention with this reference already exists"));
             }
 
-            // Check if new ERP reference conflicts
-            if (request.getReferenceERP() != null &&
-                    !request.getReferenceERP().equals(convention.getReferenceERP()) &&
-                    conventionRepository.existsByReferenceERP(request.getReferenceERP())) {
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("ERP reference already exists"));
-            }
+
 
             // Fetch related entities
             Optional<Structure> structureInterne = structureRepository.findById(request.getStructureInterneId());
@@ -244,6 +233,9 @@ public class ConventionController {
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to update convention: " + e.getMessage()));
         }
     }
+
+
+
 
     @PostMapping("/{id}/archive")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
@@ -796,6 +788,23 @@ public class ConventionController {
         } catch (Exception e) {
             log.error("Error getting client structure from project: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    // Add this method to ConventionController.java
+    @GetMapping("/generate-reference")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
+    public ResponseEntity<?> generateReferenceSuggestion() {
+        try {
+            String suggestedReference = conventionService.generateSuggestedReference();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("suggestedReference", suggestedReference);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error generating reference suggestion: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to generate reference suggestion"));
         }
     }
 }

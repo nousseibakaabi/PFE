@@ -189,4 +189,27 @@ public class ProfileController {
 
         return ResponseEntity.ok(debugInfo);
     }
+
+
+    // Add this method to ProfileController.java
+    @PutMapping("/update-notification")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> updateNotificationMode(@RequestBody Map<String, String> request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String notifMode = request.get("notifMode");
+
+        if (notifMode == null || !(notifMode.equals("email") || notifMode.equals("sms") || notifMode.equals("both"))) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Invalid notification mode. Use 'email', 'sms', or 'both'."));
+        }
+
+        user.setNotifMode(notifMode);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new MessageResponse("Notification preferences updated successfully!"));
+    }
 }

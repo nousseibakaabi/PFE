@@ -185,7 +185,10 @@ export class AdminProjectComponent implements OnInit {
     progress: 0,
     budget: 0,
     status: 'PLANIFIE'
+
   };
+    this.loadSuggestedProjectCode();
+
   this.showAddModal = true;
   this.errorMessage = '';
 }
@@ -429,5 +432,32 @@ incrementProgress(project: Project): void {
   }
 
 
+
+  loadSuggestedProjectCode(): void {
+  this.projectService.getSuggestedProjectCode().subscribe({
+    next: (response: any) => {
+      if (response.success && response.suggestedCode) {
+        // Direct assignment instead of patchValue
+        this.projectForm.code = response.suggestedCode;
+      }
+    },
+    error: (error) => {
+      console.error('Failed to load suggested code:', error);
+    }
+  });
+}
+
+
+
+validateProjectCode(): boolean {
+  const code = this.projectForm.code; 
+  const pattern = /^PROJ-\d{4}-\d{3}$/;
+  
+  if (!pattern.test(code)) {
+    this.errorMessage = 'Format de code invalide. Utilisez PROJ-AAAA-XXX (ex: PROJ-2024-001)';
+    return false;
+  }
+  return true;
+}
 
 }

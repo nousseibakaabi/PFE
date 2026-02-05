@@ -348,68 +348,224 @@
         </div>
       </div>
 
-      <!-- Overdue Invoices Table -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700/30" *ngIf="getOverdueInvoices().length > 0">
-        <div class="p-3 border-b border-gray-100 dark:border-gray-700/30 flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
-              <svg class="w-3.5 h-3.5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h3 class="font-bold text-gray-800 dark:text-white text-xs">Factures en Retard</h3>
-              <p class="text-gray-500 dark:text-gray-400 text-2xs">Nécessitent un suivi immédiat</p>
-            </div>
-          </div>
-          <span class="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs font-medium rounded-full">
-            {{getOverdueInvoices().length}} factures
-          </span>
+      <!-- Overdue Invoices Table - Updated with Filters and Pagination -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700/30" 
+     *ngIf="getOverdueInvoices().length > 0">
+  <div class="p-3 border-b border-gray-100 dark:border-gray-700/30 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+        <svg class="w-3.5 h-3.5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="font-bold text-gray-800 dark:text-white text-xs">Factures en Retard</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-2xs">Nécessitent un suivi immédiat</p>
+      </div>
+    </div>
+    <span class="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs font-medium rounded-full">
+      {{totalItems}} factures
+    </span>
+  </div>
+
+  <!-- Filters Bar -->
+  <div class="p-3 border-b border-gray-100 dark:border-gray-700/30 bg-gray-50 dark:bg-gray-700/20">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex flex-col sm:flex-row gap-2">
+        <!-- Priority Filter -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs text-gray-600 dark:text-gray-400">Priorité:</span>
+          <select 
+            [(ngModel)]="priorityFilter" 
+            (change)="updateFilteredData(); currentPage = 1"
+            class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+          >
+            <option value="ALL">Toutes</option>
+            <option value="CRITIQUE">Critique</option>
+            <option value="ÉLEVÉE">Élevée</option>
+            <option value="MOYEN">Moyen</option>
+          </select>
         </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-xs">
-            <thead class="bg-gray-50 dark:bg-gray-700/30">
-  <tr>
-    <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Numéro</th>
-    <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Convention</th>
-    <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Montant</th>
-    <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Retard</th>
-    <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Priorité</th>
-  </tr>
-</thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-700/30">
-              <tr *ngFor="let invoice of getOverdueInvoices()" 
-                  class="hover:bg-red-50/30 dark:hover:bg-red-900/10 transition-colors duration-150">
-                <td class="px-3 py-2 font-medium text-gray-800 dark:text-white">
-                  <div class="flex items-center gap-1.5">
-                    <div class="w-5 h-5 bg-red-100 dark:bg-red-900/30 rounded flex items-center justify-center">
-                      <svg class="w-2.5 h-2.5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <span class="text-xs">{{invoice.numero}}</span>
-                  </div>
-                </td>
-                <td class="px-3 py-2 text-gray-600 dark:text-gray-400 text-xs truncate max-w-[120px]">{{invoice.convention}}</td>
-                <td class="px-3 py-2 font-medium text-gray-800 dark:text-white text-xs">{{formatCurrency(invoice.montant)}}</td>
-                <td class="px-3 py-2">
-  <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-2xs rounded-full font-medium">
-    {{getDaysAgo(invoice.dateEcheance)}}j
-  </span>
-</td>
-<td class="px-3 py-2">
-  <span class="px-1.5 py-0.5 text-2xs font-medium rounded-full" 
-        [class]="getDaysAgo(invoice.dateEcheance) > 30 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' : 
-                 getDaysAgo(invoice.dateEcheance) > 15 ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' :
-                 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'">
-    {{getDaysAgo(invoice.dateEcheance) > 30 ? 'CRITIQUE' : getDaysAgo(invoice.dateEcheance) > 15 ? 'ÉLEVÉE' : 'MOYEN'}}
-  </span>
-</td>
-              </tr>
-            </tbody>
-          </table>
+
+        <!-- Sort Options -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs text-gray-600 dark:text-gray-400">Trier par:</span>
+          <select 
+            [(ngModel)]="sortBy" 
+            (change)="updateFilteredData()"
+            class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+          >
+            <option value="joursRetard">Jours retard</option>
+            <option value="montant">Montant</option>
+            <option value="dateEcheance">Date échéance</option>
+          </select>
+          <button 
+            (click)="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; updateFilteredData()"
+            class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path *ngIf="sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+              <path *ngIf="sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Items per page -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs text-gray-600 dark:text-gray-400">Afficher:</span>
+          <select 
+            [(ngModel)]="itemsPerPage" 
+            (change)="changeItemsPerPage(itemsPerPage)"
+            class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+          >
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+          </select>
         </div>
       </div>
+
+      <!-- Reset Filters -->
+      <button 
+        (click)="resetFilters()"
+        class="px-2 py-1 text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex items-center gap-1"
+      >
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Réinitialiser
+      </button>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-xs">
+      <thead class="bg-gray-50 dark:bg-gray-700/30">
+        <tr>
+          <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Numéro</th>
+          <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Convention</th>
+          <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Montant</th>
+          <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Retard</th>
+          <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Priorité</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-700/30">
+        <!-- Use filteredOverdueInvoices instead of getOverdueInvoices() -->
+        <tr *ngFor="let invoice of filteredOverdueInvoices" 
+            class="hover:bg-red-50/30 dark:hover:bg-red-900/10 transition-colors duration-150">
+          <td class="px-3 py-2 font-medium text-gray-800 dark:text-white">
+            <div class="flex items-center gap-1.5">
+              <div class="w-5 h-5 bg-red-100 dark:bg-red-900/30 rounded flex items-center justify-center">
+                <svg class="w-2.5 h-2.5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <span class="text-xs">{{invoice.numero}}</span>
+            </div>
+          </td>
+          <td class="px-3 py-2 text-gray-600 dark:text-gray-400 text-xs truncate max-w-[120px]">{{invoice.convention}}</td>
+          <td class="px-3 py-2 font-medium text-gray-800 dark:text-white text-xs">{{formatCurrency(invoice.montant)}}</td>
+          <td class="px-3 py-2">
+            <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-2xs rounded-full font-medium">
+              {{getDaysAgo(invoice.dateEcheance)}}j
+            </span>
+          </td>
+          <td class="px-3 py-2">
+            <span class="px-1.5 py-0.5 text-2xs font-medium rounded-full" 
+                  [class]="getPriorityClass(getDaysAgo(invoice.dateEcheance))">
+              {{getPriorityLabel(getDaysAgo(invoice.dateEcheance))}}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- No results message -->
+    <div *ngIf="filteredOverdueInvoices.length === 0" class="text-center py-6">
+      <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-2">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <p class="text-gray-500 dark:text-gray-400 text-xs">Aucune facture trouvée avec ces filtres</p>
+    </div>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div *ngIf="totalItems > 0" class="p-3 border-t border-gray-100 dark:border-gray-700/30">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <!-- Showing X of Y -->
+      <div class="text-xs text-gray-600 dark:text-gray-400">
+       Affichage {{getCurrentPageStart()}} - 
+{{getCurrentPageEnd()}} 
+sur {{totalItems}} factures
+      </div>
+
+      <!-- Page Numbers -->
+      <div class="flex items-center gap-1">
+        <!-- First Page -->
+        <button 
+          (click)="changePage(1)"
+          [disabled]="currentPage === 1"
+          class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          «
+        </button>
+
+        <!-- Previous Page -->
+        <button 
+          (click)="changePage(currentPage - 1)"
+          [disabled]="currentPage === 1"
+          class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          ‹
+        </button>
+
+<div class="flex items-center gap-1">
+  <ng-container *ngFor="let page of getPageNumbers()">
+    <button 
+      *ngIf="page === -1"
+      class="w-7 h-7 flex items-center justify-center text-xs text-gray-400 cursor-default"
+      disabled
+    >
+      ...
+    </button>
+    
+    <!-- Page number button -->
+    <button 
+      *ngIf="page !== -1"
+      (click)="changePage(page)"
+      [class]="page === currentPage ? 
+        'w-7 h-7 flex items-center justify-center text-xs rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-medium' :
+        'w-7 h-7 flex items-center justify-center text-xs rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'"
+    >
+      {{page}}
+    </button>
+  </ng-container>
+</div>
+
+        <!-- Next Page -->
+        <button 
+          (click)="changePage(currentPage + 1)"
+          [disabled]="currentPage === getTotalPages()"
+          class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          ›
+        </button>
+
+        <!-- Last Page -->
+        <button 
+          (click)="changePage(getTotalPages())"
+          [disabled]="currentPage === getTotalPages()"
+          class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          »
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
     </div>
 
    

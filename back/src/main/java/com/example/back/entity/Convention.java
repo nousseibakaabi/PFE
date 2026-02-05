@@ -25,7 +25,7 @@ public class Convention {
     @Column(unique = true, nullable = false)
     private String referenceConvention;
 
-    @Column(name = "reference_erp", unique = true, nullable = false)
+    @Column(name = "reference_erp", nullable = false , unique = false)
     private String referenceERP;
 
     @Column(nullable = false)
@@ -57,7 +57,7 @@ public class Convention {
     private String periodicite;
 
     @Column(nullable = false)
-    private String etat = "EN_ATTENTE"; // Default status: EN_ATTENTE
+    private String etat = "EN_ATTENTE";
 
     // Archiving fields
     private Boolean archived = false;

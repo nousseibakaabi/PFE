@@ -49,4 +49,14 @@ public class FactureResponse {
     private String structureInterneName;
     private String structureExterneName;
     private String zoneName;
+
+
+    private Integer joursRetard;
+    private Integer joursRestants;
+    private String statutPaiementDetail;
+    private String statutPaiementColor;
+
+    private String paiementType; // AVANCE, RETARD, PONCTUEL, EN_ATTENTE, EN_RETARD
+    private String joursDetails; // Formatted duration like "1 an, 2 mois et 15 jours"
+    private Long joursNumber; // Total number of days
 }

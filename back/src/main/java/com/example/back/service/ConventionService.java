@@ -15,8 +15,8 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -404,4 +404,62 @@ public class ConventionService {
         log.info("Daily comprehensive status update running...");
         updateAllConventionsStatusRealTime();
     }
+
+
+
+    @Transactional
+    public String generateSuggestedReference() {
+        int currentYear = LocalDate.now().getYear();
+        String yearStr = String.valueOf(currentYear);
+        String prefix = "CONV-" + currentYear + "-";
+
+        // Get all used sequences for the current year
+        List<Integer> usedSequences = conventionRepository.findUsedSequencesByYear(prefix);
+
+        // If no sequences, start from 001
+        if (usedSequences == null || usedSequences.isEmpty()) {
+            return String.format("CONV-%d-%03d", currentYear, 1);
+        }
+
+        // Sort sequences (should already be sorted from query, but ensure)
+        Collections.sort(usedSequences);
+
+        // Find the first available gap in sequence
+        int nextSequence = 1; // Start from 001
+
+        for (int usedSequence : usedSequences) {
+            if (usedSequence > nextSequence) {
+                // Found a gap! Return the missing number
+                break;
+            }
+            nextSequence = usedSequence + 1;
+        }
+
+        // If we reached beyond 999, find first available from beginning
+        if (nextSequence > 999) {
+            nextSequence = findFirstMissingSequence(usedSequences);
+        }
+
+        // Format with leading zeros
+        return String.format("CONV-%d-%03d", currentYear, nextSequence);
+    }
+
+    // Helper method to find first missing number
+    private int findFirstMissingSequence(List<Integer> sequences) {
+        // Create a set for faster lookup
+        Set<Integer> sequenceSet = new HashSet<>(sequences);
+
+        // Check numbers 1-999
+        for (int i = 1; i <= 999; i++) {
+            if (!sequenceSet.contains(i)) {
+                return i;
+            }
+        }
+
+        // All numbers 1-999 are used (extremely rare), use 1000
+        return 1000;
+    }
+
+
+
 }

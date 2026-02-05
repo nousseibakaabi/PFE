@@ -16,7 +16,6 @@ import { EmailSendComponent } from './components/email-send/email-send.component
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { ForgetPasswordComponent } from './components/forget-password/forget-password.component';
 import { ProfileComponent } from './components/profile/profile.component';
-import { RegisterComponent } from './components/register/register.component';
 import { LoginComponent } from './components/login/login.component';
 import { HttpClientModule ,HTTP_INTERCEPTORS} from '@angular/common/http';
 import { AdminUsersComponent } from './components/admin-users/admin-users.component';
@@ -47,7 +46,6 @@ import { FullCalendarModule } from '@fullcalendar/angular';
     OverlayComponent,
     DashboardComponent,
     LoginComponent,
-    RegisterComponent,
     ProfileComponent,
     ForgetPasswordComponent,
     ResetPasswordComponent,

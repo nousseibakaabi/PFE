@@ -509,4 +509,39 @@ public class NomenclatureController {
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch commercial stats"));
         }
     }
+
+
+    @GetMapping("/structures/internes")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
+    public ResponseEntity<?> getStructuresInternes() {
+        try {
+            List<Structure> structures = structureRepository.findByTypeStructureNot("CLIENT");
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", structures);
+            response.put("count", structures.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error fetching internes structures:", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch internes structures"));
+        }
+    }
+
+
+
+    @GetMapping("/structures/externes")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
+    public ResponseEntity<?> getStructuresExternes() {
+        try {
+            List<Structure> structures = structureRepository.findByTypeStructure("CLIENT");
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", structures);
+            response.put("count", structures.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error fetching externes structures:", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch externes structures"));
+        }
+    }
 }

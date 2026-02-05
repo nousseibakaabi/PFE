@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { environment } from '../../../environments/environment';
 import { TranslationService } from '../partials/traduction/translation.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-profile',
@@ -33,14 +34,21 @@ export class ProfileComponent implements OnInit {
   avatarPreview: string | null = null;
 
 
+  notificationForm!: FormGroup;
+notificationLoading = false;
+notificationSuccess = false;
+notificationError = '';
+
+
   selectedFile: File | null = null;
-  baseUrl = environment.baseUrl || 'http://localhost:8081';
+  baseUrl = environment.baseUrl || 'http://localhost:8084';
 
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private apiService: ApiService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -60,6 +68,11 @@ export class ProfileComponent implements OnInit {
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required]
     });
+
+
+    this.notificationForm = this.formBuilder.group({
+  notifMode: ['email', Validators.required]
+});
   }
 
 loadUserProfile(): void {
@@ -74,6 +87,8 @@ loadUserProfile(): void {
         phone: user.phone,
         department: user.department
       });
+
+      this.loadNotificationMode();
       this.profileLoading = false;
     },
     error: (error) => {
@@ -82,6 +97,73 @@ loadUserProfile(): void {
     }
   });
 }
+
+
+loadNotificationMode(): void {
+  if (this.user?.notifMode) {
+    this.notificationForm.patchValue({
+      notifMode: this.user.notifMode
+    });
+  }
+}
+
+updateNotificationMode(): void {
+  if (this.notificationForm.invalid) {
+    return;
+  }
+
+  this.notificationLoading = true;
+  this.notificationError = '';
+
+  const notifData = {
+    notifMode: this.notificationForm.value.notifMode
+  };
+
+  // Use the ApiService method instead of direct http call
+  this.apiService.updateNotificationPreferences(notifData).subscribe({
+    next: () => {
+      this.notificationSuccess = true;
+      this.notificationLoading = false;
+      
+      // Update local user object
+      if (this.user) {
+        this.user.notifMode = this.notificationForm.value.notifMode;
+      }
+      
+      // Show success message for 3 seconds
+      setTimeout(() => {
+        this.notificationSuccess = false;
+      }, 3000);
+    },
+    error: (error) => {
+      this.notificationError = error.error?.message || 'Failed to update notification preferences';
+      this.notificationLoading = false;
+    }
+  });
+}
+
+// Add method to get notification mode display text
+getNotificationModeText(): string {
+  const mode = this.user?.notifMode;
+  switch(mode) {
+    case 'email': return 'Email';
+    case 'sms': return 'SMS';
+    case 'both': return 'Email & SMS';
+    default: return 'Email';
+  }
+}
+
+// Add method to get notification mode description
+getNotificationModeDescription(): string {
+  const mode = this.user?.notifMode;
+  switch(mode) {
+    case 'email': return 'Receive notifications via email only';
+    case 'sms': return 'Receive notifications via SMS only';
+    case 'both': return 'Receive notifications via both email and SMS';
+    default: return 'Email notifications only';
+  }
+}
+
   // ADD THIS METHOD - Gets the correct avatar URL
   getAvatarUrl(): string {
     if (!this.user?.profileImage) {

@@ -119,12 +119,7 @@
                   <span class="font-medium">Externe:</span> {{ convention.structureExterneName || '-' }}
                 </p>
               </div>
-              <div class="flex items-center gap-2">
-                <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <p class="text-xs text-gray-700 dark:text-gray-300 truncate">
-                  <span class="font-medium">Zone:</span> {{ convention.zoneName || '-' }}
-                </p>
-              </div>
+              
             </div>
           </div>
           
@@ -136,7 +131,7 @@
                 <span class="font-medium">Archivé le:</span> {{ formatArchivedDate(convention.archivedAt) }}
               </div>
               <div class="text-xs text-gray-700 dark:text-gray-300">
-                <span class="font-medium">Par:</span> {{ convention.archivedBy || 'Non spécifié' }}
+                <span class="font-medium">Zone:</span> {{ convention.zoneName || 'Non spécifié' }}
               </div>
             </div>
           </div>

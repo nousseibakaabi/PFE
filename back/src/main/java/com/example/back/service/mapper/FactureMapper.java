@@ -5,6 +5,8 @@ import com.example.back.entity.Facture;
 import com.example.back.payload.response.FactureResponse;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class FactureMapper {
 
@@ -28,6 +30,11 @@ public class FactureMapper {
         response.setCreatedAt(facture.getCreatedAt());
         response.setUpdatedAt(facture.getUpdatedAt());
         response.setEnRetard(facture.isEnRetard());
+
+        response.setJoursRetard(facture.getJoursRetard());
+        response.setJoursRestants(facture.getJoursRestants());
+        response.setStatutPaiementDetail(facture.getStatutPaiementDetail());
+        response.setStatutPaiementColor(getStatutColor(facture));
 
         // Convention reference and related info
         if (facture.getConvention() != null) {
@@ -68,6 +75,34 @@ public class FactureMapper {
             }
         }
 
+        Map<String, Object> paiementDetails = facture.getPaiementDetails();
+
+        if (!paiementDetails.isEmpty()) {
+            response.setPaiementType((String) paiementDetails.get("type"));
+            response.setJoursDetails(facture.formatDuration((Long) paiementDetails.get("jours")));
+            response.setJoursNumber((Long) paiementDetails.get("jours"));
+        }
+
+        response.setStatutPaiementDetail(facture.getStatutPaiementDetail());
+        response.setStatutPaiementColor(facture.getStatutPaiementColor());
+
         return response;
+    }
+
+
+    private String getStatutColor(Facture facture) {
+        if ("PAYE".equals(facture.getStatutPaiement())) {
+            if (facture.getDatePaiement() != null && facture.getDateEcheance() != null) {
+                if (facture.getDatePaiement().isAfter(facture.getDateEcheance())) {
+                    return "warning"; // Paid late
+                } else {
+                    return "success"; // Paid on time
+                }
+            }
+            return "success";
+        } else if (facture.isEnRetard()) {
+            return "danger"; // Overdue
+        }
+        return "info"; // Not due yet
     }
 }

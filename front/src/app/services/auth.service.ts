@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { LoginRequest, RegisterRequest, AuthResponse, User, MessageResponse } from '../models/user';
+import { LoginRequest , AuthResponse, User, MessageResponse } from '../models/user';
 
 @Injectable({
   providedIn: 'root'
@@ -107,11 +107,8 @@ login(loginRequest: LoginRequest): Observable<AuthResponse> {
     );
 }
 
-  register(registerRequest: RegisterRequest): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.apiUrl}/auth/register`, registerRequest);
-  }
 
-  // ADD THIS METHOD: Update user in localStorage and BehaviorSubject
+
   updateCurrentUser(updates: Partial<User>): void {
     const currentUser = this.currentUserValue;
     if (currentUser) {
@@ -125,7 +122,6 @@ login(loginRequest: LoginRequest): Observable<AuthResponse> {
     return this.currentUserValue;
   }
 
-  // ADD THIS METHOD: Refresh user data from backend
   refreshUser(): Observable<User> {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.token}`

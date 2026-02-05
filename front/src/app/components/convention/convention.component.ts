@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ProjectService } from 'src/app/services/project.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-convention',
@@ -39,7 +40,6 @@ export class ConventionComponent implements OnInit {
   relatedInvoices: any[] = [];
   selectedConventionForInvoices: Convention | null = null;
 
-  // Form fields - FIXED
   formData: ConventionRequest = {
     referenceConvention: '',
     referenceERP: '',
@@ -68,20 +68,24 @@ etats = [null, 'EN_ATTENTE', 'EN_COURS', 'EN_RETARD', 'TERMINE'];
   applications: any[] = []; // ADD THIS
 
   
+  internesStructures: Structure[] = [];
+externesStructures: Structure[] = [];
 
   constructor(
     private conventionService: ConventionService,
     private factureService: FactureService,
     private nomenclatureService: NomenclatureService,
     private authService: AuthService,
-    private projectService : ProjectService
+    private projectService : ProjectService,
+     private http: HttpClient
   ) {}
 
   ngOnInit(): void {
     this.loadConventions();
-    this.loadStructures();
-    this.loadZones(); // CHANGED FROM "loadGouvernorats"
-    this.loadApplications(); // ADD THIS
+    this.loadInternesStructures();
+    this.loadExternesStructures();
+    this.loadZones(); 
+    this.loadApplications(); 
     this.loadProjects();
   }
 
@@ -132,11 +136,9 @@ onProjectSelected(projectId: number): void {
     this.projectService.getClientStructureForProject(projectId).subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          // Auto-fill external structure with client
           this.formData.structureExterneId = response.data.id;
           
-          // Also, update the structures dropdown to show the selected client
-          // You might need to reload structures or ensure the client structure is in the list
+          
         }
       },
       error: (error) => {
@@ -256,17 +258,33 @@ onProjectSelected(projectId: number): void {
     this.errorMessage = '';
   }
 
-  loadStructures(): void {
-    this.nomenclatureService.getStructures().subscribe({
-      next: (structures) => {
-        this.structures = structures;
-      },
-      error: (error) => {
-        console.error('Error loading structures:', error);
-        this.errorMessage = 'Failed to load structures';
-      }
-    });
-  }
+loadInternesStructures(): void {
+  this.nomenclatureService.getInternesStructures().subscribe({
+    next: (structures) => {
+      console.log('Internes structures loaded:', structures); // Debug log
+      this.internesStructures = structures;
+    },
+    error: (error) => {
+      console.error('Error loading internes structures:', error);
+      console.error('Full error:', error); // More details
+      this.errorMessage = 'Failed to load internes structures';
+    }
+  });
+}
+
+loadExternesStructures(): void {
+  this.nomenclatureService.getExternesStructures().subscribe({
+    next: (structures) => {
+      console.log('Externes structures loaded:', structures); // Debug log
+      this.externesStructures = structures;
+    },
+    error: (error) => {
+      console.error('Error loading externes structures:', error);
+      console.error('Full error:', error); // More details
+      this.errorMessage = 'Failed to load externes structures';
+    }
+  });
+}
 
   loadZones(): void { // CHANGED FROM "loadGouvernorats"
     this.nomenclatureService.getZones().subscribe({
@@ -315,7 +333,7 @@ searchConventions(): void {
     }
   }
 
- openCreateModal(): void {
+openCreateModal(): void {
   this.isEditing = false;
   this.formData = {
     referenceConvention: '',
@@ -327,12 +345,30 @@ searchConventions(): void {
     structureInterneId: 0,
     structureExterneId: 0,
     zoneId: 0,
-    projectId: 0, // Add this!
+    projectId: 0,
     montantTotal: 0,
     periodicite: 'MENSUEL'
   };
+  
+  // Load suggested reference
+  this.loadSuggestedReference();
+  
   this.showModal = true;
   this.errorMessage = '';
+}
+
+
+validateReference(): boolean {
+  const reference = this.formData.referenceConvention;
+  
+  // Check if reference follows pattern
+  const pattern = /^CONV-\d{4}-\d{3}$/;
+  if (!pattern.test(reference)) {
+    this.errorMessage = 'Le format de référence doit être: CONV-YYYY-XXX (ex: CONV-2024-001)';
+    return false;
+  }
+  
+  return true;
 }
 
 openEditModal(convention: Convention): void {
@@ -492,10 +528,20 @@ openEditModal(convention: Convention): void {
   }
 
   validateForm(): boolean {
-    if (!this.formData.referenceConvention.trim()) { // CHANGED FROM "reference"
+    if (!this.formData.referenceConvention.trim()) {
       this.errorMessage = 'Référence Convention est requise';
       return false;
     }
+
+    if (!this.validateReference()) {
+    return false;
+    }
+
+    if (!this.formData.referenceERP.trim()) {
+      this.errorMessage = 'Référence ERP est requise';
+      return false;
+    }
+    
     if (!this.formData.libelle.trim()) {
       this.errorMessage = 'Libellé est requis';
       return false;
@@ -504,7 +550,13 @@ openEditModal(convention: Convention): void {
       this.errorMessage = 'Date de début est requise';
       return false;
     }
-    if (!this.formData.structureInterneId) { // CHANGED FROM "structureId"
+
+     if (!this.formData.dateFin) {
+      this.errorMessage = 'Date de fin est requise';
+      return false;
+    }
+
+    if (!this.formData.structureInterneId) { 
       this.errorMessage = 'Structure interne est requise';
       return false;
     }
@@ -568,4 +620,20 @@ getEtatLabel(etat: string | null): string {
   canEdit(): boolean {
     return this.isAdmin() || this.isCommercial();
   }
+
+
+loadSuggestedReference(): void {
+  this.conventionService.getSuggestedReference().subscribe({
+    next: (response: any) => {
+      if (response.success && response.suggestedReference) {
+        this.formData.referenceConvention = response.suggestedReference;
+      }
+    },
+    error: (error) => {
+      console.error('Failed to load suggested reference:', error);
+  
+    }
+  });
+}
+
 }

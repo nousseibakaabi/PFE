@@ -21,7 +21,6 @@ export interface Convention {
   createdAt: string;
   updatedAt: string;
   
-  // CHANGED: Now these are just IDs and names, not full objects
   structureInterneId: number;
   structureInterneName: string;
   structureInterneCode: string;
@@ -107,10 +106,7 @@ export class ConventionService {
     return this.http.get(`${this.apiUrl}/api/conventions/${id}`);
   }
 
-  // Create new convention
-  createConvention(data: ConventionRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/api/conventions`, data);
-  }
+ 
 
   // Update convention
   updateConvention(id: number, data: ConventionRequest): Observable<any> {
@@ -136,4 +132,17 @@ export class ConventionService {
   getConventionsExpirees(): Observable<any> {
     return this.http.get(`${this.apiUrl}/api/conventions/expirees`);
   }
+
+
+getSuggestedReference(): Observable<any> {
+  return this.http.get(`${this.apiUrl}/api/conventions/generate-reference`);
+}
+
+
+   // Create new convention
+  createConvention(data: ConventionRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/conventions`, data);
+  }
+
+  
 }

@@ -152,6 +152,7 @@
     <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Facture</th>
     <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Structure</th>
     <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Dates</th>
+    <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Jours avant échéance</th>
     <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Montant</th>
     <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Statut</th>
         <th class="px-4 py-3 text-left text-xs text-gray-500 dark:text-gray-300">Date Paiement</th>
@@ -184,13 +185,35 @@
     
     <td class="px-4 py-3">
       <div class="text-xs">
-        <div class="text-gray-800 dark:text-white">Fact: {{ facture.dateFacturation | date:'dd/MM' }}</div>
+        <div class="text-gray-800 dark:text-white">Fact: {{ facture.dateFacturation | date:'dd/MM/YY' }}</div>
         <div class="text-xs mt-0.5" [ngClass]="{'text-red-600 font-medium': isOverdue(facture), 'text-gray-500': !isOverdue(facture)}">
-          Éch: {{ facture.dateEcheance | date:'dd/MM' }}
+          Éch: {{ facture.dateEcheance | date:'dd/MM/YY' }}
         </div>
       </div>
     </td>
     
+ <td class="px-6 py-4 whitespace-nowrap">
+    <div class="flex items-center">
+      <!-- Icon based on status -->
+      <span class="material-icons mr-2 text-sm" [ngClass]="{
+        'text-emerald-600': getPaymentDetails(facture)?.type === 'advance',
+        'text-green-600': getPaymentDetails(facture)?.type === 'ontime',
+        'text-amber-600': getPaymentDetails(facture)?.type === 'late',
+        'text-blue-600': facture.statutPaiement === 'NON_PAYE' && !isOverdue(facture),
+        'text-red-600': isOverdue(facture)
+      }">
+      </span>
+      
+      <!-- Status text with formatted time -->
+      <span [ngClass]="getPaymentStatusClass(facture)" 
+            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full">
+        {{ getPaymentStatus(facture) }}
+      </span>
+    </div>
+    </td>
+    
+   
+
    <td class="px-4 py-3">
   <div class="font-medium text-blue-600 dark:text-blue-400 text-sm">
     {{ facture.montantTTC }} TND

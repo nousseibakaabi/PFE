@@ -201,4 +201,31 @@ export class NomenclatureService {
     
     return throwError(() => new Error(errorMessage));
   }
+
+
+  getInternesStructures(): Observable<Structure[]> {
+  return this.http.get<NomenclatureResponse>(
+    `${this.apiUrl}/admin/nomenclatures/structures/internes`,
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      console.log('Internes structures response:', response); // Debug log
+      return response.success ? response.data : [];
+    }),
+    catchError(this.handleError)
+  );
+}
+
+getExternesStructures(): Observable<Structure[]> {
+  return this.http.get<NomenclatureResponse>(
+    `${this.apiUrl}/admin/nomenclatures/structures/externes`,
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => {
+      console.log('Externes structures response:', response); // Debug log
+      return response.success ? response.data : [];
+    }),
+    catchError(this.handleError)
+  );
+}
 }

@@ -288,19 +288,26 @@
           <div class="space-y-6">
             <!-- Basic Info -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Code Projet *
-                </label>
-                <input
-                  type="text"
-                  [(ngModel)]="projectForm.code"
-                  name="code"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="PROJ-2024-001"
-                />
-              </div>
+              <!-- Code field section -->
+<div>
+  <div class="flex items-center justify-between mb-1.5">
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      Code du Projet *
+    </label>
+   
+  </div>
+  <div class="relative">
+    <input
+      type="text"
+      [(ngModel)]="projectForm.code"
+      name="code"
+      required
+      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm pr-10"
+      placeholder="PROJ-YYYY-XXX"
+    />
+    
+  </div>
+</div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Nom du Projet *
@@ -506,7 +513,7 @@
                   name="code"
                   required
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="PROJ-2024-001"
+                  placeholder="PROJ-YYYY-XXX"
                 />
               </div>
               <div>

@@ -3,6 +3,7 @@ package com.example.back.payload.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import java.time.LocalDate;
 
@@ -10,6 +11,8 @@ import java.time.LocalDate;
 public class ProjectRequest {
 
     @NotBlank(message = "Project code is required")
+    @Pattern(regexp = "^PROJ-\\d{4}-\\d{3}$",
+            message = "Invalid code format. Use PROJ-YYYY-XXX (ex: PROJ-2024-001)")
     private String code;
 
     @NotBlank(message = "Project name is required")

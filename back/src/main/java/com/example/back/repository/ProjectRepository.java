@@ -106,4 +106,18 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "JOIN p.conventions c " +
             "WHERE c.createdBy.id = :userId")
     List<Project> findProjectsWithConventionsByUser(@Param("userId") Long userId);
+
+
+
+    @Query("SELECT p.code FROM Project p WHERE p.code LIKE CONCAT('PROJ-', :year, '-%') ORDER BY p.code")
+    List<String> findProjectCodesByYear(@Param("year") String year);
+
+
+
+
+    @Query("SELECT CAST(SUBSTRING(p.code, LENGTH(:prefix) + 1) AS integer) " +
+            "FROM Project p " +
+            "WHERE p.code LIKE CONCAT(:prefix, '%') " +
+            "ORDER BY CAST(SUBSTRING(p.code, LENGTH(:prefix) + 1) AS integer)")
+    List<Integer> findUsedSequencesByYear(@Param("prefix") String prefix);
 }

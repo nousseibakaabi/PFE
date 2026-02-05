@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -592,6 +593,64 @@ public class ProjectService {
             throw new RuntimeException("Failed to assign chef de projet");
         }
     }
+
+
+
+    /**
+     * Generate suggested project code
+     * Format: PROJ-YYYY-XXX where XXX is auto-incremented sequence
+     */
+    public String generateSuggestedProjectCode() {
+        int currentYear = LocalDate.now().getYear();
+        String yearStr = String.valueOf(currentYear);
+
+        // Get all used sequences for the current year
+        List<Integer> usedSequences = projectRepository.findUsedSequencesByYear(yearStr);
+
+        // If no projects for this year, start with 001
+        if (usedSequences == null || usedSequences.isEmpty()) {
+            return String.format("PROJ-%d-%03d", currentYear, 1);
+        }
+
+        // Sort sequences
+        Collections.sort(usedSequences);
+
+        // Find the first available gap
+        int expectedSequence = 1; // Start from 001
+
+        for (int usedSequence : usedSequences) {
+            if (usedSequence > expectedSequence) {
+                // Found a gap! Return the missing number
+                break;
+            }
+            expectedSequence = usedSequence + 1;
+        }
+
+        // If we reached beyond 999, start from 1 again (though unlikely)
+        if (expectedSequence > 999) {
+            // Find first available from the beginning
+            expectedSequence = findFirstMissingSequence(usedSequences);
+        }
+
+        // Format with leading zeros
+        return String.format("PROJ-%d-%03d", currentYear, expectedSequence);
+    }
+
+    // Helper method to find first missing number in a sorted list
+    private int findFirstMissingSequence(List<Integer> sequences) {
+        Set<Integer> sequenceSet = new HashSet<>(sequences);
+
+        for (int i = 1; i <= 999; i++) {
+            if (!sequenceSet.contains(i)) {
+                return i;
+            }
+        }
+
+        // If all numbers 1-999 are used (highly unlikely), return 1000
+        return 1000;
+    }
+
+
 
 
 }

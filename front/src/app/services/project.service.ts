@@ -146,4 +146,10 @@ getUnassignedProjects(): Observable<any> {
 assignChefDeProjet(projectId: number, chefDeProjetId: number): Observable<any> {
   return this.http.put(`${this.apiUrl}/api/projects/${projectId}/assign-chef/${chefDeProjetId}`, {});
 }
+
+
+getSuggestedProjectCode(): Observable<any> {
+  return this.http.get(`${this.apiUrl}/api/projects/generate-code`);
+}
+
 }
