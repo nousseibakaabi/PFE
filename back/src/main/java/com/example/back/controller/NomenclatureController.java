@@ -38,137 +38,7 @@ public class NomenclatureController {
     @Autowired
     private ConventionRepository conventionRepository;
 
-    // ==================== APPLICATIONS ====================
 
-    @GetMapping("/applications")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
-    public ResponseEntity<?> getAllApplications() {
-        try {
-            List<Application> applications = applicationRepository.findAll();
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", applications);
-            response.put("count", applications.size());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch applications"));
-        }
-    }
-
-    @GetMapping("/applications/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
-    public ResponseEntity<?> getApplicationById(@PathVariable Long id) {
-        try {
-            Optional<Application> application = applicationRepository.findById(id);
-            if (application.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", application.get());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch application"));
-        }
-    }
-
-    @PostMapping("/applications")
-    public ResponseEntity<?> createApplication(@Valid @RequestBody NomenclatureRequest request) {
-        try {
-            if (applicationRepository.existsByCode(request.getCode())) {
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Application with this code already exists"));
-            }
-
-            if (applicationRepository.existsByName(request.getName())) {
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Application with this name already exists"));
-            }
-
-            Application application = new Application();
-            application.setCode(request.getCode());
-            application.setName(request.getName());
-            application.setDescription(request.getDescription());
-
-            Application saved = applicationRepository.save(application);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Application created successfully");
-            response.put("data", saved);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(createErrorResponse("Failed to create application"));
-        }
-    }
-
-    @PutMapping("/applications/{id}")
-    public ResponseEntity<?> updateApplication(@PathVariable Long id,
-                                               @Valid @RequestBody NomenclatureRequest request) {
-        try {
-            Optional<Application> existing = applicationRepository.findById(id);
-            if (existing.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            Application application = existing.get();
-
-            // Check if new code conflicts with another application
-            if (!application.getCode().equals(request.getCode()) &&
-                    applicationRepository.existsByCode(request.getCode())) {
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Application with this code already exists"));
-            }
-
-            // Check if new name conflicts with another application
-            if (!application.getName().equals(request.getName()) &&
-                    applicationRepository.existsByName(request.getName())) {
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Application with this name already exists"));
-            }
-
-            application.setCode(request.getCode());
-            application.setName(request.getName());
-            application.setDescription(request.getDescription());
-
-            Application updated = applicationRepository.save(application);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Application updated successfully");
-            response.put("data", updated);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(createErrorResponse("Failed to update application"));
-        }
-    }
-
-    @DeleteMapping("/applications/{id}")
-    public ResponseEntity<?> deleteApplication(@PathVariable Long id) {
-        try {
-            if (!applicationRepository.existsById(id)) {
-                return ResponseEntity.notFound().build();
-            }
-
-            // Check if application is used in conventions
-            Long conventionCount = conventionRepository.countByProjectId(id);
-            if (conventionCount > 0) {
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse(
-                                String.format("Cannot delete application. It is used in %d convention(s).",
-                                        conventionCount)));
-            }
-
-            applicationRepository.deleteById(id);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Application deleted successfully");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(createErrorResponse("Failed to delete application"));
-        }
-    }
 
     // ==================== ZONES GÉOGRAPHIQUES ====================
 
@@ -204,6 +74,7 @@ public class NomenclatureController {
         }
     }
 
+
     @PostMapping("/zones")
     public ResponseEntity<?> createZone(@Valid @RequestBody NomenclatureRequest request) {
         try {
@@ -217,10 +88,17 @@ public class NomenclatureController {
                         .body(createErrorResponse("Zone with this name already exists"));
             }
 
+            // PREVENT creation of Tunisian zones through API
+            if (ZoneType.isTunisianZoneCode(request.getCode())) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse("Tunisian governorates cannot be created manually. They are predefined."));
+            }
+
             ZoneGeographique zone = new ZoneGeographique();
             zone.setCode(request.getCode());
             zone.setName(request.getName());
             zone.setDescription(request.getDescription());
+            zone.setType(ZoneType.CUSTOM_ZONE); // Always CUSTOM_ZONE for API creation
 
             ZoneGeographique saved = zoneGeographiqueRepository.save(zone);
 
@@ -245,6 +123,15 @@ public class NomenclatureController {
 
             ZoneGeographique zone = existing.get();
 
+            // PREVENT converting Tunisian zones to custom or vice versa
+            boolean isCurrentlyTunisian = zone.getType() == ZoneType.TUNISIAN_ZONE;
+            boolean tryingToChangeToTunisian = ZoneType.isTunisianZoneCode(request.getCode());
+
+            if (isCurrentlyTunisian != tryingToChangeToTunisian) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse("Cannot change zone type between Tunisian and custom"));
+            }
+
             if (!zone.getCode().equals(request.getCode()) &&
                     zoneGeographiqueRepository.existsByCode(request.getCode())) {
                 return ResponseEntity.badRequest()
@@ -260,6 +147,7 @@ public class NomenclatureController {
             zone.setCode(request.getCode());
             zone.setName(request.getName());
             zone.setDescription(request.getDescription());
+            // Type remains the same (cannot be changed)
 
             ZoneGeographique updated = zoneGeographiqueRepository.save(zone);
 
@@ -273,11 +161,63 @@ public class NomenclatureController {
         }
     }
 
+
+    @GetMapping("/zones/tunisian-governorates")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
+    public ResponseEntity<?> getTunisianGovernoratesList() {
+        try {
+            // Get Tunisian zones from database
+            List<ZoneGeographique> tunisianZones = zoneGeographiqueRepository.findByType(ZoneType.TUNISIAN_ZONE);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", tunisianZones);
+            response.put("count", tunisianZones.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch Tunisian governorates"));
+        }
+    }
+
+
+
+    @GetMapping("/zones/type/{type}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
+    public ResponseEntity<?> getZonesByType(@PathVariable String type) {
+        try {
+            ZoneType zoneType;
+            try {
+                zoneType = ZoneType.valueOf(type.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse("Invalid zone type. Use TUNISIAN_ZONE or CUSTOM_ZONE"));
+            }
+
+            List<ZoneGeographique> zones = zoneGeographiqueRepository.findByType(zoneType);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", zones);
+            response.put("count", zones.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch zones by type"));
+        }
+    }
+
+
     @DeleteMapping("/zones/{id}")
     public ResponseEntity<?> deleteZone(@PathVariable Long id) {
         try {
-            if (!zoneGeographiqueRepository.existsById(id)) {
+            Optional<ZoneGeographique> zone = zoneGeographiqueRepository.findById(id);
+            if (zone.isEmpty()) {
                 return ResponseEntity.notFound().build();
+            }
+
+            // PREVENT deletion of Tunisian zones
+            if (zone.get().getType() == ZoneType.TUNISIAN_ZONE) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse("Tunisian governorates cannot be deleted"));
             }
 
             // Check if zone is used in conventions
@@ -351,10 +291,20 @@ public class NomenclatureController {
             structure.setCode(request.getCode());
             structure.setName(request.getName());
             structure.setDescription(request.getDescription());
-            structure.setAddress(request.getAddress());
             structure.setPhone(request.getPhone());
             structure.setEmail(request.getEmail());
             structure.setTypeStructure(request.getTypeStructure());
+
+            // Add zone if provided
+            if (request.getZoneId() != null) {
+                Optional<ZoneGeographique> zone = zoneGeographiqueRepository.findById(request.getZoneId());
+                if (zone.isPresent()) {
+                    structure.setZoneGeographique(zone.get());
+                } else {
+                    return ResponseEntity.badRequest()
+                            .body(createErrorResponse("Zone not found with id: " + request.getZoneId()));
+                }
+            }
 
             Structure saved = structureRepository.save(structure);
 
@@ -367,6 +317,8 @@ public class NomenclatureController {
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to create structure"));
         }
     }
+
+
 
     @PutMapping("/structures/{id}")
     public ResponseEntity<?> updateStructure(@PathVariable Long id,
@@ -394,10 +346,23 @@ public class NomenclatureController {
             structure.setCode(request.getCode());
             structure.setName(request.getName());
             structure.setDescription(request.getDescription());
-            structure.setAddress(request.getAddress());
             structure.setPhone(request.getPhone());
             structure.setEmail(request.getEmail());
             structure.setTypeStructure(request.getTypeStructure());
+
+            // Update zone if provided
+            if (request.getZoneId() != null) {
+                Optional<ZoneGeographique> zone = zoneGeographiqueRepository.findById(request.getZoneId());
+                if (zone.isPresent()) {
+                    structure.setZoneGeographique(zone.get());
+                } else {
+                    return ResponseEntity.badRequest()
+                            .body(createErrorResponse("Zone not found with id: " + request.getZoneId()));
+                }
+            } else {
+                // Clear zone if null is provided
+                structure.setZoneGeographique(null);
+            }
 
             Structure updated = structureRepository.save(structure);
 
@@ -411,6 +376,24 @@ public class NomenclatureController {
         }
     }
 
+
+
+    @GetMapping("/structures/zone/{zoneId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
+    public ResponseEntity<?> getStructuresByZone(@PathVariable Long zoneId) {
+        try {
+            List<Structure> structures = structureRepository.findByZoneGeographiqueId(zoneId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", structures);
+            response.put("count", structures.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch structures by zone"));
+        }
+    }
+
     @DeleteMapping("/structures/{id}")
     public ResponseEntity<?> deleteStructure(@PathVariable Long id) {
         try {
@@ -419,7 +402,7 @@ public class NomenclatureController {
             }
 
             // Check if structure is used in conventions (as interne or externe)
-            Long totalCount = conventionRepository.countByStructureInterneIdOrStructureExterneId(id);
+            Long totalCount = conventionRepository.countByStructureResponsableIdOrStructureBeneficielId(id);
 
             if (totalCount > 0) {
                 return ResponseEntity.badRequest()

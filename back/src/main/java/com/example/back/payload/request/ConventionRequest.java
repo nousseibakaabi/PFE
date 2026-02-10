@@ -26,17 +26,17 @@ public class ConventionRequest {
     private LocalDate dateFin;
     private LocalDate dateSignature;
 
-    @NotNull(message = "Internal structure is required")
-    private Long structureInterneId;
+    @NotNull(message = "Beneficiel structure is required")
+    private Long structureBeneficielId;
 
-    @NotNull(message = "External structure is required")
-    private Long structureExterneId;
+    @NotNull(message = "Responsable structure is required")
+    private Long structureResponsableId;
 
     @NotNull(message = "Zone is required")
     private Long zoneId;
 
-    @NotNull(message = "Project is required")
-    private Long projectId;
+    @NotNull(message = "Application is required")
+    private Long applicationId;
 
     private BigDecimal montantTotal;
 

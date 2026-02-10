@@ -1,6 +1,5 @@
-// src/app/components/chef-projet/chef-projet.component.ts
 import { Component, OnInit } from '@angular/core';
-import { ProjectService, Project } from '../../services/project.service';
+import { Application, ApplicationService  } from '../../services/application.service';
 import { ConventionService } from '../../services/convention.service';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -22,17 +21,17 @@ export class ChefProjetComponent implements OnInit {
   originalProgress = 0; // Track original progress for rollback
 
   // Your existing properties...
-  myProjects: Project[] = [];
+  myProjects: Application[] = [];
   myConventions: any[] = [];
   dashboardStats: any = {};
   loading = false;
 
   // For project progress updates
   editingProgress: number | null = null;
-  selectedProjectForProgress: Project | null = null;
+  selectedProjectForProgress: Application | null = null;
 
   constructor(
-    private projectService: ProjectService,
+    private applicationService: ApplicationService,
     private conventionService: ConventionService,
     private authService: AuthService
   ) {}
@@ -47,7 +46,7 @@ export class ChefProjetComponent implements OnInit {
     // Get current user's projects
     const currentUser = this.authService.getCurrentUser();
     if (currentUser && currentUser.id) {
-      this.projectService.getProjectsByChefDeProjet(currentUser.id).subscribe({
+      this.applicationService.getApplicationsByChefDeProjet(currentUser.id).subscribe({
         next: (response) => {
           if (response.success) {
             this.myProjects = response.data;
@@ -65,7 +64,7 @@ export class ChefProjetComponent implements OnInit {
     }
     
     // Get project dashboard
-    this.projectService.getProjectDashboard().subscribe({
+    this.applicationService.getApplicationDashboard().subscribe({
       next: (response) => {
         if (response.success) {
           this.dashboardStats = response.data;
@@ -77,16 +76,15 @@ export class ChefProjetComponent implements OnInit {
     });
   }
 
-  loadConventionsForProjects(): void {
-    const projectIds = this.myProjects.map(p => p.id);
-    
-    // Get all conventions and filter by project
-    this.conventionService.getAllConventions().subscribe({
+
+loadConventionsForProjects(): void {
+  const currentUser = this.authService.getCurrentUser();
+  if (currentUser && currentUser.id) {
+    this.applicationService.getConventionsByChefDeProjet(currentUser.id).subscribe({
       next: (response) => {
         if (response.success) {
-          this.myConventions = response.data.filter((conv: any) => 
-            conv.projectId && projectIds.includes(conv.projectId)
-          );
+          this.myConventions = response.data || [];
+          console.log('Loaded conventions for chef de projet:', this.myConventions);
         }
       },
       error: (error) => {
@@ -94,10 +92,24 @@ export class ChefProjetComponent implements OnInit {
       }
     });
   }
-
-getConventionsForProject(projectId: number): any[] {
-  if (!this.myConventions || !this.myConventions.length) return [];
-  return this.myConventions.filter(conv => conv.projectId === projectId);
+}
+getConventionsForProject(applicationId: number): any[] {
+  if (!this.myConventions || this.myConventions.length === 0) {
+    return [];
+  }
+  
+  const conventions = this.myConventions.filter(conv => {
+    // Check all possible ID fields
+    const convAppId = conv.applicationId || 
+                     conv.application?.id || 
+                     conv.projectId || 
+                     conv.project?.id;
+    
+    return Number(convAppId) === Number(applicationId);
+  });
+  
+  console.log(`Found ${conventions.length} conventions for project ${applicationId}`);
+  return conventions;
 }
 
 
@@ -148,71 +160,9 @@ getConventionStatusSummary(): any {
   return summary;
 }
 
-startProgressEdit(project: Project): void {
-    this.selectedProjectForProgress = project;
-    this.originalProgress = project.progress || 0; // Store original
-    this.editingProgress = project.progress || 0;
-  }
 
-  saveProgress(): void {
-    if (this.selectedProjectForProgress && this.editingProgress !== null) {
-      this.loading = true;
-      this.successMessage = '';
-      this.errorMessage = '';
-      
-      // Store original for rollback
-      const originalProgress = this.selectedProjectForProgress.progress;
-      
-      // Update the project locally first (optimistic update)
-      this.selectedProjectForProgress.progress = this.editingProgress;
-      
-      // Update status if 100%
-      if (this.editingProgress === 100) {
-        this.selectedProjectForProgress.status = 'TERMINE';
-      }
-      
-      this.projectService.updateProjectProgress(
-        this.selectedProjectForProgress.id, 
-        this.editingProgress
-      ).subscribe({
-        next: (response) => {
-          if (response.success) {
-            // Update the project in the local array
-            const index = this.myProjects.findIndex(
-              p => p.id === this.selectedProjectForProgress?.id
-            );
-            if (index !== -1) {
-              this.myProjects[index].progress = this.editingProgress!;
-              if (this.editingProgress === 100) {
-                this.myProjects[index].status = 'TERMINE';
-              }
-            }
-            this.successMessage = 'Progression mise à jour avec succès';
-          }
-          this.loading = false;
-          this.cancelProgressEdit();
-        },
-        error: (error) => {
-          console.error('Error updating progress:', error);
-          
-          // Revert if error
-          if (this.selectedProjectForProgress) {
-            this.selectedProjectForProgress.progress = originalProgress;
-          }
-          
-          this.errorMessage = error.error?.message || 'Échec de la mise à jour';
-          this.loading = false;
-          this.cancelProgressEdit();
-        }
-      });
-    }
-  }
+ 
 
-  cancelProgressEdit(): void {
-    this.selectedProjectForProgress = null;
-    this.editingProgress = null;
-    this.originalProgress = 0;
-  }
 
   getStatusClass(status: string): string {
     switch (status) {
@@ -379,19 +329,6 @@ getStatusLabel(status: string): string {
 
 
 
-// Add these methods to your ChefProjetComponent class:
-
-getAverageProgress(): string {
-  if (!this.myProjects || this.myProjects.length === 0) {
-    return '0.0';
-  }
-  
-  const total = this.myProjects.reduce((sum, project) => {
-    return sum + (project.progress || 0);
-  }, 0);
-  
-  return (total / this.myProjects.length).toFixed(1);
-}
 
 getDelayedProjectsCount(): number {
   if (!this.myProjects || this.myProjects.length === 0) {

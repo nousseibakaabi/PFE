@@ -10,15 +10,20 @@ export interface Nomenclature {
   code: string;
   name: string;
   description?: string;
+  type?: string; 
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface Structure extends Nomenclature {
-  address?: string;
   phone?: string;
   email?: string;
   typeStructure?: string;
+  zoneGeographique?: {  
+    id: number;
+    code: string;
+    name: string;
+  };
 }
 
 export interface NomenclatureResponse {
@@ -131,6 +136,28 @@ export class NomenclatureService {
       { headers: this.getHeaders() }
     ).pipe(catchError(this.handleError));
   }
+
+
+  // In nomenclature.service.ts
+getTunisianGovernorates(): Observable<Nomenclature[]> {
+  return this.http.get<NomenclatureResponse>(
+    `${this.apiUrl}/admin/nomenclatures/zones/tunisian-governorates`,
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => response.success ? response.data : []),
+    catchError(this.handleError)
+  );
+}
+
+getZonesByType(type: string): Observable<Nomenclature[]> {
+  return this.http.get<NomenclatureResponse>(
+    `${this.apiUrl}/admin/nomenclatures/zones/type/${type}`,
+    { headers: this.getHeaders() }
+  ).pipe(
+    map(response => response.success ? response.data : []),
+    catchError(this.handleError)
+  );
+}
 
   // ==================== STRUCTURES ====================
   getStructures(): Observable<Structure[]> {

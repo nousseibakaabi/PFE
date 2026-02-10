@@ -186,13 +186,13 @@
           <li >
             <a
              
-                                (click)="navigateAndClose('/admin/projects', 'admin/projects')"
+                                (click)="navigateAndClose('/admin/application', 'admin/application')"
 
               class="menu-item group cursor-pointer"
-              [class]="currentPage === 'admin/projects' ? 'menu-item-active' : 'menu-item-inactive'"
+              [class]="currentPage === 'admin/application' ? 'menu-item-active' : 'menu-item-inactive'"
             >
               <svg
-                [class]="currentPage === 'admin/projects' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+                [class]="currentPage === 'admin/application' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
                 width="20"
                 height="20"
                 viewBox="0 0 24 24"
@@ -210,7 +210,7 @@
                 class="menu-item-text"
                 [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
               >
-                {{ 'Projects' | translate }}
+                {{ 'Applications' | translate }}
               </span>
             </a>
           </li>
@@ -444,13 +444,13 @@
           <li >
             <a
             
-                  (click)="navigateAndClose('/chef/projet', 'chef/projet')"
+                  (click)="navigateAndClose('/chef/application', 'chef/application')"
 
               class="menu-item group cursor-pointer"
-              [class]="currentPage === 'chef/projet' ? 'menu-item-active' : 'menu-item-inactive'"
+              [class]="currentPage === 'chef/application' ? 'menu-item-active' : 'menu-item-inactive'"
             >
               <svg
-                [class]="currentPage === 'chef/projet' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+                [class]="currentPage === 'chef/application' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
                 width="20"
                 height="20"
                 viewBox="0 0 24 24"
@@ -468,7 +468,7 @@
                 class="menu-item-text"
                 [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
               >
-                {{ 'Projects' | translate }}
+                {{ 'Applications' | translate }}
               </span>
             </a>
           </li>

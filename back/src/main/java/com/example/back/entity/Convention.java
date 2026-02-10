@@ -38,20 +38,20 @@ public class Convention {
     private LocalDate dateSignature;
 
     @ManyToOne
-    @JoinColumn(name = "structure_interne_id", nullable = false)
-    private Structure structureInterne;
+    @JoinColumn(name = "structure_responsable_id", nullable = false)
+    private Structure structureResponsable;
 
     @ManyToOne
-    @JoinColumn(name = "structure_externe_id", nullable = false)
-    private Structure structureExterne;
+    @JoinColumn(name = "structure_beneficiel_id", nullable = false)
+    private Structure structureBeneficiel;
 
     @ManyToOne
     @JoinColumn(name = "zone_id", nullable = false)
     private ZoneGeographique zone;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "project_id")
-    private Project project;
+    @JoinColumn(name = "application_id")
+    private Application application;
 
     private java.math.BigDecimal montantTotal;
     private String periodicite;
@@ -501,7 +501,7 @@ public class Convention {
             return false;
         }
 
-        if (structureInterne == null || structureExterne == null) {
+        if (structureBeneficiel == null || structureResponsable == null) {
             return false;
         }
 
@@ -578,47 +578,25 @@ public class Convention {
     }
 
 
-    /**
-     * Get application through project
-     */
-    public Application getApplication() {
-        return project != null ? project.getApplication() : null;
-    }
 
-    /**
-     * Get application name through project
-     */
-    public String getApplicationName() {
-        return project != null ? project.getApplicationName() : null;
-    }
+
 
     /**
      * Get client name from project
      */
     public String getClientNameFromProject() {
-        return project != null ? project.getClientName() : null;
+        return application != null ? application.getClientName() : null;
     }
 
     /**
      * Get chef de projet from project
      */
     public User getChefDeProjet() {
-        return project != null ? project.getChefDeProjet() : null;
+        return application != null ? application.getChefDeProjet() : null;
     }
 
-    /**
-     * Get project code
-     */
-    public String getProjectCode() {
-        return project != null ? project.getCode() : null;
-    }
 
-    /**
-     * Get project name
-     */
-    public String getProjectName() {
-        return project != null ? project.getName() : null;
-    }
+
 
 
 }

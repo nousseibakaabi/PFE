@@ -9,8 +9,6 @@ import lombok.Data;
 @Data
 public class StructureRequest extends NomenclatureRequest {
 
-    private String address;
-
     private String phone;
 
     @Email(message = "Email should be valid")
@@ -19,4 +17,10 @@ public class StructureRequest extends NomenclatureRequest {
     private String typeStructure;
 
     private String description;
+
+    private Long zoneId;
+
+
+
+
 }

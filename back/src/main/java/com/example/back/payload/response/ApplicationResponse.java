@@ -1,4 +1,3 @@
-// ProjectResponse.java
 package com.example.back.payload.response;
 
 import lombok.Data;
@@ -7,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class ProjectResponse {
+public class ApplicationResponse {
     private Long id;
     private String code;
     private String name;
@@ -18,7 +17,6 @@ public class ProjectResponse {
     private String clientAddress;
     private LocalDate dateDebut;
     private LocalDate dateFin;
-    private Integer progress;
     private Double budget;
     private String status;
     private LocalDateTime createdAt;
@@ -31,15 +29,10 @@ public class ProjectResponse {
     private Integer timeBasedProgress;
     private Boolean isDelayed;
     private String statusColor;
-    private String progressColor;
     private String dateRange;
     private String timeRemainingString;
 
     // Related entity info
-    private Long applicationId;
-    private String applicationName;
-    private String applicationCode;
-
     private Long chefDeProjetId;
     private String chefDeProjetUsername;
     private String chefDeProjetFullName;

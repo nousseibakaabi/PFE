@@ -34,17 +34,17 @@ public class ConventionMapper {
         response.setUpdatedAt(convention.getUpdatedAt());
 
         // Structure Interne
-        if (convention.getStructureInterne() != null) {
-            response.setStructureInterneId(convention.getStructureInterne().getId());
-            response.setStructureInterneName(convention.getStructureInterne().getName());
-            response.setStructureInterneCode(convention.getStructureInterne().getCode());
+        if (convention.getStructureResponsable() != null) {
+            response.setStructureResponsableId(convention.getStructureResponsable().getId());
+            response.setStructureResponsableName(convention.getStructureResponsable().getName());
+            response.setStructureResponsableCode(convention.getStructureResponsable().getCode());
         }
 
         // Structure Externe
-        if (convention.getStructureExterne() != null) {
-            response.setStructureExterneId(convention.getStructureExterne().getId());
-            response.setStructureExterneName(convention.getStructureExterne().getName());
-            response.setStructureExterneCode(convention.getStructureExterne().getCode());
+        if (convention.getStructureBeneficiel() != null) {
+            response.setStructureBeneficielId(convention.getStructureBeneficiel().getId());
+            response.setStructureBeneficielName(convention.getStructureBeneficiel().getName());
+            response.setStructureBeneficielCode(convention.getStructureBeneficiel().getCode());
         }
 
         // Zone
@@ -54,24 +54,19 @@ public class ConventionMapper {
             response.setZoneCode(convention.getZone().getCode());
         }
 
-        // Project info (NEW)
-        if (convention.getProject() != null) {
-            response.setProjectId(convention.getProject().getId());
-            response.setProjectCode(convention.getProject().getCode());
-            response.setProjectName(convention.getProject().getName());
-            response.setProjectClientName(convention.getProject().getClientName());
+        // Application info (NEW)
+        if (convention.getApplication() != null) {
+            response.setApplicationId(convention.getApplication().getId());
+            response.setApplicationCode(convention.getApplication().getCode());
+            response.setApplicationName(convention.getApplication().getName());
+            response.setApplicationClientName(convention.getApplication().getClientName());
 
-            // Application info through project
-            if (convention.getProject().getApplication() != null) {
-                response.setApplicationId(convention.getProject().getApplication().getId());
-                response.setApplicationName(convention.getProject().getApplication().getName());
-                response.setApplicationCode(convention.getProject().getApplication().getCode());
-            }
 
-            // Chef de projet info through project
-            if (convention.getProject().getChefDeProjet() != null) {
-                response.setChefDeProjetId(convention.getProject().getChefDeProjet().getId());
-                response.setChefDeProjetName(convention.getProject().getChefProjetName());
+
+            // Chef de projet info through Application
+            if (convention.getApplication().getChefDeProjet() != null) {
+                response.setChefDeProjetId(convention.getApplication().getChefDeProjet().getId());
+                response.setChefDeProjetName(convention.getApplication().getChefProjetName());
             }
         }
 
@@ -145,34 +140,29 @@ public class ConventionMapper {
             response.setConventionLibelle(facture.getConvention().getLibelle());
 
             // Get structure info
-            if (facture.getConvention().getStructureInterne() != null) {
-                response.setStructureInterneName(facture.getConvention().getStructureInterne().getName());
+            if (facture.getConvention().getStructureResponsable() != null) {
+                response.setStructureInterneName(facture.getConvention().getStructureResponsable().getName());
             }
-            if (facture.getConvention().getStructureExterne() != null) {
-                response.setStructureExterneName(facture.getConvention().getStructureExterne().getName());
+            if (facture.getConvention().getStructureBeneficiel() != null) {
+                response.setStructureExterneName(facture.getConvention().getStructureBeneficiel().getName());
             }
             if (facture.getConvention().getZone() != null) {
                 response.setZoneName(facture.getConvention().getZone().getName());
             }
 
             // Project info through convention (NEW)
-            if (facture.getConvention().getProject() != null) {
-                response.setProjectId(facture.getConvention().getProject().getId());
-                response.setProjectCode(facture.getConvention().getProject().getCode());
-                response.setProjectName(facture.getConvention().getProject().getName());
-                response.setProjectClientName(facture.getConvention().getProject().getClientName());
+            if (facture.getConvention().getApplication() != null) {
+                response.setProjectId(facture.getConvention().getApplication().getId());
+                response.setProjectCode(facture.getConvention().getApplication().getCode());
+                response.setProjectName(facture.getConvention().getApplication().getName());
+                response.setProjectClientName(facture.getConvention().getApplication().getClientName());
 
-                // Application info through project
-                if (facture.getConvention().getProject().getApplication() != null) {
-                    response.setApplicationId(facture.getConvention().getProject().getApplication().getId());
-                    response.setApplicationName(facture.getConvention().getProject().getApplication().getName());
-                    response.setApplicationCode(facture.getConvention().getProject().getApplication().getCode());
-                }
 
-                // Chef de projet info through project
-                if (facture.getConvention().getProject().getChefDeProjet() != null) {
-                    response.setChefDeProjetId(facture.getConvention().getProject().getChefDeProjet().getId());
-                    response.setChefDeProjetName(facture.getConvention().getProject().getChefProjetName());
+
+                // Chef de projet info through Application
+                if (facture.getConvention().getApplication().getChefDeProjet() != null) {
+                    response.setChefDeProjetId(facture.getConvention().getApplication().getChefDeProjet().getId());
+                    response.setChefDeProjetName(facture.getConvention().getApplication().getChefProjetName());
                 }
             }
         }

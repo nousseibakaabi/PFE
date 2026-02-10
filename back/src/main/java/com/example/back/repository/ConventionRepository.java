@@ -1,5 +1,6 @@
 package com.example.back.repository;
 
+import com.example.back.entity.Application;
 import com.example.back.entity.Convention;
 import com.example.back.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,16 +34,16 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     List<Convention> findLateConventions(@Param("currentDate") LocalDate currentDate);
 
     // Count methods for deletion validation
-    @Query("SELECT COUNT(c) FROM Convention c WHERE c.project.id = :projectId")
-    Long countByProjectId(@Param("projectId") Long projectId);
+    @Query("SELECT COUNT(c) FROM Convention c WHERE c.application.id = :applicationId")
+    Long countByApplicationId(@Param("applicationId") Long applicationId);
 
 
 
 
 
 
-    @Query("SELECT COUNT(c) FROM Convention c WHERE c.structureInterne.id = :structureId OR c.structureExterne.id = :structureId")
-    Long countByStructureInterneIdOrStructureExterneId(@Param("structureId") Long structureId);
+    @Query("SELECT COUNT(c) FROM Convention c WHERE c.structureResponsable.id = :structureId OR c.structureBeneficiel.id = :structureId")
+    Long countByStructureResponsableIdOrStructureBeneficielId(@Param("structureId") Long structureId);
 
     @Query("SELECT COUNT(c) FROM Convention c WHERE c.zone.id = :zoneId")
     Long countByZoneId(@Param("zoneId") Long zoneId);
@@ -51,11 +52,11 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     // List<Convention> findByStructureId(Long structureId);
 
     // Add new methods to find by structure interne or externe
-    List<Convention> findByStructureInterneId(Long structureInterneId);
-    List<Convention> findByStructureExterneId(Long structureExterneId);
+    List<Convention> findByStructureResponsableId(Long structureResponsableId);
+    List<Convention> findByStructureBeneficielId(Long structureBeneficielId);
 
     // Find conventions by either structure
-    @Query("SELECT c FROM Convention c WHERE c.structureInterne.id = :structureId OR c.structureExterne.id = :structureId")
+    @Query("SELECT c FROM Convention c WHERE c.structureResponsable.id = :structureId OR c.structureBeneficiel.id = :structureId")
     List<Convention> findByEitherStructureId(@Param("structureId") Long structureId);
 
 
@@ -67,8 +68,8 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     @Query("SELECT c FROM Convention c WHERE c.dateDebut <= :date AND c.etat = 'EN_ATTENTE' AND c.archived = false")
     List<Convention> findConventionsStartingOnOrBefore(@Param("date") LocalDate date);
 
-    List<Convention> findByProjectId(Long projectId);
-    List<Convention> findByProjectIdAndArchivedFalse(Long projectId);
+    List<Convention> findByApplicationId(Long applicationId);
+    List<Convention> findByApplicationIdAndArchivedFalse(Long applicationId);
 
 
     // Method to check if a convention belongs to a user
@@ -109,6 +110,12 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
 
     // Keep the existing methods for backward compatibility
     Boolean existsByReferenceConvention(String reference);
+
+
+    List<Convention> findByApplicationAndArchivedFalse(Application application);
+
+    // Or if you need a simpler version
+    List<Convention> findByApplication(Application application);
 
 
 }

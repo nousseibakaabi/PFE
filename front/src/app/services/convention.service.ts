@@ -21,13 +21,13 @@ export interface Convention {
   createdAt: string;
   updatedAt: string;
   
-  structureInterneId: number;
-  structureInterneName: string;
-  structureInterneCode: string;
+  structureBeneficielId: number;
+  structureBeneficielName: string;
+ structureBeneficielCode: string;
   
-  structureExterneId: number;
-  structureExterneName: string;
-  structureExterneCode: string;
+  structureResponsableId: number;
+  structureResponsableName: string;
+ structureResponsableCode: string;
   
   zoneId: number;
   zoneName: string;
@@ -44,9 +44,7 @@ export interface Convention {
   facturesNonPayees?: number;
   facturesEnRetard?: number;
 
-  projectId: number;
-  projectName: string;
-  projectCode: string;
+ 
 }
 
 export interface ConventionRequest {
@@ -56,10 +54,10 @@ export interface ConventionRequest {
   dateDebut: string;
   dateFin: string;
   dateSignature: string;
-  structureInterneId: number;
-  structureExterneId: number;
+  structureResponsableId: number;
+  structureBeneficielId: number;
   zoneId: number;
-  projectId: number; 
+ applicationId: number; 
   montantTotal: number;
   periodicite: string;
 }

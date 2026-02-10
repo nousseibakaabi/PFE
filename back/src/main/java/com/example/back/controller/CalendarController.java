@@ -2,12 +2,11 @@ package com.example.back.controller;
 
 import com.example.back.entity.*;
 import com.example.back.payload.response.CalendarEventDTO;
+import com.example.back.repository.ApplicationRepository;
 import com.example.back.repository.FactureRepository;
-import com.example.back.repository.ProjectRepository;
 import com.example.back.service.UserContextService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +31,7 @@ public class CalendarController {
     private FactureRepository factureRepository;
 
     @Autowired
-    private ProjectRepository projectRepository;
+    private ApplicationRepository applicationRepository;
 
     @Autowired
     private UserContextService userContextService;
@@ -66,12 +65,12 @@ public class CalendarController {
             accessibleInvoices = allInvoices.stream()
                     .filter(facture -> {
                         Convention convention = facture.getConvention();
-                        if (convention == null || convention.getProject() == null) {
+                        if (convention == null || convention.getApplication() == null) {
                             return false;
                         }
-                        Project project = convention.getProject();
-                        return project.getChefDeProjet() != null &&
-                                project.getChefDeProjet().getId().equals(currentUser.getId());
+                        Application application = convention.getApplication();
+                        return application.getChefDeProjet() != null &&
+                                application.getChefDeProjet().getId().equals(currentUser.getId());
                     })
                     .collect(Collectors.toList());
         }
@@ -263,9 +262,11 @@ public class CalendarController {
                     currentUser.getRoles().stream().anyMatch(r ->
                             r.getName() == ERole.ROLE_DECIDEUR)) {
 
-                List<Project> accessibleProjects = getAccessibleProjects(currentUser);
+          /*      List<Application> accessibleApplications = getAccessibleApplications(currentUser);
                 List<CalendarEventDTO> projectEvents = convertProjectsToEvents(accessibleProjects);
                 allEvents.addAll(projectEvents);
+
+           */
             }
 
             Map<String, Object> response = new HashMap<>();
@@ -281,22 +282,23 @@ public class CalendarController {
     }
 
     // Helper method to get accessible projects
-    private List<Project> getAccessibleProjects(User currentUser) {
-        List<Project> allProjects = projectRepository.findAll();
-        List<Project> accessibleProjects = new ArrayList<>();
+    /*
+    private List<Project> getAccessibleApplications(User currentUser) {
+        List<Application> allApplications = applicationRepository.findAll();
+        List<Application> accessibleApplications = new ArrayList<>();
 
         // Admins and DECIDEUR see all projects
         if (currentUser.getRoles().stream().anyMatch(r ->
                 r.getName() == ERole.ROLE_ADMIN) ||
                 currentUser.getRoles().stream().anyMatch(r ->
                         r.getName() == ERole.ROLE_DECIDEUR)) {
-            return allProjects;
+            return allApplications;
         }
 
         // CHEF_PROJET sees only projects they manage
         if (currentUser.getRoles().stream().anyMatch(r ->
                 r.getName() == ERole.ROLE_CHEF_PROJET)) {
-            accessibleProjects = allProjects.stream()
+            accessibleApplications = allApplications.stream()
                     .filter(project -> project.getChefDeProjet() != null &&
                             project.getChefDeProjet().getId().equals(currentUser.getId()))
                     .collect(Collectors.toList());
@@ -305,7 +307,7 @@ public class CalendarController {
         // COMMERCIAL_METIER sees projects that have conventions they created
         if (currentUser.getRoles().stream().anyMatch(r ->
                 r.getName() == ERole.ROLE_COMMERCIAL_METIER)) {
-            accessibleProjects = allProjects.stream()
+            accessibleApplications = allApplications.stream()
                     .filter(project -> {
                         if (project.getConventions() == null) return false;
                         return project.getConventions().stream()
@@ -316,8 +318,10 @@ public class CalendarController {
                     .collect(Collectors.toList());
         }
 
-        return accessibleProjects;
+        return accessibleApplications;
     }
+
+
 
     // Convert projects to calendar events
     private List<CalendarEventDTO> convertProjectsToEvents(List<Project> projects) {
@@ -325,7 +329,9 @@ public class CalendarController {
                 .map(this::convertProjectToEvent)
                 .collect(Collectors.toList());
     }
+ */
 
+    /*
     private CalendarEventDTO convertProjectToEvent(Project project) {
         CalendarEventDTO event = new CalendarEventDTO();
         event.setId(project.getId());
@@ -385,6 +391,8 @@ public class CalendarController {
         }
     }
 
+
+     */
     // Helper method to get user's highest role for UI display
     private String getHighestRole(User user) {
         if (user.getRoles().stream().anyMatch(r -> r.getName() == ERole.ROLE_ADMIN)) {
@@ -442,9 +450,9 @@ public class CalendarController {
         // Safely handle convention
         if (facture.getConvention() != null) {
             String clientName = "N/A";
-            if (facture.getConvention().getProject() != null) {
-                clientName = facture.getConvention().getProject().getClientName() != null ?
-                        facture.getConvention().getProject().getClientName() : "N/A";
+            if (facture.getConvention().getApplication() != null) {
+                clientName = facture.getConvention().getApplication().getClientName() != null ?
+                        facture.getConvention().getApplication().getClientName() : "N/A";
             }
             extendedProps.put("clientName", clientName);
             extendedProps.put("conventionId", facture.getConvention().getId());

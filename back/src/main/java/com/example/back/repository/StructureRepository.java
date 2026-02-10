@@ -19,4 +19,7 @@ public interface StructureRepository extends JpaRepository<Structure, Long> {
     List<Structure> findByTypeStructureNot(String typeStructure);
 
     List<Structure> findByTypeStructure(String typeStructure);
+
+    List<Structure> findByZoneGeographiqueId(Long zoneId);
+
 }

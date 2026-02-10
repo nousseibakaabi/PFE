@@ -27,28 +27,25 @@ public class ConventionResponse {
     private LocalDateTime updatedAt;
 
     // Related entity basic info
-    private Long structureInterneId;
-    private String structureInterneName;
-    private String structureInterneCode;
+    private Long structureResponsableId;
+    private String structureResponsableName;
+    private String structureResponsableCode;
 
-    private Long structureExterneId;
-    private String structureExterneName;
-    private String structureExterneCode;
+    private Long structureBeneficielId;
+    private String structureBeneficielName;
+    private String structureBeneficielCode;
 
     private Long zoneId;
     private String zoneName;
     private String zoneCode;
 
-    // CHANGED: Project info instead of Application
-    private Long projectId;
-    private String projectCode;
-    private String projectName;
-    private String projectClientName;
 
-    // Application info through project
+
     private Long applicationId;
     private String applicationName;
     private String applicationCode;
+
+    private  String applicationClientName;
 
     // Chef de projet info through project
     private Long chefDeProjetId;

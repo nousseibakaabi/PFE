@@ -5,7 +5,7 @@ import { NomenclatureService, Structure } from '../../services/nomenclature.serv
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { ProjectService } from 'src/app/services/project.service';
+import { ApiResponse, ApplicationService } from 'src/app/services/application.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
@@ -47,16 +47,16 @@ export class ConventionComponent implements OnInit {
     dateDebut: '',
     dateFin: '',
     dateSignature: '',
-    structureInterneId: 0,
-    structureExterneId: 0,
+    structureResponsableId: 0,
+    structureBeneficielId: 0,
     zoneId: 0,
-  projectId: 0,  
+  applicationId: 0,  
     montantTotal: 0,
     periodicite: 'MENSUEL'
   };
 
   conventionForm = {
-  structureExterneId: 0
+  structureBeneficielId: 0
 };
 
   periodicites = ['MENSUEL', 'TRIMESTRIEL', 'SEMESTRIEL', 'ANNUEL'];
@@ -76,7 +76,7 @@ externesStructures: Structure[] = [];
     private factureService: FactureService,
     private nomenclatureService: NomenclatureService,
     private authService: AuthService,
-    private projectService : ProjectService,
+    private applicationService : ApplicationService,
      private http: HttpClient
   ) {}
 
@@ -113,7 +113,7 @@ externesStructures: Structure[] = [];
 
 
 loadProjects(): void {
-  this.projectService.getAllProjects().subscribe({
+  this.applicationService.getAllApplications().subscribe({
     next: (response) => {
       console.log('Projects response:', response); // Debug log
       if (response.success) {
@@ -133,10 +133,10 @@ loadProjects(): void {
 
 onProjectSelected(projectId: number): void {
   if (projectId) {
-    this.projectService.getClientStructureForProject(projectId).subscribe({
+    this.applicationService.getClientStructureForApplication(projectId).subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.formData.structureExterneId = response.data.id;
+          this.formData.structureBeneficielId = response.data.id;
           
           
         }
@@ -148,17 +148,36 @@ onProjectSelected(projectId: number): void {
   }
 }
 
-  loadApplications(): void {
-    this.nomenclatureService.getApplications().subscribe({
-      next: (applications) => {
-        this.applications = applications;
-      },
-      error: (error) => {
-        console.error('Error loading applications:', error);
-        this.errorMessage = 'Failed to load applications';
+loadApplications(): void {
+  this.loading = true; // Add loading state
+  this.applicationService.getAllApplications().subscribe({
+    next: (response: ApiResponse) => {
+      if (response && response.success) {
+        if (response.data) {
+          this.applications = response.data;
+        } else if (response.applications) {
+          this.applications = response.applications;
+        } else {
+          // If response itself is the array
+          this.applications = response as any;
+        }
+        
+        this.errorMessage = ''; // Clear any previous error
+      } else {
+        // Handle unsuccessful response
+        this.errorMessage = response?.message || 'Failed to load applications';
+        this.applications = [];
       }
-    });
-  }
+      this.loading = false;
+    },
+    error: (error: any) => {
+      console.error('Error loading applications:', error);
+      this.errorMessage = error.error?.message || 'Failed to load applications';
+      this.applications = [];
+      this.loading = false;
+    }
+  });
+}
 
   // Toggle archived view
   toggleArchivedView(): void {
@@ -309,8 +328,8 @@ searchConventions(): void {
     conv.referenceConvention.toLowerCase().includes(term) ||
     conv.referenceERP?.toLowerCase().includes(term) ||
     conv.libelle.toLowerCase().includes(term) ||
-    conv.structureInterneName.toLowerCase().includes(term) ||
-    conv.structureExterneName.toLowerCase().includes(term) ||
+    conv.structureResponsableName.toLowerCase().includes(term) ||
+    conv.structureBeneficielName.toLowerCase().includes(term) ||
     conv.zoneName.toLowerCase().includes(term) ||
     conv.applicationName.toLowerCase().includes(term)
   );
@@ -342,10 +361,10 @@ openCreateModal(): void {
     dateDebut: '',
     dateFin: '',
     dateSignature: '',
-    structureInterneId: 0,
-    structureExterneId: 0,
+    structureResponsableId: 0,
+    structureBeneficielId: 0,
     zoneId: 0,
-    projectId: 0,
+    applicationId: 0,
     montantTotal: 0,
     periodicite: 'MENSUEL'
   };
@@ -381,10 +400,10 @@ openEditModal(convention: Convention): void {
     dateDebut: convention.dateDebut,
     dateFin: convention.dateFin || '',
     dateSignature: convention.dateSignature || '',
-    structureInterneId: convention.structureInterneId || 0,
-    structureExterneId: convention.structureExterneId || 0,
+    structureResponsableId: convention.structureResponsableId || 0,
+    structureBeneficielId: convention.structureBeneficielId || 0,
     zoneId: convention.zoneId || 0,
-    projectId: convention.projectId || 0, // Add this!
+    applicationId: convention.applicationId || 0, // Add this!
     montantTotal: convention.montantTotal || 0,
     periodicite: convention.periodicite || 'MENSUEL'
   };
@@ -556,19 +575,19 @@ openEditModal(convention: Convention): void {
       return false;
     }
 
-    if (!this.formData.structureInterneId) { 
+    if (!this.formData.structureResponsableId) { 
       this.errorMessage = 'Structure interne est requise';
       return false;
     }
-    if (!this.formData.structureExterneId) { // ADD THIS
-      this.errorMessage = 'Structure externe est requise';
+    if (!this.formData.structureBeneficielId) { // ADD THIS
+      this.errorMessage = 'Structure beneficiel est requise';
       return false;
     }
     if (!this.formData.zoneId) { // CHANGED FROM "gouvernoratId"
       this.errorMessage = 'Zone est requise';
       return false;
     }
-    if (!this.formData.projectId) { // ADD THIS
+    if (!this.formData.applicationId) { // ADD THIS
       this.errorMessage = 'Application est requise';
       return false;
     }

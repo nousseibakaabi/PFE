@@ -43,8 +43,7 @@ public class StatsController {
     @Autowired
     private ApplicationRepository applicationRepository;
 
-    @Autowired
-    private ProjectRepository projectRepository;
+
 
     @Autowired
     private UserContextService userContextService;
@@ -84,9 +83,9 @@ public class StatsController {
         if (currentUser.getRoles().stream().anyMatch(r ->
                 r.getName() == ERole.ROLE_CHEF_PROJET)) {
             return allConventions.stream()
-                    .filter(c -> c.getProject() != null &&
-                            c.getProject().getChefDeProjet() != null &&
-                            c.getProject().getChefDeProjet().getId().equals(currentUser.getId()))
+                    .filter(c -> c.getApplication() != null &&
+                            c.getApplication().getChefDeProjet() != null &&
+                            c.getApplication().getChefDeProjet().getId().equals(currentUser.getId()))
                     .collect(Collectors.toList());
         }
 
@@ -115,15 +114,17 @@ public class StatsController {
                 r.getName() == ERole.ROLE_CHEF_PROJET)) {
             return allFactures.stream()
                     .filter(f -> f.getConvention() != null &&
-                            f.getConvention().getProject() != null &&
-                            f.getConvention().getProject().getChefDeProjet() != null &&
-                            f.getConvention().getProject().getChefDeProjet().getId().equals(currentUser.getId()))
+                            f.getConvention().getApplication() != null &&
+                            f.getConvention().getApplication().getChefDeProjet() != null &&
+                            f.getConvention().getApplication().getChefDeProjet().getId().equals(currentUser.getId()))
                     .collect(Collectors.toList());
         }
 
         return new ArrayList<>();
     }
 
+
+    /*
     private List<Project> getAccessibleProjects(User currentUser) {
         List<Project> allProjects = projectRepository.findAll();
 
@@ -155,6 +156,8 @@ public class StatsController {
         return new ArrayList<>();
     }
 
+
+     */
     // ==================== DASHBOARD OVERALL STATS ====================
 
     @GetMapping("/dashboard")
@@ -175,7 +178,7 @@ public class StatsController {
             stats.putAll(getFinancialStats(currentUser));
 
             // Project Stats
-            stats.putAll(getProjectStats(currentUser));
+         //   stats.putAll(getApplicationStats(currentUser));
 
             // User Stats - Only for ADMIN
             if (userRole.equals("ADMIN")) {
@@ -261,9 +264,9 @@ public class StatsController {
 
             // Top Structures by Convention Count
             List<Map<String, Object>> topStructures = accessibleConventions.stream()
-                    .filter(c -> c.getStructureInterne() != null)
+                    .filter(c -> c.getStructureResponsable() != null)
                     .collect(Collectors.groupingBy(
-                            Convention::getStructureInterne,
+                            Convention::getStructureResponsable,
                             Collectors.counting()
                     ))
                     .entrySet().stream()
@@ -568,7 +571,7 @@ public class StatsController {
                         Map<String, Object> conventionInfo = new HashMap<>();
                         conventionInfo.put("reference", c.getReferenceConvention());
                         conventionInfo.put("libelle", c.getLibelle());
-                        conventionInfo.put("structureInterne", c.getStructureInterne() != null ? c.getStructureInterne().getName() : "N/A");
+                        conventionInfo.put("structureResponsable", c.getStructureResponsable() != null ? c.getStructureResponsable().getName() : "N/A");
                         conventionInfo.put("montantTotal", c.getMontantTotal());
                         conventionInfo.put("etat", c.getEtat());
                         return conventionInfo;
@@ -597,18 +600,18 @@ public class StatsController {
         }
     }
 
-    @GetMapping("/projects/detailed")
-    public ResponseEntity<?> getProjectDetailedStats() {
+   /* @GetMapping("/projects/detailed")
+    public ResponseEntity<?> getApplicationDetailedStats() {
         try {
             User currentUser = userContextService.getCurrentUser();
-            List<Project> accessibleProjects = getAccessibleProjects(currentUser);
+            List<Application> accessibleApplications = getAccessibleApplications(currentUser);
 
             Map<String, Object> stats = new HashMap<>();
 
             // Status Distribution
             List<Map<String, Object>> statusDistribution = new ArrayList<>();
-            Map<String, Long> statusCount = accessibleProjects.stream()
-                    .collect(Collectors.groupingBy(Project::getStatus, Collectors.counting()));
+            Map<String, Long> statusCount = accessibleApplications.stream()
+                    .collect(Collectors.groupingBy(Application::getStatus, Collectors.counting()));
 
             List<String> allStatuses = Arrays.asList("PLANIFIE", "EN_COURS", "TERMINE", "SUSPENDU", "ANNULE");
             for (String status : allStatuses) {
@@ -718,6 +721,8 @@ public class StatsController {
         }
     }
 
+
+    */
     // ==================== HELPER METHODS FOR DASHBOARD ====================
 
     private Map<String, Object> getConventionStats(User currentUser) {
@@ -841,7 +846,7 @@ public class StatsController {
 
         List<Facture> accessibleFactures = getAccessibleFactures(currentUser);
         List<Convention> accessibleConventions = getAccessibleConventions(currentUser);
-        List<Project> accessibleProjects = getAccessibleProjects(currentUser);
+      //  List<Project> accessibleProjects = getAccessibleProjects(currentUser);
 
         BigDecimal totalRevenue = accessibleFactures.stream()
                 .filter(f -> "PAYE".equals(f.getStatutPaiement()))
@@ -857,20 +862,22 @@ public class StatsController {
                 .map(c -> c.getMontantTotal() != null ? c.getMontantTotal() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal totalProjectBudget = BigDecimal.valueOf(accessibleProjects.stream()
+     /*   BigDecimal totalProjectBudget = BigDecimal.valueOf(accessibleProjects.stream()
                 .filter(p -> p.getBudget() != null)
-                .mapToDouble(Project::getBudget)
+                .mapToDouble(Application::getBudget)
                 .sum());
 
+
+      */
         stats.put("totalRevenue", totalRevenue);
         stats.put("pendingRevenue", pendingRevenue);
         stats.put("totalContractValue", totalContractValue);
-        stats.put("totalProjectBudget", totalProjectBudget);
+       // stats.put("totalProjectBudget", totalProjectBudget);
 
         return stats;
     }
 
-    private Map<String, Object> getProjectStats(User currentUser) {
+   /* private Map<String, Object> getApplicationStats(User currentUser) {
         Map<String, Object> stats = new HashMap<>();
 
         List<Project> accessibleProjects = getAccessibleProjects(currentUser);
@@ -885,9 +892,7 @@ public class StatsController {
         long completedProjects = accessibleProjects.stream()
                 .filter(p -> "TERMINE".equals(p.getStatus()))
                 .count();
-        long delayedProjects = accessibleProjects.stream()
-                .filter(Project::isDelayed)
-                .count();
+
 
         double avgProgress = accessibleProjects.stream()
                 .mapToInt(p -> p.getProgress() != null ? p.getProgress() : 0)
@@ -898,7 +903,6 @@ public class StatsController {
         stats.put("activeProjects", activeProjects);
         stats.put("plannedProjects", plannedProjects);
         stats.put("completedProjects", completedProjects);
-        stats.put("delayedProjects", delayedProjects);
         stats.put("averageProgress", Math.round(avgProgress * 100.0) / 100.0);
         stats.put("projectCompletionRate",
                 totalProjects > 0 ? ((double) completedProjects / totalProjects) * 100 : 0);
@@ -906,12 +910,14 @@ public class StatsController {
         return stats;
     }
 
+
+    */
     private Map<String, Object> getRecentActivity(User currentUser) {
         Map<String, Object> activity = new HashMap<>();
 
         List<Convention> accessibleConventions = getAccessibleConventions(currentUser);
         List<Facture> accessibleFactures = getAccessibleFactures(currentUser);
-        List<Project> accessibleProjects = getAccessibleProjects(currentUser);
+       // List<Project> accessibleProjects = getAccessibleProjects(currentUser);
 
         // Recent Conventions
         List<Map<String, Object>> recentConventions = accessibleConventions.stream()
@@ -921,7 +927,7 @@ public class StatsController {
                     Map<String, Object> conv = new HashMap<>();
                     conv.put("reference", c.getReferenceConvention());
                     conv.put("libelle", c.getLibelle());
-                    conv.put("structureInterne", c.getStructureInterne() != null ? c.getStructureInterne().getName() : "N/A");
+                    conv.put("structureInterne", c.getStructureResponsable() != null ? c.getStructureResponsable().getName() : "N/A");
                     conv.put("etat", c.getEtat() != null ? c.getEtat() : "NO_STATUS");
                     conv.put("createdAt", c.getCreatedAt());
                     return conv;
@@ -944,7 +950,7 @@ public class StatsController {
                 })
                 .collect(Collectors.toList());
 
-        // Recent Projects
+        /* Recent Projects
         List<Map<String, Object>> recentProjects = accessibleProjects.stream()
                 .sorted(Comparator.comparing(Project::getCreatedAt).reversed())
                 .limit(5)
@@ -961,9 +967,11 @@ public class StatsController {
                 })
                 .collect(Collectors.toList());
 
+
+         */
         activity.put("recentConventions", recentConventions);
         activity.put("recentInvoices", recentInvoices);
-        activity.put("recentProjects", recentProjects);
+      //  activity.put("recentProjects", recentProjects);
 
         return activity;
     }
@@ -973,7 +981,7 @@ public class StatsController {
 
         List<Convention> accessibleConventions = getAccessibleConventions(currentUser);
         List<Facture> accessibleFactures = getAccessibleFactures(currentUser);
-        List<Project> accessibleProjects = getAccessibleProjects(currentUser);
+    //    List<Project> accessibleProjects = getAccessibleProjects(currentUser);
 
         // Convention trends by month
         Map<String, Long> conventionTrends = new HashMap<>();
@@ -1016,7 +1024,7 @@ public class StatsController {
             // Quick Stats
             summary.put("totalConventions", getAccessibleConventions(currentUser).size());
             summary.put("totalFactures", getAccessibleFactures(currentUser).size());
-            summary.put("totalProjects", getAccessibleProjects(currentUser).size());
+          //  summary.put("totalProjects", getAccessibleProjects(currentUser).size());
 
             // Today's Stats
             LocalDate today = LocalDate.now();
@@ -1086,15 +1094,15 @@ public class StatsController {
                         invoice.getNumeroFacture(),
                         java.time.temporal.ChronoUnit.DAYS.between(invoice.getDateEcheance(), LocalDate.now())));
                 alert.put("convention", invoice.getConvention() != null ? invoice.getConvention().getReferenceConvention() : "N/A");
-                alert.put("project", invoice.getConvention() != null && invoice.getConvention().getProject() != null ?
-                        invoice.getConvention().getProject().getName() : "N/A");
+                alert.put("project", invoice.getConvention() != null && invoice.getConvention().getApplication() != null ?
+                        invoice.getConvention().getApplication().getName() : "N/A");
                 alert.put("amount", invoice.getMontantTTC());
                 alert.put("dueDate", invoice.getDateEcheance());
                 alert.put("priority", "HIGH");
                 alerts.add(alert);
             }
 
-            // Delayed projects
+            /* Delayed projects
             List<Project> delayedProjects = getAccessibleProjects(currentUser).stream()
                     .filter(Project::isDelayed)
                     .collect(Collectors.toList());
@@ -1112,6 +1120,8 @@ public class StatsController {
                 alerts.add(alert);
             }
 
+
+             */
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", alerts);

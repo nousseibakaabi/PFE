@@ -5,25 +5,13 @@
       {{ 'Nomenclatures Management' | translate }}
     </h1>
     <p class="text-gray-600 dark:text-gray-300">
-      {{ 'Manage applications, geographic zones, and structures' | translate }}
+      {{ 'Manage  geographic zones and structures' | translate }}
     </p>
   </div>
 
   <!-- Stats -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ 'Applications' | translate }}</p>
-          <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stats.applications || 0 }}</p>
-        </div>
-        <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-          <svg class="w-6 h-6 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
-          </svg>
-        </div>
-      </div>
-    </div>
+   
     
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div class="flex items-center justify-between">
@@ -58,15 +46,7 @@
   <div class="mb-6">
     <div class="border-b border-gray-200 dark:border-gray-700">
       <nav class="flex space-x-8">
-        <button 
-          [class]="activeTab === 'applications' 
-            ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
-          class="py-2 px-1 border-b-2 font-medium text-sm"
-          (click)="setActiveTab('applications')"
-        >
-          {{ 'Applications' | translate }}
-        </button>
+       
         <button 
           [class]="activeTab === 'zones' 
             ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
@@ -116,14 +96,13 @@
       </div>
       
       <button
-        (click)="showAddForm(activeTab === 'applications' ? 'application' : activeTab === 'zones' ? 'zone' : 'structure')"
+        (click)="showAddForm( activeTab === 'zones' ? 'zone' : 'structure')"
         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
         {{ 'Add' | translate }} {{ 
-          activeTab === 'applications' ? ('Application' | translate) : 
           activeTab === 'zones' ? ('Zone' | translate) : ('Structure' | translate)
         }}
       </button>
@@ -134,99 +113,36 @@
       <div class="mb-4">
         <h3 class="text-lg font-medium text-gray-800 dark:text-white">
           {{ (isEditing ? 'Edit' : 'Add') | translate }} 
-          {{ currentFormType === 'application' ? ('Application' | translate) : 
+          {{  
              currentFormType === 'zone' ? ('Geographic Zone' | translate) : ('Structure' | translate) }}
         </h3>
       </div>
 
-      <!-- Application Form -->
-      <form *ngIf="currentFormType === 'application'" [formGroup]="applicationForm" (ngSubmit)="onSubmitApplication()" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Code' | translate }} *
-            </label>
-            <input
-              type="text"
-              formControlName="code"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              [placeholder]="'e.g., APP001' | translate"
-            >
-            <div *ngIf="applicationForm.get('code')?.invalid && applicationForm.get('code')?.touched" class="text-red-500 text-sm mt-1">
-              <span *ngIf="applicationForm.get('code')?.errors?.['required']">{{ 'Code is required' | translate }}</span>
-              <span *ngIf="applicationForm.get('code')?.errors?.['minlength']">{{ 'Minimum 2 characters' | translate }}</span>
-              <span *ngIf="applicationForm.get('code')?.errors?.['maxlength']">{{ 'Maximum 20 characters' | translate }}</span>
-            </div>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Name' | translate }} *
-            </label>
-            <input
-              type="text"
-              formControlName="name"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              [placeholder]="'e.g., Mobile Application' | translate"
-            >
-            <div *ngIf="applicationForm.get('name')?.invalid && applicationForm.get('name')?.touched" class="text-red-500 text-sm mt-1">
-              <span *ngIf="applicationForm.get('name')?.errors?.['required']">{{ 'Name is required' | translate }}</span>
-              <span *ngIf="applicationForm.get('name')?.errors?.['minlength']">{{ 'Minimum 2 characters' | translate }}</span>
-              <span *ngIf="applicationForm.get('name')?.errors?.['maxlength']">{{ 'Maximum 100 characters' | translate }}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {{ 'Description' | translate }}
-          </label>
-          <textarea
-            formControlName="description"
-            rows="3"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            [placeholder]="'Application description...' | translate"
-          ></textarea>
-        </div>
-        
-        <div class="flex justify-end gap-3">
-          <button
-            type="button"
-            (click)="cancelForm()"
-            class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            {{ 'Cancel' | translate }}
-          </button>
-          <button
-            type="submit"
-            [disabled]="loading || applicationForm.invalid"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {{ loading ? ('Processing...' | translate) : (isEditing ? ('Update' | translate) : ('Create' | translate)) }}
-          </button>
-        </div>
-      </form>
+    
 
       <!-- Zone Form -->
       <form *ngIf="currentFormType === 'zone'" [formGroup]="zoneForm" (ngSubmit)="onSubmitZone()" class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Code' | translate }} *
-            </label>
-            <input
-              type="text"
-              formControlName="code"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              [placeholder]="'e.g., ZONE001' | translate"
-            >
-            <div *ngIf="zoneForm.get('code')?.invalid && zoneForm.get('code')?.touched" class="text-red-500 text-sm mt-1">
-              <span *ngIf="zoneForm.get('code')?.errors?.['required']">{{ 'Code is required' | translate }}</span>
-              <span *ngIf="zoneForm.get('code')?.errors?.['minlength']">{{ 'Minimum 2 characters' | translate }}</span>
-              <span *ngIf="zoneForm.get('code')?.errors?.['maxlength']">{{ 'Maximum 20 characters' | translate }}</span>
-            </div>
-          </div>
-          
+<div>
+  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+    {{ 'Code' | translate }} *
+  </label>
+  <input
+    type="text"
+    formControlName="code"
+    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+    [placeholder]="'e.g., ZONE001 (Avoid TN- codes for custom zones)' | translate"
+  >
+  <div *ngIf="zoneForm.get('code')?.value?.startsWith('TN-')" 
+       class="text-yellow-600 text-sm mt-1">
+    ⚠️ {{ 'TN- codes are reserved for Tunisian governorates' | translate }}
+  </div>
+  <div *ngIf="zoneForm.get('code')?.invalid && zoneForm.get('code')?.touched" class="text-red-500 text-sm mt-1">
+    <span *ngIf="zoneForm.get('code')?.errors?.['required']">{{ 'Code is required' | translate }}</span>
+    <span *ngIf="zoneForm.get('code')?.errors?.['minlength']">{{ 'Minimum 2 characters' | translate }}</span>
+    <span *ngIf="zoneForm.get('code')?.errors?.['maxlength']">{{ 'Maximum 20 characters' | translate }}</span>
+  </div>
+</div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {{ 'Name' | translate }} *
@@ -357,18 +273,22 @@
               {{ 'Invalid number' | translate }}
             </div>
           </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Address' | translate }}
-            </label>
-            <input
-              type="text"
-              formControlName="address"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              [placeholder]="'Full address' | translate"
-            >
-          </div>
+        
+
+         <div>
+  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+    {{ 'Geographic Zone' | translate }}
+  </label>
+  <select
+    formControlName="zoneId"
+    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <option [ngValue]="null">-- {{ 'Select a zone' | translate }} --</option>
+    <option *ngFor="let zone of zones" [ngValue]="zone.id">
+      {{ zone.code }} - {{ zone.name }}
+    </option>
+  </select>
+</div>
         </div>
         
         <div>
@@ -410,64 +330,7 @@
         <p class="mt-2 text-gray-600 dark:text-gray-300">{{ 'Loading...' | translate }}</p>
       </div>
 
-      <!-- Applications Table -->
-      <div *ngIf="!loading && activeTab === 'applications'">
-        <table *ngIf="filteredApplications.length > 0" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead class="bg-gray-50 dark:bg-gray-900">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Code' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Name' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Description' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Created At' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Actions' | translate }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr *ngFor="let app of paginatedItems">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white">
-                {{ app.code }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-white">
-                {{ app.name }}
-              </td>
-              <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
-                {{ app.description || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                {{ app.createdAt | date:'dd/MM/yyyy' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button
-                  (click)="showEditForm(app, 'application')"
-                  class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
-                >
-                  {{ 'Edit' | translate }}
-                </button>
-                <button
-                  (click)="confirmDelete(app, 'application')"
-                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                >
-                  {{ 'Delete' | translate }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <div *ngIf="filteredApplications.length === 0" class="p-8 text-center">
-          <p class="text-gray-600 dark:text-gray-300">{{ 'No applications found' | translate }}</p>
-        </div>
-      </div>
+     
 
       <!-- Zones Table -->
       <div *ngIf="!loading && activeTab === 'zones'">
@@ -513,12 +376,15 @@
                   {{ 'Edit' | translate }}
                 </button>
                 <button
-                  (click)="confirmDelete(zone, 'zone')"
-                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                >
-                  {{ 'Delete' | translate }}
-                </button>
+  *ngIf="!isTunisianZone(zone)"
+  (click)="confirmDelete(zone, 'zone')"
+  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+>
+  {{ 'Delete' | translate }}
+</button>
               </td>
+
+              
             </tr>
           </tbody>
         </table>

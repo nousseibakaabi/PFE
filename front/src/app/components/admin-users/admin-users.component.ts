@@ -7,7 +7,7 @@ import { ChartService } from '../partials/services/chart.service';
 import { MapService } from '../partials/services/map.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslationService } from '../partials/traduction/translation.service';
-import { ProjectService } from 'src/app/services/project.service';
+import { ApplicationService}from 'src/app/services/application.service';
 
 interface AdminUser {
   id: number;
@@ -106,7 +106,7 @@ unassignedProjects: any[] = [];
     private mapService: MapService,
     private fb: FormBuilder,
     private trasnlationService: TranslationService,
-    private projectService: ProjectService
+    private applicationServive : ApplicationService
   ) {
     // Initialize forms
     this.addUserForm = this.fb.group({
@@ -1014,9 +1014,9 @@ showAssignProjectsModal(user: AdminUser): void {
     this.selectedUserForAssignment = user;
     
     // Fetch unassigned projects
-    this.projectService.getUnassignedProjects().subscribe({
+    this.applicationServive.getUnassignedApplications().subscribe({
       next: (response: any) => {
-        if (response.success) {
+  if (response.success) {
           this.unassignedProjects = response.data;
           this.projectsToAssign = []; // Reset selections
           this.showAssignmentModal = true;
@@ -1059,7 +1059,7 @@ showAssignProjectsModal(user: AdminUser): void {
 
     // Assign each selected project
     this.projectsToAssign.forEach((project, index) => {
-      this.projectService.assignChefDeProjet(project.id, chefId).subscribe({
+      this.applicationServive.assignChefDeProjet(project.id, chefId).subscribe({
         next: () => {
           completedAssignments++;
           console.log(`Project ${project.code} assigned successfully`);

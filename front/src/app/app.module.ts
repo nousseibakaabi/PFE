@@ -32,10 +32,10 @@ import { DecideurComponent } from './components/decideur/decideur.component';
 import { ChefProjetComponent } from './components/chef-projet/chef-projet.component';
 import { StatsService } from './services/stats.service';
 import { ConventionArchiveComponent } from './components/convention-archive/convention-archive.component';
-import { AdminProjectComponent } from './components/admin-project/admin-project.component';
-import { ProjectComponent } from './components/project/project.component';
+import { AdminApplicationComponent } from './components/admin-application/admin-application.component';
 import { CalendarComponent } from './components/calendar/calendar.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
+import { ApplicationComponent } from './components/application/application.component';
 
 @NgModule({
   declarations: [
@@ -62,9 +62,9 @@ import { FullCalendarModule } from '@fullcalendar/angular';
     DecideurComponent,
     ChefProjetComponent,
     ConventionArchiveComponent,
-    AdminProjectComponent,
-    ProjectComponent,
     CalendarComponent,
+    AdminApplicationComponent,
+    ApplicationComponent,
   ],
   imports: [
     BrowserModule,

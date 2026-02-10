@@ -183,14 +183,14 @@
             <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
            
             <div class="text-xs text-gray-700 dark:text-gray-300">
-        <span class="font-medium">Interne:</span> {{ convention.structureInterneName || '-' }}
+        <span class="font-medium">Responsable:</span> {{ convention.structureResponsableName || '-' }}
       </div>
           </div>
           <div class="flex items-center gap-2">
             <div class="w-2 h-2 bg-green-500 rounded-full"></div>
            
              <div class="text-xs text-gray-700 dark:text-gray-300">
-        <span class="font-medium">Externe:</span> {{ convention.structureExterneName || '-' }}
+        <span class="font-medium">Beneficiel:</span> {{ convention.structureBeneficielName || '-' }}
       </div>
           </div>
         </div>
@@ -338,33 +338,33 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Projet *
+            Application *
           </label>
           <select 
-            [(ngModel)]="formData.projectId" 
-            name="projectId" 
+            [(ngModel)]="formData.applicationId" 
+            name="applicationId" 
             required
-            (change)="onProjectSelected(formData.projectId)" 
+            (change)="onProjectSelected(formData.applicationId)" 
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
           >
-            <option value="">Sélectionner un projet</option>
-            <option *ngFor="let project of projects" [value]="project.id">
-              {{ project.code }} - {{ project.name }}
+            <option value="">Sélectionner une application </option>
+            <option *ngFor="let application of applications" [value]="application.id">
+              {{ application.code }} - {{ application.name }}
             </option>
           </select>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Structure Externe *
+            Structure Beneficiel *
           </label>
         <select
-  [(ngModel)]="formData.structureExterneId"
-  name="structureExterneId"
+  [(ngModel)]="formData.structureBeneficielId"
+  name="structureBeneficielId"
   required
   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
 >
-  <option value="">Sélectionner une structure externe</option>
+  <option value="">Sélectionner une structure Beneficiel </option>
   <option *ngFor="let structure of externesStructures" [value]="structure.id">
     {{ structure.code }} 
   </option>
@@ -376,15 +376,15 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Structure Interne *
+            Structure Responsable *
           </label>
          <select
-  [(ngModel)]="formData.structureInterneId"
-  name="structureInterneId"
+  [(ngModel)]="formData.structureResponsableId"
+  name="structureResponsableId"
   required
   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
 >
-  <option value="">Sélectionner une structure interne</option>
+  <option value="">Sélectionner une structure responsable</option>
   <option *ngFor="let structure of internesStructures" [value]="structure.id">
     {{ structure.code }} 
   </option>

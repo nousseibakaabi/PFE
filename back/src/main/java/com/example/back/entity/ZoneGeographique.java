@@ -1,4 +1,3 @@
-// ZoneGeographique.java
 package com.example.back.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Add this
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ZoneGeographique {
 
     @Id
@@ -27,6 +26,10 @@ public class ZoneGeographique {
 
     @Column(nullable = false)
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private ZoneType type = ZoneType.CUSTOM_ZONE;
 
     private String description;
 

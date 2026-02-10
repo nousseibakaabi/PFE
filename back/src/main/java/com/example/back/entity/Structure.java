@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Add this
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Structure {
 
     @Id
@@ -28,7 +28,6 @@ public class Structure {
     @Column(nullable = false)
     private String name;
 
-    private String address;
 
     private String phone;
 
@@ -38,6 +37,12 @@ public class Structure {
 
     @Column(name = "type_structure")
     private String typeStructure; // Entreprise, Ministère, Université, etc.
+
+    // Add this relationship
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "zone_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private ZoneGeographique zoneGeographique;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -55,6 +60,4 @@ public class Structure {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-
 }

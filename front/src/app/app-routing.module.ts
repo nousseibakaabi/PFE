@@ -16,9 +16,9 @@ import { ChefProjetComponent } from './components/chef-projet/chef-projet.compon
 import { CommercialComponent } from './components/commercial/commercial.component';
 import { DecideurComponent } from './components/decideur/decideur.component';
 import { ConventionArchiveComponent } from './components/convention-archive/convention-archive.component';
-import { AdminProjectComponent } from './components/admin-project/admin-project.component';
-import { ProjectComponent } from './components/project/project.component';
 import { CalendarComponent } from './components/calendar/calendar.component';
+import { AdminApplicationComponent } from './components/admin-application/admin-application.component';
+import { ApplicationComponent } from './components/application/application.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -81,8 +81,8 @@ const routes: Routes = [
   },
 
   { 
-    path: 'chef/projet', 
-    component: ProjectComponent, 
+    path: 'chef/application', 
+    component: ApplicationComponent, 
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_CHEF_PROJET'] } 
   },
@@ -101,8 +101,8 @@ const routes: Routes = [
 
 
   { 
-    path: 'admin/projects', 
-    component: AdminProjectComponent, 
+    path: 'admin/application',
+    component: AdminApplicationComponent,
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_ADMIN'] } 
   },

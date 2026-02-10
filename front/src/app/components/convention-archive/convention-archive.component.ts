@@ -56,7 +56,8 @@ loadArchivedConventions(): void {
     this.filteredConventions = this.archivedConventions.filter(conv =>
       conv.referenceConvention.toLowerCase().includes(term) ||
       conv.libelle.toLowerCase().includes(term) ||
-      (conv.structureExterneName?.toLowerCase().includes(term)) ||
+      (conv.structureBeneficielName?.toLowerCase().includes(term)) ||
+      (conv.structureResponsableName?.toLowerCase().includes(term)) ||
       (conv.zoneName?.toLowerCase().includes(term)) ||
       conv.archivedReason?.toLowerCase().includes(term) ||
       conv.archivedBy?.toLowerCase().includes(term)
