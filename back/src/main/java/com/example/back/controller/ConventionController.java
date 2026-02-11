@@ -17,10 +17,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -55,7 +53,43 @@ public class ConventionController {
     @Autowired
     private ApplicationService applicationService;
 
-    // CRUD Operations
+
+
+
+    @PostMapping("/calculate-ttc")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
+    public ResponseEntity<?> calculateTTC(@RequestParam BigDecimal montantHT,
+                                          @RequestParam(required = false) BigDecimal tva) {
+        try {
+            Map<String, Object> result = conventionService.calculateTTCResponse(montantHT, tva);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", result);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error calculating TTC: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to calculate TTC: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/determine-nb-users")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
+    public ResponseEntity<?> determineNbUsers(@RequestParam Long applicationId,
+                                              @RequestParam(required = false) Long selectedUsers) {
+        try {
+            Map<String, Object> result = conventionService.determineNbUsersResponse(applicationId, selectedUsers);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", result);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error determining nb users: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to determine nb users: " + e.getMessage()));
+        }
+    }
+
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
@@ -82,10 +116,10 @@ public class ConventionController {
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
     public ResponseEntity<?> createConvention(@Valid @RequestBody ConventionRequest request) {
         try {
-            // Get current user
             String currentUsername = getCurrentUsername();
             User currentUser = userRepository.findByUsername(currentUsername)
                     .orElseThrow(() -> new RuntimeException("User not found"));
+
             log.info("Creating convention with reference: {}", request.getReferenceConvention());
 
             // Check if reference already exists
@@ -94,69 +128,23 @@ public class ConventionController {
                         .body(createErrorResponse("Convention with this reference already exists"));
             }
 
+            // Create convention using the service
+            Convention convention = conventionService.createConventionWithFinancials(request, currentUser);
 
-
-            // Fetch related entities
-            Optional<Structure> structureResponsable = structureRepository.findById(request.getStructureResponsableId());
-            Optional<Structure> structureBenefeciel = structureRepository.findById(request.getStructureBeneficielId());
-            Optional<ZoneGeographique> zone = zoneGeographiqueRepository.findById(request.getZoneId());
-            Optional<Application> application = applicationRepository.findById(request.getApplicationId());
-
-            if (structureBenefeciel.isEmpty() || structureResponsable.isEmpty() ||
-                    zone.isEmpty() || application.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Invalid structure, zone, or project"));
-            }
-
-            // Create new convention
-            Convention convention = new Convention();
-            convention.setReferenceConvention(request.getReferenceConvention());
-            convention.setReferenceERP(request.getReferenceERP());
-            convention.setLibelle(request.getLibelle());
-            convention.setDateDebut(request.getDateDebut());
-            convention.setDateFin(request.getDateFin());
-            convention.setDateSignature(request.getDateSignature());
-            convention.setStructureResponsable(structureResponsable.get());
-            convention.setStructureBeneficiel(structureBenefeciel.get());
-            convention.setZone(zone.get());
-            convention.setApplication(application.get());
-            convention.setMontantTotal(request.getMontantTotal());
-            convention.setPeriodicite(request.getPeriodicite());
-
-            // Set the creator
-            convention.setCreatedBy(currentUser);
-
-            Convention saved = conventionRepository.save(convention);
-
-
-            // Generate invoices automatically
-            try {
-                conventionService.generateInvoicesForConvention(saved);
-                log.info("Invoices generated for convention: {}", saved.getReferenceConvention());
-            } catch (Exception e) {
-                log.error("Failed to generate invoices for convention {}: {}",
-                        saved.getReferenceConvention(), e.getMessage());
-            }
-
-
-
-            // Trigger immediate status update
-            conventionService.updateConventionStatusRealTime(saved.getId());
-
-            // Refresh the saved convention to get latest data
-            saved = conventionRepository.findById(saved.getId()).orElse(saved);
-            ConventionResponse response = conventionMapper.toResponse(saved);
+            ConventionResponse response = conventionMapper.toResponse(convention);
 
             Map<String, Object> apiResponse = new HashMap<>();
             apiResponse.put("success", true);
             apiResponse.put("message", "Convention created successfully");
             apiResponse.put("data", response);
             return ResponseEntity.ok(apiResponse);
+
         } catch (Exception e) {
             log.error("Error creating convention: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to create convention: " + e.getMessage()));
         }
     }
+
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
@@ -165,67 +153,20 @@ public class ConventionController {
         try {
             log.info("Updating convention with ID: {}", id);
 
-            Optional<Convention> existing = conventionRepository.findById(id);
-            if (existing.isEmpty()) {
-                log.warn("Convention not found with ID: {}", id);
-                return ResponseEntity.notFound().build();
-            }
-
-            Convention convention = existing.get();
-
-            // Check if new reference conflicts
-            if (!convention.getReferenceConvention().equals(request.getReferenceConvention()) &&
-                    conventionRepository.existsByReferenceConvention(request.getReferenceConvention())) {
-                log.warn("Reference conflict for convention update: {}", request.getReferenceConvention());
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Convention with this reference already exists"));
-            }
-
-
-
-            // Fetch related entities
-            Optional<Structure> structureResponsable = structureRepository.findById(request.getStructureResponsableId());
-            Optional<Structure> structureBeneficiel = structureRepository.findById(request.getStructureBeneficielId());
-            Optional<ZoneGeographique> zone = zoneGeographiqueRepository.findById(request.getZoneId());
-            Optional<Application> application = applicationRepository.findById(request.getApplicationId());
-
-            if (structureResponsable.isEmpty() || structureBeneficiel.isEmpty() ||
-                    zone.isEmpty() || application.isEmpty()) {
-                log.warn("Invalid structure, zone, or application");
-                return ResponseEntity.badRequest()
-                        .body(createErrorResponse("Invalid structure, zone, or application"));
-            }
-
-            // Update convention
-            convention.setReferenceConvention(request.getReferenceConvention());
-            convention.setReferenceERP(request.getReferenceERP());
-            convention.setLibelle(request.getLibelle());
-            convention.setDateDebut(request.getDateDebut());
-            convention.setDateFin(request.getDateFin());
-            convention.setDateSignature(request.getDateSignature());
-            convention.setStructureResponsable(structureResponsable.get());
-            convention.setStructureBeneficiel(structureBeneficiel.get());
-            convention.setZone(zone.get());
-            convention.setApplication(application.get());
-            convention.setMontantTotal(request.getMontantTotal());
-            convention.setPeriodicite(request.getPeriodicite());
-
-            Convention updated = conventionRepository.save(convention);
-            log.info("Convention updated successfully with ID: {}", id);
-
-            ConventionResponse response = conventionMapper.toResponse(updated);
+            Convention updatedConvention = conventionService.updateConventionWithFinancials(id, request);
+            ConventionResponse response = conventionMapper.toResponse(updatedConvention);
 
             Map<String, Object> apiResponse = new HashMap<>();
             apiResponse.put("success", true);
             apiResponse.put("message", "Convention updated successfully");
             apiResponse.put("data", response);
             return ResponseEntity.ok(apiResponse);
+
         } catch (Exception e) {
             log.error("Error updating convention: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to update convention: " + e.getMessage()));
         }
     }
-
 
 
 
@@ -497,12 +438,8 @@ public class ConventionController {
             log.info("Attempting to delete convention with ID: {}", id);
 
             Convention convention = conventionRepository.findById(id)
-                    .orElseThrow(() -> {
-                        log.warn("Convention not found with ID: {}", id);
-                        return new RuntimeException("Convention not found");
-                    });
+                    .orElseThrow(() -> new RuntimeException("Convention not found"));
 
-            // Check if convention can be deleted
             if (convention.getArchived()) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", false);
@@ -510,7 +447,6 @@ public class ConventionController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // Check if there are any invoices
             List<Facture> invoices = factureRepository.findByConventionId(id);
             if (!invoices.isEmpty()) {
                 Map<String, Object> response = new HashMap<>();
@@ -535,9 +471,11 @@ public class ConventionController {
         }
     }
 
+
     @GetMapping("/stats")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
-    public ResponseEntity<?> getConventionStats() {
+    public ResponseEntity<?> getConventionStats()
+    {
         try {
             List<Convention> allConventions = conventionRepository.findByArchivedFalse();
 
@@ -555,12 +493,32 @@ public class ConventionController {
                     .filter(c -> "EN_RETARD".equals(c.getEtat()))
                     .count();
 
+            // Financial statistics
+            BigDecimal totalMontantHT = allConventions.stream()
+                    .map(Convention::getMontantHT)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            BigDecimal totalMontantTTC = allConventions.stream()
+                    .map(Convention::getMontantTTC)
+                    .filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            long totalNbUsers = allConventions.stream()
+                    .map(Convention::getNbUsers)
+                    .filter(Objects::nonNull)
+                    .mapToLong(Long::longValue)
+                    .sum();
+
             Map<String, Object> stats = new HashMap<>();
             stats.put("total", totalConventions);
             stats.put("enAttente", enAttente);
             stats.put("enCours", enCours);
             stats.put("termine", termine);
             stats.put("enRetard", enRetard);
+            stats.put("totalMontantHT", totalMontantHT);
+            stats.put("totalMontantTTC", totalMontantTTC);
+            stats.put("totalNbUsers", totalNbUsers);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -594,8 +552,7 @@ public class ConventionController {
                     .filter(c -> structureId == null ||
                             (c.getStructureResponsable().getId().equals(structureId) ||
                                     c.getStructureBeneficiel().getId().equals(structureId)))
-                    .filter(c -> zoneId == null ||
-                            (c.getZone() != null && c.getZone().getId().equals(zoneId)))
+
                     .filter(c -> applicationId == null ||
                             (c.getApplication() != null && c.getApplication().getId().equals(applicationId)))
                     .filter(c -> etat == null ||
@@ -679,8 +636,8 @@ public class ConventionController {
             List<Convention> conventions = conventionRepository.findByArchivedFalse();
 
             List<Convention> filteredConventions = conventions.stream()
-                    .filter(c -> c.getZone() != null &&
-                            c.getZone().getId().equals(zoneId))
+                    .filter(c -> c.getStructureResponsable().getZoneGeographique() != null &&
+                            c.getStructureResponsable().getZoneGeographique().getId().equals(zoneId))
                     .collect(Collectors.toList());
 
             List<ConventionResponse> conventionResponses = filteredConventions.stream()

@@ -44,28 +44,24 @@ public class FactureMapper {
 
             // Get structure info
             if (facture.getConvention().getStructureResponsable() != null) {
-                response.setStructureInterneName(facture.getConvention().getStructureResponsable().getName());
+                response.setStructureResponsableName(facture.getConvention().getStructureResponsable().getName());
             }
             if (facture.getConvention().getStructureBeneficiel() != null) {
-                response.setStructureExterneName(facture.getConvention().getStructureBeneficiel().getName());
+                response.setStructureBeneficielName(facture.getConvention().getStructureBeneficiel().getName());
             }
-            if (facture.getConvention().getZone() != null) {
-                response.setZoneName(facture.getConvention().getZone().getName());
+            if (facture.getConvention().getStructureResponsable().getZoneGeographique() != null) {
+                response.setZoneName(facture.getConvention().getStructureResponsable().getZoneGeographique().getName());
             }
 
-            // Get project info (NEW)
+            // Get application info (NEW)
             if (facture.getConvention().getApplication() != null) {
-                response.setProjectId(facture.getConvention().getApplication().getId());
-                response.setProjectCode(facture.getConvention().getApplication().getCode());
-                response.setProjectName(facture.getConvention().getApplication().getName());
-                response.setProjectClientName(facture.getConvention().getApplication().getClientName());
+                response.setApplicationId(facture.getConvention().getApplication().getId());
+                response.setApplicationCode(facture.getConvention().getApplication().getCode());
+                response.setApplicationName(facture.getConvention().getApplication().getName());
+                response.setApplicationClientName(facture.getConvention().getApplication().getClientName());
+                response.setMinUser(facture.getConvention().getApplication().getMinUser());
+                response.setMaxUser(facture.getConvention().getApplication().getMaxUser());
 
-                // Get application info through project
-                if (facture.getConvention().getApplication() != null) {
-                    response.setApplicationId(facture.getConvention().getApplication().getId());
-                    response.setApplicationName(facture.getConvention().getApplication().getName());
-                    response.setApplicationCode(facture.getConvention().getApplication().getCode());
-                }
 
                 // Get chef de projet info through project
                 if (facture.getConvention().getApplication().getChefDeProjet() != null) {

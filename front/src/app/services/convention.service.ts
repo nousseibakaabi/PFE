@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+// In convention.service.ts
 export interface Convention {
   id: number;
   referenceConvention: string;
@@ -20,15 +21,20 @@ export interface Convention {
   archivedReason: string;
   createdAt: string;
   updatedAt: string;
+  nbUsers : number;
+  montantHT : number;
+  montantTTC : number;
+  tva : number;
   
   structureBeneficielId: number;
   structureBeneficielName: string;
- structureBeneficielCode: string;
+  structureBeneficielCode: string;
   
   structureResponsableId: number;
   structureResponsableName: string;
- structureResponsableCode: string;
+  structureResponsableCode: string;
   
+  // These are the zone properties from your mapper
   zoneId: number;
   zoneName: string;
   zoneCode: string;
@@ -36,6 +42,13 @@ export interface Convention {
   applicationId: number;
   applicationName: string;
   applicationCode: string;
+  applicationClientName: string;
+  minUser?: number;
+  maxUser?: number;
+  
+  // Chef de projet info
+  chefDeProjetId?: number;
+  chefDeProjetName?: string;
   
   // Invoices array if needed
   factures?: any[];
@@ -43,8 +56,6 @@ export interface Convention {
   facturesPayees?: number;
   facturesNonPayees?: number;
   facturesEnRetard?: number;
-
- 
 }
 
 export interface ConventionRequest {
@@ -56,10 +67,13 @@ export interface ConventionRequest {
   dateSignature: string;
   structureResponsableId: number;
   structureBeneficielId: number;
-  zoneId: number;
  applicationId: number; 
-  montantTotal: number;
   periodicite: string;
+  nbUsers : number;
+  montantHT : number;
+  montantTTC : number;
+  tva : number;
+
 }
 
 export interface ArchiveConventionRequest {
@@ -141,6 +155,29 @@ getSuggestedReference(): Observable<any> {
   createConvention(data: ConventionRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/api/conventions`, data);
   }
+
+
+  calculateTTC(montantHT: number, tva: number = 19): Observable<any> {
+    const params = new URLSearchParams();
+    params.set('montantHT', montantHT.toString());
+    params.set('tva', tva.toString());
+    return this.http.post(`${this.apiUrl}/api/conventions/calculate-ttc?${params.toString()}`, {});
+  }
+
+
+  determineNbUsers(applicationId: number, selectedUsers?: number): Observable<any> {
+    const params = new URLSearchParams();
+    params.set('applicationId', applicationId.toString());
+    if (selectedUsers !== undefined && selectedUsers !== null) {
+      params.set('selectedUsers', selectedUsers.toString());
+    }
+    return this.http.post(`${this.apiUrl}/api/conventions/determine-nb-users?${params.toString()}`, {});
+  }
+
+
+
+
+
 
   
 }

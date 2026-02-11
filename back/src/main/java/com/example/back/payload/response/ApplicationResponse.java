@@ -17,10 +17,12 @@ public class ApplicationResponse {
     private String clientAddress;
     private LocalDate dateDebut;
     private LocalDate dateFin;
-    private Double budget;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long minUser;
+    private Long maxUser;
+
 
     // Calculated fields
     private Long daysRemaining;

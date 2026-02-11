@@ -1,5 +1,6 @@
 package com.example.back.payload.request;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
@@ -31,8 +32,12 @@ public class ApplicationRequest {
     private LocalDate dateDebut;
     private LocalDate dateFin;
 
-    // Budget
-    private Double budget;
+
 
     private String status = "PLANIFIE";
+
+
+    private Long minUser;
+
+    private Long maxUser;
 }

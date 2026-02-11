@@ -34,6 +34,11 @@ export class ConventionComponent implements OnInit {
   archiveReason = '';
 
 
+  userLimits: { minUser?: number; maxUser?: number } | null = null;
+  userRuleMessage: string = '';
+  isCalculatingTTC: boolean = false;
+  isDeterminingUsers: boolean = false;
+
   
   // For showing invoice details
   showInvoicesModal = false;
@@ -49,10 +54,12 @@ export class ConventionComponent implements OnInit {
     dateSignature: '',
     structureResponsableId: 0,
     structureBeneficielId: 0,
-    zoneId: 0,
-  applicationId: 0,  
-    montantTotal: 0,
-    periodicite: 'MENSUEL'
+    applicationId: 0,  
+    periodicite: 'MENSUEL',
+      nbUsers : 0,
+  montantHT : 0,
+  montantTTC : 0,
+  tva : 0,
   };
 
   conventionForm = {
@@ -64,7 +71,6 @@ etats = [null, 'EN_ATTENTE', 'EN_COURS', 'EN_RETARD', 'TERMINE'];
 
   // Real data from API
   structures: Structure[] = [];
-  zones: any[] = []; // CHANGED FROM "gouvernorats" to "zones"
   applications: any[] = []; // ADD THIS
 
   
@@ -84,7 +90,6 @@ externesStructures: Structure[] = [];
     this.loadConventions();
     this.loadInternesStructures();
     this.loadExternesStructures();
-    this.loadZones(); 
     this.loadApplications(); 
     this.loadProjects();
   }
@@ -130,23 +135,156 @@ loadProjects(): void {
   });
 }
 
-
 onProjectSelected(projectId: number): void {
-  if (projectId) {
-    this.applicationService.getClientStructureForApplication(projectId).subscribe({
+    if (projectId) {
+      // Get client structure
+      this.applicationService.getClientStructureForApplication(projectId).subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.formData.structureBeneficielId = response.data.id;
+          }
+        },
+        error: (error) => {
+          console.error('Error getting client structure:', error);
+        }
+      });
+      
+      // Load application limits and determine initial nb users
+      this.loadApplicationLimits(projectId);
+    }
+  }
+
+
+   loadApplicationLimits(applicationId: number): void {
+    this.applicationService.getApplication(applicationId).subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.formData.structureBeneficielId = response.data.id;
+          const app = response.data;
+          this.userLimits = {
+            minUser: app.minUser,
+            maxUser: app.maxUser
+          };
           
-          
+          // Determine initial nb users
+          if (app.minUser || app.maxUser) {
+            this.determineNbUsers();
+          }
         }
       },
       error: (error) => {
-        console.error('Error getting client structure:', error);
+        console.error('Error loading application limits:', error);
       }
     });
   }
-}
+
+  /**
+   * Called when user focuses on nb users input
+   */
+  onNbUsersFocus(): void {
+    if (this.formData.applicationId && !this.formData.nbUsers) {
+      this.determineNbUsers();
+    }
+  }
+
+  /**
+   * Called when nb users value changes
+   */
+  onNbUsersChange(): void {
+    if (this.formData.applicationId) {
+      this.determineNbUsers();
+    }
+  }
+
+  /**
+   * Determine number of users based on application limits
+   */
+  determineNbUsers(): void {
+    if (!this.formData.applicationId) {
+      this.userRuleMessage = 'Veuillez d\'abord sélectionner une application';
+      return;
+    }
+
+    this.isDeterminingUsers = true;
+    
+    this.conventionService.determineNbUsers(
+      this.formData.applicationId,
+      this.formData.nbUsers || undefined
+    ).subscribe({
+      next: (response) => {
+        if (response.success) {
+          const data = response.data;
+          
+          // Set the determined nb users
+          if (data.nbUsers !== this.formData.nbUsers) {
+            this.formData.nbUsers = data.nbUsers;
+            this.userRuleMessage = `${data.appliedRule} (${data.nbUsers} utilisateurs)`;
+          } else {
+            this.userRuleMessage = data.appliedRule;
+          }
+          
+          // Update limits display
+          this.userLimits = {
+            minUser: data.minUser,
+            maxUser: data.maxUser
+          };
+        }
+        this.isDeterminingUsers = false;
+      },
+      error: (error) => {
+        console.error('Error determining nb users:', error);
+        this.userRuleMessage = 'Erreur lors de la détermination du nombre d\'utilisateurs';
+        this.isDeterminingUsers = false;
+      }
+    });
+  }
+
+  /**
+   * Called when montant HT changes
+   */
+  onMontantHTChange(): void {
+    this.calculateTTC();
+  }
+
+  /**
+   * Called when TVA changes
+   */
+  onTvaChange(): void {
+    this.calculateTTC();
+  }
+
+  /**
+   * Calculate TTC from HT and TVA
+   */
+  calculateTTC(): void {
+    if (!this.formData.montantHT || this.formData.montantHT <= 0) {
+      this.formData.montantTTC = 0;
+      return;
+    }
+
+    const tva = this.formData.tva || 19;
+    
+    this.isCalculatingTTC = true;
+    
+    this.conventionService.calculateTTC(this.formData.montantHT, tva).subscribe({
+      next: (response) => {
+        if (response.success) {
+          const data = response.data;
+          this.formData.montantTTC = data.montantTTC;
+          
+          // Update tva if it was null
+          if (!this.formData.tva) {
+            this.formData.tva = data.tva;
+          }
+        }
+        this.isCalculatingTTC = false;
+      },
+      error: (error) => {
+        console.error('Error calculating TTC:', error);
+        this.isCalculatingTTC = false;
+      }
+    });
+  }
+
 
 loadApplications(): void {
   this.loading = true; // Add loading state
@@ -305,17 +443,7 @@ loadExternesStructures(): void {
   });
 }
 
-  loadZones(): void { // CHANGED FROM "loadGouvernorats"
-    this.nomenclatureService.getZones().subscribe({
-      next: (zones) => {
-        this.zones = zones;
-      },
-      error: (error) => {
-        console.error('Error loading zones:', error);
-        this.errorMessage = 'Failed to load zones';
-      }
-    });
-  }
+
 
 searchConventions(): void {
   if (!this.searchTerm.trim()) {
@@ -352,29 +480,69 @@ searchConventions(): void {
     }
   }
 
-openCreateModal(): void {
-  this.isEditing = false;
-  this.formData = {
-    referenceConvention: '',
-    referenceERP: '',
-    libelle: '',
-    dateDebut: '',
-    dateFin: '',
-    dateSignature: '',
-    structureResponsableId: 0,
-    structureBeneficielId: 0,
-    zoneId: 0,
-    applicationId: 0,
-    montantTotal: 0,
-    periodicite: 'MENSUEL'
-  };
-  
-  // Load suggested reference
-  this.loadSuggestedReference();
-  
-  this.showModal = true;
-  this.errorMessage = '';
-}
+
+
+  openEditModal(convention: Convention): void {
+    this.isEditing = true;
+    this.selectedConvention = convention;
+    this.formData = {
+      referenceConvention: convention.referenceConvention,
+      referenceERP: convention.referenceERP || '',
+      libelle: convention.libelle,
+      dateDebut: convention.dateDebut,
+      dateFin: convention.dateFin || '',
+      dateSignature: convention.dateSignature || '',
+      structureResponsableId: convention.structureResponsableId || 0,
+      structureBeneficielId: convention.structureBeneficielId || 0,
+      applicationId: convention.applicationId || 0,
+      montantHT: convention.montantHT || 0,
+      tva: convention.tva || 19,
+      montantTTC: convention.montantTTC || 0,
+      nbUsers: convention.nbUsers || 0,
+      periodicite: convention.periodicite || 'MENSUEL'
+    };
+    
+    // Load application limits
+    if (convention.applicationId) {
+      this.loadApplicationLimits(convention.applicationId);
+    }
+    
+    this.showModal = true;
+    this.errorMessage = '';
+  }
+
+  /**
+   * Override openCreateModal to initialize financial fields
+   */
+  openCreateModal(): void {
+    this.isEditing = false;
+    this.formData = {
+      referenceConvention: '',
+      referenceERP: '',
+      libelle: '',
+      dateDebut: '',
+      dateFin: '',
+      dateSignature: '',
+      structureResponsableId: 0,
+      structureBeneficielId: 0,
+      applicationId: 0,
+      // FINANCIAL FIELDS
+      montantHT: 0,
+      tva: 19,
+      montantTTC: 0,
+      nbUsers: 0,
+      periodicite: 'MENSUEL'
+    };
+    
+    this.userLimits = null;
+    this.userRuleMessage = '';
+    
+    // Load suggested reference
+    this.loadSuggestedReference();
+    
+    this.showModal = true;
+    this.errorMessage = '';
+  }
 
 
 validateReference(): boolean {
@@ -390,26 +558,8 @@ validateReference(): boolean {
   return true;
 }
 
-openEditModal(convention: Convention): void {
-  this.isEditing = true;
-  this.selectedConvention = convention;
-  this.formData = {
-    referenceConvention: convention.referenceConvention,
-    referenceERP: convention.referenceERP || '',
-    libelle: convention.libelle,
-    dateDebut: convention.dateDebut,
-    dateFin: convention.dateFin || '',
-    dateSignature: convention.dateSignature || '',
-    structureResponsableId: convention.structureResponsableId || 0,
-    structureBeneficielId: convention.structureBeneficielId || 0,
-    zoneId: convention.zoneId || 0,
-    applicationId: convention.applicationId || 0, // Add this!
-    montantTotal: convention.montantTotal || 0,
-    periodicite: convention.periodicite || 'MENSUEL'
-  };
-  this.showModal = true;
-  this.errorMessage = '';
-}
+
+
 
   closeModal(): void {
     this.showModal = false;
@@ -417,12 +567,24 @@ openEditModal(convention: Convention): void {
     this.errorMessage = '';
   }
 
+
   saveConvention(): void {
     if (!this.validateForm()) {
       return;
     }
 
+    // Ensure TTC is calculated
+    if (this.formData.montantHT && this.formData.montantHT > 0 && !this.formData.montantTTC) {
+      this.calculateTTC();
+    }
+
+    // Ensure nb users is determined
+    if (this.formData.applicationId && !this.formData.nbUsers) {
+      this.determineNbUsers();
+    }
+
     this.loading = true;
+    
     if (this.isEditing && this.selectedConvention) {
       this.conventionService.updateConvention(this.selectedConvention.id, this.formData)
         .subscribe({
@@ -457,6 +619,7 @@ openEditModal(convention: Convention): void {
         });
     }
   }
+
 
   deleteConvention(id: number): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette convention ?')) {
@@ -546,6 +709,7 @@ openEditModal(convention: Convention): void {
     }
   }
 
+
   validateForm(): boolean {
     if (!this.formData.referenceConvention.trim()) {
       this.errorMessage = 'Référence Convention est requise';
@@ -553,7 +717,7 @@ openEditModal(convention: Convention): void {
     }
 
     if (!this.validateReference()) {
-    return false;
+      return false;
     }
 
     if (!this.formData.referenceERP.trim()) {
@@ -570,7 +734,7 @@ openEditModal(convention: Convention): void {
       return false;
     }
 
-     if (!this.formData.dateFin) {
+    if (!this.formData.dateFin) {
       this.errorMessage = 'Date de fin est requise';
       return false;
     }
@@ -579,15 +743,11 @@ openEditModal(convention: Convention): void {
       this.errorMessage = 'Structure interne est requise';
       return false;
     }
-    if (!this.formData.structureBeneficielId) { // ADD THIS
+    if (!this.formData.structureBeneficielId) {
       this.errorMessage = 'Structure beneficiel est requise';
       return false;
     }
-    if (!this.formData.zoneId) { // CHANGED FROM "gouvernoratId"
-      this.errorMessage = 'Zone est requise';
-      return false;
-    }
-    if (!this.formData.applicationId) { // ADD THIS
+    if (!this.formData.applicationId) {
       this.errorMessage = 'Application est requise';
       return false;
     }
@@ -595,8 +755,21 @@ openEditModal(convention: Convention): void {
       this.errorMessage = 'Périodicité est requise';
       return false;
     }
+    
+    // NEW FINANCIAL VALIDATIONS
+    if (!this.formData.montantHT || this.formData.montantHT <= 0) {
+      this.errorMessage = 'Le montant HT est requis et doit être supérieur à 0';
+      return false;
+    }
+    
+    if (!this.formData.nbUsers || this.formData.nbUsers <= 0) {
+      this.errorMessage = 'Le nombre d\'utilisateurs est requis et doit être supérieur à 0';
+      return false;
+    }
+    
     return true;
   }
+
 
   clearMessages(): void {
     this.errorMessage = '';

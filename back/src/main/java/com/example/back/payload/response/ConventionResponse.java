@@ -1,4 +1,3 @@
-// ConventionResponse.java - UPDATED
 package com.example.back.payload.response;
 
 import lombok.Data;
@@ -16,8 +15,14 @@ public class ConventionResponse {
     private LocalDate dateDebut;
     private LocalDate dateFin;
     private LocalDate dateSignature;
-    private BigDecimal montantTotal;
+
+    // NEW FINANCIAL FIELDS
+    private BigDecimal montantHT;
+    private BigDecimal tva;
+    private BigDecimal montantTTC;
+    private Long nbUsers;
     private String periodicite;
+
     private String etat;
     private Boolean archived;
     private LocalDateTime archivedAt;
@@ -26,7 +31,6 @@ public class ConventionResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Related entity basic info
     private Long structureResponsableId;
     private String structureResponsableName;
     private String structureResponsableCode;
@@ -39,19 +43,16 @@ public class ConventionResponse {
     private String zoneName;
     private String zoneCode;
 
-
-
     private Long applicationId;
     private String applicationName;
     private String applicationCode;
+    private String applicationClientName;
+    private Long minUser;
+    private Long maxUser;
 
-    private  String applicationClientName;
-
-    // Chef de projet info through project
     private Long chefDeProjetId;
     private String chefDeProjetName;
 
-    // Invoices
     private List<FactureResponse> factures;
     private int totalFactures;
     private int facturesPayees;

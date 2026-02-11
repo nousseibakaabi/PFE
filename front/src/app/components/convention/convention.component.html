@@ -390,22 +390,7 @@
   </option>
 </select>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Zone *
-          </label>
-          <select
-            [(ngModel)]="formData.zoneId"
-            name="zoneId"
-            required
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-          >
-            <option value="">Sélectionner une zone</option>
-            <option *ngFor="let zone of zones" [value]="zone.id">
-              {{ zone.code }} - {{ zone.name }}
-            </option>
-          </select>
-        </div>
+        
       </div>
 
       <!-- Libellé -->
@@ -461,21 +446,105 @@
         </div>
       </div>
 
+
+
+      <!-- FINANCIAL FIELDS - Add to your form in the modal -->
+
+<!-- HT, TVA, TTC Section -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+      Montant HT (TND) *
+    </label>
+    <input
+      type="number"
+      [(ngModel)]="formData.montantHT"
+      name="montantHT"
+      (ngModelChange)="onMontantHTChange()"
+      step="0.01"
+      min="0"
+      required
+      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+      placeholder="0.00"
+    />
+  </div>
+  
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+      TVA (%) 
+    </label>
+    <input
+      type="number"
+      [(ngModel)]="formData.tva"
+      name="tva"
+      (ngModelChange)="onTvaChange()"
+      step="0.01"
+      min="0"
+      max="100"
+      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+      placeholder="19.00"
+    />
+  </div>
+  
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+      Montant TTC (TND)
+    </label>
+    <div class="relative">
+      <input
+        type="number"
+        [(ngModel)]="formData.montantTTC"
+        name="montantTTC"
+        readonly
+        class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 text-sm"
+        placeholder="Calculé automatiquement"
+      />
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+      Calculé: {{ formData.montantHT || 0 }} + ({{ formData.tva || 19 }}%) = {{ formData.montantTTC || 0 }} TND
+    </p>
+  </div>
+</div>
+
+<!-- Number of Users Section -->
+<div class="grid grid-cols-1 md:grid-cols-1 gap-3 mt-2">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+      Nombre d'utilisateurs *
+    </label>
+    <div class="flex items-center gap-3">
+      <div class="flex-1">
+        <input
+          type="number"
+          [(ngModel)]="formData.nbUsers"
+          name="nbUsers"
+          (ngModelChange)="onNbUsersChange()"
+          (focus)="onNbUsersFocus()"
+          min="1"
+          step="1"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          placeholder="Saisir le nombre d'utilisateurs"
+        />
+      </div>
+      <div *ngIf="userLimits" class="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-700 dark:text-blue-300">
+        <span *ngIf="userLimits.minUser">Min: {{ userLimits.minUser }}</span>
+        <span *ngIf="userLimits.maxUser"> | Max: {{ userLimits.maxUser }}</span>
+      </div>
+    </div>
+    <div *ngIf="userRuleMessage" class="mt-1.5 text-xs px-3 py-1.5 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-yellow-700 dark:text-yellow-300">
+      <span class="font-medium">Règle appliquée:</span> {{ userRuleMessage }}
+    </div>
+  </div>
+</div>
+
       <!-- Montant and Périodicité -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Montant Total (TND) *
-          </label>
-          <input
-            type="number"
-            [(ngModel)]="formData.montantTotal"
-            name="montantTotal"
-            step="0.01"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-            placeholder="0.00"
-          />
-        </div>
+        
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             Modalités de Paiement

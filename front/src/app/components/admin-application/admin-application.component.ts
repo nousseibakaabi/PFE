@@ -42,7 +42,8 @@ export class AdminApplicationComponent implements OnInit {
     clientAddress: '',
     dateDebut: '',
     dateFin: '',
-    budget: 0,
+    minUser : 0,
+  maxUser:0,
     status: 'PLANIFIE'
   };
 
@@ -160,7 +161,8 @@ export class AdminApplicationComponent implements OnInit {
       clientAddress: '',
       dateDebut: new Date().toISOString().split('T')[0],
       dateFin: '',
-      budget: 0,
+      minUser : 0,
+  maxUser:0,
       status: 'PLANIFIE'
     };
     this.loadSuggestedApplicationCode();
@@ -181,7 +183,8 @@ export class AdminApplicationComponent implements OnInit {
       clientAddress: application.clientAddress || '',
       dateDebut: application.dateDebut || '',
       dateFin: application.dateFin || '',
-      budget: application.budget || 0,
+      minUser: application.minUser || 0,
+      maxUser: application.maxUser || 0,
       status: application.status || 'PLANIFIE'
     };
     

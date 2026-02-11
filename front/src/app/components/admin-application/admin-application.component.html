@@ -157,9 +157,7 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
               Dates & Échéance
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Budget
-            </th>
+           
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
               Statut
             </th>
@@ -198,14 +196,7 @@
                 {{ application.timeRemainingString }}
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900 dark:text-white">
-                {{ application.budget | currency:'EUR':'symbol':'1.2-2' }}
-              </div>
-              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Progression: {{ application.timeBasedProgress }}%
-              </div>
-            </td>
+           
             <td class="px-6 py-4 whitespace-nowrap">
               <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusClass(application.status)">
                 {{ getStatusLabel(application.status) }}
@@ -391,6 +382,42 @@
               </div>
             </div>
 
+
+               <!-- user  -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+             
+                  <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Min Users 
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="applicationForm.minUser"
+                  name="minUser"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+
+                  <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Maw Users 
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="applicationForm.maxUser"
+                  name="maxUser"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+
+              
+            
+            </div>
+
             <!-- Dates -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -419,19 +446,7 @@
 
             <!-- Budget and Status -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Budget (€)
-                </label>
-                <input
-                  type="number"
-                  [(ngModel)]="applicationForm.budget"
-                  name="budget"
-                  step="0.01"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="0.00"
-                />
-              </div>
+            
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Statut Initial
@@ -623,6 +638,42 @@
               </div>
             </div>
 
+
+               <!-- user  -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+             
+                  <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Min Users 
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="applicationForm.minUser"
+                  name="minUser"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+
+                  <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Maw Users 
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="applicationForm.maxUser"
+                  name="maxUser"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+
+              
+            
+            </div>
+
             <!-- Dates -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -651,19 +702,7 @@
 
             <!-- Budget and Status -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Budget (€)
-                </label>
-                <input
-                  type="number"
-                  [(ngModel)]="applicationForm.budget"
-                  name="budget"
-                  step="0.01"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="0.00"
-                />
-              </div>
+             
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Statut

@@ -30,24 +30,22 @@ public class FactureResponse {
     private String conventionReference;
     private String conventionLibelle;
 
-    // Project info (through convention)
-    private Long projectId;
-    private String projectCode;
-    private String projectName;
-    private String projectClientName;
 
-    // Application info (through project)
+
     private Long applicationId;
     private String applicationName;
     private String applicationCode;
+    private  String applicationClientName;
+    private Long minUser;
+    private Long maxUser;
 
-    // Chef de projet info (through project)
+    // Chef de projet info
     private Long chefDeProjetId;
     private String chefDeProjetName;
 
     // Structure info (through convention)
-    private String structureInterneName;
-    private String structureExterneName;
+    private String structureResponsableName;
+    private String structureBeneficielName;
     private String zoneName;
 
 

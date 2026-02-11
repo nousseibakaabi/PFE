@@ -32,14 +32,13 @@ public class ConventionRequest {
     @NotNull(message = "Responsable structure is required")
     private Long structureResponsableId;
 
-    @NotNull(message = "Zone is required")
-    private Long zoneId;
-
     @NotNull(message = "Application is required")
     private Long applicationId;
 
-    private BigDecimal montantTotal;
-
+    // NEW FINANCIAL FIELDS
+    private BigDecimal montantHT;
+    private BigDecimal tva;
+    private BigDecimal montantTTC;
+    private Long nbUsers;
     private String periodicite;
-
 }

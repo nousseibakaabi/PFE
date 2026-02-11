@@ -53,10 +53,12 @@ public class Application {
     private LocalDate dateFin;
 
 
+    @Column(name = "user_min")
+    private Long minUser;
 
-    // Budget
-    @Column(name = "budget")
-    private Double budget;
+    @Column(name = "user_max")
+    private Long maxUser;
+
 
     // Status
     @Column(nullable = false)

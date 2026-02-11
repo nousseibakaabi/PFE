@@ -1,4 +1,3 @@
-// ConventionMapper.java - UPDATED
 package com.example.back.service.mapper;
 
 import com.example.back.entity.Convention;
@@ -23,8 +22,14 @@ public class ConventionMapper {
         response.setDateDebut(convention.getDateDebut());
         response.setDateFin(convention.getDateFin());
         response.setDateSignature(convention.getDateSignature());
-        response.setMontantTotal(convention.getMontantTotal());
+
+        // NEW FINANCIAL FIELDS
+        response.setMontantHT(convention.getMontantHT());
+        response.setTva(convention.getTva());
+        response.setMontantTTC(convention.getMontantTTC());
+        response.setNbUsers(convention.getNbUsers());
         response.setPeriodicite(convention.getPeriodicite());
+
         response.setEtat(convention.getEtat());
         response.setArchived(convention.getArchived());
         response.setArchivedAt(convention.getArchivedAt());
@@ -33,37 +38,35 @@ public class ConventionMapper {
         response.setCreatedAt(convention.getCreatedAt());
         response.setUpdatedAt(convention.getUpdatedAt());
 
-        // Structure Interne
+        // Structure Responsable
         if (convention.getStructureResponsable() != null) {
             response.setStructureResponsableId(convention.getStructureResponsable().getId());
             response.setStructureResponsableName(convention.getStructureResponsable().getName());
             response.setStructureResponsableCode(convention.getStructureResponsable().getCode());
+
+            if (convention.getStructureResponsable().getZoneGeographique() != null) {
+                response.setZoneId(convention.getStructureResponsable().getZoneGeographique().getId());
+                response.setZoneName(convention.getStructureResponsable().getZoneGeographique().getName());
+                response.setZoneCode(convention.getStructureResponsable().getZoneGeographique().getCode());
+            }
         }
 
-        // Structure Externe
+        // Structure Beneficiel
         if (convention.getStructureBeneficiel() != null) {
             response.setStructureBeneficielId(convention.getStructureBeneficiel().getId());
             response.setStructureBeneficielName(convention.getStructureBeneficiel().getName());
             response.setStructureBeneficielCode(convention.getStructureBeneficiel().getCode());
         }
 
-        // Zone
-        if (convention.getZone() != null) {
-            response.setZoneId(convention.getZone().getId());
-            response.setZoneName(convention.getZone().getName());
-            response.setZoneCode(convention.getZone().getCode());
-        }
-
-        // Application info (NEW)
+        // Application info
         if (convention.getApplication() != null) {
             response.setApplicationId(convention.getApplication().getId());
             response.setApplicationCode(convention.getApplication().getCode());
             response.setApplicationName(convention.getApplication().getName());
             response.setApplicationClientName(convention.getApplication().getClientName());
+            response.setMinUser(convention.getApplication().getMinUser());
+            response.setMaxUser(convention.getApplication().getMaxUser());
 
-
-
-            // Chef de projet info through Application
             if (convention.getApplication().getChefDeProjet() != null) {
                 response.setChefDeProjetId(convention.getApplication().getChefDeProjet().getId());
                 response.setChefDeProjetName(convention.getApplication().getChefProjetName());
@@ -72,12 +75,10 @@ public class ConventionMapper {
 
         // Factures
         if (convention.getFactures() != null && !convention.getFactures().isEmpty()) {
-            // Convert factures to DTOs
             response.setFactures(convention.getFactures().stream()
                     .map(this::toFactureResponse)
                     .collect(Collectors.toList()));
 
-            // Calculate statistics
             long total = convention.getFactures().size();
             long payees = convention.getFactures().stream()
                     .filter(f -> "PAYE".equals(f.getStatutPaiement()))
@@ -110,12 +111,9 @@ public class ConventionMapper {
         return response;
     }
 
-
-    // In ConventionMapper.java - Fix the toFactureResponse method
     public FactureResponse toFactureResponse(Facture facture) {
         FactureResponse response = new FactureResponse();
 
-        // Basic fields
         response.setId(facture.getId());
         response.setNumeroFacture(facture.getNumeroFacture());
         response.setDateFacturation(facture.getDateFacturation());
@@ -133,33 +131,29 @@ public class ConventionMapper {
         response.setUpdatedAt(facture.getUpdatedAt());
         response.setEnRetard(facture.isEnRetard());
 
-        // Convention reference
         if (facture.getConvention() != null) {
             response.setConventionId(facture.getConvention().getId());
             response.setConventionReference(facture.getConvention().getReferenceConvention());
             response.setConventionLibelle(facture.getConvention().getLibelle());
 
-            // Get structure info
             if (facture.getConvention().getStructureResponsable() != null) {
-                response.setStructureInterneName(facture.getConvention().getStructureResponsable().getName());
+                response.setStructureResponsableName(facture.getConvention().getStructureResponsable().getName());
             }
             if (facture.getConvention().getStructureBeneficiel() != null) {
-                response.setStructureExterneName(facture.getConvention().getStructureBeneficiel().getName());
+                response.setStructureBeneficielName(facture.getConvention().getStructureBeneficiel().getName());
             }
-            if (facture.getConvention().getZone() != null) {
-                response.setZoneName(facture.getConvention().getZone().getName());
+            if (facture.getConvention().getStructureResponsable().getZoneGeographique() != null) {
+                response.setZoneName(facture.getConvention().getStructureResponsable().getZoneGeographique().getName());
             }
 
-            // Project info through convention (NEW)
             if (facture.getConvention().getApplication() != null) {
-                response.setProjectId(facture.getConvention().getApplication().getId());
-                response.setProjectCode(facture.getConvention().getApplication().getCode());
-                response.setProjectName(facture.getConvention().getApplication().getName());
-                response.setProjectClientName(facture.getConvention().getApplication().getClientName());
+                response.setApplicationId(facture.getConvention().getApplication().getId());
+                response.setApplicationCode(facture.getConvention().getApplication().getCode());
+                response.setApplicationName(facture.getConvention().getApplication().getName());
+                response.setApplicationClientName(facture.getConvention().getApplication().getClientName());
+                response.setMinUser(facture.getConvention().getApplication().getMinUser());
+                response.setMaxUser(facture.getConvention().getApplication().getMaxUser());
 
-
-
-                // Chef de projet info through Application
                 if (facture.getConvention().getApplication().getChefDeProjet() != null) {
                     response.setChefDeProjetId(facture.getConvention().getApplication().getChefDeProjet().getId());
                     response.setChefDeProjetName(facture.getConvention().getApplication().getChefProjetName());

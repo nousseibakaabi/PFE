@@ -133,8 +133,8 @@ searchFactures(): void {
     facture.numeroFacture.toLowerCase().includes(term) ||
     facture.conventionReference?.toLowerCase().includes(term) ||
     facture.conventionLibelle?.toLowerCase().includes(term) ||
-    facture.structureInterneName?.toLowerCase().includes(term) ||
-    facture.structureExterneName?.toLowerCase().includes(term) ||
+    facture.structureBeneficielName?.toLowerCase().includes(term) ||
+    facture.structureResponsableName?.toLowerCase().includes(term) ||
     facture.statutPaiement.toLowerCase().includes(term) ||
     facture.datePaiement?.toLowerCase().includes(term) ||
     (facture.referencePaiement?.toLowerCase().includes(term))

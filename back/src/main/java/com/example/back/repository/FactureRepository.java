@@ -87,4 +87,8 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
     // Count invoices from conventions created by a specific user
     @Query("SELECT COUNT(f) FROM Facture f WHERE f.convention.createdBy = :user")
     Long countByConventionCreatedBy(@Param("user") User user);
+
+    List<Facture> findByConventionIdOrderByNumeroFactureAsc(Long conventionId);
+
+
 }

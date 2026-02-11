@@ -18,8 +18,8 @@ export interface Facture {
   notes: string;
   createdAt: string;
   updatedAt: string;
-  structureInterneName: string;
-  structureExterneName: string;
+  structureResponsableName: string;
+  structureBeneficielName: string;
   conventionReference: string;
   conventionLibelle: string;
   conventionId: number;

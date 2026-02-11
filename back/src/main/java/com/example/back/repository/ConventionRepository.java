@@ -45,7 +45,7 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     @Query("SELECT COUNT(c) FROM Convention c WHERE c.structureResponsable.id = :structureId OR c.structureBeneficiel.id = :structureId")
     Long countByStructureResponsableIdOrStructureBeneficielId(@Param("structureId") Long structureId);
 
-    @Query("SELECT COUNT(c) FROM Convention c WHERE c.zone.id = :zoneId")
+    @Query("SELECT COUNT(c) FROM Convention c WHERE c.structureResponsable.zoneGeographique.id = :zoneId")
     Long countByZoneId(@Param("zoneId") Long zoneId);
 
     // Remove or replace this method since it doesn't exist anymore

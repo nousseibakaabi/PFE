@@ -15,10 +15,11 @@ export interface Application {
   clientAddress: string;
   dateDebut: string;
   dateFin: string;
-  budget: number;
   status: string;
   createdAt: string;
   updatedAt: string;
+  minUser : number;
+  maxUser:number;
   
   // Calculated fields
   daysRemaining: number;
@@ -52,8 +53,9 @@ export interface ApplicationRequest {
   clientAddress?: string;
   dateDebut?: string;
   dateFin?: string;
-  budget?: number;
   status?: string;
+  minUser : number;
+  maxUser:number;
 }
 
 

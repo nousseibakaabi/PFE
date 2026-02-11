@@ -83,7 +83,8 @@ public class ApplicationService {
             application.setClientPhone(request.getClientPhone());
             application.setDateDebut(request.getDateDebut());
             application.setDateFin(request.getDateFin());
-            application.setBudget(request.getBudget());
+            application.setMaxUser(request.getMaxUser());
+            application.setMinUser(request.getMinUser());
             application.setStatus(request.getStatus() != null ? request.getStatus() : "PLANIFIE");
 
             Application savedApplication = applicationRepository.save(application);
@@ -111,17 +112,26 @@ public class ApplicationService {
             Application application = applicationRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Application not found"));
 
-            // Check access: Admin sees all, Chef de Projet sees only their applications
-            if (!"ROLE_ADMIN".equals(currentRole)) {
+            // Check access based on role
+            if ("ROLE_ADMIN".equals(currentRole)) {
+                // Admin sees all
+                return applicationMapper.toResponse(application);
+            }
+            else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
+                // Chef de projet only sees their own applications
                 User currentUser = userRepository.findByUsername(currentUsername)
                         .orElseThrow(() -> new RuntimeException("User not found"));
 
-                if (!application.getChefDeProjet().getId().equals(currentUser.getId())) {
+                if (application.getChefDeProjet() == null ||
+                        !application.getChefDeProjet().getId().equals(currentUser.getId())) {
                     throw new RuntimeException("Access denied: You can only view your own applications");
                 }
+                return applicationMapper.toResponse(application);
             }
-
-            return applicationMapper.toResponse(application);
+            else {
+                // DECIDEUR and COMMERCIAL_METIER can view all applications
+                return applicationMapper.toResponse(application);
+            }
 
         } catch (RuntimeException e) {
             log.error("Error fetching application: {}", e.getMessage());
@@ -131,6 +141,7 @@ public class ApplicationService {
             throw new RuntimeException("Failed to fetch application: " + e.getMessage());
         }
     }
+
 
     /**
      * Update application
@@ -144,8 +155,13 @@ public class ApplicationService {
             Application application = applicationRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Application not found"));
 
-            // Check access
-            if (!"ROLE_ADMIN".equals(currentRole)) {
+            // Check access based on role
+            if ("ROLE_ADMIN".equals(currentRole)) {
+                // Admin can update all applications
+                log.info("Admin updating application: {}", application.getCode());
+            }
+            else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
+                // Chef de projet can only update their own applications
                 User currentUser = userRepository.findByUsername(currentUsername)
                         .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -153,6 +169,10 @@ public class ApplicationService {
                         !application.getChefDeProjet().getId().equals(currentUser.getId())) {
                     throw new RuntimeException("Access denied: You can only update your own applications");
                 }
+            }
+            else {
+                // Other roles cannot update applications
+                throw new RuntimeException("Access denied: You don't have permission to update applications");
             }
 
             // Check if new code conflicts (if changed)
@@ -176,24 +196,22 @@ public class ApplicationService {
             application.setClientPhone(request.getClientPhone());
             application.setDateDebut(request.getDateDebut());
             application.setDateFin(request.getDateFin());
-            application.setBudget(request.getBudget());
             application.setStatus(request.getStatus());
+            application.setMaxUser(request.getMaxUser());
+            application.setMinUser(request.getMinUser());
 
             // Only Admin can change chef de projet
             if ("ROLE_ADMIN".equals(currentRole)) {
-                // Handle chef de projet - can be set to null
                 if (request.getChefDeProjetId() != null) {
                     User chefDeProjet = userRepository.findById(request.getChefDeProjetId())
                             .orElseThrow(() -> new RuntimeException("Chef de Projet not found"));
 
-                    // Verify role if assigning
                     if (!chefDeProjet.getRoles().stream()
                             .anyMatch(role -> role.getName().name().equals("ROLE_CHEF_PROJET"))) {
                         throw new RuntimeException("Selected user is not a Chef de Projet");
                     }
                     application.setChefDeProjet(chefDeProjet);
                 } else {
-                    // Set to null if no chef de projet specified
                     application.setChefDeProjet(null);
                 }
             }
@@ -212,14 +230,38 @@ public class ApplicationService {
         }
     }
 
+
     /**
-     * Delete application (only Admin)
+     * Delete application with access control
      */
     @Transactional
     public void deleteApplication(Long id) {
         try {
+            String currentUsername = getCurrentUsername();
+            String currentRole = getCurrentUserRole();
+
             Application application = applicationRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Application not found"));
+
+            // Check access based on role
+            if ("ROLE_ADMIN".equals(currentRole)) {
+                // Admin can delete all applications
+                log.info("Admin deleting application: {}", application.getCode());
+            }
+            else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
+                // Chef de projet can only delete their own applications
+                User currentUser = userRepository.findByUsername(currentUsername)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+                if (application.getChefDeProjet() == null ||
+                        !application.getChefDeProjet().getId().equals(currentUser.getId())) {
+                    throw new RuntimeException("Access denied: You can only delete your own applications");
+                }
+            }
+            else {
+                // Other roles cannot delete applications
+                throw new RuntimeException("Access denied: You don't have permission to delete applications");
+            }
 
             // Check if application has conventions
             if (applicationRepository.hasConventions(id)) {
@@ -238,6 +280,7 @@ public class ApplicationService {
         }
     }
 
+
     /**
      * Get all applications with access control
      */
@@ -248,9 +291,22 @@ public class ApplicationService {
 
             log.info("Fetching applications for user: {} with role: {}", currentUsername, currentRole);
 
-            // For convention module, ALL authorized users should see ALL applications
-            // because they need to be able to select any application to create a convention
-            List<Application> applications = applicationRepository.findAll();
+            List<Application> applications;
+
+            // ADMIN sees all applications
+            if ("ROLE_ADMIN".equals(currentRole)) {
+                applications = applicationRepository.findAll();
+            }
+            // CHEF_PROJET sees only their own applications
+            else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
+                User currentUser = userRepository.findByUsername(currentUsername)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+                applications = applicationRepository.findByChefDeProjetId(currentUser.getId());
+            }
+            // DECIDEUR and COMMERCIAL_METIER see all applications (for viewing and convention purposes)
+            else {
+                applications = applicationRepository.findAll();
+            }
 
             log.info("Returning {} applications to user {}", applications.size(), currentUsername);
 
@@ -287,17 +343,21 @@ public class ApplicationService {
             Long chefDeProjetId, String status) {
 
         try {
+            String currentUsername = getCurrentUsername();
             String currentRole = getCurrentUserRole();
 
-            // If not admin, restrict to their applications
-            if (!"ROLE_ADMIN".equals(currentRole)) {
-                User currentUser = userRepository.findByUsername(getCurrentUsername())
+            Long effectiveChefDeProjetId = chefDeProjetId;
+
+            // If not admin and not decideur/commercial, restrict to their applications
+            if ("ROLE_CHEF_PROJET".equals(currentRole)) {
+                User currentUser = userRepository.findByUsername(currentUsername)
                         .orElseThrow(() -> new RuntimeException("User not found"));
-                chefDeProjetId = currentUser.getId();
+                effectiveChefDeProjetId = currentUser.getId();
             }
+            // For admin, decideur, commercial - allow searching all (keep original chefDeProjetId param)
 
             List<Application> applications = applicationRepository.searchApplications(
-                    code, name, clientName, chefDeProjetId, status);
+                    code, name, clientName, effectiveChefDeProjetId, status);
 
             return applications.stream()
                     .map(applicationMapper::toResponse)
@@ -308,6 +368,7 @@ public class ApplicationService {
             throw new RuntimeException("Failed to search applications");
         }
     }
+
 
     /**
      * Calculate and update application status automatically
@@ -355,11 +416,7 @@ public class ApplicationService {
             stats.put("plannedApplications", applications.stream().filter(a -> "PLANIFIE".equals(a.getStatus())).count());
             stats.put("completedApplications", applications.stream().filter(a -> "TERMINE".equals(a.getStatus())).count());
 
-            // Budget statistics
-            double totalBudget = applications.stream()
-                    .mapToDouble(a -> a.getBudget() != null ? a.getBudget() : 0)
-                    .sum();
-            stats.put("totalBudget", totalBudget);
+
 
             // Convention statistics
             int totalConventions = applications.stream()

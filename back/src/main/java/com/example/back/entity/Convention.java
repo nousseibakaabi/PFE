@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,10 +46,6 @@ public class Convention {
     @JoinColumn(name = "structure_beneficiel_id", nullable = false)
     private Structure structureBeneficiel;
 
-    @ManyToOne
-    @JoinColumn(name = "zone_id", nullable = false)
-    private ZoneGeographique zone;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "application_id")
     private Application application;
@@ -77,6 +74,19 @@ public class Convention {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id")
     private User createdBy;
+
+
+    @Column(name = "montant_ht", precision = 15, scale = 2)
+    private BigDecimal montantHT;
+
+    @Column(name = "tva", precision = 5, scale = 2)
+    private BigDecimal tva = BigDecimal.valueOf(19.00);
+
+    @Column(name = "montant_ttc", precision = 15, scale = 2)
+    private BigDecimal montantTTC;
+
+    @Column(name = "nb_users")
+    private Long nbUsers;
 
     @PrePersist
     protected void onCreate() {

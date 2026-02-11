@@ -23,10 +23,12 @@ public class ApplicationMapper {
         response.setClientPhone(application.getClientPhone());
         response.setDateDebut(application.getDateDebut());
         response.setDateFin(application.getDateFin());
-        response.setBudget(application.getBudget());
         response.setStatus(application.getStatus());
         response.setCreatedAt(application.getCreatedAt());
         response.setUpdatedAt(application.getUpdatedAt());
+        response.setMaxUser(application.getMaxUser());
+        response.setMinUser(application.getMinUser());
+
 
         // Calculated fields
         response.setDaysRemaining(application.getDaysRemaining());

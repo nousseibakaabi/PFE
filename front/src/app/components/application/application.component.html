@@ -295,26 +295,7 @@
               </div>
             </div>
 
-              <!-- Budget and Status -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Budget (€)
-                </label>
-                <input
-                  type="number"
-                  [(ngModel)]="applicationForm.budget"
-                  name="budget"
-                  step="0.01"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="0.00"
-                />
-              </div>
-
-              
             
-            </div>
-
             <!-- Client Info -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -357,19 +338,47 @@
                   placeholder="+33 1 23 45 67 89"
                 />
               </div>
-              <div>
+
+
+             
+            </div>
+
+
+              <!-- user  -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+             
+                  <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Adresse Client
+                  Min Users 
                 </label>
                 <input
-                  type="text"
-                  [(ngModel)]="applicationForm.clientAddress"
-                  name="clientAddress"
+                  type="number"
+                  [(ngModel)]="applicationForm.minUser"
+                  name="minUser"
+                  step="0.01"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Adresse complète"
+                  placeholder="0.00"
                 />
               </div>
+
+                  <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Maw Users 
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="applicationForm.maxUser"
+                  name="maxUser"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+
+              
+            
             </div>
+
 
             <!-- Dates -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -488,11 +497,40 @@
               </div>
             </div>
 
-            <!-- Application -->
+               <!-- user  -->             
             <div class="grid grid-cols-1 gap-6">
+                  <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Min Users 
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="applicationForm.minUser"
+                  name="minUser"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+
+                  <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Maw Users 
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="applicationForm.maxUser"
+                  name="maxUser"
+                  step="0.01"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+
+              
             
-     
             </div>
+     
 
             <!-- Client Info -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -536,18 +574,7 @@
                   placeholder="+33 1 23 45 67 89"
                 />
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Adresse Client
-                </label>
-                <input
-                  type="text"
-                  [(ngModel)]="applicationForm.clientAddress"
-                  name="clientAddress"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Adresse complète"
-                />
-              </div>
+             
             </div>
 
             <!-- Dates -->
@@ -576,21 +603,9 @@
               </div>
             </div>
 
-           <!-- Budget, Progress and Status -->
+           <!-- Status -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      Budget (€)
-    </label>
-    <input
-      type="number"
-      [(ngModel)]="applicationForm.budget"
-      name="budget"
-      step="0.01"
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-      placeholder="0.00"
-    />
-  </div>
+
   
 
   <div>
