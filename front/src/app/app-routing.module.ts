@@ -17,8 +17,14 @@ import { CommercialComponent } from './components/commercial/commercial.componen
 import { DecideurComponent } from './components/decideur/decideur.component';
 import { ConventionArchiveComponent } from './components/convention-archive/convention-archive.component';
 import { CalendarComponent } from './components/calendar/calendar.component';
-import { AdminApplicationComponent } from './components/admin-application/admin-application.component';
+import { MailBoxComponent } from './components/mail-box/mail-box.component';
+import { ConventionDetailComponent } from './components/convention-detail/convention-detail.component';
+import { ConventionFormComponent } from './components/convention-form/convention-form.component';
+import { FactureDetailComponent } from './components/facture-detail/facture-detail.component';
+import { ApplicationDetailComponent } from './components/application-detail/application-detail.component';
+import { ApplicationFormComponent } from './components/application-form/application-form.component';
 import { ApplicationComponent } from './components/application/application.component';
+import { HistoryComponent } from './components/history/history.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -26,67 +32,113 @@ const routes: Routes = [
   { path: 'forget-password', component: ForgetPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'email-sent', component: EmailSendComponent },
-    { 
+  
+  { 
     path: 'commercial/calendar', 
     component: CalendarComponent,
-   canActivate: [AuthGuard],
+    canActivate: [AuthGuard],
     data: { roles: ['ROLE_COMMERCIAL_METIER'] }
-  } ,
+  },
   
-   { 
+  { 
     path: 'admin', 
     component: AdminComponent, 
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_ADMIN'] } 
   },
-
   { 
     path: 'admin/users', 
     component: AdminUsersComponent, 
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_ADMIN'] } 
   },
-
   { 
     path: 'admin/nomenclatures', 
     component: AdminNomenclaturesComponent, 
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_ADMIN'] } 
   },
-    { 
+  
+  // Convention routes
+  { 
     path: 'conventions', 
     component: ConventionComponent, 
     canActivate: [AuthGuard],
-    data: { roles: ['ROLE_COMMERCIAL_METIER'] } 
+    data: { roles: ['ROLE_COMMERCIAL_METIER', 'ROLE_ADMIN', 'ROLE_CHEF_PROJET', 'ROLE_DECIDEUR'] } 
   },
-
-   { 
+  { 
     path: 'conventions/archives', 
     component: ConventionArchiveComponent, 
     canActivate: [AuthGuard],
-    data: { roles: ['ROLE_COMMERCIAL_METIER'] } 
+    data: { roles: ['ROLE_COMMERCIAL_METIER', 'ROLE_ADMIN'] } 
   },
+  { 
+    path: 'conventions/new', 
+    component: ConventionFormComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_COMMERCIAL_METIER', 'ROLE_ADMIN'] }
+  },
+  { 
+    path: 'conventions/edit/:id', 
+    component: ConventionFormComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_COMMERCIAL_METIER', 'ROLE_ADMIN'] }
+  },
+  { 
+    path: 'conventions/:id', 
+    component: ConventionDetailComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_COMMERCIAL_METIER', 'ROLE_ADMIN', 'ROLE_CHEF_PROJET', 'ROLE_DECIDEUR'] }
+  },
+  
+  // Facture routes
   { 
     path: 'factures', 
     component: FactureComponent, 
     canActivate: [AuthGuard],
-    data: { roles: [ 'ROLE_COMMERCIAL_METIER'] } 
+    data: { roles: ['ROLE_COMMERCIAL_METIER', 'ROLE_ADMIN'] } 
+  },
+  { 
+    path: 'factures/:id', 
+    component: FactureDetailComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_COMMERCIAL_METIER', 'ROLE_ADMIN', 'ROLE_CHEF_PROJET', 'ROLE_DECIDEUR'] }
   },
 
-     { 
+  // Application routes 
+  { 
+    path: 'applications', 
+    component: ApplicationComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_ADMIN', 'ROLE_CHEF_PROJET', 'ROLE_COMMERCIAL_METIER', 'ROLE_DECIDEUR'] }
+  },
+  { 
+    path: 'applications/new', 
+    component: ApplicationFormComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_ADMIN', 'ROLE_CHEF_PROJET'] }
+  },
+  { 
+    path: 'applications/edit/:id', 
+    component: ApplicationFormComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_ADMIN', 'ROLE_CHEF_PROJET'] }
+  },
+  { 
+    path: 'applications/:id', 
+    component: ApplicationDetailComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['ROLE_ADMIN', 'ROLE_CHEF_PROJET', 'ROLE_COMMERCIAL_METIER', 'ROLE_DECIDEUR'] }
+  },
+
+  // Role dashboards
+  { 
     path: 'chef', 
     component: ChefProjetComponent, 
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_CHEF_PROJET'] } 
   },
-
   { 
-    path: 'chef/application', 
-    component: ApplicationComponent, 
-    canActivate: [AuthGuard],
-    data: { roles: ['ROLE_CHEF_PROJET'] } 
-  },
-     { 
     path: 'commercial', 
     component: CommercialComponent, 
     canActivate: [AuthGuard],
@@ -100,18 +152,15 @@ const routes: Routes = [
   },
 
 
-  { 
-    path: 'admin/application',
-    component: AdminApplicationComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['ROLE_ADMIN'] } 
+  {
+  path: 'history',
+  component: HistoryComponent,
+  canActivate: [AuthGuard],
+  data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHEF_PROJET'] }
   },
 
-
-
-
-
-  { path: '**', component: NotFoundComponent } // Keep this last
+  { path: 'mailBox', component: MailBoxComponent, canActivate: [AuthGuard] },
+  { path: '**', component: NotFoundComponent } 
 ];
 
 @NgModule({

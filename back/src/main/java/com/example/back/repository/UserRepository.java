@@ -28,8 +28,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByRoles_Name(ERole role);
 
 
-    @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName")
-    List<User> findByRoleName(@Param("roleName") String roleName);
+
 
     @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name != 'ROLE_ADMIN'")
     List<User> findAllNonAdminUsers();
@@ -39,6 +38,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
     Boolean existsByPhone(String phone);
+
+
+    @Query("SELECT u FROM User u WHERE LOWER(u.email) LIKE LOWER(:searchTerm) OR LOWER(u.firstName) LIKE LOWER(:searchTerm) OR LOWER(u.lastName) LIKE LOWER(:searchTerm)")
+    List<User> searchUsers(@Param("searchTerm") String searchTerm);
+
+    @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName")
+    List<User> findByRoleName(@Param("roleName") String roleName);
+
 
 
 }

@@ -23,7 +23,7 @@ public class UserController {
     private UserRepository userRepository;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllUsers() {
         try {
             List<User> users = userRepository.findAll();
@@ -45,7 +45,7 @@ public class UserController {
     }
 
     @GetMapping("/role/{roleName}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getUsersByRole(@PathVariable String roleName) {
         try {
             String roleWithPrefix = "ROLE_" + roleName.toUpperCase();

@@ -34,10 +34,16 @@ public class ConventionResponse {
     private Long structureResponsableId;
     private String structureResponsableName;
     private String structureResponsableCode;
+    private String structureResponsableEmail;
+    private String structureResponsablePhone;
+
+
 
     private Long structureBeneficielId;
     private String structureBeneficielName;
     private String structureBeneficielCode;
+    private String structureBeneficielEmail;
+    private String structureBeneficielPhone;
 
     private Long zoneId;
     private String zoneName;

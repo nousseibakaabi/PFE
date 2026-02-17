@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { ApplicationService, Application, ApplicationRequest, ApiResponse } from '../../services/application.service';
-import { NomenclatureService } from '../../services/nomenclature.service';
+import { Router } from '@angular/router';
+import { ApplicationService, Application, ApiResponse } from '../../services/application.service';
+import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-application',
@@ -13,9 +13,9 @@ import { DatePipe } from '@angular/common';
   providers: [DatePipe]
 })
 export class ApplicationComponent implements OnInit {
-  // Use applications array instead of projects
   applications: Application[] = [];
   filteredApplications: Application[] = [];
+  chefsProjet: any[] = []; // Only for admin view
   loading = false;
   errorMessage = '';
   successMessage = '';
@@ -24,29 +24,18 @@ export class ApplicationComponent implements OnInit {
 
   // Current user info
   currentUser: any = null;
+  isAdmin = false;
+  isChefProjet = false;
 
-  // Modals
-  showAddModal = false;
-  showEditModal = false;
-  showDeleteModal = false;
+  showAssignModal = false;
+  selectedAppForAssign: Application | null = null;
+  availableChefs: any[] = [];
+  selectedChefId: number | null = null;
+  assigning = false;
+
   selectedApplication: Application | null = null;
 
-  // Application form
-  applicationForm: ApplicationRequest = {
-    code: '',
-    name: '',
-    description: '',
-    chefDeProjetId: 0,
-    clientName: '',
-    clientEmail: '',
-    clientPhone: '',
-    clientAddress: '',
-    dateDebut: '',
-    dateFin: '',
-    minUser:0,
-    maxUser:0,
-    status: 'PLANIFIE'
-  };
+  baseUrl = environment.baseUrl;
 
   // Status options
   statusOptions = [
@@ -59,21 +48,25 @@ export class ApplicationComponent implements OnInit {
 
   constructor(
     private applicationService: ApplicationService,
-    private nomenclatureService: NomenclatureService,
+    private userService: UserService,
     private authService: AuthService,
+    private router: Router,
     private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
     this.loadCurrentUser();
     this.loadApplications();
+    
+    if (this.isAdmin) {
+      this.loadChefsProjet();
+    }
   }
 
   loadCurrentUser(): void {
     this.currentUser = this.authService.getCurrentUser();
-    if (this.currentUser) {
-      this.applicationForm.chefDeProjetId = this.currentUser.id;
-    }
+    this.isAdmin = this.authService.isAdmin();
+    this.isChefProjet = this.authService.isChefProjet();
   }
 
   loadApplications(): void {
@@ -81,11 +74,20 @@ export class ApplicationComponent implements OnInit {
     this.applicationService.getAllApplications().subscribe({
       next: (response: ApiResponse) => {
         if (response.success) {
-          // Check if data is in response.data or response.applications
-          this.applications = response.data || response.applications || [];
+          let allApps = response.data || response.applications || [];
+          
+          // Filter for chef de projet
+          if (this.isChefProjet && !this.isAdmin && this.currentUser) {
+            this.applications = allApps.filter((app: Application) => 
+              app.chefDeProjetId === this.currentUser.id
+            );
+          } else {
+            this.applications = allApps;
+          }
+          
           this.filteredApplications = [...this.applications];
         } else {
-          this.errorMessage = response.message || 'Erreur lors du chargement des applications';
+          this.errorMessage = response.message || 'Erreur lors du chargement';
         }
         this.loading = false;
       },
@@ -97,6 +99,21 @@ export class ApplicationComponent implements OnInit {
     });
   }
 
+  loadChefsProjet(): void {
+    if (!this.isAdmin) return;
+    
+    this.userService.getChefsProjet().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.chefsProjet = response.data;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading chefs:', error);
+      }
+    });
+  }
+
   searchApplications(): void {
     if (!this.searchTerm.trim()) {
       this.filteredApplications = this.filterByStatus(this.applications);
@@ -104,11 +121,11 @@ export class ApplicationComponent implements OnInit {
     }
 
     const term = this.searchTerm.toLowerCase();
-    this.filteredApplications = this.filterByStatus(this.applications).filter((application: Application) =>
-      application.code?.toLowerCase().includes(term) ||
-      application.name?.toLowerCase().includes(term) ||
-      application.clientName?.toLowerCase().includes(term) ||
-      application.description?.toLowerCase().includes(term)
+    this.filteredApplications = this.filterByStatus(this.applications).filter((app: Application) =>
+      app.code?.toLowerCase().includes(term) ||
+      app.name?.toLowerCase().includes(term) ||
+      app.clientName?.toLowerCase().includes(term) ||
+      app.description?.toLowerCase().includes(term)
     );
   }
 
@@ -126,191 +143,30 @@ export class ApplicationComponent implements OnInit {
     }
   }
 
-  openAddModal(): void {
-    this.applicationForm = {
-      code: '',
-      name: '',
-      description: '',
-      chefDeProjetId: this.currentUser?.id || 0,
-      clientName: '',
-      clientEmail: '',
-      clientPhone: '',
-      clientAddress: '',
-      dateDebut: new Date().toISOString().split('T')[0],
-      dateFin: '',
-      minUser:0,
-      maxUser:0,
-      status: 'PLANIFIE'
-    };
-    
-    this.loadSuggestedApplicationCode();
-    this.showAddModal = true;
-    this.errorMessage = '';
-  }
 
-  openEditModal(application: Application): void {
-    if (application.chefDeProjetId !== this.currentUser?.id) {
-      this.errorMessage = 'Vous ne pouvez modifier que vos propres applications';
-      return;
-    }
 
-    this.selectedApplication = application;
-    this.applicationForm = {
-      code: application.code,
-      name: application.name,
-      description: application.description || '',
-      chefDeProjetId: application.chefDeProjetId,
-      clientName: application.clientName,
-      clientEmail: application.clientEmail || '',
-      clientPhone: application.clientPhone || '',
-      clientAddress: application.clientAddress || '',
-      dateDebut: application.dateDebut || '',
-      dateFin: application.dateFin || '',
-      minUser: application.minUser || 0,
-      maxUser: application.maxUser || 0,
-      status: application.status || 'PLANIFIE'
-    };
-    
-    this.showEditModal = true;
-    this.errorMessage = '';
-  }
 
-  openDeleteModal(application: Application): void {
-    if (application.chefDeProjetId !== this.currentUser?.id) {
-      this.errorMessage = 'Vous ne pouvez supprimer que vos propres applications';
-      return;
-    }
-    
-    this.selectedApplication = application;
-    this.showDeleteModal = true;
-  }
 
-  closeModal(): void {
-    this.showAddModal = false;
-    this.showEditModal = false;
-    this.showDeleteModal = false;
-    this.selectedApplication = null;
-    this.errorMessage = '';
-    this.successMessage = '';
+
+  // Navigation methods
+  viewApplication(id: number): void {
+    this.router.navigate(['/applications', id]);
   }
 
   createApplication(): void {
-    if (!this.validateApplicationForm()) {
+    this.router.navigate(['/applications/new']);
+  }
+
+  editApplication(application: Application): void {
+    // For chef de projet, check ownership
+    if (this.isChefProjet && !this.isAdmin && application.chefDeProjetId !== this.currentUser?.id) {
+      this.errorMessage = 'Vous ne pouvez modifier que vos propres applications';
       return;
     }
-
-    this.applicationForm.chefDeProjetId = this.currentUser?.id;
-    this.applicationForm.status = 'PLANIFIE';
-
-    this.loading = true;
-    this.applicationService.createApplication(this.applicationForm).subscribe({
-      next: (response: ApiResponse) => {
-        if (response.success) {
-          this.successMessage = 'Application créée avec succès';
-          this.closeModal();
-          this.loadApplications(); // Reload the list
-        } else {
-          this.errorMessage = response.message || 'Échec de la création de l\'application';
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Erreur lors de la création de l\'application';
-        this.loading = false;
-      }
-    });
+    this.router.navigate(['/applications/edit', application.id]);
   }
 
-  updateApplication(): void {
-    if (!this.selectedApplication || !this.validateApplicationForm()) {
-      return;
-    }
-
-    if (this.selectedApplication.status === 'TERMINE') {
-      this.errorMessage = 'Une application terminée ne peut pas être modifiée';
-      return;
-    }
-    
-    this.loading = true;
-    this.applicationService.updateApplication(this.selectedApplication.id, this.applicationForm).subscribe({
-      next: (response: ApiResponse) => {
-        if (response.success) {
-          this.successMessage = 'Application mise à jour avec succès';
-          this.closeModal();
-          this.loadApplications(); // Reload the list
-        } else {
-          this.errorMessage = response.message || 'Échec de la mise à jour de l\'application';
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Erreur lors de la mise à jour de l\'application';
-        this.loading = false;
-      }
-    });
-  }
-
-  deleteApplication(): void {
-    if (!this.selectedApplication) return;
-
-    this.loading = true;
-    this.applicationService.deleteApplication(this.selectedApplication.id).subscribe({
-      next: (response: ApiResponse) => {
-        if (response.success) {
-          this.successMessage = 'Application supprimée avec succès';
-          this.closeModal();
-          this.loadApplications(); // Reload the list
-        } else {
-          this.errorMessage = response.message || 'Échec de la suppression de l\'application';
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Erreur lors de la suppression de l\'application';
-        this.loading = false;
-      }
-    });
-  }
-
-  validateApplicationForm(): boolean {
-    if (!this.applicationForm.code?.trim()) {
-      this.errorMessage = 'Le code de l\'application est requis';
-      return false;
-    }
-    
-    if (!this.validateApplicationCode()) {
-      return false;
-    }
-    
-    if (!this.applicationForm.name?.trim()) {
-      this.errorMessage = 'Le nom de l\'application est requis';
-      return false;
-    }
-    
-    if (!this.applicationForm.clientName?.trim()) {
-      this.errorMessage = 'Le nom du client est requis';
-      return false;
-    }
-    
-    // Validate dates
-    if (this.applicationForm.dateDebut && this.applicationForm.dateFin) {
-      const debut = new Date(this.applicationForm.dateDebut);
-      const fin = new Date(this.applicationForm.dateFin);
-      
-      if (fin < debut) {
-        this.errorMessage = 'La date de fin ne peut pas être antérieure à la date de début';
-        return false;
-      }
-    }
-    
-    return true;
-  }
-
-  clearMessages(): void {
-    this.errorMessage = '';
-    this.successMessage = '';
-  }
-
+  // Utility methods
   getStatusClass(status: string): string {
     switch (status) {
       case 'PLANIFIE': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
@@ -318,7 +174,7 @@ export class ApplicationComponent implements OnInit {
       case 'TERMINE': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
       case 'SUSPENDU': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       case 'ANNULE': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+      default: return 'bg-gray-100 text-gray-800';
     }
   }
 
@@ -327,30 +183,9 @@ export class ApplicationComponent implements OnInit {
     return option ? option.label : status;
   }
 
-  canReturnToAutoStatus(): boolean {
-    if (!this.applicationForm.dateDebut) return false;
-    
-    const today = new Date();
-    const startDate = new Date(this.applicationForm.dateDebut);
-    
-    if (today >= startDate) {
-      return true;
-    }
-    
-    if (this.applicationForm.dateFin) {
-      const endDate = new Date(this.applicationForm.dateFin);
-      return today <= endDate;
-    }
-    
-    return false;
-  }
-
-  isAdmin(): boolean {
-    return this.authService.isAdmin();
-  }
-
-  isChefProjet(): boolean {
-    return this.authService.isChefProjet();
+  formatDate(dateString: string): string {
+    if (!dateString) return '-';
+    return this.datePipe.transform(dateString, 'dd/MM/yyyy') || '-';
   }
 
   // Statistics methods
@@ -359,104 +194,200 @@ export class ApplicationComponent implements OnInit {
   }
 
   getEnCoursCount(): number {
-    return this.applications.filter((app: Application) => app.status === 'EN_COURS').length;
+    return this.applications.filter(a => a.status === 'EN_COURS').length;
   }
 
   getPlanifieCount(): number {
-    return this.applications.filter((app: Application) => app.status === 'PLANIFIE').length;
+    return this.applications.filter(a => a.status === 'PLANIFIE').length;
   }
 
   getDelayedCount(): number {
-    return this.applications.filter((app: Application) => app.isDelayed).length;
+    return this.applications.filter(a => a.isDelayed).length;
   }
 
-  getCurrentUserName(): string {
-    if (!this.currentUser) return '';
-    return `${this.currentUser.firstName} ${this.currentUser.lastName}`;
+  clearMessages(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
   }
 
-  loadSuggestedApplicationCode(): void {
-    this.applicationService.getSuggestedApplicationCode().subscribe({
-      next: (response: any) => {
-        if (response.success && response.suggestedCode) {
-          this.applicationForm.code = response.suggestedCode;
-        }
-      },
-      error: (error) => {
-        console.error('Failed to load suggested code:', error);
-      }
-    });
-  }
-
-  validateApplicationCode(): boolean {
-    const code = this.applicationForm.code;
-    const pattern = /^APP-\d{4}-\d{3}$/; // Changed from PROJ- to APP- for applications
-    
-    if (!pattern.test(code)) {
-      this.errorMessage = 'Format de code invalide. Utilisez APP-AAAA-XXX (ex: APP-2024-001)';
-      return false;
-    }
-    return true;
-  }
-
-  // Format date for display
-  formatDate(dateString: string): string {
-    if (!dateString) return '';
-    return this.datePipe.transform(dateString, 'dd/MM/yyyy') || '';
-  }
-
-  // Check if application is delayed
   isApplicationDelayed(application: Application): boolean {
     if (!application.dateFin) return false;
-    
     const today = new Date();
     const endDate = new Date(application.dateFin);
-    
     return today > endDate && application.status === 'EN_COURS';
   }
 
-  // Get time remaining string
-  getTimeRemaining(application: Application): string {
-    if (!application.dateFin) return 'Pas de date de fin';
-    
-    const today = new Date();
-    const endDate = new Date(application.dateFin);
-    const diffTime = endDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) {
-      return `${Math.abs(diffDays)} jours de retard`;
-    } else if (diffDays === 0) {
-      return 'Se termine aujourd\'hui';
-    } else {
-      return `${diffDays} jours restants`;
+
+
+
+  loadAvailableChefs(): void {
+  // You need to inject UserService or have a method to get chefs
+  // This assumes you have a userService.getChefsProjet() method
+  this.userService.getChefsProjet().subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.availableChefs = response.data;
+      }
+    },
+    error: (error) => {
+      console.error('Error loading chefs:', error);
+      this.errorMessage = 'Failed to load chefs';
+    }
+  });
+}
+
+// Open assign modal
+openAssignModal(application: Application): void {
+  this.selectedAppForAssign = application;
+  this.loadAvailableChefs();
+  this.selectedChefId = null;
+  this.showAssignModal = true;
+}
+
+// Close assign modal
+closeAssignModal(): void {
+  this.showAssignModal = false;
+  this.selectedAppForAssign = null;
+  this.availableChefs = [];
+  this.selectedChefId = null;
+  this.assigning = false;
+}
+
+// Select a chef
+selectChef(chef: any): void {
+  this.selectedChefId = chef.id;
+}
+
+// Assign chef to application
+assignChef(): void {
+  if (!this.selectedChefId || !this.selectedAppForAssign) return;
+  
+  this.assigning = true;
+  this.applicationService.assignChefDeProjet(this.selectedAppForAssign.id, this.selectedChefId).subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.successMessage = 'Chef de projet assigné avec succès';
+        this.loadApplications(); // Reload the list
+        this.closeAssignModal();
+      } else {
+        this.errorMessage = response.message || 'Failed to assign chef';
+      }
+      this.assigning = false;
+    },
+    error: (error) => {
+      console.error('Error assigning chef:', error);
+      this.errorMessage = error.error?.message || 'Failed to assign chef';
+      this.assigning = false;
+    }
+  });
+}
+
+// Get chef avatar URL for the table
+getChefAvatarUrlForApp(app: Application): string {
+  if (!app.chefDeProjetFullName) {
+    return this.generateDefaultChefAvatar('?');
+  }
+  
+  // If the chef has a profile image
+  if (app.chefDeProjetProfileImage) {
+    const profileImage = app.chefDeProjetProfileImage;
+    if (profileImage.startsWith('http')) {
+      return profileImage;
+    }
+    if (profileImage.startsWith('/uploads/')) {
+      return this.baseUrl + profileImage;
+    }
+    if (profileImage.startsWith('data:image')) {
+      return profileImage;
+    }
+    return this.baseUrl + '/uploads/avatars/' + profileImage;
+  }
+  
+  // Generate avatar with initials
+  let initials = '?';
+  const names = app.chefDeProjetFullName.split(' ');
+  if (names.length >= 2) {
+    initials = (names[0][0] + names[1][0]).toUpperCase();
+  } else if (names.length === 1 && names[0]) {
+    initials = names[0][0].toUpperCase();
+  }
+  
+  return this.generateDefaultChefAvatar(initials);
+}
+
+// Get chef avatar URL for modal
+getChefAvatarUrl(chef: any): string {
+  if (!chef || !chef.profileImage) {
+    let initials = '?';
+    if (chef?.firstName && chef?.lastName) {
+      initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
+    } else if (chef?.firstName) {
+      initials = chef.firstName[0].toUpperCase();
+    } else if (chef?.username) {
+      initials = chef.username[0].toUpperCase();
+    }
+    return this.generateDefaultChefAvatar(initials);
+  }
+  
+  const profileImage = chef.profileImage;
+  if (profileImage.startsWith('http')) {
+    return profileImage;
+  }
+  if (profileImage.startsWith('/uploads/')) {
+    return this.baseUrl + profileImage;
+  }
+  if (profileImage.startsWith('data:image')) {
+    return profileImage;
+  }
+  return this.baseUrl + '/uploads/avatars/' + profileImage;
+}
+
+// Generate default chef avatar with initials
+generateDefaultChefAvatar(initials: string): string {
+  const colors = [
+    '#e9d709'
+  ];
+  
+  const colorIndex = initials.charCodeAt(0) % colors.length;
+  const color = colors[colorIndex];
+  
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+    <rect width="100" height="100" rx="15" fill="${color}"/>
+    <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" 
+          font-size="38" font-weight="bold" fill="white" dominant-baseline="middle">
+      ${initials}
+    </text>
+  </svg>`;
+  
+  return 'data:image/svg+xml;base64,' + btoa(svg);
+}
+
+// Error handler for chef images in table
+handleChefImageErrorForApp(event: any, app: Application): void {
+  let initials = '?';
+  if (app.chefDeProjetFullName) {
+    const names = app.chefDeProjetFullName.split(' ');
+    if (names.length >= 2) {
+      initials = (names[0][0] + names[1][0]).toUpperCase();
+    } else if (names.length === 1) {
+      initials = names[0][0].toUpperCase();
     }
   }
+  event.target.src = this.generateDefaultChefAvatar(initials);
+  event.target.onerror = null;
+}
 
-  // Get progress percentage (example calculation)
-  getProgress(application: Application): number {
-    if (!application.dateDebut || !application.dateFin) return 0;
-    
-    const start = new Date(application.dateDebut);
-    const end = new Date(application.dateFin);
-    const today = new Date();
-    
-    const totalDuration = end.getTime() - start.getTime();
-    const elapsedDuration = today.getTime() - start.getTime();
-    
-    if (totalDuration <= 0) return 100;
-    
-    const progress = (elapsedDuration / totalDuration) * 100;
-    
-    // Ensure progress is between 0 and 100
-    return Math.min(Math.max(progress, 0), 100);
+// Error handler for chef images in modal
+handleChefImageError(event: any, chef: any): void {
+  let initials = '?';
+  if (chef?.firstName && chef?.lastName) {
+    initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
+  } else if (chef?.firstName) {
+    initials = chef.firstName[0].toUpperCase();
+  } else if (chef?.username) {
+    initials = chef.username[0].toUpperCase();
   }
-
-  getProgressClass(progress: number): string {
-    if (progress >= 90) return 'bg-green-500';
-    if (progress >= 70) return 'bg-blue-500';
-    if (progress >= 50) return 'bg-yellow-500';
-    if (progress >= 30) return 'bg-orange-500';
-    return 'bg-red-500';
-  }
+  event.target.src = this.generateDefaultChefAvatar(initials);
+  event.target.onerror = null;
+}
 }

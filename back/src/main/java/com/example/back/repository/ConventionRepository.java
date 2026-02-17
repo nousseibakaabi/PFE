@@ -118,4 +118,8 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     List<Convention> findByApplication(Application application);
 
 
+    List<Convention> findByApplicationAndArchivedFalseOrderByUpdatedAtDesc(Application application);
+
+
+
 }

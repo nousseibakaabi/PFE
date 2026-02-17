@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { TimeFormatService } from '../../services/time-format.service';
+import { ApplicationService } from '../../services/application.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-facture',
@@ -31,6 +33,11 @@ export class FactureComponent implements OnInit {
     currentPage = 1;
   itemsPerPage = 7;
   paginatedFactures: Facture[] = [];
+
+
+  applications: any[] = [];
+filterApplicationName: string | null = null;
+activeFilters: { type: string; value: any; label: string }[] = [];
 
   // Invoice form
   invoiceForm: FactureRequest = {
@@ -58,7 +65,9 @@ export class FactureComponent implements OnInit {
     private conventionService: ConventionService,
     private nomenclatureService: NomenclatureService,
     private authService: AuthService,
-      private timeFormat: TimeFormatService
+    private timeFormat: TimeFormatService,
+    private applicationService: ApplicationService,
+    private router:Router
 
   ) {}
 
@@ -68,10 +77,23 @@ export class FactureComponent implements OnInit {
   
     this.loadFactures();
     this.loadConventions();
-    this.loadStructures(); // Optional: for reference
+    this.loadStructures(); 
+    this.loadApplications();
   }
 
 
+  loadApplications(): void {
+  this.applicationService.getAllApplications().subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.applications = response.data || response.applications || [];
+      }
+    },
+    error: (error) => {
+      console.error('Error loading applications:', error);
+    }
+  });
+}
 
 
   getPaymentStatus(facture: Facture): string {
@@ -119,38 +141,147 @@ getPaymentDetails(facture: Facture): any {
   return null;
 }
 
+applyFilters(): void {
+  this.filteredFactures = this.factures;
+  
+  // Apply all active filters
+  this.activeFilters.forEach(filter => {
+    switch(filter.type) {
+      case 'status':
+        this.filteredFactures = this.filteredFactures.filter(f => 
+          f.statutPaiement === filter.value
+        );
+        break;
+      case 'application':
+        this.filteredFactures = this.filteredFactures.filter(f => 
+          f.applicationName === filter.value
+        );
+        break;
+    }
+  });
+  
+  if (this.searchTerm.trim()) {
+    this.searchFactures();
+  }
+  
+  this.currentPage = 1;
+  this.updatePagination();
+}
 
+filterByStatus(status: string): void {
+  this.filterStatut = status;
+  
+  // Remove existing status filter if any
+  this.activeFilters = this.activeFilters.filter(f => f.type !== 'status');
+  
+  // Add new status filter if not empty
+  if (status) {
+    const statusOption = this.statuts.find(s => s === status);
+    this.activeFilters.push({
+      type: 'status',
+      value: status,
+      label: `Statut: ${this.getStatutLabel(status)}`
+    });
+  }
+  
+  this.applyFilters();
+}
+
+// Add method to filter by application
+filterByApplication(applicationName: string | null): void {
+  this.filterApplicationName = applicationName;
+  
+  // Remove existing application filter
+  this.activeFilters = this.activeFilters.filter(f => f.type !== 'application');
+  
+  // Add new application filter if not empty
+  if (applicationName) {
+    const application = this.applications.find(a => a.name === applicationName);
+    this.activeFilters.push({
+      type: 'application',
+      value: applicationName,
+      label: `Application: ${application?.name || applicationName}`
+    });
+  }
+  
+  this.applyFilters();
+}
+
+// Add method to remove a specific filter
+removeFilter(filter: { type: string; value: any; label: string }): void {
+  this.activeFilters = this.activeFilters.filter(f => 
+    !(f.type === filter.type && f.value === filter.value)
+  );
+  
+  // Reset the corresponding filter property
+  switch(filter.type) {
+    case 'status':
+      this.filterStatut = '';
+      break;
+    case 'application':
+      this.filterApplicationName = null;
+      break;
+  }
+  
+  this.applyFilters();
+}
+
+// Add method to clear all filters
+clearAllFilters(): void {
+  this.activeFilters = [];
+  this.filterStatut = '';
+  this.filterApplicationName = null;
+  this.searchTerm = '';
+  this.applyFilters();
+}
+
+// Update searchFactures to respect active filters
 searchFactures(): void {
   if (!this.searchTerm.trim()) {
-    this.filteredFactures = this.filterByStatut(this.factures);
-    this.currentPage = 1;
-    this.updatePagination();
+    this.applyFilters();
     return;
   }
 
   const term = this.searchTerm.toLowerCase();
-  this.filteredFactures = this.filterByStatut(this.factures).filter(facture =>
+  // First get currently filtered factures
+  let currentFiltered = [...this.factures];
+  
+  // Apply active filters first
+  this.activeFilters.forEach(filter => {
+    switch(filter.type) {
+      case 'status':
+        currentFiltered = currentFiltered.filter(f => 
+          f.statutPaiement === filter.value
+        );
+        break;
+      case 'application':
+        currentFiltered = currentFiltered.filter(f => 
+          f.applicationName === filter.value
+        );
+        break;
+    }
+  });
+  
+  // Then apply search
+  this.filteredFactures = currentFiltered.filter(facture =>
     facture.numeroFacture.toLowerCase().includes(term) ||
     facture.conventionReference?.toLowerCase().includes(term) ||
     facture.conventionLibelle?.toLowerCase().includes(term) ||
     facture.structureBeneficielName?.toLowerCase().includes(term) ||
     facture.structureResponsableName?.toLowerCase().includes(term) ||
+    facture.applicationName?.toLowerCase().includes(term) || 
+    facture.applicationCode?.toLowerCase().includes(term) || 
     facture.statutPaiement.toLowerCase().includes(term) ||
     facture.datePaiement?.toLowerCase().includes(term) ||
     (facture.referencePaiement?.toLowerCase().includes(term))
   );
+  
   this.currentPage = 1;
   this.updatePagination();
 }
-applyFilters(): void {
-  this.filteredFactures = this.filterByStatut(this.factures);
-  if (this.searchTerm.trim()) {
-    this.searchFactures();
-  } else {
-    this.currentPage = 1; // Reset to first page
-    this.updatePagination();
-  }
-}
+
+
+
 
 loadFactures(): void {
   this.loading = true;
@@ -445,6 +576,12 @@ goToPage(page: number): void {
     this.currentPage = page;
     this.updatePagination();
   }
+}
+
+
+
+viewFactureDetails(id: number): void {
+  this.router.navigate(['/factures', id]);
 }
 
 }

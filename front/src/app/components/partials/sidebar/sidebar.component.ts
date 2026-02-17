@@ -97,7 +97,6 @@ updateCurrentPage(): void {
   const routeMapping = [
     { path: 'admin/nomenclatures', page: 'Nomenclatures' },
     { path: 'admin/users', page: 'Users' },
-    { path:'admin/application', page:'admin/application'},
     { path: 'admin/calendar', page: 'admin/calendar' },
     { path: 'admin', page: 'admin' },
     { path: 'conventions/archives', page: 'conventions/archives' }, 
@@ -106,7 +105,7 @@ updateCurrentPage(): void {
     { path: 'commercial/calendar', page: 'commercial/calendar' },
     { path: 'commercial', page: 'commercial' },
     { path: 'decideur', page: 'decideur' },
-    { path: 'chef/application', page: 'chef/application' },
+    { path: 'applications', page: 'applications'},
     { path: 'chef/calendar', page: 'chef/calendar' },
     { path: 'chef', page: 'chef' },
     { path: 'profile', page: 'profile' },
@@ -242,7 +241,7 @@ getAvatarUrl(): string {
     
     // Simple SVG with initials as fallback
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#4F46E5"/>
+      <circle cx="50" cy="50" r="48" fill="#e9d709
       <text x="50" y="58" text-anchor="middle" font-family="Arial" font-size="38" fill="white">${initials}</text>
     </svg>`;
     

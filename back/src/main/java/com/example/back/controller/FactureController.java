@@ -1,3 +1,4 @@
+
 package com.example.back.controller;
 
 import com.example.back.entity.*;
@@ -6,6 +7,7 @@ import com.example.back.payload.request.PaiementRequest;
 import com.example.back.payload.response.FactureResponse;
 import com.example.back.repository.*;
 import com.example.back.service.ConventionService;
+import com.example.back.service.HistoryService;
 import com.example.back.service.UserContextService;
 import com.example.back.service.mapper.FactureMapper;
 import jakarta.validation.Valid;
@@ -47,6 +49,9 @@ public class FactureController {
 
     @Autowired
     private UserContextService userContextService;
+
+    @Autowired
+    private HistoryService historyService;
 
     // Helper method to check if user can access invoice
     private boolean canAccessFacture(Long factureId, User currentUser) {
@@ -113,8 +118,13 @@ public class FactureController {
             // Check if invoice is overdue
             Facture f = facture.get();
             if (f.isEnRetard() && "NON_PAYE".equals(f.getStatutPaiement())) {
+                String oldStatus = f.getStatutPaiement();
                 f.setStatutPaiement("EN_RETARD");
                 factureRepository.save(f);
+
+                // LOG HISTORY: Overdue invoice
+                historyService.logFactureStatusChange(f, oldStatus, "EN_RETARD");
+                historyService.logFactureOverdue(f);
             }
 
             FactureResponse response = factureMapper.toResponse(f);
@@ -150,6 +160,8 @@ public class FactureController {
             }
 
             Facture facture = factureOpt.get();
+            Facture oldFacture = cloneFacture(facture);
+            String oldStatus = facture.getStatutPaiement();
 
             // Update fields
             if (request.getDateFacturation() != null) {
@@ -183,6 +195,14 @@ public class FactureController {
             }
 
             Facture updated = factureRepository.save(facture);
+
+            // LOG HISTORY: Facture update
+            historyService.logFactureUpdate(oldFacture, updated, currentUser);
+
+            // Check if status changed
+            if (!oldStatus.equals(updated.getStatutPaiement())) {
+                historyService.logFactureStatusChange(updated, oldStatus, updated.getStatutPaiement());
+            }
 
             // Update convention status if needed
             conventionService.updateConventionStatusRealTime(updated.getConvention().getId());
@@ -224,6 +244,9 @@ public class FactureController {
             // Save convention ID before deletion for status update
             Long conventionId = facture.getConvention().getId();
 
+            // LOG HISTORY: Facture deletion
+            historyService.logFactureDelete(facture, currentUser);
+
             factureRepository.delete(facture);
 
             // Update convention status
@@ -260,6 +283,7 @@ public class FactureController {
             }
 
             Facture facture = factureOpt.get();
+            String oldStatus = facture.getStatutPaiement();
 
             // Update payment information
             facture.setStatutPaiement("PAYE");
@@ -268,6 +292,13 @@ public class FactureController {
                     request.getDatePaiement() : LocalDate.now());
 
             Facture updated = factureRepository.save(facture);
+
+            // LOG HISTORY: Payment registration
+            historyService.logFacturePayment(updated, currentUser, request.getReferencePaiement());
+
+            if (!oldStatus.equals(updated.getStatutPaiement())) {
+                historyService.logFactureStatusChange(updated, oldStatus, "PAYE");
+            }
 
             // IMPORTANT: Update convention status immediately
             conventionService.updateConventionStatusRealTime(facture.getConvention().getId());
@@ -331,6 +362,9 @@ public class FactureController {
 
             Facture saved = factureRepository.save(facture);
 
+            // LOG HISTORY: Facture creation
+            historyService.logFactureCreate(saved, currentUser);
+
             // Update convention status
             conventionService.updateConventionStatusRealTime(saved.getConvention().getId());
 
@@ -345,6 +379,30 @@ public class FactureController {
             log.error("Error generating invoice: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to generate invoice"));
         }
+    }
+
+    /**
+     * Clone facture for history
+     */
+    private Facture cloneFacture(Facture facture) {
+        Facture clone = new Facture();
+        clone.setId(facture.getId());
+        clone.setNumeroFacture(facture.getNumeroFacture());
+        clone.setConvention(facture.getConvention());
+        clone.setDateFacturation(facture.getDateFacturation());
+        clone.setDateEcheance(facture.getDateEcheance());
+        clone.setMontantHT(facture.getMontantHT());
+        clone.setMontantTTC(facture.getMontantTTC());
+        clone.setTva(facture.getTva());
+        clone.setStatutPaiement(facture.getStatutPaiement());
+        clone.setDatePaiement(facture.getDatePaiement());
+        clone.setReferencePaiement(facture.getReferencePaiement());
+        clone.setNotes(facture.getNotes());
+        clone.setArchived(facture.getArchived());
+        clone.setArchivedAt(facture.getArchivedAt());
+        clone.setCreatedAt(facture.getCreatedAt());
+        clone.setUpdatedAt(facture.getUpdatedAt());
+        return clone;
     }
 
     // GET ALL FACTURES - WITH ACCESS CHECK

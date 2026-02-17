@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ApiResponse, ApplicationService } from 'src/app/services/application.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-convention',
@@ -18,10 +19,8 @@ export class ConventionComponent implements OnInit {
   conventions: Convention[] = [];
   filteredConventions: Convention[] = [];
   selectedConvention: Convention | null = null;
-  showModal = false;
   showArchiveModal = false;
   showRestoreModal = false;
-  isEditing = false;
   searchTerm = '';
   filterEtat = '';
   loading = false;
@@ -34,10 +33,6 @@ export class ConventionComponent implements OnInit {
   archiveReason = '';
 
 
-  userLimits: { minUser?: number; maxUser?: number } | null = null;
-  userRuleMessage: string = '';
-  isCalculatingTTC: boolean = false;
-  isDeterminingUsers: boolean = false;
 
   
   // For showing invoice details
@@ -45,22 +40,6 @@ export class ConventionComponent implements OnInit {
   relatedInvoices: any[] = [];
   selectedConventionForInvoices: Convention | null = null;
 
-  formData: ConventionRequest = {
-    referenceConvention: '',
-    referenceERP: '',
-    libelle: '',
-    dateDebut: '',
-    dateFin: '',
-    dateSignature: '',
-    structureResponsableId: 0,
-    structureBeneficielId: 0,
-    applicationId: 0,  
-    periodicite: 'MENSUEL',
-      nbUsers : 0,
-  montantHT : 0,
-  montantTTC : 0,
-  tva : 0,
-  };
 
   conventionForm = {
   structureBeneficielId: 0
@@ -83,15 +62,14 @@ externesStructures: Structure[] = [];
     private nomenclatureService: NomenclatureService,
     private authService: AuthService,
     private applicationService : ApplicationService,
-     private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadConventions();
-    this.loadInternesStructures();
-    this.loadExternesStructures();
-    this.loadApplications(); 
-    this.loadProjects();
+    this.loadBeneficielsStructures();
+    this.loadResponsablesStructures();
   }
 
 
@@ -135,174 +113,20 @@ loadProjects(): void {
   });
 }
 
-onProjectSelected(projectId: number): void {
-    if (projectId) {
-      // Get client structure
-      this.applicationService.getClientStructureForApplication(projectId).subscribe({
-        next: (response) => {
-          if (response.success && response.data) {
-            this.formData.structureBeneficielId = response.data.id;
-          }
-        },
-        error: (error) => {
-          console.error('Error getting client structure:', error);
-        }
-      });
-      
-      // Load application limits and determine initial nb users
-      this.loadApplicationLimits(projectId);
-    }
-  }
 
 
-   loadApplicationLimits(applicationId: number): void {
-    this.applicationService.getApplication(applicationId).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          const app = response.data;
-          this.userLimits = {
-            minUser: app.minUser,
-            maxUser: app.maxUser
-          };
-          
-          // Determine initial nb users
-          if (app.minUser || app.maxUser) {
-            this.determineNbUsers();
-          }
-        }
-      },
-      error: (error) => {
-        console.error('Error loading application limits:', error);
-      }
-    });
-  }
 
-  /**
-   * Called when user focuses on nb users input
-   */
-  onNbUsersFocus(): void {
-    if (this.formData.applicationId && !this.formData.nbUsers) {
-      this.determineNbUsers();
-    }
-  }
-
-  /**
-   * Called when nb users value changes
-   */
-  onNbUsersChange(): void {
-    if (this.formData.applicationId) {
-      this.determineNbUsers();
-    }
-  }
-
-  /**
-   * Determine number of users based on application limits
-   */
-  determineNbUsers(): void {
-    if (!this.formData.applicationId) {
-      this.userRuleMessage = 'Veuillez d\'abord sélectionner une application';
-      return;
-    }
-
-    this.isDeterminingUsers = true;
-    
-    this.conventionService.determineNbUsers(
-      this.formData.applicationId,
-      this.formData.nbUsers || undefined
-    ).subscribe({
-      next: (response) => {
-        if (response.success) {
-          const data = response.data;
-          
-          // Set the determined nb users
-          if (data.nbUsers !== this.formData.nbUsers) {
-            this.formData.nbUsers = data.nbUsers;
-            this.userRuleMessage = `${data.appliedRule} (${data.nbUsers} utilisateurs)`;
-          } else {
-            this.userRuleMessage = data.appliedRule;
-          }
-          
-          // Update limits display
-          this.userLimits = {
-            minUser: data.minUser,
-            maxUser: data.maxUser
-          };
-        }
-        this.isDeterminingUsers = false;
-      },
-      error: (error) => {
-        console.error('Error determining nb users:', error);
-        this.userRuleMessage = 'Erreur lors de la détermination du nombre d\'utilisateurs';
-        this.isDeterminingUsers = false;
-      }
-    });
-  }
-
-  /**
-   * Called when montant HT changes
-   */
-  onMontantHTChange(): void {
-    this.calculateTTC();
-  }
-
-  /**
-   * Called when TVA changes
-   */
-  onTvaChange(): void {
-    this.calculateTTC();
-  }
-
-  /**
-   * Calculate TTC from HT and TVA
-   */
-  calculateTTC(): void {
-    if (!this.formData.montantHT || this.formData.montantHT <= 0) {
-      this.formData.montantTTC = 0;
-      return;
-    }
-
-    const tva = this.formData.tva || 19;
-    
-    this.isCalculatingTTC = true;
-    
-    this.conventionService.calculateTTC(this.formData.montantHT, tva).subscribe({
-      next: (response) => {
-        if (response.success) {
-          const data = response.data;
-          this.formData.montantTTC = data.montantTTC;
-          
-          // Update tva if it was null
-          if (!this.formData.tva) {
-            this.formData.tva = data.tva;
-          }
-        }
-        this.isCalculatingTTC = false;
-      },
-      error: (error) => {
-        console.error('Error calculating TTC:', error);
-        this.isCalculatingTTC = false;
-      }
-    });
-  }
+ 
 
 
 loadApplications(): void {
-  this.loading = true; // Add loading state
-  this.applicationService.getAllApplications().subscribe({
+  this.loading = true;
+  this.applicationService.getApplicationsWithoutConventions().subscribe({
     next: (response: ApiResponse) => {
       if (response && response.success) {
-        if (response.data) {
-          this.applications = response.data;
-        } else if (response.applications) {
-          this.applications = response.applications;
-        } else {
-          // If response itself is the array
-          this.applications = response as any;
-        }
-        
-        this.errorMessage = ''; // Clear any previous error
+        this.applications = response.data || [];
+        this.errorMessage = '';
       } else {
-        // Handle unsuccessful response
         this.errorMessage = response?.message || 'Failed to load applications';
         this.applications = [];
       }
@@ -415,33 +239,33 @@ loadApplications(): void {
     this.errorMessage = '';
   }
 
-loadInternesStructures(): void {
-  this.nomenclatureService.getInternesStructures().subscribe({
-    next: (structures) => {
-      console.log('Internes structures loaded:', structures); // Debug log
-      this.internesStructures = structures;
-    },
-    error: (error) => {
-      console.error('Error loading internes structures:', error);
-      console.error('Full error:', error); // More details
-      this.errorMessage = 'Failed to load internes structures';
-    }
-  });
-}
+  loadResponsablesStructures(): void {
+    this.nomenclatureService.getResponsableStructures().subscribe({
+      next: (structures) => {
+        console.log('Responsables structures loaded:', structures); // Debug log
+        this.internesStructures = structures;
+      },
+      error: (error) => {
+        console.error('Error loading Responsables structures:', error);
+        console.error('Full error:', error); // More details
+        this.errorMessage = 'Failed to load Responsables structures';
+      }
+    });
+  }
 
-loadExternesStructures(): void {
-  this.nomenclatureService.getExternesStructures().subscribe({
-    next: (structures) => {
-      console.log('Externes structures loaded:', structures); // Debug log
-      this.externesStructures = structures;
-    },
-    error: (error) => {
-      console.error('Error loading externes structures:', error);
-      console.error('Full error:', error); // More details
-      this.errorMessage = 'Failed to load externes structures';
-    }
-  });
-}
+  loadBeneficielsStructures(): void {
+    this.nomenclatureService.getBeneficielStructures().subscribe({
+      next: (structures) => {
+        console.log('Beneficiels structures loaded:', structures); // Debug log
+        this.externesStructures = structures;
+      },
+      error: (error) => {
+        console.error('Error loading Beneficiels structures:', error);
+        console.error('Full error:', error); // More details
+        this.errorMessage = 'Failed to load Beneficiels structures';
+      }
+    });
+  }
 
 
 
@@ -482,191 +306,18 @@ searchConventions(): void {
 
 
 
-  openEditModal(convention: Convention): void {
-    this.isEditing = true;
-    this.selectedConvention = convention;
-    this.formData = {
-      referenceConvention: convention.referenceConvention,
-      referenceERP: convention.referenceERP || '',
-      libelle: convention.libelle,
-      dateDebut: convention.dateDebut,
-      dateFin: convention.dateFin || '',
-      dateSignature: convention.dateSignature || '',
-      structureResponsableId: convention.structureResponsableId || 0,
-      structureBeneficielId: convention.structureBeneficielId || 0,
-      applicationId: convention.applicationId || 0,
-      montantHT: convention.montantHT || 0,
-      tva: convention.tva || 19,
-      montantTTC: convention.montantTTC || 0,
-      nbUsers: convention.nbUsers || 0,
-      periodicite: convention.periodicite || 'MENSUEL'
-    };
-    
-    // Load application limits
-    if (convention.applicationId) {
-      this.loadApplicationLimits(convention.applicationId);
-    }
-    
-    this.showModal = true;
-    this.errorMessage = '';
-  }
-
-  /**
-   * Override openCreateModal to initialize financial fields
-   */
-  openCreateModal(): void {
-    this.isEditing = false;
-    this.formData = {
-      referenceConvention: '',
-      referenceERP: '',
-      libelle: '',
-      dateDebut: '',
-      dateFin: '',
-      dateSignature: '',
-      structureResponsableId: 0,
-      structureBeneficielId: 0,
-      applicationId: 0,
-      // FINANCIAL FIELDS
-      montantHT: 0,
-      tva: 19,
-      montantTTC: 0,
-      nbUsers: 0,
-      periodicite: 'MENSUEL'
-    };
-    
-    this.userLimits = null;
-    this.userRuleMessage = '';
-    
-    // Load suggested reference
-    this.loadSuggestedReference();
-    
-    this.showModal = true;
-    this.errorMessage = '';
-  }
-
-
-validateReference(): boolean {
-  const reference = this.formData.referenceConvention;
-  
-  // Check if reference follows pattern
-  const pattern = /^CONV-\d{4}-\d{3}$/;
-  if (!pattern.test(reference)) {
-    this.errorMessage = 'Le format de référence doit être: CONV-YYYY-XXX (ex: CONV-2024-001)';
-    return false;
-  }
-  
-  return true;
-}
 
 
 
 
-  closeModal(): void {
-    this.showModal = false;
-    this.selectedConvention = null;
-    this.errorMessage = '';
-  }
+ 
 
 
-  saveConvention(): void {
-    if (!this.validateForm()) {
-      return;
-    }
-
-    // Ensure TTC is calculated
-    if (this.formData.montantHT && this.formData.montantHT > 0 && !this.formData.montantTTC) {
-      this.calculateTTC();
-    }
-
-    // Ensure nb users is determined
-    if (this.formData.applicationId && !this.formData.nbUsers) {
-      this.determineNbUsers();
-    }
-
-    this.loading = true;
-    
-    if (this.isEditing && this.selectedConvention) {
-      this.conventionService.updateConvention(this.selectedConvention.id, this.formData)
-        .subscribe({
-          next: (response) => {
-            if (response.success) {
-              this.successMessage = 'Convention mise à jour avec succès';
-              this.loadConventions();
-              this.closeModal();
-            }
-            this.loading = false;
-          },
-          error: (error) => {
-            this.errorMessage = error.error?.message || 'Échec de la mise à jour de la convention';
-            this.loading = false;
-          }
-        });
-    } else {
-      this.conventionService.createConvention(this.formData)
-        .subscribe({
-          next: (response) => {
-            if (response.success) {
-              this.successMessage = 'Convention créée avec succès';
-              this.loadConventions();
-              this.closeModal();
-            }
-            this.loading = false;
-          },
-          error: (error) => {
-            this.errorMessage = error.error?.message || 'Échec de la création de la convention';
-            this.loading = false;
-          }
-        });
-    }
-  }
 
 
-  deleteConvention(id: number): void {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette convention ?')) {
-      this.loading = true;
-      this.errorMessage = '';
-      
-      this.conventionService.deleteConvention(id).subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.successMessage = 'Convention supprimée avec succès';
-            this.loadConventions();
-          }
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Delete error:', error);
-          
-          if (error.status === 400) {
-            if (error.error?.errorType === 'UNPAID_INVOICES') {
-              this.errorMessage = error.error.message;
-              if (error.error.details) {
-                this.errorMessage += ' ' + error.error.details;
-              }
-              
-              this.selectedConventionForInvoices = this.conventions.find(c => c.id === id) || null;
-              if (this.selectedConventionForInvoices) {
-                this.loadRelatedInvoices(id);
-              }
-              
-            } else if (error.error?.message) {
-              this.errorMessage = error.error.message;
-            }
-          } else if (error.status === 404) {
-            this.errorMessage = 'Convention non trouvée';
-          } else if (error.status === 403) {
-            this.errorMessage = 'Vous n\'avez pas la permission de supprimer cette convention';
-          } else if (error.status === 500) {
-            this.errorMessage = 'Erreur serveur lors de la suppression. Veuillez réessayer.';
-          } else {
-            this.errorMessage = error.error?.message || 'Échec de la suppression de la convention';
-          }
-          
-          this.loading = false;
-        }
-      });
-    }
-  }
+
+
+
 
   loadRelatedInvoices(conventionId: number): void {
     this.factureService.getFacturesByConvention(conventionId).subscribe({
@@ -709,66 +360,6 @@ validateReference(): boolean {
     }
   }
 
-
-  validateForm(): boolean {
-    if (!this.formData.referenceConvention.trim()) {
-      this.errorMessage = 'Référence Convention est requise';
-      return false;
-    }
-
-    if (!this.validateReference()) {
-      return false;
-    }
-
-    if (!this.formData.referenceERP.trim()) {
-      this.errorMessage = 'Référence ERP est requise';
-      return false;
-    }
-    
-    if (!this.formData.libelle.trim()) {
-      this.errorMessage = 'Libellé est requis';
-      return false;
-    }
-    if (!this.formData.dateDebut) {
-      this.errorMessage = 'Date de début est requise';
-      return false;
-    }
-
-    if (!this.formData.dateFin) {
-      this.errorMessage = 'Date de fin est requise';
-      return false;
-    }
-
-    if (!this.formData.structureResponsableId) { 
-      this.errorMessage = 'Structure interne est requise';
-      return false;
-    }
-    if (!this.formData.structureBeneficielId) {
-      this.errorMessage = 'Structure beneficiel est requise';
-      return false;
-    }
-    if (!this.formData.applicationId) {
-      this.errorMessage = 'Application est requise';
-      return false;
-    }
-    if (!this.formData.periodicite) {
-      this.errorMessage = 'Périodicité est requise';
-      return false;
-    }
-    
-    // NEW FINANCIAL VALIDATIONS
-    if (!this.formData.montantHT || this.formData.montantHT <= 0) {
-      this.errorMessage = 'Le montant HT est requis et doit être supérieur à 0';
-      return false;
-    }
-    
-    if (!this.formData.nbUsers || this.formData.nbUsers <= 0) {
-      this.errorMessage = 'Le nombre d\'utilisateurs est requis et doit être supérieur à 0';
-      return false;
-    }
-    
-    return true;
-  }
 
 
   clearMessages(): void {
@@ -814,18 +405,18 @@ getEtatLabel(etat: string | null): string {
   }
 
 
-loadSuggestedReference(): void {
-  this.conventionService.getSuggestedReference().subscribe({
-    next: (response: any) => {
-      if (response.success && response.suggestedReference) {
-        this.formData.referenceConvention = response.suggestedReference;
-      }
-    },
-    error: (error) => {
-      console.error('Failed to load suggested reference:', error);
-  
-    }
-  });
+
+
+viewConventionDetails(id: number): void {
+  this.router.navigate(['/conventions', id]);
+}
+
+openCreateModal(): void {
+  this.router.navigate(['/conventions/new']);
+}
+
+openEditModal(convention: Convention): void {
+  this.router.navigate(['/conventions/edit', convention.id]);
 }
 
 }

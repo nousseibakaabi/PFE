@@ -26,7 +26,6 @@ public class ApplicationRequest {
 
     private String clientEmail;
     private String clientPhone;
-    private String clientAddress;
 
     // Application dates
     private LocalDate dateDebut;

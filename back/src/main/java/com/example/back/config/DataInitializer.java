@@ -3,13 +3,10 @@ package com.example.back.config;
 import com.example.back.entity.*;
 import com.example.back.repository.RoleRepository;
 import com.example.back.repository.ZoneGeographiqueRepository;
+import com.example.back.service.MailGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -20,10 +17,14 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private ZoneGeographiqueRepository zoneGeographiqueRepository;
 
+    @Autowired
+    private MailGroupService mailGroupService;
+
     @Override
     public void run(String... args) throws Exception {
         initializeRoles();
         initializeTunisianZones();
+        initializeMailGroups();
     }
 
     private void initializeRoles() {
@@ -56,64 +57,70 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
+    private void initializeMailGroups() {
+        System.out.println("Initializing default mail groups...");
+        mailGroupService.initializeDefaultGroups();
+        System.out.println("Default mail groups initialized");
+    }
+
     private String getZoneNameFromCode(String code) {
         // Map codes to names
-        Map<String, String> codeToName = Map.ofEntries(
-                Map.entry("TN-11", "Tunis"),
-                Map.entry("TN-12", "Ariana"),
-                Map.entry("TN-13", "Ben Arous"),
-                Map.entry("TN-14", "Manouba"),
-                Map.entry("TN-21", "Nabeul"),
-                Map.entry("TN-22", "Zaghouan"),
-                Map.entry("TN-23", "Bizerte"),
-                Map.entry("TN-31", "Béja"),
-                Map.entry("TN-32", "Jendouba"),
-                Map.entry("TN-33", "Le Kef"),
-                Map.entry("TN-34", "Siliana"),
-                Map.entry("TN-41", "Kairouan"),
-                Map.entry("TN-42", "Kasserine"),
-                Map.entry("TN-43", "Sidi Bouzid"),
-                Map.entry("TN-51", "Sousse"),
-                Map.entry("TN-52", "Monastir"),
-                Map.entry("TN-53", "Mahdia"),
-                Map.entry("TN-61", "Sfax"),
-                Map.entry("TN-71", "Gafsa"),
-                Map.entry("TN-72", "Tozeur"),
-                Map.entry("TN-73", "Kebili"),
-                Map.entry("TN-81", "Gabès"),
-                Map.entry("TN-82", "Medenine"),
-                Map.entry("TN-83", "Tataouine")
+        java.util.Map<String, String> codeToName = java.util.Map.ofEntries(
+                java.util.Map.entry("TN-11", "Tunis"),
+                java.util.Map.entry("TN-12", "Ariana"),
+                java.util.Map.entry("TN-13", "Ben Arous"),
+                java.util.Map.entry("TN-14", "Manouba"),
+                java.util.Map.entry("TN-21", "Nabeul"),
+                java.util.Map.entry("TN-22", "Zaghouan"),
+                java.util.Map.entry("TN-23", "Bizerte"),
+                java.util.Map.entry("TN-31", "Béja"),
+                java.util.Map.entry("TN-32", "Jendouba"),
+                java.util.Map.entry("TN-33", "Le Kef"),
+                java.util.Map.entry("TN-34", "Siliana"),
+                java.util.Map.entry("TN-41", "Kairouan"),
+                java.util.Map.entry("TN-42", "Kasserine"),
+                java.util.Map.entry("TN-43", "Sidi Bouzid"),
+                java.util.Map.entry("TN-51", "Sousse"),
+                java.util.Map.entry("TN-52", "Monastir"),
+                java.util.Map.entry("TN-53", "Mahdia"),
+                java.util.Map.entry("TN-61", "Sfax"),
+                java.util.Map.entry("TN-71", "Gafsa"),
+                java.util.Map.entry("TN-72", "Tozeur"),
+                java.util.Map.entry("TN-73", "Kebili"),
+                java.util.Map.entry("TN-81", "Gabès"),
+                java.util.Map.entry("TN-82", "Medenine"),
+                java.util.Map.entry("TN-83", "Tataouine")
         );
         return codeToName.getOrDefault(code, "Unknown Governorate");
     }
 
     private String getArabicNameFromCode(String code) {
         // Map codes to Arabic names
-        Map<String, String> codeToArabicName = Map.ofEntries(
-                Map.entry("TN-11", "تونس"),
-                Map.entry("TN-12", "أريانة"),
-                Map.entry("TN-13", "بن عروس"),
-                Map.entry("TN-14", "منوبة"),
-                Map.entry("TN-21", "نابل"),
-                Map.entry("TN-22", "زغوان"),
-                Map.entry("TN-23", "بنزرت"),
-                Map.entry("TN-31", "باجة"),
-                Map.entry("TN-32", "جندوبة"),
-                Map.entry("TN-33", "الكاف"),
-                Map.entry("TN-34", "سليانة"),
-                Map.entry("TN-41", "القيروان"),
-                Map.entry("TN-42", "القصرين"),
-                Map.entry("TN-43", "سيدي بوزيد"),
-                Map.entry("TN-51", "سوسة"),
-                Map.entry("TN-52", "المنستير"),
-                Map.entry("TN-53", "المهدية"),
-                Map.entry("TN-61", "صفاقس"),
-                Map.entry("TN-71", "قفصة"),
-                Map.entry("TN-72", "توزر"),
-                Map.entry("TN-73", "ڨبلي"),
-                Map.entry("TN-81", "ڨابس"),
-                Map.entry("TN-82", "مدنين"),
-                Map.entry("TN-83", "تطاوين")
+        java.util.Map<String, String> codeToArabicName = java.util.Map.ofEntries(
+                java.util.Map.entry("TN-11", "تونس"),
+                java.util.Map.entry("TN-12", "أريانة"),
+                java.util.Map.entry("TN-13", "بن عروس"),
+                java.util.Map.entry("TN-14", "منوبة"),
+                java.util.Map.entry("TN-21", "نابل"),
+                java.util.Map.entry("TN-22", "زغوان"),
+                java.util.Map.entry("TN-23", "بنزرت"),
+                java.util.Map.entry("TN-31", "باجة"),
+                java.util.Map.entry("TN-32", "جندوبة"),
+                java.util.Map.entry("TN-33", "الكاف"),
+                java.util.Map.entry("TN-34", "سليانة"),
+                java.util.Map.entry("TN-41", "القيروان"),
+                java.util.Map.entry("TN-42", "القصرين"),
+                java.util.Map.entry("TN-43", "سيدي بوزيد"),
+                java.util.Map.entry("TN-51", "سوسة"),
+                java.util.Map.entry("TN-52", "المنستير"),
+                java.util.Map.entry("TN-53", "المهدية"),
+                java.util.Map.entry("TN-61", "صفاقس"),
+                java.util.Map.entry("TN-71", "قفصة"),
+                java.util.Map.entry("TN-72", "توزر"),
+                java.util.Map.entry("TN-73", "ڨبلي"),
+                java.util.Map.entry("TN-81", "ڨابس"),
+                java.util.Map.entry("TN-82", "مدنين"),
+                java.util.Map.entry("TN-83", "تطاوين")
         );
         return codeToArabicName.getOrDefault(code, "");
     }

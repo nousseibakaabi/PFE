@@ -7,6 +7,7 @@ import com.example.back.payload.response.ConventionResponse;
 import com.example.back.repository.*;
 import com.example.back.service.ApplicationService;
 import com.example.back.service.ConventionService;
+import com.example.back.service.HistoryService;
 import com.example.back.service.mapper.ConventionMapper;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -50,8 +51,12 @@ public class ConventionController {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private ApplicationService applicationService;
+
+    @Autowired
+    private HistoryService historyService;
 
 
 
@@ -170,6 +175,33 @@ public class ConventionController {
 
 
 
+    @GetMapping("/archives")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
+    public ResponseEntity<?> getArchivedConventions() {
+        try {
+            List<Convention> archivedConventions = conventionRepository.findByArchivedTrue();
+
+            List<ConventionResponse> conventionResponses = archivedConventions.stream()
+                    .map(conventionMapper::toResponse)
+                    .collect(Collectors.toList());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", conventionResponses);
+            response.put("count", conventionResponses.size());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error fetching archived conventions: ", e);
+            return ResponseEntity.badRequest()
+                    .body(createErrorResponse("Failed to fetch archived conventions"));
+        }
+    }
+
+
+
+    // Add to ConventionController.java - Update archive and restore methods
+
     @PostMapping("/{id}/archive")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
     @Transactional
@@ -180,6 +212,8 @@ public class ConventionController {
         try {
             log.info("Attempting to archive convention with ID: {}", id);
             String currentUsername = getCurrentUsername();
+            User currentUser = userRepository.findByUsername(currentUsername)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
             // Check if convention exists
             Convention convention = conventionRepository.findById(id)
@@ -245,6 +279,9 @@ public class ConventionController {
             convention.archive(currentUsername, request.getReason());
             Convention archivedConvention = conventionRepository.save(convention);
 
+            // LOG HISTORY: Convention archive
+            historyService.logConventionArchive(archivedConvention, currentUser, request.getReason());
+
             log.info("Convention archived successfully: ID={}, by={}, reason={}",
                     id, currentUsername, request.getReason());
 
@@ -271,29 +308,6 @@ public class ConventionController {
         }
     }
 
-    @GetMapping("/archives")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
-    public ResponseEntity<?> getArchivedConventions() {
-        try {
-            List<Convention> archivedConventions = conventionRepository.findByArchivedTrue();
-
-            List<ConventionResponse> conventionResponses = archivedConventions.stream()
-                    .map(conventionMapper::toResponse)
-                    .collect(Collectors.toList());
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", conventionResponses);
-            response.put("count", conventionResponses.size());
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("Error fetching archived conventions: ", e);
-            return ResponseEntity.badRequest()
-                    .body(createErrorResponse("Failed to fetch archived conventions"));
-        }
-    }
-
     @PostMapping("/{id}/restore")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
     @Transactional
@@ -301,6 +315,8 @@ public class ConventionController {
         try {
             log.info("Attempting to restore convention with ID: {}", id);
             String currentUsername = getCurrentUsername();
+            User currentUser = userRepository.findByUsername(currentUsername)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
             Convention convention = conventionRepository.findById(id)
                     .orElseThrow(() -> {
@@ -328,6 +344,9 @@ public class ConventionController {
 
             Convention restoredConvention = conventionRepository.save(convention);
             log.info("Convention restored successfully: ID={}, by={}", id, currentUsername);
+
+            // LOG HISTORY: Convention restore
+            historyService.logConventionRestore(restoredConvention, currentUser);
 
             // Update convention status
             conventionService.updateConventionStatusRealTime(id);
@@ -754,6 +773,26 @@ public class ConventionController {
         } catch (Exception e) {
             log.error("Error generating reference suggestion: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to generate reference suggestion"));
+        }
+    }
+
+
+    /**
+     * Sync application dates with all its conventions
+     */
+    @PostMapping("/applications/{applicationId}/sync-dates")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET', 'COMMERCIAL_METIER')")
+    public ResponseEntity<?> syncApplicationDates(@PathVariable Long applicationId) {
+        try {
+            conventionService.syncAllApplicationDates(applicationId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Application dates synced successfully with all conventions");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error syncing application dates: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
 }

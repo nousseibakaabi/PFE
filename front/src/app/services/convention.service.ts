@@ -29,10 +29,15 @@ export interface Convention {
   structureBeneficielId: number;
   structureBeneficielName: string;
   structureBeneficielCode: string;
+  structureBeneficielEmail: string;
+  structureBeneficielPhone: string;
   
   structureResponsableId: number;
   structureResponsableName: string;
   structureResponsableCode: string;
+  structureResponsableEmail: string;
+  structureResponsablePhone: string;
+  
   
   // These are the zone properties from your mapper
   zoneId: number;
@@ -43,6 +48,8 @@ export interface Convention {
   applicationName: string;
   applicationCode: string;
   applicationClientName: string;
+  applicationDateFin: string;
+  applicationDateDebut: string;
   minUser?: number;
   maxUser?: number;
   
@@ -146,9 +153,9 @@ export class ConventionService {
   }
 
 
-getSuggestedReference(): Observable<any> {
-  return this.http.get(`${this.apiUrl}/api/conventions/generate-reference`);
-}
+  getSuggestedReference(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/api/conventions/generate-reference`);
+  }
 
 
    // Create new convention
@@ -172,6 +179,16 @@ getSuggestedReference(): Observable<any> {
       params.set('selectedUsers', selectedUsers.toString());
     }
     return this.http.post(`${this.apiUrl}/api/conventions/determine-nb-users?${params.toString()}`, {});
+  }
+
+
+  syncApplicationDates(applicationId: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/api/conventions/applications/${applicationId}/sync-dates`, {});
+  }
+
+
+  getConventionsByApplication(applicationId: number): Observable<any> {
+  return this.http.get(`${this.apiUrl}/api/conventions/by-application/${applicationId}`);
   }
 
 

@@ -43,6 +43,8 @@ public class ConventionMapper {
             response.setStructureResponsableId(convention.getStructureResponsable().getId());
             response.setStructureResponsableName(convention.getStructureResponsable().getName());
             response.setStructureResponsableCode(convention.getStructureResponsable().getCode());
+            response.setStructureResponsablePhone(convention.getStructureResponsable().getPhone());
+            response.setStructureResponsableEmail(convention.getStructureResponsable().getEmail());
 
             if (convention.getStructureResponsable().getZoneGeographique() != null) {
                 response.setZoneId(convention.getStructureResponsable().getZoneGeographique().getId());
@@ -56,6 +58,8 @@ public class ConventionMapper {
             response.setStructureBeneficielId(convention.getStructureBeneficiel().getId());
             response.setStructureBeneficielName(convention.getStructureBeneficiel().getName());
             response.setStructureBeneficielCode(convention.getStructureBeneficiel().getCode());
+            response.setStructureBeneficielEmail(convention.getStructureBeneficiel().getEmail());
+            response.setStructureBeneficielPhone(convention.getStructureBeneficiel().getPhone());
         }
 
         // Application info

@@ -95,9 +95,16 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Query("SELECT a.code FROM Application a WHERE a.code LIKE CONCAT('APP-', :year, '-%') ORDER BY a.code")
     List<String> findApplicationCodesByYear(@Param("year") String year);
 
-    @Query("SELECT CAST(SUBSTRING(a.code, LENGTH(:prefix) + 1) AS integer) " +
+    // ApplicationRepository.java
+    @Query("SELECT SUBSTRING(a.code, LENGTH(CONCAT('APP-', :year, '-')) + 1) " +
             "FROM Application a " +
-            "WHERE a.code LIKE CONCAT(:prefix, '%') " +
-            "ORDER BY CAST(SUBSTRING(a.code, LENGTH(:prefix) + 1) AS integer)")
-    List<Integer> findUsedSequencesByYear(@Param("prefix") String prefix);
+            "WHERE a.code LIKE CONCAT('APP-', :year, '-%')")
+    List<Integer> findUsedSequencesByYear(@Param("year") String year);
+
+
+    /**
+     * Find all applications that have no conventions
+     */
+    @Query("SELECT a FROM Application a WHERE NOT EXISTS (SELECT c FROM Convention c WHERE c.application = a AND c.archived = false)")
+    List<Application> findApplicationsWithoutConventions();
 }

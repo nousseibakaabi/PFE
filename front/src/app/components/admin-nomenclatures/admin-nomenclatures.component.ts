@@ -13,16 +13,19 @@ import { TranslationService } from '../partials/traduction/translation.service';
   standalone: false
 })
 export class AdminNomenclaturesComponent implements OnInit {
-  activeTab:  'zones' | 'structures' = 'zones';
+  activeTab:  'zones' | 'structuresR' |'structuresB' = 'zones';
   
   // Données
   zones: Nomenclature[] = [];
-  structures: Structure[] = [];
+  structuresR: Structure[] = [];
+  structuresB : Structure[]=[];
   
   // Filtres
   searchTerm: string = '';
   filteredZones: Nomenclature[] = [];
-  filteredStructures: Structure[] = [];
+  filteredStructuresR: Structure[] = [];
+  filteredStructuresB: Structure[] = [];
+
   
   // Pagination
   currentPage: number = 1;
@@ -44,6 +47,12 @@ export class AdminNomenclaturesComponent implements OnInit {
   
   // Stats
   stats: any = {};
+
+  showCustomTypeInput: boolean = false;
+  customTypeValue: string = '';
+
+  showBeneficialForm: boolean = false;
+
   
   // Types de structures
   structureTypes: string[] = [
@@ -71,17 +80,18 @@ export class AdminNomenclaturesComponent implements OnInit {
       description: ['']
     });
     
-    // Formulaire Structure
-    this.structureForm = this.fb.group({
-      code: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(20)]],
-      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
-      description: [''],
-      phone: ['', [Validators.pattern('^[0-9+ ]*$')]],
-      email: ['', [Validators.email]],
-      typeStructure: ['Entreprise'],
-       zoneId: [null]
-    });
+ this.structureForm = this.fb.group({
+  code: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(20)]],
+  name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+  description: [''],
+  phone: ['', [Validators.pattern('^[0-9+ ]*$')]],
+  email: ['', [Validators.email]],
+  typeStructure: ['Entreprise'],
+  zoneId: [null]
+});
   }
+
+
 
   ngOnInit(): void {
     if (!this.authService.isAdmin()) {
@@ -91,9 +101,27 @@ export class AdminNomenclaturesComponent implements OnInit {
     
     this.loadData();
     this.loadStats();
-     this.loadZonesForDropdown();
+    this.loadZonesForDropdown();
   }
 
+
+  validateCustomType(): boolean {
+  if (this.showCustomTypeInput && !this.customTypeValue.trim()) {
+    this.errorMessage = 'Veuillez spécifier le type de structure';
+    return false;
+  }
+  return true;
+}
+
+  onTypeChange(): void {
+  const selectedType = this.structureForm.get('typeStructure')?.value;
+  this.showCustomTypeInput = selectedType === 'Autre';
+  
+  // Clear custom value when not showing
+  if (!this.showCustomTypeInput) {
+    this.customTypeValue = '';
+  }
+}
 
   loadZonesForDropdown(): void {
   this.nomenclatureService.getZones().subscribe({
@@ -114,8 +142,11 @@ export class AdminNomenclaturesComponent implements OnInit {
       case 'zones':
         this.loadZones();
         break;
-      case 'structures':
-        this.loadStructures();
+      case 'structuresB':
+        this.loadStructuresB();
+        break;
+      case 'structuresR':
+        this.loadStructuresR();
         break;
     }
   }
@@ -136,11 +167,26 @@ export class AdminNomenclaturesComponent implements OnInit {
     });
   }
 
-  loadStructures(): void {
-    this.nomenclatureService.getStructures().subscribe({
+  loadStructuresR(): void {
+    this.nomenclatureService.getResponsableStructures().subscribe({
       next: (data) => {
-        this.structures = data;
-        this.filteredStructures = [...data];
+        this.structuresR = data;
+        this.filteredStructuresR = [...data];
+        this.loading = false;
+      },
+      error: (error) => {
+        this.errorMessage = error.message;
+        this.loading = false;
+      }
+    });
+  }
+
+
+  loadStructuresB(): void {
+    this.nomenclatureService.getBeneficielStructures().subscribe({
+      next: (data) => {
+        this.structuresB = data;
+        this.filteredStructuresB = [...data];
         this.loading = false;
       },
       error: (error) => {
@@ -161,7 +207,7 @@ export class AdminNomenclaturesComponent implements OnInit {
     });
   }
 
-  setActiveTab(tab:  'zones' | 'structures'): void {
+  setActiveTab(tab:  'zones' | 'structuresR' | 'structuresB'): void {
     this.activeTab = tab;
     this.showForm = false;
     this.isEditing = false;
@@ -183,8 +229,17 @@ export class AdminNomenclaturesComponent implements OnInit {
           (item.description && item.description.toLowerCase().includes(term))
         );
         break;
-      case 'structures':
-        this.filteredStructures = this.structures.filter(item =>
+      case 'structuresR':
+        this.filteredStructuresR = this.structuresR.filter(item =>
+          item.code.toLowerCase().includes(term) ||
+          item.name.toLowerCase().includes(term) ||
+          (item.description && item.description.toLowerCase().includes(term)) ||
+          (item.email && item.email.toLowerCase().includes(term))
+        );
+        break;
+
+      case 'structuresB':
+        this.filteredStructuresB = this.structuresB.filter(item =>
           item.code.toLowerCase().includes(term) ||
           item.name.toLowerCase().includes(term) ||
           (item.description && item.description.toLowerCase().includes(term)) ||
@@ -196,50 +251,85 @@ export class AdminNomenclaturesComponent implements OnInit {
     this.currentPage = 1;
   }
 
-  // Gestion des formulaires
-  showAddForm(type:  'zone' | 'structure'): void {
-    this.currentFormType = type;
-    this.isEditing = false;
-    this.currentId = null;
-    this.showForm = true;
-    this.resetForms();
+
+
+
+  showEditForm(item: any, type: 'zone' | 'structure'): void {
+  this.currentFormType = type;
+  this.isEditing = true;
+  this.currentId = item.id;
+  this.showForm = true;
+  
+  switch (type) {
+    case 'zone':
+      this.zoneForm.patchValue({
+        code: item.code,
+        name: item.name,
+        description: item.description || ''
+      });
+      break;
+    case 'structure':
+      // Check if it's a beneficiary structure (type is Client or starts with CLI-)
+      const isBeneficial = item.typeStructure === 'Client' || item.code?.startsWith('CLI-');
+      this.showBeneficialForm = isBeneficial;
+      
+      this.structureForm.patchValue({
+        code: item.code,
+        name: item.name,
+        description: item.description || '',
+        phone: item.phone || '',
+        email: item.email || '',
+        typeStructure: item.typeStructure || 'Entreprise',
+        zoneId: item.zoneGeographique?.id || null
+      });
+      
+      // Disable type for beneficiary structures in edit mode
+      if (isBeneficial) {
+        this.structureForm.get('typeStructure')?.disable();
+      } else {
+        this.structureForm.get('typeStructure')?.enable();
+      }
+      break;
+  }
   }
 
-  showEditForm(item: any, type:   'zone' | 'structure'): void {
-    this.currentFormType = type;
-    this.isEditing = true;
-    this.currentId = item.id;
-    this.showForm = true;
+showAddForm(type: 'zone' | 'structure'): void {
+  this.currentFormType = type;
+  this.isEditing = false;
+  this.currentId = null;
+  this.showForm = true;
+  this.resetForms();
+  
+  // For beneficiary structures - hide code field and set type to Client
+  if (type === 'structure' && this.activeTab === 'structuresB') {
+    this.showBeneficialForm = true;
     
-    switch (type) {
-      
-      case 'zone':
-        this.zoneForm.patchValue({
-          code: item.code,
-          name: item.name,
-          description: item.description || ''
-        });
-        break;
-      case 'structure':
-        this.structureForm.patchValue({
-          code: item.code,
-          name: item.name,
-          description: item.description || '',
-          phone: item.phone || '',
-          email: item.email || '',
-          typeStructure: item.typeStructure || 'Entreprise',
-          zoneId: item.zoneGeographique?.id || null
-        });
-        break;
-    }
+    // Set type to "Client" in the form
+    this.structureForm.patchValue({
+      typeStructure: 'Client'
+    });
+    
+    // Make typeStructure field readonly/disabled
+    this.structureForm.get('typeStructure')?.disable();
+    
+    console.log('Beneficial form - type set to:', this.structureForm.get('typeStructure')?.value);
+  } else {
+    this.showBeneficialForm = false;
+    this.structureForm.get('typeStructure')?.enable();
   }
+}
 
 resetForms(): void {
   this.zoneForm.reset();
   this.structureForm.reset({ 
-    typeStructure: 'Entreprise',
-    zoneId: null 
+    typeStructure: 'Entreprise', // Default for non-beneficiary
+    zoneId: null,
+    code: '' 
   });
+  this.showCustomTypeInput = false;
+  this.customTypeValue = '';
+  this.showBeneficialForm = false;
+  this.structureForm.get('typeStructure')?.enable();
 }
 
   cancelForm(): void {
@@ -252,6 +342,25 @@ resetForms(): void {
   }
 
 
+  onClientNameChange(): void {
+  if (this.activeTab === 'structuresB' && !this.isEditing) {
+    const clientName = this.structureForm.get('name')?.value;
+    if (clientName && clientName.length >= 2) {
+      this.nomenclatureService.generateClientCode(clientName).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.structureForm.patchValue({
+              code: response.code
+            });
+          }
+        },
+        error: (error) => {
+          console.error('Failed to generate client code:', error);
+        }
+      });
+    }
+  }
+}
 
 onSubmitZone(): void {
   if (this.zoneForm.invalid) {
@@ -292,23 +401,42 @@ onSubmitZone(): void {
   }
 }
 
+
+
 onSubmitStructure(): void {
   if (this.structureForm.invalid) {
     this.markFormGroupTouched(this.structureForm);
     return;
   }
+
+  if (!this.validateCustomType()) {
+    return;
+  }
   
   this.loading = true;
-  const formData = this.structureForm.value;
+  const formData = this.structureForm.getRawValue(); // Use getRawValue() to get disabled fields
   
-  // Convert zoneId to zone object if needed (depends on your backend)
-  // The backend expects zoneId in the StructureRequest
+  // If "Autre" is selected, use the custom type value
+  if (formData.typeStructure === 'Autre' && this.customTypeValue.trim()) {
+    formData.typeStructure = this.customTypeValue.trim();
+  }
+  
+  // FOR BENEFICIARY STRUCTURES - Force typeStructure to "Client"
+  if (this.activeTab === 'structuresB' && !this.isEditing) {
+    formData.typeStructure = 'Client';
+  }
+  
+  // Also for editing beneficiary structures, keep it as Client
+  if (this.activeTab === 'structuresB' && this.isEditing) {
+    formData.typeStructure = 'Client';
+  }
   
   if (this.isEditing && this.currentId) {
     this.nomenclatureService.updateStructure(this.currentId, formData).subscribe({
       next: (response) => {
         this.handleSuccess(response.message || 'Structure mise à jour avec succès');
-        this.loadStructures();
+        this.loadStructuresB();
+        this.loadStructuresR();
       },
       error: (error) => {
         this.handleError(error.message);
@@ -318,7 +446,8 @@ onSubmitStructure(): void {
     this.nomenclatureService.createStructure(formData).subscribe({
       next: (response) => {
         this.handleSuccess(response.message || 'Structure créée avec succès');
-        this.loadStructures();
+        this.loadStructuresB();
+        this.loadStructuresR();
       },
       error: (error) => {
         this.handleError(error.message);
@@ -327,7 +456,6 @@ onSubmitStructure(): void {
   }
 }
 
-  // Suppression
   confirmDelete(item: any, type: 'zone' | 'structure'): void {
     if (confirm(`Êtes-vous sûr de vouloir supprimer "${item.name}" ?`)) {
       this.deleteItem(item.id, type);
@@ -404,7 +532,9 @@ onSubmitStructure(): void {
   private getCurrentItems(): any[] {
     switch (this.activeTab) {
       case 'zones': return this.filteredZones;
-      case 'structures': return this.filteredStructures;
+      case 'structuresR': return this.filteredStructuresR;
+      case 'structuresB': return this.filteredStructuresB;
+
       default: return [];
     }
   }
@@ -419,4 +549,7 @@ onSubmitStructure(): void {
   isTunisianZone(zone: Nomenclature): boolean {
   return zone.type === 'TUNISIAN_ZONE';
 }
+
+
+
 }

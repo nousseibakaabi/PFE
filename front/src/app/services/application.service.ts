@@ -20,6 +20,7 @@ export interface Application {
   updatedAt: string;
   minUser : number;
   maxUser:number;
+  chefDeProjetProfileImage?: string;
   
   // Calculated fields
   daysRemaining: number;
@@ -145,5 +146,14 @@ deleteApplication(id: number): Observable<ApiResponse> {
 
   getConventionsByChefDeProjet(chefDeProjetId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/api/applications/conventions/${chefDeProjetId}`);
+  }
+
+
+  getApplicationDateSummary(applicationId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/api/applications/${applicationId}/date-summary`);
+  }
+
+  getApplicationsWithoutConventions(): Observable<ApiResponse> {
+  return this.http.get<ApiResponse>(`${this.apiUrl}/api/applications/without-conventions`);
   }
 }

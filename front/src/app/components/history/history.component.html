@@ -1,0 +1,259 @@
+<!-- src/app/components/history/history.component.html -->
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header -->
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+          {{ 'System History' | translate }}
+        </h1>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          {{ 'Track all actions and changes in the system' | translate }}
+        </p>
+      </div>
+      
+      <div class="flex gap-2">
+        <button (click)="loadStats()" 
+                class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          {{ 'Statistics' | translate }}
+        </button>
+        
+        <button (click)="loadHistory()" 
+                class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          {{ 'Refresh' | translate }}
+        </button>
+      </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/30 p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {{ 'Entity Type' | translate }}
+          </label>
+          <select [(ngModel)]="entityTypeFilter" (change)="applyFilters()"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option *ngFor="let type of entityTypes" [value]="type.value">
+              {{ type.label | translate }}
+            </option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {{ 'Action Type' | translate }}
+          </label>
+          <select [(ngModel)]="actionTypeFilter" (change)="applyFilters()"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option *ngFor="let action of actionTypes" [value]="action.value">
+              {{ action.label | translate }}
+            </option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {{ 'Date' | translate }}
+          </label>
+          <input type="date" [(ngModel)]="dateFilter" (change)="applyFilters()"
+                 class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <div class="flex items-end">
+          <button (click)="resetFilters()"
+                  class="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors">
+            {{ 'Clear Filters' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-purple-600 border-t-transparent"></div>
+      <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">{{ 'Loading history...' | translate }}</p>
+    </div>
+    
+    <!-- History Timeline -->
+    <div *ngIf="!loading && groupedHistory.length === 0" class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+        {{ 'No history found' | translate }}
+      </h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {{ 'No activities match your filters.' | translate }}
+      </p>
+    </div>
+    
+    <!-- Timeline -->
+    <div *ngIf="!loading && groupedHistory.length > 0" class="space-y-8">
+      <div *ngFor="let group of groupedHistory" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/30 overflow-hidden">
+        <div class="px-6 py-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-b border-gray-200/50 dark:border-gray-700/30">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            {{ group.date }}
+          </h3>
+          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            {{ group.entries.length }} {{ 'events' | translate }}
+          </p>
+        </div>
+        
+        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+          <div *ngFor="let entry of group.entries" 
+               class="p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+               (click)="navigateToEntity(entry)">
+            <div class="flex items-start gap-4">
+              <!-- Time -->
+              <div class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap min-w-[80px]">
+                {{ entry.timeFormatted }}
+              </div>
+              
+              <!-- Icon -->
+              <div class="flex-shrink-0">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center"
+                     [class.bg-green-100]="entry.actionType === 'CREATE'"
+                     [class.bg-blue-100]="entry.actionType === 'UPDATE'"
+                     [class.bg-red-100]="entry.actionType === 'DELETE'"
+                     [class.bg-purple-100]="entry.actionType === 'PAYMENT'"
+                     [class.bg-yellow-100]="entry.actionType === 'PASSWORD_CHANGE'"
+                     [class.bg-gray-100]="entry.actionType === 'LOGIN' || entry.actionType === 'LOGOUT'">
+                  <i [class]="historyService.getActionIcon(entry.actionType) + ' text-lg'"></i>
+                </div>
+              </div>
+              
+              <!-- Content -->
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getActionClass(entry.actionType)">
+                    {{ entry.actionTypeLabel }}
+                  </span>
+                  <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+                    <i [class]="historyService.getEntityIcon(entry.entityType) + ' mr-1'"></i>
+                    {{ entry.entityTypeLabel }}
+                  </span>
+                  <span *ngIf="entry.entityCode" class="text-xs font-mono text-gray-600 dark:text-gray-400">
+                    {{ entry.entityCode }}
+                  </span>
+                </div>
+                
+                <p class="text-base text-gray-800 dark:text-white mb-2">
+                  {{ entry.description }}
+                </p>
+                
+                <!-- User Info -->
+                <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  <span><i class="fas fa-user mr-1"></i> {{ entry.userFullName }}</span>
+                  <span><i class="fas fa-briefcase mr-1"></i> {{ entry.userRole }}</span>
+                  <span><i class="fas fa-globe mr-1"></i> {{ entry.ipAddress || 'Unknown' }}</span>
+                </div>
+                
+                <!-- Changes -->
+                <div *ngIf="entry.hasChanges" class="mt-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4">
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {{ 'Changes made' | translate }}:
+                  </p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div *ngFor="let key of Object.keys(entry.newValues)" 
+                         class="text-sm border-l-2 border-purple-300 pl-3">
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ key }}</p>
+                      <div class="flex items-center gap-2">
+                        <span class="text-red-600 line-through">{{ historyService.formatChangeValue(entry.oldValues?.[key]) }}</span>
+                        <i class="fas fa-arrow-right text-xs text-gray-400"></i>
+                        <span class="text-green-600 font-medium">{{ historyService.formatChangeValue(entry.newValues[key]) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Entity Name -->
+                <div class="mt-2 text-sm text-blue-600 hover:text-blue-800">
+                  <i class="fas fa-external-link-alt mr-1 text-xs"></i>
+                  {{ 'View details' | translate }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Statistics Modal -->
+  <div *ngIf="showStats" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl mx-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ 'History Statistics' | translate }}
+          </h3>
+          <button (click)="closeStats()" class="text-gray-400 hover:text-gray-500">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="space-y-6">
+          <!-- Total -->
+          <div class="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 text-center">
+            <p class="text-sm text-purple-600 dark:text-purple-400">{{ 'Total Entries' | translate }}</p>
+            <p class="text-3xl font-bold text-purple-700 dark:text-purple-300">{{ stats?.totalEntries || 0 }}</p>
+          </div>
+          
+          <!-- By Action Type -->
+          <div>
+            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ 'By Action Type' | translate }}</h4>
+            <div class="space-y-2">
+              <div *ngFor="let item of Object.keys(stats?.byActionType || {})" 
+                   class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ item }}</span>
+                <span class="text-sm font-medium text-gray-800 dark:text-white">{{ stats?.byActionType[item] }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- By Entity Type -->
+          <div>
+            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ 'By Entity Type' | translate }}</h4>
+            <div class="space-y-2">
+              <div *ngFor="let item of Object.keys(stats?.byEntityType || {})" 
+                   class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ item }}</span>
+                <span class="text-sm font-medium text-gray-800 dark:text-white">{{ stats?.byEntityType[item] }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Top Users -->
+          <div>
+            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{{ 'Most Active Users' | translate }}</h4>
+            <div class="space-y-2">
+              <div *ngFor="let item of Object.keys(stats?.byUser || {}).slice(0, 5)" 
+                   class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">{{ item }}</span>
+                <span class="text-sm font-medium text-gray-800 dark:text-white">{{ stats?.byUser[item] }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end mt-6">
+          <button (click)="closeStats()"
+                  class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium">
+            {{ 'Close' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

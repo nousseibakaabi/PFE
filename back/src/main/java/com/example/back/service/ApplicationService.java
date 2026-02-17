@@ -1,6 +1,7 @@
 package com.example.back.service;
 
 import com.example.back.entity.Application;
+import com.example.back.entity.Convention;
 import com.example.back.entity.User;
 import com.example.back.entity.Structure;
 import com.example.back.payload.request.ApplicationRequest;
@@ -40,6 +41,9 @@ public class ApplicationService {
 
     @Autowired
     private ApplicationMapper applicationMapper;
+
+    @Autowired
+    private HistoryService historyService;
 
     /**
      * Create a new application
@@ -90,6 +94,10 @@ public class ApplicationService {
             Application savedApplication = applicationRepository.save(application);
             log.info("Application created successfully: {}", savedApplication.getCode());
 
+            // LOG HISTORY: Application creation
+            User currentUser = getCurrentUser();
+            historyService.logApplicationCreate(savedApplication, currentUser);
+
             return applicationMapper.toResponse(savedApplication);
 
         } catch (RuntimeException e) {
@@ -102,48 +110,6 @@ public class ApplicationService {
     }
 
     /**
-     * Get application by ID with access control
-     */
-    public ApplicationResponse getApplicationById(Long id) {
-        try {
-            String currentUsername = getCurrentUsername();
-            String currentRole = getCurrentUserRole();
-
-            Application application = applicationRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Application not found"));
-
-            // Check access based on role
-            if ("ROLE_ADMIN".equals(currentRole)) {
-                // Admin sees all
-                return applicationMapper.toResponse(application);
-            }
-            else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
-                // Chef de projet only sees their own applications
-                User currentUser = userRepository.findByUsername(currentUsername)
-                        .orElseThrow(() -> new RuntimeException("User not found"));
-
-                if (application.getChefDeProjet() == null ||
-                        !application.getChefDeProjet().getId().equals(currentUser.getId())) {
-                    throw new RuntimeException("Access denied: You can only view your own applications");
-                }
-                return applicationMapper.toResponse(application);
-            }
-            else {
-                // DECIDEUR and COMMERCIAL_METIER can view all applications
-                return applicationMapper.toResponse(application);
-            }
-
-        } catch (RuntimeException e) {
-            log.error("Error fetching application: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            log.error("Unexpected error fetching application: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch application: " + e.getMessage());
-        }
-    }
-
-
-    /**
      * Update application
      */
     @Transactional
@@ -154,6 +120,9 @@ public class ApplicationService {
 
             Application application = applicationRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Application not found"));
+
+            // Store old values for history
+            Application oldApplication = cloneApplication(application);
 
             // Check access based on role
             if ("ROLE_ADMIN".equals(currentRole)) {
@@ -219,6 +188,16 @@ public class ApplicationService {
             Application updatedApplication = applicationRepository.save(application);
             log.info("Application updated successfully: {}", updatedApplication.getCode());
 
+            // LOG HISTORY: Application update
+            User currentUser = getCurrentUser();
+            historyService.logApplicationUpdate(oldApplication, updatedApplication, currentUser);
+
+            // Check if status changed
+            if (!oldApplication.getStatus().equals(updatedApplication.getStatus())) {
+                historyService.logApplicationStatusChange(updatedApplication,
+                        oldApplication.getStatus(), updatedApplication.getStatus());
+            }
+
             return applicationMapper.toResponse(updatedApplication);
 
         } catch (RuntimeException e) {
@@ -229,7 +208,6 @@ public class ApplicationService {
             throw new RuntimeException("Failed to update application: " + e.getMessage());
         }
     }
-
 
     /**
      * Delete application with access control
@@ -268,6 +246,10 @@ public class ApplicationService {
                 throw new RuntimeException("Cannot delete application that has conventions. Delete conventions first.");
             }
 
+            // LOG HISTORY: Application deletion (before deletion)
+            User currentUser = getCurrentUser();
+            historyService.logApplicationDelete(application, currentUser);
+
             applicationRepository.delete(application);
             log.info("Application deleted successfully: {}", application.getCode());
 
@@ -279,6 +261,187 @@ public class ApplicationService {
             throw new RuntimeException("Failed to delete application: " + e.getMessage());
         }
     }
+
+    @Transactional
+    public ApplicationResponse assignChefDeProjet(Long applicationId, Long chefDeProjetId) {
+        try {
+            // Check if current user is admin
+            String currentRole = getCurrentUserRole();
+            if (!"ROLE_ADMIN".equals(currentRole)) {
+                throw new RuntimeException("Only admin can assign chef de projet");
+            }
+
+            Application application = applicationRepository.findById(applicationId)
+                    .orElseThrow(() -> new RuntimeException("Application not found"));
+
+            User oldChef = application.getChefDeProjet();
+
+            User chefDeProjet = userRepository.findById(chefDeProjetId)
+                    .orElseThrow(() -> new RuntimeException("Chef de Projet not found"));
+
+            // Verify chef de projet has the correct role
+            if (!chefDeProjet.getRoles().stream()
+                    .anyMatch(role -> role.getName().name().equals("ROLE_CHEF_PROJET"))) {
+                throw new RuntimeException("Selected user is not a Chef de Projet");
+            }
+
+            application.setChefDeProjet(chefDeProjet);
+            Application updatedApplication = applicationRepository.save(application);
+
+            log.info("Chef de projet {} assigned to application {}",
+                    chefDeProjet.getUsername(), application.getCode());
+
+            // LOG HISTORY: Assign chef de projet
+            User currentUser = getCurrentUser();
+            historyService.logApplicationAssignChef(updatedApplication, oldChef, chefDeProjet, currentUser);
+
+            return applicationMapper.toResponse(updatedApplication);
+
+        } catch (RuntimeException e) {
+            log.error("Error assigning chef de projet: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error assigning chef de projet: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to assign chef de projet");
+        }
+    }
+
+    /**
+     * Update application dates based on a convention
+     * This is called when a convention is created or updated
+     */
+    @Transactional
+    public void updateApplicationDatesFromConvention(Long applicationId, LocalDate conventionStartDate, LocalDate conventionEndDate) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        LocalDate oldStart = application.getDateDebut();
+        LocalDate oldEnd = application.getDateFin();
+
+        boolean datesChanged = false;
+
+        // Update start date - ALWAYS follow the convention's start date
+        // If convention start date is null, set application start date to null
+        if (!Objects.equals(application.getDateDebut(), conventionStartDate)) {
+            application.setDateDebut(conventionStartDate);
+            datesChanged = true;
+            log.info("Updated application {} start date to {} from convention",
+                    application.getCode(), conventionStartDate);
+        }
+
+        // Update end date - ALWAYS follow the convention's end date
+        // If convention end date is null, set application end date to null
+        if (!Objects.equals(application.getDateFin(), conventionEndDate)) {
+            application.setDateFin(conventionEndDate);
+            datesChanged = true;
+            log.info("Updated application {} end date to {} from convention",
+                    application.getCode(), conventionEndDate);
+        }
+
+        if (datesChanged) {
+            applicationRepository.save(application);
+            log.info("Application {} dates updated successfully from convention", application.getCode());
+
+            // LOG HISTORY: Dates sync
+            historyService.logApplicationDatesSync(application, oldStart, oldEnd,
+                    application.getDateDebut(), application.getDateFin());
+        }
+    }
+
+    /**
+     * Clone application for history
+     */
+    private Application cloneApplication(Application app) {
+        Application clone = new Application();
+        clone.setId(app.getId());
+        clone.setCode(app.getCode());
+        clone.setName(app.getName());
+        clone.setDescription(app.getDescription());
+        clone.setChefDeProjet(app.getChefDeProjet());
+        clone.setClientName(app.getClientName());
+        clone.setClientEmail(app.getClientEmail());
+        clone.setClientPhone(app.getClientPhone());
+        clone.setDateDebut(app.getDateDebut());
+        clone.setDateFin(app.getDateFin());
+        clone.setMinUser(app.getMinUser());
+        clone.setMaxUser(app.getMaxUser());
+        clone.setStatus(app.getStatus());
+        clone.setCreatedAt(app.getCreatedAt());
+        clone.setUpdatedAt(app.getUpdatedAt());
+        return clone;
+    }
+
+    /**
+     * Get current authenticated user
+     */
+    private String getCurrentUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth.getName();
+    }
+
+    /**
+     * Get current user role
+     */
+    private String getCurrentUserRole() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth.getAuthorities().stream()
+                .findFirst()
+                .map(grantedAuthority -> grantedAuthority.getAuthority())
+                .orElse("ROLE_USER");
+    }
+
+    /**
+     * Get current user entity
+     */
+    private User getCurrentUser() {
+        String username = getCurrentUsername();
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+
+    /**
+     * Get application by ID with access control
+     */
+    public ApplicationResponse getApplicationById(Long id) {
+        try {
+            String currentUsername = getCurrentUsername();
+            String currentRole = getCurrentUserRole();
+
+            Application application = applicationRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Application not found"));
+
+            // Check access based on role
+            if ("ROLE_ADMIN".equals(currentRole)) {
+                // Admin sees all
+                return applicationMapper.toResponse(application);
+            }
+            else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
+                // Chef de projet only sees their own applications
+                User currentUser = userRepository.findByUsername(currentUsername)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+                if (application.getChefDeProjet() == null ||
+                        !application.getChefDeProjet().getId().equals(currentUser.getId())) {
+                    throw new RuntimeException("Access denied: You can only view your own applications");
+                }
+                return applicationMapper.toResponse(application);
+            }
+            else {
+                // DECIDEUR and COMMERCIAL_METIER can view all applications
+                return applicationMapper.toResponse(application);
+            }
+
+        } catch (RuntimeException e) {
+            log.error("Error fetching application: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error fetching application: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch application: " + e.getMessage());
+        }
+    }
+
+
+
 
 
     /**
@@ -471,7 +634,7 @@ public class ApplicationService {
             newStructure.setName(application.getClientName());
             newStructure.setEmail(application.getClientEmail());
             newStructure.setPhone(application.getClientPhone());
-            newStructure.setTypeStructure("CLIENT");
+            newStructure.setTypeStructure("Client");
 
             return structureRepository.save(newStructure);
 
@@ -490,24 +653,9 @@ public class ApplicationService {
         return "CLI-" + code + "-" + System.currentTimeMillis() % 10000;
     }
 
-    /**
-     * Get current authenticated user
-     */
-    private String getCurrentUsername() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth.getName();
-    }
 
-    /**
-     * Get current user role
-     */
-    private String getCurrentUserRole() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth.getAuthorities().stream()
-                .findFirst()
-                .map(grantedAuthority -> grantedAuthority.getAuthority())
-                .orElse("ROLE_USER");
-    }
+
+
 
     public List<ApplicationResponse> getUnassignedApplications() {
         try {
@@ -521,48 +669,13 @@ public class ApplicationService {
         }
     }
 
-    @Transactional
-    public ApplicationResponse assignChefDeProjet(Long applicationId, Long chefDeProjetId) {
-        try {
-            // Check if current user is admin
-            String currentRole = getCurrentUserRole();
-            if (!"ROLE_ADMIN".equals(currentRole)) {
-                throw new RuntimeException("Only admin can assign chef de projet");
-            }
-
-            Application application = applicationRepository.findById(applicationId)
-                    .orElseThrow(() -> new RuntimeException("Application not found"));
-
-            User chefDeProjet = userRepository.findById(chefDeProjetId)
-                    .orElseThrow(() -> new RuntimeException("Chef de Projet not found"));
-
-            // Verify chef de projet has the correct role
-            if (!chefDeProjet.getRoles().stream()
-                    .anyMatch(role -> role.getName().name().equals("ROLE_CHEF_PROJET"))) {
-                throw new RuntimeException("Selected user is not a Chef de Projet");
-            }
-
-            application.setChefDeProjet(chefDeProjet);
-            Application updatedApplication = applicationRepository.save(application);
-
-            log.info("Chef de projet {} assigned to application {}",
-                    chefDeProjet.getUsername(), application.getCode());
-
-            return applicationMapper.toResponse(updatedApplication);
-
-        } catch (RuntimeException e) {
-            log.error("Error assigning chef de projet: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            log.error("Unexpected error assigning chef de projet: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to assign chef de projet");
-        }
-    }
 
     /**
      * Generate suggested application code
      * Format: APP-YYYY-XXX where XXX is auto-incremented sequence
      */
+
+    // ApplicationService.java
     public String generateSuggestedApplicationCode() {
         int currentYear = LocalDate.now().getYear();
         String yearStr = String.valueOf(currentYear);
@@ -579,27 +692,26 @@ public class ApplicationService {
         Collections.sort(usedSequences);
 
         // Find the first available gap
-        int expectedSequence = 1; // Start from 001
+        int expectedSequence = 1;
 
         for (int usedSequence : usedSequences) {
             if (usedSequence > expectedSequence) {
-                // Found a gap! Return the missing number
-                break;
+                // Found a gap!
+                return String.format("APP-%d-%03d", currentYear, expectedSequence);
             }
             expectedSequence = usedSequence + 1;
         }
 
-        // If we reached beyond 999, start from 1 again (though unlikely)
+        // If we reached beyond 999, find first missing number
         if (expectedSequence > 999) {
-            // Find first available from the beginning
-            expectedSequence = findFirstMissingSequence(usedSequences);
+            int missingSeq = findFirstMissingSequence(usedSequences);
+            return String.format("APP-%d-%03d", currentYear, missingSeq);
         }
 
-        // Format with leading zeros
+        // No gaps, use the next number
         return String.format("APP-%d-%03d", currentYear, expectedSequence);
     }
 
-    // Helper method to find first missing number in a sorted list
     private int findFirstMissingSequence(List<Integer> sequences) {
         Set<Integer> sequenceSet = new HashSet<>(sequences);
 
@@ -609,7 +721,118 @@ public class ApplicationService {
             }
         }
 
-        // If all numbers 1-999 are used (highly unlikely), return 1000
-        return 1000;
+        return 1000; // Fallback
+    }
+
+
+
+
+
+
+    /**
+     * Sync all application dates based on its conventions
+     * For multiple conventions, we need to decide which convention's dates to follow
+     * Since an app can have multiple conventions, we need to define the logic:
+     * - Should it follow the most recent convention?
+     * - Should it take the earliest start and latest end?
+     *
+     * Based on your statement "the app will always follow the convention",
+     * I'll assume you want it to follow the most recently created/updated convention
+     */
+    @Transactional
+    public void syncApplicationDatesWithAllConventions(Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        // Get all non-archived conventions for this application, sorted by updatedAt desc
+        List<Convention> conventions = conventionRepository.findByApplicationAndArchivedFalseOrderByUpdatedAtDesc(application);
+
+        if (conventions.isEmpty()) {
+            log.info("No active conventions found for application {}", application.getCode());
+            return;
+        }
+
+        // Get the most recent convention
+        Convention mostRecentConvention = conventions.get(0);
+
+        boolean datesChanged = false;
+
+        // Follow the most recent convention's dates exactly
+        if (!Objects.equals(application.getDateDebut(), mostRecentConvention.getDateDebut())) {
+            application.setDateDebut(mostRecentConvention.getDateDebut());
+            datesChanged = true;
+            log.info("Synced application {} start date to most recent convention date: {}",
+                    application.getCode(), mostRecentConvention.getDateDebut());
+        }
+
+        if (!Objects.equals(application.getDateFin(), mostRecentConvention.getDateFin())) {
+            application.setDateFin(mostRecentConvention.getDateFin());
+            datesChanged = true;
+            log.info("Synced application {} end date to most recent convention date: {}",
+                    application.getCode(), mostRecentConvention.getDateFin());
+        }
+
+        if (datesChanged) {
+            applicationRepository.save(application);
+            log.info("Application {} dates synced with most recent convention {}",
+                    application.getCode(), mostRecentConvention.getReferenceConvention());
+        }
+    }
+
+    /**
+     * Get date summary for an application based on its conventions
+     */
+    public Map<String, Object> getApplicationDateSummary(Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        List<Convention> conventions = conventionRepository.findByApplicationAndArchivedFalse(application);
+
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("applicationId", applicationId);
+        summary.put("applicationCode", application.getCode());
+        summary.put("currentStartDate", application.getDateDebut());
+        summary.put("currentEndDate", application.getDateFin());
+
+        if (!conventions.isEmpty()) {
+            LocalDate earliestStart = conventions.stream()
+                    .map(Convention::getDateDebut)
+                    .min(LocalDate::compareTo)
+                    .orElse(null);
+
+            LocalDate latestEnd = conventions.stream()
+                    .map(Convention::getDateFin)
+                    .filter(Objects::nonNull)
+                    .max(LocalDate::compareTo)
+                    .orElse(null);
+
+            summary.put("conventionsCount", conventions.size());
+            summary.put("earliestConventionStart", earliestStart);
+            summary.put("latestConventionEnd", latestEnd);
+            summary.put("isSynced",
+                    Objects.equals(application.getDateDebut(), earliestStart) &&
+                            Objects.equals(application.getDateFin(), latestEnd));
+        } else {
+            summary.put("conventionsCount", 0);
+            summary.put("message", "No conventions found for this application");
+        }
+
+        return summary;
+    }
+
+
+    /**
+     * Get all applications that don't have any conventions
+     */
+    public List<ApplicationResponse> getApplicationsWithoutConventions() {
+        try {
+            List<Application> applications = applicationRepository.findApplicationsWithoutConventions();
+            return applications.stream()
+                    .map(applicationMapper::toResponse)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching applications without conventions: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch applications without conventions");
+        }
     }
 }

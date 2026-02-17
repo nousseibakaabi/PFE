@@ -4,6 +4,7 @@ import { ConventionService, Convention } from '../../services/convention.service
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-convention-archive',
@@ -20,7 +21,8 @@ export class ConventionArchiveComponent implements OnInit {
 
   constructor(
     private conventionService: ConventionService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router:Router
   ) {}
 
   ngOnInit(): void {
@@ -100,6 +102,11 @@ loadArchivedConventions(): void {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   }
+
+
+  viewConventionDetails(id: number): void {
+  this.router.navigate(['/conventions', id]);
+}
 
 
   

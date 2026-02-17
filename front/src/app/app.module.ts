@@ -36,6 +36,15 @@ import { AdminApplicationComponent } from './components/admin-application/admin-
 import { CalendarComponent } from './components/calendar/calendar.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { ApplicationComponent } from './components/application/application.component';
+import { ApplicationDetailComponent } from './components/application-detail/application-detail.component';
+import { MailBoxComponent } from './components/mail-box/mail-box.component';
+import { MailGroupComponent } from './components/mail-group/mail-group.component';
+import { EmailInputComponent } from './components/email-input/email-input.component';
+import { ConventionDetailComponent } from './components/convention-detail/convention-detail.component';
+import { FactureDetailComponent } from './components/facture-detail/facture-detail.component';
+import { ConventionFormComponent } from './components/convention-form/convention-form.component';
+import { ApplicationFormComponent } from './components/application-form/application-form.component';
+import { HistoryComponent } from './components/history/history.component';
 
 @NgModule({
   declarations: [
@@ -65,7 +74,16 @@ import { ApplicationComponent } from './components/application/application.compo
     CalendarComponent,
     AdminApplicationComponent,
     ApplicationComponent,
-  ],
+    ApplicationDetailComponent,
+    MailBoxComponent,
+    MailGroupComponent,
+    EmailInputComponent,
+    ConventionDetailComponent,
+    FactureDetailComponent,
+    ConventionFormComponent,
+    ApplicationFormComponent,
+    HistoryComponent
+    ],
   imports: [
     BrowserModule,
     AppRoutingModule,

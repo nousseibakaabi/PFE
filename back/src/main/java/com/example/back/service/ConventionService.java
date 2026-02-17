@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -30,6 +31,15 @@ public class ConventionService {
 
     @Autowired
     private StructureRepository structureRepository;
+
+    @Autowired
+    private ApplicationService applicationService;
+
+    @Autowired
+    private HistoryService historyService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     // ============= FINANCIAL CALCULATION METHODS =============
 
@@ -63,11 +73,6 @@ public class ConventionService {
 
     /**
      * Determine number of users based on application min/max and user selection
-     * LOGIC:
-     * - If selected < min → use min
-     * - If selected between min and max → use selected
-     * - If selected > max → use selected (no upper cap)
-     * - If no selected → use min
      */
     public Long determineNbUsers(Long selectedUsers, Application application) {
         if (application == null) {
@@ -143,23 +148,29 @@ public class ConventionService {
     }
 
     // ============= INVOICE GENERATION METHODS =============
-
+// Update this method in ConventionService.java
 
     private LocalDate calculateInvoiceDate(LocalDate startDate, int invoiceIndex, String periodicite) {
+        log.info("Calculating invoice date for index {} with periodicity {}", invoiceIndex, periodicite);
+
         switch (periodicite.toUpperCase()) {
             case "MENSUEL":
                 return startDate.plusMonths(invoiceIndex);
+
             case "TRIMESTRIEL":
                 return startDate.plusMonths(invoiceIndex * 3);
+
             case "SEMESTRIEL":
                 return startDate.plusMonths(invoiceIndex * 6);
+
             case "ANNUEL":
                 return startDate.plusYears(invoiceIndex);
+
             default:
+                log.warn("Unknown periodicity for date calculation: {}, defaulting to monthly", periodicite);
                 return startDate.plusMonths(invoiceIndex);
         }
     }
-
     /**
      * Generate sequential invoice number that aligns with existing numbering
      */
@@ -171,20 +182,29 @@ public class ConventionService {
                 sequence);
     }
 
-
     /**
      * Generate or update invoices based on TTC amount
      * - PRESERVES paid invoices with their original amounts
      * - Only redistributes the REMAINING unpaid amount across remaining periods
      */
+
     @Transactional
     public void generateInvoicesForConvention(Convention convention) {
+        log.info("========== GENERATING INVOICES FOR CONVENTION ==========");
+        log.info("Convention ID: {}", convention.getId());
+        log.info("Reference: {}", convention.getReferenceConvention());
+        log.info("Periodicite: '{}'", convention.getPeriodicite());
+        log.info("Date Debut: {}", convention.getDateDebut());
+        log.info("Date Fin: {}", convention.getDateFin());
+        log.info("Montant TTC: {}", convention.getMontantTTC());
+
         if (convention.getFactures() == null) {
             convention.setFactures(new ArrayList<>());
         }
 
         // Get existing invoices sorted
         List<Facture> existingInvoices = factureRepository.findByConventionIdOrderByNumeroFactureAsc(convention.getId());
+        log.info("Existing invoices found: {}", existingInvoices.size());
 
         // Separate paid and unpaid invoices
         List<Facture> paidInvoices = new ArrayList<>();
@@ -197,81 +217,89 @@ public class ConventionService {
                 unpaidInvoices.add(invoice);
             }
         }
+        log.info("Paid invoices: {}, Unpaid invoices: {}", paidInvoices.size(), unpaidInvoices.size());
 
         // Validate required fields
         if (convention.getDateDebut() == null || convention.getDateFin() == null ||
                 convention.getMontantTTC() == null || convention.getPeriodicite() == null) {
+            log.error("Missing required fields for invoice generation");
             return;
         }
 
-        // Calculate total duration in months for proper redistribution
-        int totalMonths = calculateTotalMonths(convention);
-        int paidMonths = paidInvoices.size();
-        int remainingMonths = totalMonths - paidMonths;
+        // Calculate total duration based on periodicity
+        int totalPeriods = calculateTotalPeriods(convention);
+        log.info("Total periods calculated: {} for periodicity: {}", totalPeriods, convention.getPeriodicite());
+
+        int paidPeriods = paidInvoices.size();
+        int remainingPeriods = totalPeriods - paidPeriods;
+        log.info("Paid periods: {}, Remaining periods: {}", paidPeriods, remainingPeriods);
 
         // Calculate amounts
         BigDecimal totalAmount = convention.getMontantTTC();
         BigDecimal paidAmount = calculateTotalPaidAmount(paidInvoices);
         BigDecimal remainingAmount = totalAmount.subtract(paidAmount);
 
-        log.info("Convention {} - Total: {} TND, Paid: {} TND ({} invoices), Remaining: {} TND ({} months)",
-                convention.getReferenceConvention(), totalAmount, paidAmount, paidMonths, remainingAmount, remainingMonths);
+        log.info("Total amount: {} TND, Paid amount: {} TND, Remaining amount: {} TND",
+                totalAmount, paidAmount, remainingAmount);
 
-        // Calculate new amount per remaining month
-        BigDecimal newAmountPerRemainingMonth = remainingAmount
-                .divide(BigDecimal.valueOf(remainingMonths), 2, RoundingMode.HALF_UP);
+        // Calculate new amount per remaining period
+        BigDecimal newAmountPerRemainingPeriod = remainingAmount
+                .divide(BigDecimal.valueOf(remainingPeriods), 2, RoundingMode.HALF_UP);
+        log.info("New amount per remaining period: {} TND", newAmountPerRemainingPeriod);
 
-        // STEP 1: UPDATE existing unpaid invoices with NEW calculated amount
+        // STEP 1: UPDATE existing unpaid invoices
         for (int i = 0; i < unpaidInvoices.size(); i++) {
             Facture invoice = unpaidInvoices.get(i);
-
             BigDecimal oldAmount = invoice.getMontantTTC();
-            invoice.setMontantHT(calculateHT(newAmountPerRemainingMonth, convention.getTva()));
+            invoice.setMontantHT(calculateHT(newAmountPerRemainingPeriod, convention.getTva()));
             invoice.setTva(convention.getTva());
-            invoice.setMontantTTC(newAmountPerRemainingMonth);
+            invoice.setMontantTTC(newAmountPerRemainingPeriod);
             invoice.setNotes(String.format("Facture pour la convention %s - TVA: %.2f%% - MISE À JOUR (était: %s TND)",
                     convention.getReferenceConvention(), convention.getTva(), oldAmount));
 
             factureRepository.save(invoice);
             log.info("UPDATED unpaid invoice {}: {} TND → {} TND",
-                    invoice.getNumeroFacture(), oldAmount, newAmountPerRemainingMonth);
+                    invoice.getNumeroFacture(), oldAmount, newAmountPerRemainingPeriod);
         }
 
-        // STEP 2: ADD new invoices if we need more than we have unpaid
-        if (remainingMonths > unpaidInvoices.size()) {
-            int invoicesToAdd = remainingMonths - unpaidInvoices.size();
+        // STEP 2: ADD new invoices if needed
+        if (remainingPeriods > unpaidInvoices.size()) {
+            int invoicesToAdd = remainingPeriods - unpaidInvoices.size();
             int startIndex = paidInvoices.size() + unpaidInvoices.size();
+            log.info("Adding {} new invoices starting at index {}", invoicesToAdd, startIndex);
 
             for (int i = 0; i < invoicesToAdd; i++) {
                 int sequenceNumber = startIndex + i + 1;
                 String invoiceNumber = generateSequentialInvoiceNumber(convention, sequenceNumber);
 
                 LocalDate invoiceDate = calculateInvoiceDate(convention.getDateDebut(), startIndex + i, convention.getPeriodicite());
+                log.info("Creating invoice {} with date: {}", invoiceNumber, invoiceDate);
 
                 Facture facture = new Facture();
                 facture.setNumeroFacture(invoiceNumber);
                 facture.setConvention(convention);
                 facture.setDateFacturation(invoiceDate);
                 facture.setDateEcheance(calculateDueDate(invoiceDate, convention.getPeriodicite()));
-                facture.setMontantHT(calculateHT(newAmountPerRemainingMonth, convention.getTva()));
+                facture.setMontantHT(calculateHT(newAmountPerRemainingPeriod, convention.getTva()));
                 facture.setTva(convention.getTva());
-                facture.setMontantTTC(newAmountPerRemainingMonth);
+                facture.setMontantTTC(newAmountPerRemainingPeriod);
                 facture.setStatutPaiement("NON_PAYE");
                 facture.setNotes(String.format("Facture %d/%d pour la convention %s",
-                        sequenceNumber, totalMonths, convention.getReferenceConvention()));
+                        sequenceNumber, totalPeriods, convention.getReferenceConvention()));
 
                 Facture savedFacture = factureRepository.save(facture);
                 convention.getFactures().add(savedFacture);
-                log.info("ADDED new invoice {} at {} TND", savedFacture.getNumeroFacture(), newAmountPerRemainingMonth);
+                log.info("ADDED new invoice {} at {} TND", savedFacture.getNumeroFacture(), newAmountPerRemainingPeriod);
             }
         }
 
-        // STEP 3: REMOVE excess unpaid invoices if we have more than needed
-        if (remainingMonths < unpaidInvoices.size()) {
-            int invoicesToRemove = unpaidInvoices.size() - remainingMonths;
+        // STEP 3: REMOVE excess unpaid invoices
+        if (remainingPeriods < unpaidInvoices.size()) {
+            int invoicesToRemove = unpaidInvoices.size() - remainingPeriods;
+            log.info("Removing {} excess invoices", invoicesToRemove);
 
             for (int i = 0; i < invoicesToRemove; i++) {
-                Facture invoiceToRemove = unpaidInvoices.get(remainingMonths + i);
+                Facture invoiceToRemove = unpaidInvoices.get(remainingPeriods + i);
                 convention.getFactures().remove(invoiceToRemove);
                 factureRepository.delete(invoiceToRemove);
                 log.info("REMOVED excess invoice {}", invoiceToRemove.getNumeroFacture());
@@ -284,17 +312,55 @@ public class ConventionService {
                 convention.getFactures().add(paidInvoice);
             }
         }
+
+        log.info("========== INVOICE GENERATION COMPLETE ==========");
     }
 
+    // Add this method to ConventionService.java
+
     /**
-     * Calculate total months between start and end date
+     * Calculate total number of periods based on periodicity
      */
-    private int calculateTotalMonths(Convention convention) {
-        return (int) ChronoUnit.MONTHS.between(
-                convention.getDateDebut(),
-                convention.getDateFin().plusDays(1)
-        );
+    private int calculateTotalPeriods(Convention convention) {
+        LocalDate start = convention.getDateDebut();
+        LocalDate end = convention.getDateFin();
+        String periodicite = convention.getPeriodicite();
+
+        log.info("Calculating total periods for {} from {} to {}", periodicite, start, end);
+
+        switch (periodicite.toUpperCase()) {
+            case "MENSUEL":
+                // Number of months between dates
+                int months = (int) ChronoUnit.MONTHS.between(start, end.plusDays(1));
+                log.info("MENSUEL: {} months", months);
+                return months;
+
+            case "TRIMESTRIEL":
+                // Number of quarters (3-month periods)
+                months = (int) ChronoUnit.MONTHS.between(start, end.plusDays(1));
+                int quarters = (int) Math.ceil(months / 3.0);
+                log.info("TRIMESTRIEL: {} months = {} quarters", months, quarters);
+                return quarters;
+
+            case "SEMESTRIEL":
+                // Number of semesters (6-month periods)
+                months = (int) ChronoUnit.MONTHS.between(start, end.plusDays(1));
+                int semesters = (int) Math.ceil(months / 6.0);
+                log.info("SEMESTRIEL: {} months = {} semesters", months, semesters);
+                return semesters;
+
+            case "ANNUEL":
+                // Number of years
+                int years = (int) ChronoUnit.YEARS.between(start, end.plusDays(1));
+                log.info("ANNUEL: {} years", years);
+                return years;
+
+            default:
+                log.warn("Unknown periodicity: {}, defaulting to 1", periodicite);
+                return 1;
+        }
     }
+    
 
     /**
      * Calculate total amount paid from paid invoices
@@ -337,8 +403,6 @@ public class ConventionService {
         // Update convention status after invoice changes
         updateConventionStatusRealTime(conventionId);
     }
-
-
 
     private int calculateNumberOfInvoices(Convention convention) {
         LocalDate start = convention.getDateDebut();
@@ -435,6 +499,21 @@ public class ConventionService {
         log.info("Convention saved with ID: {}, TTC: {}, NbUsers: {}",
                 savedConvention.getId(), savedConvention.getMontantTTC(), savedConvention.getNbUsers());
 
+        // LOG HISTORY: Convention creation (AFTER saving)
+        try {
+            historyService.logConventionCreate(savedConvention, currentUser);
+        } catch (Exception e) {
+            log.error("Failed to log convention creation history: {}", e.getMessage());
+            // Don't throw - we don't want history to break the main functionality
+        }
+
+        // CRITICAL: Update application dates using ApplicationService
+        applicationService.updateApplicationDatesFromConvention(
+                savedConvention.getApplication().getId(),
+                savedConvention.getDateDebut(),
+                savedConvention.getDateFin()
+        );
+
         // Generate invoices based on TTC
         generateInvoicesForConvention(savedConvention);
 
@@ -451,6 +530,16 @@ public class ConventionService {
         Convention convention = conventionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Convention not found"));
 
+        // Store old values for history
+        Convention oldConvention = cloneConvention(convention);
+        BigDecimal oldMontantHT = convention.getMontantHT();
+        BigDecimal oldMontantTTC = convention.getMontantTTC();
+        Long oldNbUsers = convention.getNbUsers();
+        String oldStatus = convention.getEtat();
+        LocalDate oldStartDate = convention.getDateDebut();
+        LocalDate oldEndDate = convention.getDateFin();
+        String oldPeriodicite = convention.getPeriodicite();
+
         // Check if convention can be updated
         if ("TERMINE".equals(convention.getEtat())) {
             throw new RuntimeException("Cannot update a terminated convention");
@@ -459,9 +548,8 @@ public class ConventionService {
             throw new RuntimeException("Cannot update an archived convention");
         }
 
-        // Check if financial data changed
-        boolean financialDataChanged = hasFinancialDataChanged(convention, request);
-        boolean datesOrPeriodicityChanged = hasDatesOrPeriodicityChanged(convention, request);
+        boolean datesChanged = false;
+        boolean periodiciteChanged = false;
 
         // Fetch application
         Application application = null;
@@ -484,19 +572,35 @@ public class ConventionService {
             convention.setStructureBeneficiel(structureBeneficiel);
         }
 
-        // Update basic fields
+        // Update basic fields and check if dates changed
         convention.setReferenceConvention(request.getReferenceConvention());
         convention.setReferenceERP(request.getReferenceERP());
         convention.setLibelle(request.getLibelle());
-        convention.setDateDebut(request.getDateDebut());
-        convention.setDateFin(request.getDateFin());
+
+        if (!convention.getDateDebut().equals(request.getDateDebut())) {
+            convention.setDateDebut(request.getDateDebut());
+            datesChanged = true;
+        }
+
+        if (!Objects.equals(convention.getDateFin(), request.getDateFin())) {
+            convention.setDateFin(request.getDateFin());
+            datesChanged = true;
+        }
+
         convention.setDateSignature(request.getDateSignature());
-        convention.setPeriodicite(request.getPeriodicite());
+
+        if (!convention.getPeriodicite().equals(request.getPeriodicite())) {
+            convention.setPeriodicite(request.getPeriodicite());
+            periodiciteChanged = true;
+        }
 
         // Determine nb users based on application limits
         Long nbUsers = determineNbUsers(request.getNbUsers(), convention.getApplication());
 
         // Update financial data
+        boolean financialDataChanged = hasFinancialDataChanged(convention, request);
+        boolean datesOrPeriodicityChanged = datesChanged || periodiciteChanged;
+
         convention = updateConventionFinancials(
                 convention,
                 request.getMontantHT(),
@@ -509,6 +613,44 @@ public class ConventionService {
         // Save convention
         Convention updatedConvention = conventionRepository.save(convention);
 
+        // LOG HISTORY: Convention update (AFTER saving, and only if there are changes)
+        try {
+            User currentUser = getCurrentUser();
+
+            // Check if anything important changed
+            boolean hasImportantChanges = financialDataChanged || datesChanged || periodiciteChanged ||
+                    !oldStatus.equals(updatedConvention.getEtat());
+
+            if (hasImportantChanges) {
+                historyService.logConventionUpdate(oldConvention, updatedConvention, currentUser);
+
+                // Log financial update if changed
+                if (financialDataChanged) {
+                    historyService.logConventionFinancialUpdate(updatedConvention,
+                            oldMontantHT, oldMontantTTC, oldNbUsers,
+                            updatedConvention.getMontantHT(), updatedConvention.getMontantTTC(), updatedConvention.getNbUsers());
+                }
+
+                // Check if status changed
+                if (!oldStatus.equals(updatedConvention.getEtat())) {
+                    historyService.logConventionStatusChange(updatedConvention, oldStatus, updatedConvention.getEtat());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to log convention update history: {}", e.getMessage());
+            // Don't throw - we don't want history to break the main functionality
+        }
+
+        // If dates changed, update the application dates using ApplicationService
+        if (datesChanged && updatedConvention.getApplication() != null) {
+            applicationService.updateApplicationDatesFromConvention(
+                    updatedConvention.getApplication().getId(),
+                    updatedConvention.getDateDebut(),
+                    updatedConvention.getDateFin()
+            );
+            log.info("Updated application dates due to convention date change");
+        }
+
         // Regenerate invoices if financial data or dates/periodicity changed
         if (financialDataChanged || datesOrPeriodicityChanged) {
             log.info("Financial data or dates/periodicity changed for convention {}, regenerating invoices",
@@ -519,17 +661,54 @@ public class ConventionService {
         return updatedConvention;
     }
 
+    /**
+     * Clone convention for history
+     */
+    private Convention cloneConvention(Convention conv) {
+        Convention clone = new Convention();
+        clone.setId(conv.getId());
+        clone.setReferenceConvention(conv.getReferenceConvention());
+        clone.setReferenceERP(conv.getReferenceERP());
+        clone.setLibelle(conv.getLibelle());
+        clone.setDateDebut(conv.getDateDebut());
+        clone.setDateFin(conv.getDateFin());
+        clone.setDateSignature(conv.getDateSignature());
+        clone.setStructureResponsable(conv.getStructureResponsable());
+        clone.setStructureBeneficiel(conv.getStructureBeneficiel());
+        clone.setApplication(conv.getApplication());
+        clone.setMontantHT(conv.getMontantHT());
+        clone.setMontantTTC(conv.getMontantTTC());
+        clone.setTva(conv.getTva());
+        clone.setNbUsers(conv.getNbUsers());
+        clone.setPeriodicite(conv.getPeriodicite());
+        clone.setEtat(conv.getEtat());
+        clone.setArchived(conv.getArchived());
+        clone.setArchivedAt(conv.getArchivedAt());
+        clone.setArchivedBy(conv.getArchivedBy());
+        clone.setArchivedReason(conv.getArchivedReason());
+        clone.setCreatedAt(conv.getCreatedAt());
+        clone.setUpdatedAt(conv.getUpdatedAt());
+        clone.setCreatedBy(conv.getCreatedBy());
+        return clone;
+    }
+
+    /**
+     * Get current user
+     */
+    private User getCurrentUser() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(currentUsername).orElse(null);
+    }
+
+    /**
+     * Check if financial data has changed
+     */
     private boolean hasFinancialDataChanged(Convention convention, ConventionRequest request) {
         boolean htChanged = !compareBigDecimal(convention.getMontantHT(), request.getMontantHT());
         boolean tvaChanged = !compareBigDecimal(convention.getTva(), request.getTva());
-        boolean nbUsersChanged = !compareInteger(convention.getNbUsers(), request.getNbUsers());
+        boolean nbUsersChanged = !Objects.equals(convention.getNbUsers(), request.getNbUsers());
 
-        if (htChanged || tvaChanged || nbUsersChanged) {
-            log.info("Financial data changed - HT: {}, TVA: {}, Users: {}",
-                    htChanged, tvaChanged, nbUsersChanged);
-            return true;
-        }
-        return false;
+        return htChanged || tvaChanged || nbUsersChanged;
     }
 
     private boolean hasDatesOrPeriodicityChanged(Convention convention, ConventionRequest request) {
@@ -575,6 +754,13 @@ public class ConventionService {
             conventionRepository.save(convention);
             log.info("REAL-TIME: Convention {} status changed from {} to {}",
                     convention.getReferenceConvention(), oldStatus, convention.getEtat());
+
+            // LOG HISTORY: Status change
+            try {
+                historyService.logConventionStatusChange(convention, oldStatus, convention.getEtat());
+            } catch (Exception e) {
+                log.error("Failed to log status change history: {}", e.getMessage());
+            }
         }
     }
 
@@ -587,10 +773,18 @@ public class ConventionService {
         List<Convention> waitingConventions = conventionRepository.findByEtat("EN_ATTENTE");
         for (Convention convention : waitingConventions) {
             if (!today.isBefore(convention.getDateDebut())) {
+                String oldStatus = convention.getEtat();
                 convention.setEtat("EN_COURS");
                 conventionRepository.save(convention);
                 log.info("Convention {} transitioned from EN_ATTENTE to EN_COURS",
                         convention.getReferenceConvention());
+
+                // LOG HISTORY: Status change
+                try {
+                    historyService.logConventionStatusChange(convention, oldStatus, "EN_COURS");
+                } catch (Exception e) {
+                    log.error("Failed to log status change history: {}", e.getMessage());
+                }
             }
         }
 
@@ -602,9 +796,17 @@ public class ConventionService {
                         .allMatch(invoice -> "PAYE".equals(invoice.getStatutPaiement()));
 
                 if (!allInvoicesPaid) {
+                    String oldStatus = convention.getEtat();
                     convention.setEtat("EN_RETARD");
                     conventionRepository.save(convention);
                     log.info("Convention {} marked as EN_RETARD", convention.getReferenceConvention());
+
+                    // LOG HISTORY: Status change
+                    try {
+                        historyService.logConventionStatusChange(convention, oldStatus, "EN_RETARD");
+                    } catch (Exception e) {
+                        log.error("Failed to log status change history: {}", e.getMessage());
+                    }
                 }
             }
         }
@@ -627,9 +829,17 @@ public class ConventionService {
                         .allMatch(invoice -> "PAYE".equals(invoice.getStatutPaiement()));
 
                 if (allInvoicesPaid) {
+                    String oldStatus = convention.getEtat();
                     convention.setEtat("TERMINE");
                     conventionRepository.save(convention);
                     log.info("Convention {} marked as TERMINE", convention.getReferenceConvention());
+
+                    // LOG HISTORY: Status change
+                    try {
+                        historyService.logConventionStatusChange(convention, oldStatus, "TERMINE");
+                    } catch (Exception e) {
+                        log.error("Failed to log status change history: {}", e.getMessage());
+                    }
                 }
             }
         }
@@ -713,5 +923,10 @@ public class ConventionService {
             return "Sélection supérieure au maximum - Valeur sélectionnée conservée";
         }
         return "Valeur sélectionnée conservée";
+    }
+
+    @Transactional
+    public void syncAllApplicationDates(Long applicationId) {
+        applicationService.syncApplicationDatesWithAllConventions(applicationId);
     }
 }

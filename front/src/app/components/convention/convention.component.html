@@ -107,63 +107,33 @@
 
   <!-- Conventions Grid - Cute Cards -->
 <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  <div *ngFor="let convention of filteredConventions" 
-       class="bg-gradient-to-br from-white to-white/95 dark:from-gray-800/95 dark:to-gray-800/90 rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/30 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
-    
+<div *ngFor="let convention of filteredConventions" 
+     class="bg-gradient-to-br from-white to-white/95 dark:from-gray-800/95 dark:to-gray-800/90 rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/30 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+     (click)="viewConventionDetails(convention.id)">
+
     <!-- Card Header -->
     <div class="p-4 border-b border-gray-200/50 dark:border-gray-700/30">
       <div class="flex items-start justify-between">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-2">
+          <div class="flex items-center">
             <h3 class="text-sm font-bold text-gray-800 dark:text-white truncate">
               {{ convention.referenceConvention }}
-            </h3>
-            <span [class]="'px-2 py-0.5 text-xs font-medium rounded-full ' + getEtatClass(convention.etat)">
+            </h3> 
+
+
+          </div>
+
+        <!-- Action Buttons -->
+        <div  class="flex items-center gap-1 mt-3">
+         <span [class]="'px-2 py-0.5 text-xs font-medium rounded-full ' + getEtatClass(convention.etat)">
               {{ getEtatLabel(convention.etat) }}
             </span>
-          </div>
-          <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ convention.libelle }}</p>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div *ngIf="canEdit()" class="flex items-center gap-1">
-          <button
-            (click)="openEditModal(convention)"
-            [disabled]="convention.archived"
-            class="p-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-            title="Modifier"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </button>
           
-          <button
-            *ngIf="!convention.archived"
-            (click)="openArchiveModal(convention)"
-            class="p-1.5 text-yellow-600 hover:text-yellow-700 dark:text-yellow-400 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors"
-            title="Archiver"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
-          </button>
-          
-          <button
-            *ngIf="convention.archived"
-            (click)="openRestoreModal(convention)"
-            class="p-1.5 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
-            title="Restaurer"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
+         
         </div>
       </div>
       
       <!-- ERP Reference -->
-      <div *ngIf="convention.referenceERP" class="mt-2">
+              <div *ngIf="convention.referenceERP">
         <p class="text-xs text-gray-500 dark:text-gray-400">ERP: {{ convention.referenceERP }}</p>
       </div>
     </div>
@@ -196,6 +166,17 @@
         </div>
       </div>
       
+<div class="mb-4">
+  <div class="flex items-center gap-2 mb-2">
+    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+    <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Application associée</p>
+  </div>
+  <div class="pl-6 space-y-1">
+    <p class="text-xs text-gray-700 dark:text-gray-300 font-medium">{{ convention.applicationName || '-' }}</p>
+  </div>
+</div>
       <!-- Dates & Amount -->
       <div class="grid grid-cols-2 gap-3">
   <!-- Dates -->
@@ -245,7 +226,7 @@
     <div class="pl-4">
      
       <p class="text-sm font-bold text-blue-600 dark:text-blue-400">
-        {{ convention.montantTotal }} TND
+        {{ convention.montantTTC}} TND
       </p>
     </div>
   </div>
@@ -280,314 +261,7 @@
 
 </div>
 
-<!-- Create/Edit Modal - Cuter -->
-<div *ngIf="showModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full p-5 animate-fadeIn">
-    <div class="flex justify-between items-center mb-4">
-      <div>
-        <h3 class="text-lg font-bold text-gray-800 dark:text-white">
-          {{ isEditing ? 'Modifier Convention' : 'Nouvelle Convention' }}
-        </h3>
-        <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">Remplissez les informations</p>
-      </div>
-      <button (click)="closeModal()" 
-              class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-    
-    <form (ngSubmit)="saveConvention()" class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-      <!-- Reference fields -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-  <div>
-    <div class="flex items-center justify-between mb-1.5">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        Référence Convention *
-      </label>
-     
-    </div>
-    <div class="relative">
-      <input
-        type="text"
-        [(ngModel)]="formData.referenceConvention"
-        name="referenceConvention"
-        required
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm pr-10"
-        placeholder="CONV-2024-001"
-      />
-      
-    </div>
-  </div>
-  <div>
-    <!-- Keep the ERP reference field as is -->
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-      Référence ERP *
-    </label>
-    <input
-      type="text"
-      [(ngModel)]="formData.referenceERP"
-      name="referenceERP"
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-    />
-  </div>
-</div>
 
-      <!-- Structures -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Application *
-          </label>
-          <select 
-            [(ngModel)]="formData.applicationId" 
-            name="applicationId" 
-            required
-            (change)="onProjectSelected(formData.applicationId)" 
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-          >
-            <option value="">Sélectionner une application </option>
-            <option *ngFor="let application of applications" [value]="application.id">
-              {{ application.code }} - {{ application.name }}
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Structure Beneficiel *
-          </label>
-        <select
-  [(ngModel)]="formData.structureBeneficielId"
-  name="structureBeneficielId"
-  required
-  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
->
-  <option value="">Sélectionner une structure Beneficiel </option>
-  <option *ngFor="let structure of externesStructures" [value]="structure.id">
-    {{ structure.code }} 
-  </option>
-</select>
-        </div>
-      </div>
-
-      <!-- More fields -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Structure Responsable *
-          </label>
-         <select
-  [(ngModel)]="formData.structureResponsableId"
-  name="structureResponsableId"
-  required
-  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
->
-  <option value="">Sélectionner une structure responsable</option>
-  <option *ngFor="let structure of internesStructures" [value]="structure.id">
-    {{ structure.code }} 
-  </option>
-</select>
-        </div>
-        
-      </div>
-
-      <!-- Libellé -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-          Libellé *
-        </label>
-        <input
-          type="text"
-          [(ngModel)]="formData.libelle"
-          name="libelle"
-          required
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-          placeholder="Libellé de la convention"
-        />
-      </div>
-
-      <!-- Dates -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Date Début *
-          </label>
-          <input
-            type="date"
-            [(ngModel)]="formData.dateDebut"
-            name="dateDebut"
-            required
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Date Fin *
-          </label>
-          <input
-            type="date"
-            [(ngModel)]="formData.dateFin"
-            name="dateFin"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Date Signature
-          </label>
-          <input
-            type="date"
-            [(ngModel)]="formData.dateSignature"
-            name="dateSignature"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-          />
-        </div>
-      </div>
-
-
-
-      <!-- FINANCIAL FIELDS - Add to your form in the modal -->
-
-<!-- HT, TVA, TTC Section -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-      Montant HT (TND) *
-    </label>
-    <input
-      type="number"
-      [(ngModel)]="formData.montantHT"
-      name="montantHT"
-      (ngModelChange)="onMontantHTChange()"
-      step="0.01"
-      min="0"
-      required
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-      placeholder="0.00"
-    />
-  </div>
-  
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-      TVA (%) 
-    </label>
-    <input
-      type="number"
-      [(ngModel)]="formData.tva"
-      name="tva"
-      (ngModelChange)="onTvaChange()"
-      step="0.01"
-      min="0"
-      max="100"
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-      placeholder="19.00"
-    />
-  </div>
-  
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-      Montant TTC (TND)
-    </label>
-    <div class="relative">
-      <input
-        type="number"
-        [(ngModel)]="formData.montantTTC"
-        name="montantTTC"
-        readonly
-        class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 text-sm"
-        placeholder="Calculé automatiquement"
-      />
-      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
-    </div>
-    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-      Calculé: {{ formData.montantHT || 0 }} + ({{ formData.tva || 19 }}%) = {{ formData.montantTTC || 0 }} TND
-    </p>
-  </div>
-</div>
-
-<!-- Number of Users Section -->
-<div class="grid grid-cols-1 md:grid-cols-1 gap-3 mt-2">
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-      Nombre d'utilisateurs *
-    </label>
-    <div class="flex items-center gap-3">
-      <div class="flex-1">
-        <input
-          type="number"
-          [(ngModel)]="formData.nbUsers"
-          name="nbUsers"
-          (ngModelChange)="onNbUsersChange()"
-          (focus)="onNbUsersFocus()"
-          min="1"
-          step="1"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-          placeholder="Saisir le nombre d'utilisateurs"
-        />
-      </div>
-      <div *ngIf="userLimits" class="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-700 dark:text-blue-300">
-        <span *ngIf="userLimits.minUser">Min: {{ userLimits.minUser }}</span>
-        <span *ngIf="userLimits.maxUser"> | Max: {{ userLimits.maxUser }}</span>
-      </div>
-    </div>
-    <div *ngIf="userRuleMessage" class="mt-1.5 text-xs px-3 py-1.5 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-yellow-700 dark:text-yellow-300">
-      <span class="font-medium">Règle appliquée:</span> {{ userRuleMessage }}
-    </div>
-  </div>
-</div>
-
-      <!-- Montant and Périodicité -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Modalités de Paiement
-          </label>
-          <select
-            [(ngModel)]="formData.periodicite"
-            name="periodicite"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-          >
-            <option value="">Sélectionner</option>
-            <option *ngFor="let periodicite of periodicites" [value]="periodicite">
-              {{ periodicite }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Error Message -->
-      <div *ngIf="errorMessage" class="p-3 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-900/10 dark:to-red-900/5 border border-red-200 dark:border-red-800/30 rounded-xl">
-        <p class="text-sm text-red-600 dark:text-red-300">{{ errorMessage }}</p>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex space-x-3 pt-2">
-        <button type="button" (click)="closeModal()" 
-                class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm">
-          Annuler
-        </button>
-        <button type="submit" [disabled]="loading" 
-                class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-          <span *ngIf="loading">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Enregistrement...
-          </span>
-          <span *ngIf="!loading">{{ isEditing ? 'Mettre à jour' : 'Créer' }}</span>
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
 
 <!-- Invoices Modal - Cuter -->
 <div *ngIf="showInvoicesModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">

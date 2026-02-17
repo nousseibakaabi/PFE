@@ -8,6 +8,7 @@ import { MapService } from '../partials/services/map.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslationService } from '../partials/traduction/translation.service';
 import { ApplicationService}from 'src/app/services/application.service';
+import { HistoryEntry, HistoryService } from 'src/app/services/history.service';
 
 interface AdminUser {
   id: number;
@@ -42,6 +43,8 @@ export class AdminUsersComponent implements OnInit, AfterViewInit {
   error = '';
   successMessage: string = '';
   baseUrl = environment.baseUrl || 'http://localhost:8084';
+
+  Object = Object;
 
   
   // In AdminUsersComponent class
@@ -98,6 +101,11 @@ unassignedProjects: any[] = [];
   private chart03: any;
   private map01: any;
 
+  showUserHistoryModal = false;
+  selectedUserForHistory: AdminUser | null = null;
+  userHistory: HistoryEntry[] = [];
+  loadingHistory = false;
+
   constructor(
     private authService: AuthService,
     private http: HttpClient,
@@ -106,7 +114,9 @@ unassignedProjects: any[] = [];
     private mapService: MapService,
     private fb: FormBuilder,
     private trasnlationService: TranslationService,
-    private applicationServive : ApplicationService
+    private applicationServive : ApplicationService,
+    public historyService: HistoryService
+
   ) {
     // Initialize forms
     this.addUserForm = this.fb.group({
@@ -914,7 +924,7 @@ generateAvatarUrl(user: AdminUser): string {
   
   // Simple SVG with initials as fallback
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <circle cx="50" cy="50" r="48" fill="#4F46E5"/>
+    <circle cx="50" cy="50" r="48" fill="#e9d709"/>
     <text x="50" y="58" text-anchor="middle" font-family="Arial" font-size="38" fill="white">${initials}</text>
   </svg>`;
   
@@ -1118,4 +1128,178 @@ showAssignProjectsModal(user: AdminUser): void {
       // or add a button in the UI to assign projects
     }
   }
+
+
+  openUserHistoryModal(user: AdminUser): void {
+  this.selectedUserForHistory = user;
+  this.loadingHistory = true;
+  this.showUserHistoryModal = true;
+  
+  this.historyService.getHistoryByUser(user.id).subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.userHistory = response.data;
+      }
+      this.loadingHistory = false;
+    },
+    error: (error) => {
+      console.error('Error loading user history:', error);
+      this.loadingHistory = false;
+    }
+  });
+}
+
+closeUserHistoryModal(): void {
+  this.showUserHistoryModal = false;
+  this.selectedUserForHistory = null;
+  this.userHistory = [];
+}
+
+getActionClass(actionType: string): string {
+  switch (actionType) {
+    case 'CREATE': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+    case 'UPDATE': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+    case 'DELETE': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+    case 'LOGIN': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300';
+    case 'LOGOUT': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+    case 'PASSWORD_CHANGE': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+    case 'LOCK': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+    case 'UNLOCK': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+    case 'ROLE_CHANGE': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+    case 'DEPARTMENT_CHANGE': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+  }
+}
+
+
+// Add helper method to group history by date
+
+groupHistoryByDate(history: HistoryEntry[]): { date: string, entries: HistoryEntry[] }[] {
+  const groups: { [key: string]: HistoryEntry[] } = {};
+  
+  history.forEach(entry => {
+    if (!groups[entry.dateFormatted]) {
+      groups[entry.dateFormatted] = [];
+    }
+    groups[entry.dateFormatted].push(entry);
+  });
+  
+  return Object.keys(groups)
+    .sort((a, b) => b.localeCompare(a)) // Sort descending (newest first)
+    .map(date => ({
+      date,
+      entries: groups[date].sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    }));
+}
+
+
+getChangedFields(entry: any): { [key: string]: { old: any, new: any } } {
+  const changed: { [key: string]: { old: any, new: any } } = {};
+  
+  // Special handling for PAYMENT actions
+  if (entry.actionType === 'PAYMENT') {
+    // For payments, only show the important fields that changed
+    if (entry.newValues) {
+      // Always show these fields for payment
+      const paymentFields = ['statutPaiement', 'referencePaiement', 'datePaiement', 'montantTTC'];
+      
+      paymentFields.forEach(field => {
+        if (entry.newValues[field] !== undefined) {
+          // For statutPaiement, show a nice message
+          if (field === 'statutPaiement') {
+            changed[field] = { 
+              old: 'NON PAYÉE', 
+              new: 'PAYÉE' 
+            };
+          } else {
+            changed[field] = { 
+              old: '-', 
+              new: entry.newValues[field] 
+            };
+          }
+        }
+      });
+    }
+    return changed;
+  }
+  
+  // For other actions, do the normal comparison
+  if (!entry.oldValues || !entry.newValues) return changed;
+  
+  Object.keys(entry.newValues).forEach(key => {
+    const oldValue = entry.oldValues[key];
+    const newValue = entry.newValues[key];
+    
+    // Skip if values are the same
+    if (JSON.stringify(oldValue) === JSON.stringify(newValue)) {
+      return;
+    }
+    
+    // Handle nested change objects
+    if (oldValue && typeof oldValue === 'object' && oldValue.old !== undefined && oldValue.new !== undefined) {
+      changed[key] = { old: oldValue.old, new: oldValue.new };
+    } 
+    // Handle direct comparison
+    else {
+      changed[key] = { old: oldValue, new: newValue };
+    }
+  });
+  
+  return changed;
+}
+
+// Replace the formatFieldName method
+
+formatFieldName(field: string, actionType?: string): string {
+  // Special formatting for payment fields
+  if (actionType === 'PAYMENT') {
+    const paymentFieldMap: { [key: string]: string } = {
+      'statutPaiement': 'Statut',
+      'referencePaiement': 'Référence',
+      'datePaiement': 'Date paiement',
+      'montantTTC': 'Montant payé',
+      'numeroFacture': 'Facture',
+      'id': 'ID Facture'
+    };
+    if (paymentFieldMap[field]) return paymentFieldMap[field];
+  }
+  
+  // Default field mapping for other actions
+  const fieldMap: { [key: string]: string } = {
+    'username': 'Nom d\'utilisateur',
+    'email': 'Email',
+    'firstName': 'Prénom',
+    'lastName': 'Nom',
+    'phone': 'Téléphone',
+    'department': 'Département',
+    'enabled': 'Activé',
+    'lockedByAdmin': 'Verrouillé par admin',
+    'roles': 'Rôles',
+    'password': 'Mot de passe',
+    'failedLoginAttempts': 'Tentatives échouées',
+    'accountLockedUntil': 'Verrouillé jusqu\'au',
+    'statutPaiement': 'Statut paiement',
+    'referencePaiement': 'Référence paiement',
+    'datePaiement': 'Date paiement',
+    'montantTTC': 'Montant TTC',
+    'montantHT': 'Montant HT',
+    'tva': 'TVA',
+    'numeroFacture': 'Numéro facture',
+    'dateFacturation': 'Date facturation',
+    'dateEcheance': 'Date échéance'
+  };
+  
+  return fieldMap[field] || field;
+}
+
+
+getChangedFieldsArray(entry: any): { field: string, old: any, new: any }[] {
+  const changes = this.getChangedFields(entry);
+  return Object.keys(changes).map(key => ({
+    field: this.formatFieldName(key, entry.actionType),
+    old: changes[key].old,
+    new: changes[key].new
+  }));
+}
+
 }

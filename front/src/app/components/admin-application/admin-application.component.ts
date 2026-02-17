@@ -39,7 +39,6 @@ export class AdminApplicationComponent implements OnInit {
     clientName: '',
     clientEmail: '',
     clientPhone: '',
-    clientAddress: '',
     dateDebut: '',
     dateFin: '',
     minUser : 0,
@@ -158,9 +157,6 @@ export class AdminApplicationComponent implements OnInit {
       clientName: '',
       clientEmail: '',
       clientPhone: '',
-      clientAddress: '',
-      dateDebut: new Date().toISOString().split('T')[0],
-      dateFin: '',
       minUser : 0,
   maxUser:0,
       status: 'PLANIFIE'
@@ -180,7 +176,6 @@ export class AdminApplicationComponent implements OnInit {
       clientName: application.clientName,
       clientEmail: application.clientEmail || '',
       clientPhone: application.clientPhone || '',
-      clientAddress: application.clientAddress || '',
       dateDebut: application.dateDebut || '',
       dateFin: application.dateFin || '',
       minUser: application.minUser || 0,
@@ -210,7 +205,6 @@ export class AdminApplicationComponent implements OnInit {
       return;
     }
 
-    // Always set status to PLANIFIE when creating (backend will auto-update later)
     this.applicationForm.status = 'PLANIFIE';
     
     this.loading = true;

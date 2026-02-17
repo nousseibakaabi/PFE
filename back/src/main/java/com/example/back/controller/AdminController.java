@@ -4,15 +4,18 @@ import com.example.back.entity.ERole;
 import com.example.back.entity.Role;
 import com.example.back.entity.User;
 import com.example.back.payload.request.SignupRequest;
+import com.example.back.payload.response.MessageResponse;
 import com.example.back.repository.RoleRepository;
 import com.example.back.repository.UserRepository;
 import com.example.back.service.AvatarService;
 import com.example.back.service.EmailService;
+import com.example.back.service.HistoryService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +44,10 @@ public class AdminController {
     @Autowired
     private AvatarService avatarService;
 
+    @Autowired
+    private HistoryService historyService;
+
+
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> allUsers = userRepository.findAll();
@@ -55,93 +62,51 @@ public class AdminController {
     }
 
     @PostMapping("/users/{userId}/lock")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> lockUser(@PathVariable Long userId) {
         try {
-            User user = userRepository.findById(userId)
+            User currentUser = getCurrentUser();
+            User targetUser = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            if (user.getLockedByAdmin()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "User is already locked by admin");
-                return ResponseEntity.badRequest().body(response);
-            }
+            targetUser.setLockedByAdmin(true);
+            targetUser.setAccountNonLocked(false);
+            User updatedUser = userRepository.save(targetUser);
 
-            user.setLockedByAdmin(true);
-            user.setAccountLockedUntil(null);
-            userRepository.save(user);
+            // LOG HISTORY: User lock
+            historyService.logUserLock(targetUser, currentUser);
 
-            try {
-                emailService.sendAccountLockedByAdminEmail(
-                        user.getEmail(),
-                        user.getUsername()
-                );
-                log.info("Admin lock email sent to: {}", user.getEmail());
-            } catch (Exception e) {
-                log.error("Failed to send admin lock email: {}", e.getMessage());
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "User locked successfully. Notification email sent.");
-            response.put("userId", userId);
-            response.put("username", user.getUsername());
-            response.put("email", user.getEmail());
-
-            return ResponseEntity.ok(response);
-
+            return ResponseEntity.ok(new MessageResponse("User locked successfully"));
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Failed to lock user: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            log.error("Error locking user: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
 
     @PostMapping("/users/{userId}/unlock")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> unlockUser(@PathVariable Long userId) {
         try {
-            User user = userRepository.findById(userId)
+            User currentUser = getCurrentUser();
+            User targetUser = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            if (!user.getLockedByAdmin()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "User is not locked by admin");
-                return ResponseEntity.badRequest().body(response);
-            }
+            targetUser.setLockedByAdmin(false);
+            targetUser.setAccountNonLocked(true);
+            targetUser.setFailedLoginAttempts(0);
+            targetUser.setAccountLockedUntil(null);
+            User updatedUser = userRepository.save(targetUser);
 
-            user.setLockedByAdmin(false);
-            user.setAccountLockedUntil(null);
-            user.setFailedLoginAttempts(0);
-            userRepository.save(user);
+            // LOG HISTORY: User unlock
+            historyService.logUserUnlock(targetUser, currentUser);
 
-            try {
-                emailService.sendAccountUnlockedByAdminEmail(
-                        user.getEmail(),
-                        user.getUsername()
-                );
-                log.info("Admin unlock email sent to: {}", user.getEmail());
-            } catch (Exception e) {
-                log.error("Failed to send admin unlock email: {}", e.getMessage());
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "User unlocked successfully. Notification email sent.");
-            response.put("userId", userId);
-            response.put("username", user.getUsername());
-            response.put("email", user.getEmail());
-
-            return ResponseEntity.ok(response);
-
+            return ResponseEntity.ok(new MessageResponse("User unlocked successfully"));
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Failed to unlock user: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            log.error("Error unlocking user: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
+
 
     @GetMapping("/users/locked")
     public ResponseEntity<List<User>> getLockedUsers() {
@@ -253,107 +218,87 @@ public class AdminController {
         }
     }
 
+
+
     @PutMapping("/users/{userId}/department")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUserDepartment(@PathVariable Long userId,
                                                   @RequestBody Map<String, String> request) {
         try {
-            String department = request.get("department");
-
-            if (department == null || department.trim().isEmpty()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "Department is required");
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            User user = userRepository.findById(userId)
+            User currentUser = getCurrentUser();
+            User targetUser = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            user.setDepartment(department.trim());
-            userRepository.save(user);
+            String oldDepartment = targetUser.getDepartment();
+            String newDepartment = request.get("department");
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Department updated successfully");
-            response.put("userId", userId);
-            response.put("department", department);
+            targetUser.setDepartment(newDepartment);
+            User updatedUser = userRepository.save(targetUser);
 
-            return ResponseEntity.ok(response);
+            // LOG HISTORY: Department change
+            historyService.logUserDepartmentChange(targetUser, currentUser, oldDepartment, newDepartment);
 
+            return ResponseEntity.ok(new MessageResponse("User department updated successfully"));
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Failed to update department: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            log.error("Error updating user department: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
 
+
+
     @PutMapping("/users/{userId}/roles")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUserRoles(@PathVariable Long userId,
                                              @RequestBody Map<String, List<String>> request) {
         try {
-            List<String> strRoles = request.get("roles");
-
-            if (strRoles == null || strRoles.isEmpty()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "At least one role is required");
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            User user = userRepository.findById(userId)
+            User currentUser = getCurrentUser();
+            User targetUser = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            Set<Role> roles = new HashSet<>();
+            List<String> oldRoles = targetUser.getRoles().stream()
+                    .map(role -> role.getName().name())
+                    .collect(Collectors.toList());
 
-            for (String roleName : strRoles) {
-                if (!roleName.equalsIgnoreCase("admin")) {
-                    switch (roleName.toLowerCase()) {
-                        case "commercial":
-                            Role commercialRole = roleRepository.findByName(ERole.ROLE_COMMERCIAL_METIER)
-                                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                            roles.add(commercialRole);
-                            break;
-                        case "decideur":
-                            Role decideurRole = roleRepository.findByName(ERole.ROLE_DECIDEUR)
-                                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                            roles.add(decideurRole);
-                            break;
-                        case "chef_projet":
-                            Role chefProjetRole = roleRepository.findByName(ERole.ROLE_CHEF_PROJET)
-                                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                            roles.add(chefProjetRole);
-                            break;
-                        default:
-                            break;
-                    }
-                }
+            List<String> newRoleValues = request.get("roles");
+            Set<Role> newRoles = new HashSet<>();
+
+            for (String roleValue : newRoleValues) {
+                Role role = roleRepository.findByName(ERole.valueOf(roleValue))
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleValue));
+                newRoles.add(role);
             }
 
-            if (roles.isEmpty()) {
-                Role defaultRole = roleRepository.findByName(ERole.ROLE_COMMERCIAL_METIER)
-                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                roles.add(defaultRole);
-            }
+            targetUser.setRoles(newRoles);
+            User updatedUser = userRepository.save(targetUser);
 
-            user.setRoles(roles);
-            userRepository.save(user);
+            // LOG HISTORY: Role change
+            historyService.logUserRoleChange(targetUser, currentUser, oldRoles,
+                    newRoleValues.stream().collect(Collectors.toList()));
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Roles updated successfully");
-            response.put("userId", userId);
-            response.put("roles", strRoles);
-
-            return ResponseEntity.ok(response);
-
+            return ResponseEntity.ok(new MessageResponse("User roles updated successfully"));
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Failed to update roles: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
+            log.error("Error updating user roles: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
+
+    private Object createErrorResponse(String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("message", message);
+        return response;
+    }
+
+
+    /**
+     * Get current user
+     */
+    private User getCurrentUser() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(currentUsername).orElse(null);
+    }
+
 
     @GetMapping("/roles/available")
     public ResponseEntity<?> getAvailableRoles() {

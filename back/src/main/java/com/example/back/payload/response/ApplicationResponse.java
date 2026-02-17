@@ -14,7 +14,6 @@ public class ApplicationResponse {
     private String clientName;
     private String clientEmail;
     private String clientPhone;
-    private String clientAddress;
     private LocalDate dateDebut;
     private LocalDate dateFin;
     private String status;
@@ -22,7 +21,6 @@ public class ApplicationResponse {
     private LocalDateTime updatedAt;
     private Long minUser;
     private Long maxUser;
-
 
     // Calculated fields
     private Long daysRemaining;
@@ -39,6 +37,7 @@ public class ApplicationResponse {
     private String chefDeProjetUsername;
     private String chefDeProjetFullName;
     private String chefDeProjetEmail;
+    private String chefDeProjetProfileImage; // ADD THIS LINE
 
     // Statistics
     private int conventionsCount;

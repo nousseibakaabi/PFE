@@ -154,6 +154,8 @@ public class ApplicationController {
         }
     }
 
+
+
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET', 'COMMERCIAL_METIER', 'DECIDEUR')")
     public ResponseEntity<?> searchApplications(
@@ -358,6 +360,46 @@ public class ApplicationController {
         } catch (Exception e) {
             log.error("Error fetching conventions by chef de projet {}: {}", chefDeProjetId, e.getMessage(), e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch conventions: " + e.getMessage()));
+        }
+    }
+
+
+    // Add to ApplicationController.java
+
+    /**
+     * Get date summary for an application (to see if dates are synced with conventions)
+     */
+    @GetMapping("/{id}/date-summary")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET', 'COMMERCIAL_METIER', 'DECIDEUR')")
+    public ResponseEntity<?> getApplicationDateSummary(@PathVariable Long id) {
+        try {
+            Map<String, Object> summary = applicationService.getApplicationDateSummary(id);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", summary);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error getting application date summary: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+
+    @GetMapping("/without-conventions")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET', 'COMMERCIAL_METIER')")
+    public ResponseEntity<?> getApplicationsWithoutConventions() {
+        try {
+            List<ApplicationResponse> applications = applicationService.getApplicationsWithoutConventions();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", applications);
+            response.put("count", applications.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error fetching applications without conventions: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
 

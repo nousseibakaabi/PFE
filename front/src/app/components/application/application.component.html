@@ -1,757 +1,376 @@
-<!-- src/app/components/project/project.component.html -->
-<div class="p-6">
-  <!-- Header -->
-  <div class="mb-6">
-    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
-      Mes applications
-    </h2>
-    <p class="text-gray-600 dark:text-gray-400">
-      Gérez vos applications assignés
-    </p>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
     
-  </div>
-
-  <!-- Messages -->
-  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-    <div class="flex items-center">
-      <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-      </svg>
-      <span class="text-green-700">{{ successMessage }}</span>
+    <!-- Header -->
+    <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-gray-800 dark:text-white">
+              {{ isAdmin ? 'Gestion des Applications' : 'Mes Applications' }}
+            </h2>
+            <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
+              {{ isAdmin ? 'Créez et gérez toutes les applications' : 'Gérez vos applications assignées' }}
+            </p>
+          </div>
+        </div>
+        <button (click)="createApplication()"
+                class="px-3.5 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center group">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Nouvelle Application
+        </button>
+      </div>
     </div>
-  </div>
 
-  <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-    <div class="flex items-center">
-      <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-      </svg>
-      <span class="text-red-700">{{ errorMessage }}</span>
-    </div>
-  </div>
-
-  <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+    <!-- Messages -->
+    <div *ngIf="successMessage" class="mb-4 p-3 bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-900/5 border border-green-200 dark:border-green-800/30 rounded-xl">
       <div class="flex items-center">
-        <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900 mr-4">
-          <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <div class="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center mr-3">
+          <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
           </svg>
         </div>
-        <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Mes Applications</p>
-          <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ getTotalApplicationsCount() }}</p>
+        <span class="text-green-700 dark:text-green-300 text-sm font-medium">{{ successMessage }}</span>
+        <button (click)="clearMessages()" class="ml-auto text-green-500 hover:text-green-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="mb-4 p-3 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-900/10 dark:to-red-900/5 border border-red-200 dark:border-red-800/30 rounded-xl">
+      <div class="flex">
+        <div class="w-8 h-8 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+          <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <p class="text-red-700 dark:text-red-300 text-sm font-medium">{{ errorMessage }}</p>
+        <button (click)="clearMessages()" class="ml-auto text-red-500 hover:text-red-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200/50 dark:border-gray-700/30">
+        <div class="flex items-center">
+          <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/40 mr-4">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ getTotalApplicationsCount() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200/50 dark:border-gray-700/30">
+        <div class="flex items-center">
+          <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900/40 mr-4">
+            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">En Cours</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ getEnCoursCount() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200/50 dark:border-gray-700/30">
+        <div class="flex items-center">
+          <div class="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-900/40 mr-4">
+            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Planifiées</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ getPlanifieCount() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200/50 dark:border-gray-700/30">
+        <div class="flex items-center">
+          <div class="p-3 rounded-lg bg-red-100 dark:bg-red-900/40 mr-4">
+            <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">En Retard</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ getDelayedCount() }}</p>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <div class="flex items-center">
-        <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900 mr-4">
-          <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400">En Cours</p>
-          <p class="text-2xl font-bold text-gray-800 dark:text-white">
-            {{ getEnCoursCount() }}
-          </p>
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6 p-4 border border-gray-200/50 dark:border-gray-700/30">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex flex-col sm:flex-row gap-4 flex-1">
+          <!-- Search -->
+          <div class="relative flex-1">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="searchApplications()"
+              placeholder="Rechercher par code, nom, client..."
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+            />
+            <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          <!-- Status Filter -->
+          <select
+            [(ngModel)]="filterStatus"
+            (ngModelChange)="applyFilters()"
+            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          >
+            <option value="">Tous les statuts</option>
+            <option *ngFor="let status of statusOptions" [value]="status.value">{{ status.label }}</option>
+          </select>
         </div>
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <div class="flex items-center">
-        <div class="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-900 mr-4">
-          <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Planifiés</p>
-          <p class="text-2xl font-bold text-gray-800 dark:text-white">
-            {{ getPlanifieCount() }}
-          </p>
-        </div>
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+      <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">Chargement...</p>
+    </div>
+
+    <!-- Applications Table/Grid -->
+    <div *ngIf="!loading && filteredApplications.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200/50 dark:border-gray-700/30">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Code & Nom
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Client
+              </th>
+              <th *ngIf="isAdmin" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Chef de Projet
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Dates & Échéance
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Statut
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr *ngFor="let app of filteredApplications" 
+                class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                (click)="viewApplication(app.id)">
+              <td class="px-6 py-4">
+                <div class="font-medium text-gray-900 dark:text-white">{{ app.code }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">{{ app.name }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ app.conventionsCount || 0 }} convention(s)
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-gray-900 dark:text-white">{{ app.clientName }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ app.clientEmail }}</div>
+              </td>
+              <td *ngIf="isAdmin" class="px-6 py-4">
+                <div *ngIf="app.chefDeProjetId" class="flex items-center gap-2">
+                  <div class="h-8 w-8 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+                    <img [src]="getChefAvatarUrlForApp(app)" 
+                        [alt]="app.chefDeProjetFullName"
+                        class="h-full w-full object-cover"
+                        (error)="handleChefImageErrorForApp($event, app)">
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ app.chefDeProjetFullName || 'Non assigné' }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ app.chefDeProjetEmail }}</div>
+                  </div>
+                </div>
+                <div *ngIf="!app.chefDeProjetId" class="text-sm text-gray-500 dark:text-gray-400 italic">
+                  Non assigné
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-900 dark:text-white">
+                  <span class="text-xs text-gray-500">Début:</span> {{ formatDate(app.dateDebut) }}
+                </div>
+                <div class="text-sm text-gray-900 dark:text-white">
+                  <span class="text-xs text-gray-500">Fin:</span> {{ formatDate(app.dateFin) }}
+                </div>
+                <div class="text-xs mt-1" [class.text-red-600]="isApplicationDelayed(app)" [class.text-green-600]="!isApplicationDelayed(app)">
+                  {{ app.timeRemainingString }}
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusClass(app.status)">
+                  {{ getStatusLabel(app.status) }}
+                </span>
+              </td>
+              <td class="px-6 py-4" (click)="$event.stopPropagation()">
+                <div class="flex space-x-2">
+                  <button (click)="editApplication(app)"
+                          class="p-1.5 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                          title="Modifier">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  
+                  <button *ngIf="isAdmin && !app.chefDeProjetId"
+                    (click)="$event.stopPropagation(); openAssignModal(app)"
+                    class="p-1.5 text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                    title="Assigner un chef de projet">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <div class="flex items-center">
-        <div class="p-3 rounded-lg bg-red-100 dark:bg-red-900 mr-4">
-          <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400">En Retard</p>
-          <p class="text-2xl font-bold text-gray-800 dark:text-white">
-            {{ getDelayedCount() }}
-          </p>
-        </div>
+    <!-- No Applications -->
+    <div *ngIf="!loading && filteredApplications.length === 0" class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/30">
+      <div class="w-20 h-20 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
       </div>
-    </div>
-  </div>
-
-  <!-- Filters and Actions -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div class="flex flex-col sm:flex-row gap-4 flex-1">
-        <!-- Search -->
-        <div class="relative flex-1">
-          <input
-            type="text"
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="searchApplications()"
-            placeholder="Rechercher par code, nom, client..."
-            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          />
-          <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-
-        <!-- Status Filter -->
-        <select
-          [(ngModel)]="filterStatus"
-          (ngModelChange)="applyFilters()"
-          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-        >
-          <option value="">Tous les statuts</option>
-          <option *ngFor="let status of statusOptions" [value]="status.value">{{ status.label }}</option>
-        </select>
-      </div>
-
-      <!-- Add Project Button -->
-      <button
-        (click)="openAddModal()"
-        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center"
-      >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Aucune application trouvée</h3>
+      <p class="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto mb-4">
+        Commencez par créer votre première application.
+      </p>
+      <button (click)="createApplication()"
+              class="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center mx-auto">
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Nouveau application
+        Créer une application
       </button>
     </div>
-  </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="text-center py-8">
-    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    <p class="mt-2 text-gray-600 dark:text-gray-400">Chargement...</p>
-  </div>
 
-  <!-- Projects Table -->
-  <div *ngIf="!loading && filteredApplications.length > 0" class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead class="bg-gray-50 dark:bg-gray-700">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Code & Nom
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Client 
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Dates 
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Echeance
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Statut
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-          <tr *ngFor="let project of filteredApplications" class="hover:bg-gray-50 dark:hover:bg-gray-700">
-            <td class="px-6 py-4">
-              <div class="font-medium text-gray-900 dark:text-white">{{ project.code }}</div>
-              <div class="text-sm text-gray-900 dark:text-white font-semibold">{{ project.name }}</div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="text-gray-900 dark:text-white font-medium">{{ project.clientName }}</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">{{ project.clientEmail }}</div>
-              
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900 dark:text-white">
-                <span class="font-medium">Début:</span> {{ project.dateDebut | date:'dd/MM/yyyy' }}
+    <!-- Assign Chef Modal -->
+<div *ngIf="showAssignModal && selectedAppForAssign" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-auto max-h-[80vh] overflow-hidden">
+    <div class="p-6">
+      <!-- Modal Header -->
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <h3 class="text-lg font-bold text-gray-800 dark:text-white">Assigner un Chef de Projet</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Application: <span class="font-medium">{{ selectedAppForAssign.code }} - {{ selectedAppForAssign.name }}</span>
+          </p>
+        </div>
+        <button (click)="closeAssignModal()" 
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Chefs List -->
+      <div class="mb-6 max-h-[50vh] overflow-y-auto pr-2">
+        <div *ngIf="availableChefs.length === 0" class="text-center py-8">
+          <div class="w-16 h-16 bg-purple-50 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-1">Aucun chef de projet disponible</h4>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Créez d'abord des utilisateurs avec le rôle Chef de Projet.</p>
+        </div>
+        
+        <div *ngIf="availableChefs.length > 0" class="space-y-2">
+          <div *ngFor="let chef of availableChefs" 
+               (click)="selectChef(chef)"
+               class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+               [class.bg-blue-50]="selectedChefId === chef.id"
+               [class.dark:bg-blue-900-20]="selectedChefId === chef.id">
+            <div class="flex items-center">
+              <div class="mr-3">
+                <input type="radio" 
+                       [checked]="selectedChefId === chef.id"
+                       (change)="selectChef(chef)"
+                       name="chefSelection"
+                       class="h-4 w-4 text-blue-600 border-gray-300 rounded-full focus:ring-blue-500">
               </div>
-              <div class="text-sm text-gray-900 dark:text-white">
-                <span class="font-medium">Fin:</span> {{ project.dateFin | date:'dd/MM/yyyy' }}
+              <div class="h-10 w-10 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3 flex-shrink-0">
+                <img [src]="getChefAvatarUrl(chef)" 
+                     [alt]="chef.firstName + ' ' + chef.lastName"
+                     class="h-full w-full object-cover"
+                     (error)="handleChefImageError($event, chef)">
               </div>
-              
-            </td>
-            <td>
-                <div class="text-sm mt-2" [class.text-red-600]="project.isDelayed" [class.text-green-600]="!project.isDelayed">
-                {{ project.timeRemainingString }}
+              <div class="flex-1">
+                <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                  {{ chef.firstName }} {{ chef.lastName }}
+                </h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  @{{ chef.username }} • {{ chef.email }}
+                </p>
+                <p *ngIf="chef.department" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ chef.department }}
+                </p>
               </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusClass(project.status)">
-                {{ getStatusLabel(project.status) }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <div class="flex space-x-2">
-                <button 
-                  (click)="openEditModal(project)"
-                  class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                  title="Modifier"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-               
-                <button 
-                  (click)="openDeleteModal(project)"
-                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                  title="Supprimer"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal Footer -->
+      <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <button type="button" 
+                (click)="closeAssignModal()" 
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm">
+          Annuler
+        </button>
+        <button (click)="assignChef()"
+                [disabled]="!selectedChefId || assigning"
+                class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center">
+          <svg *ngIf="assigning" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span *ngIf="!assigning">Assigner</span>
+          <span *ngIf="assigning">Assignation...</span>
+        </button>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- No Projects -->
-  <div *ngIf="!loading && filteredApplications.length === 0" class="text-center p-8">
-    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-    </svg>
-    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Aucun application trouvé</h3>
-    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Commencez par créer un nouveau application.</p>
-    <button
-      (click)="openAddModal()"
-      class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-    >
-      <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-      </svg>
-      Créer un application
-    </button>
-  </div>
-
-  <!-- Add Project Modal -->
-  <div *ngIf="showAddModal" class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-      </div>
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-        <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Créer un Nouveau A</h3>
-        </div>
-        <form (ngSubmit)="createApplication()" class="px-6 py-4">
-          <div class="space-y-6">
-            <!-- Basic Info -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Code field section -->
-<div>
-  <div class="flex items-center justify-between mb-1.5">
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-      Code du application *
-    </label>
    
   </div>
-  <div class="relative">
-    <input
-      type="text"
-      [(ngModel)]="applicationForm.code"
-      name="code"
-      required
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm pr-10"
-      placeholder="PROJ-YYYY-XXX"
-    />
-    
-  </div>
-</div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Nom du application *
-                </label>
-                <input
-                  type="text"
-                  [(ngModel)]="applicationForm.name"
-                  name="name"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Nom du application"
-                />
-              </div>
-            </div>
-
-            
-            <!-- Client Info -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Client *
-                </label>
-                <input
-                  type="text"
-                  [(ngModel)]="applicationForm.clientName"
-                  name="clientName"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Nom du client"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Email Client
-                </label>
-                <input
-                  type="email"
-                  [(ngModel)]="applicationForm.clientEmail"
-                  name="clientEmail"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="client@entreprise.com"
-                />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Téléphone Client
-                </label>
-                <input
-                  type="tel"
-                  [(ngModel)]="applicationForm.clientPhone"
-                  name="clientPhone"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="+33 1 23 45 67 89"
-                />
-              </div>
-
-
-             
-            </div>
-
-
-              <!-- user  -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-             
-                  <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Min Users 
-                </label>
-                <input
-                  type="number"
-                  [(ngModel)]="applicationForm.minUser"
-                  name="minUser"
-                  step="0.01"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="0.00"
-                />
-              </div>
-
-                  <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Maw Users 
-                </label>
-                <input
-                  type="number"
-                  [(ngModel)]="applicationForm.maxUser"
-                  name="maxUser"
-                  step="0.01"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="0.00"
-                />
-              </div>
-
-              
-            
-            </div>
-
-
-            <!-- Dates -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Date de Début
-                </label>
-                <input
-                  type="date"
-                  [(ngModel)]="applicationForm.dateDebut"
-                  name="dateDebut"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Date de Fin
-                </label>
-                <input
-                  type="date"
-                  [(ngModel)]="applicationForm.dateFin"
-                  name="dateFin"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-            </div>
-
-          
-
-            <!-- Description -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Description
-              </label>
-              <textarea
-                [(ngModel)]="applicationForm.description"
-                name="description"
-                rows="3"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Description du application..."
-              ></textarea>
-            </div>
-          </div>
-
-          <div *ngIf="errorMessage" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p class="text-sm text-red-600">{{ errorMessage }}</p>
-          </div>
-
-          <div class="mt-6 flex justify-end space-x-3">
-            <button
-              type="button"
-              (click)="closeModal()"
-              class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              [disabled]="loading"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span *ngIf="loading">
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Création...
-              </span>
-              <span *ngIf="!loading">Créer</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Edit Project Modal -->
-  <div *ngIf="showEditModal && selectedApplication" class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-      </div>
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-        <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Modifier le application</h3>
-        </div>
-        <form (ngSubmit)="updateApplication()" class="px-6 py-4">
-          <div class="space-y-6">
-            <!-- Basic Info -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Code application *
-                </label>
-                <input
-                  type="text"
-                  [(ngModel)]="applicationForm.code"
-                  name="code"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="PROJ-YYYY-XXX"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Nom du application *
-                </label>
-                <input
-                  type="text"
-                  [(ngModel)]="applicationForm.name"
-                  name="name"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Nom du application"
-                />
-              </div>
-            </div>
-
-               <!-- user  -->             
-            <div class="grid grid-cols-1 gap-6">
-                  <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Min Users 
-                </label>
-                <input
-                  type="number"
-                  [(ngModel)]="applicationForm.minUser"
-                  name="minUser"
-                  step="0.01"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="0.00"
-                />
-              </div>
-
-                  <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Maw Users 
-                </label>
-                <input
-                  type="number"
-                  [(ngModel)]="applicationForm.maxUser"
-                  name="maxUser"
-                  step="0.01"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="0.00"
-                />
-              </div>
-
-              
-            
-            </div>
-     
-
-            <!-- Client Info -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Client *
-                </label>
-                <input
-                  type="text"
-                  [(ngModel)]="applicationForm.clientName"
-                  name="clientName"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Nom du client"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Email Client
-                </label>
-                <input
-                  type="email"
-                  [(ngModel)]="applicationForm.clientEmail"
-                  name="clientEmail"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="client@entreprise.com"
-                />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Téléphone Client
-                </label>
-                <input
-                  type="tel"
-                  [(ngModel)]="applicationForm.clientPhone"
-                  name="clientPhone"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="+33 1 23 45 67 89"
-                />
-              </div>
-             
-            </div>
-
-            <!-- Dates -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Date de Début
-                </label>
-                <input
-                  type="date"
-                  [(ngModel)]="applicationForm.dateDebut"
-                  name="dateDebut"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Date de Fin
-                </label>
-                <input
-                  type="date"
-                  [(ngModel)]="applicationForm.dateFin"
-                  name="dateFin"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-            </div>
-
-           <!-- Status -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
   
-
-  <div>
-  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-    Statut
-  </label>
-  
-  <!-- If project is TERMINÉ, show read-only -->
-  <div *ngIf="applicationForm.status === 'TERMINE'"
-       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-    {{ getStatusLabel(applicationForm.status) }}
-    <span class="text-xs text-gray-500 dark:text-gray-400 block mt-1">
-      (application terminé - statut final)
-    </span>
-  </div>
-  
-  <!-- If project is PLANIFIÉ or EN COURS, show dropdown with all manual options -->
-  <select
-    *ngIf="applicationForm.status === 'PLANIFIE' || applicationForm.status === 'EN_COURS'"
-    [(ngModel)]="applicationForm.status"
-    name="status"
-    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-  >
-    <!-- Keep current auto-status as first option -->
-    <option [value]="applicationForm.status">{{ getStatusLabel(applicationForm.status) }} </option>
-    <!-- Manual status options -->
-    <option value="SUSPENDU">Suspendu </option>
-    <option value="ANNULE">Annulé </option>
-  </select>
-  
-  <!-- If project is already SUSPENDU or ANNULÉ, show dropdown to change between them -->
-  <select
-    *ngIf="applicationForm.status === 'SUSPENDU' || applicationForm.status === 'ANNULE'"
-    [(ngModel)]="applicationForm.status"
-    name="status"
-    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-  >
-    <option value="SUSPENDU">Suspendu</option>
-    <option value="ANNULE">Annulé</option>
-    <!-- Option to return to auto-status? Maybe only if dates are valid -->
-    <option *ngIf="canReturnToAutoStatus()" value="EN_COURS">Reprendre (retour au statut automatique)</option>
-  </select>
-</div>
-
-  </div>
-            <!-- Description -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Description
-              </label>
-              <textarea
-                [(ngModel)]="applicationForm.description"
-                name="description"
-                rows="3"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Description du application..."
-              ></textarea>
-            </div>
-          </div>
-
-          <div *ngIf="errorMessage" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p class="text-sm text-red-600">{{ errorMessage }}</p>
-          </div>
-
-          <div class="mt-6 flex justify-end space-x-3">
-            <button
-              type="button"
-              (click)="closeModal()"
-              class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              [disabled]="loading"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span *ngIf="loading">
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Mise à jour...
-              </span>
-              <span *ngIf="!loading">Mettre à jour</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Delete Confirmation Modal -->
-  <div *ngIf="showDeleteModal && selectedApplication" class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-      </div>
-      <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-        <div class="bg-white dark:bg-gray-800 px-6 py-4">
-          <div class="sm:flex sm:items-start">
-            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
-              <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L4.872 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                Confirmer la suppression
-              </h3>
-              <div class="mt-2">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                  Êtes-vous sûr de vouloir supprimer le application <strong>{{ selectedApplication.name }}</strong> ({{ selectedApplication.code }}) ?
-                </p>
-                <p class="text-sm text-red-600 dark:text-red-400 mt-2">
-                  Cette action est irréversible. Toutes les conventions associées devront être supprimées ou réaffectées.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-            <button
-              type="button"
-              (click)="deleteApplication()"
-              [disabled]="loading"
-              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span *ngIf="loading">
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Suppression...
-              </span>
-              <span *ngIf="!loading">Supprimer</span>
-            </button>
-            <button
-              type="button"
-              (click)="closeModal()"
-              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-            >
-              Annuler
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>

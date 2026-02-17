@@ -13,6 +13,7 @@ import com.example.back.security.jwt.JwtUtils;
 import com.example.back.security.services.UserDetailsImpl;
 import com.example.back.service.AvatarService;
 import com.example.back.service.EmailService;
+import com.example.back.service.HistoryService;
 import com.example.back.service.LoginAttemptService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -69,8 +70,10 @@ public class AuthController {
     @Autowired
     private EmailService emailService;
 
-    private static final int MAX_FAILED_ATTEMPTS = 3;
+    @Autowired
+    private HistoryService historyService;
 
+    private static final int MAX_FAILED_ATTEMPTS = 3;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -135,6 +138,9 @@ public class AuthController {
             user.setLastLogin(LocalDateTime.now());
             userRepository.save(user);
 
+            // LOG HISTORY: User login
+            historyService.logUserLogin(user);
+
             return ResponseEntity.ok(new JwtResponse(jwt,
                     userDetails.getId(),
                     userDetails.getUsername(),
@@ -187,17 +193,13 @@ public class AuthController {
 
             return ResponseEntity.status(401).body(response);
 
-        }
-
-        catch (DisabledException e) {
+        } catch (DisabledException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "Account is disabled");
             response.put("error", "AccountDisabled");
             return ResponseEntity.status(401).body(response);
-        }
-
-        catch (LockedException e) {
+        } catch (LockedException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "Account is locked");
@@ -216,7 +218,6 @@ public class AuthController {
                     } catch (Exception emailEx) {
                         response.put("Failed to send admin lock email: {}", emailEx.getMessage());
                     }
-
                 } else if (user.getAccountLockedUntil() != null) {
                     response.put("lockType", "TEMPORARY");
                     response.put("lockUntil", user.getAccountLockedUntil());
@@ -243,10 +244,7 @@ public class AuthController {
             }
 
             return ResponseEntity.status(401).body(response);
-
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "Authentication failed");
@@ -254,7 +252,6 @@ public class AuthController {
             return ResponseEntity.status(401).body(response);
         }
     }
-
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -276,7 +273,15 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
+        // Get current user for history
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            userRepository.findByUsername(auth.getName()).ifPresent(user -> {
+                // LOG HISTORY: User logout
+                historyService.logUserLogout(user);
+            });
+        }
+
         return ResponseEntity.ok(new MessageResponse("Logout successful"));
     }
-
 }

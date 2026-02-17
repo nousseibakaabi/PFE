@@ -436,13 +436,17 @@ public class NomenclatureController {
         try {
             long appsCount = applicationRepository.count();
             long zonesCount = zoneGeographiqueRepository.count();
-            long structuresCount = structureRepository.count();
+            long structuresResCount = structureRepository.findByTypeStructureNot("Client").size();
+            long structuresBenCount = structureRepository.findByTypeStructure("Client").size();
+
 
             Map<String, Object> stats = new HashMap<>();
             stats.put("applications", appsCount);
             stats.put("zones", zonesCount);
-            stats.put("structures", structuresCount);
-            stats.put("total", appsCount + zonesCount + structuresCount);
+            stats.put("structuresBen", structuresBenCount);
+            stats.put("structuresRes", structuresResCount);
+
+            stats.put("total", appsCount + zonesCount + structuresResCount + structuresBenCount);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -494,37 +498,56 @@ public class NomenclatureController {
     }
 
 
-    @GetMapping("/structures/internes")
+    @GetMapping("/structures/responsables")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
-    public ResponseEntity<?> getStructuresInternes() {
+    public ResponseEntity<?> getStructuresResponsable() {
         try {
-            List<Structure> structures = structureRepository.findByTypeStructureNot("CLIENT");
+            List<Structure> structures = structureRepository.findByTypeStructureNot("Client");
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", structures);
             response.put("count", structures.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Error fetching internes structures:", e);
-            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch internes structures"));
+            log.error("Error fetching responsables structures:", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch responsables structures"));
         }
     }
 
 
 
-    @GetMapping("/structures/externes")
+    @GetMapping("/structures/beneficiels")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
-    public ResponseEntity<?> getStructuresExternes() {
+    public ResponseEntity<?> getStructuresBeneficiel() {
         try {
-            List<Structure> structures = structureRepository.findByTypeStructure("CLIENT");
+            List<Structure> structures = structureRepository.findByTypeStructure("Client");
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", structures);
             response.put("count", structures.size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Error fetching externes structures:", e);
-            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch externes structures"));
+            log.error("Error fetching beneficiels structures:", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch beneficiels structures"));
+        }
+    }
+
+
+    @GetMapping("/structures/generate-client-code")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> generateClientCode(@RequestParam String clientName) {
+        try {
+            String generatedCode = "CLI-" + clientName.toUpperCase()
+                    .replaceAll("[^A-Z0-9]", "")
+                    .substring(0, Math.min(8, clientName.length()))
+                    + "-" + (System.currentTimeMillis() % 10000);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("code", generatedCode);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
 }

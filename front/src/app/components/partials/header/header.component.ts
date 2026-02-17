@@ -299,4 +299,8 @@ openTranslationHelp(): void {
   
   alert(helpMessage);
 }
+
+navigateToMailBox(): void {
+  this.router.navigate(['/mailBox']);
+}
 }

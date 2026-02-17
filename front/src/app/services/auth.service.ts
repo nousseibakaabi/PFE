@@ -122,6 +122,7 @@ login(loginRequest: LoginRequest): Observable<AuthResponse> {
     return this.currentUserValue;
   }
 
+
   refreshUser(): Observable<User> {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.token}`

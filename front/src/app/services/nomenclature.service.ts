@@ -49,49 +49,7 @@ export class NomenclatureService {
     });
   }
 
-  // ==================== APPLICATIONS ====================
-  getApplications(): Observable<Nomenclature[]> {
-    return this.http.get<NomenclatureResponse>(
-      `${this.apiUrl}/admin/nomenclatures/applications`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      map(response => response.success ? response.data : []),
-      catchError(this.handleError)
-    );
-  }
 
-  getApplication(id: number): Observable<Nomenclature> {
-    return this.http.get<NomenclatureResponse>(
-      `${this.apiUrl}/admin/nomenclatures/applications/${id}`,
-      { headers: this.getHeaders() }
-    ).pipe(
-      map(response => response.data),
-      catchError(this.handleError)
-    );
-  }
-
-  createApplication(appData: any): Observable<NomenclatureResponse> {
-    return this.http.post<NomenclatureResponse>(
-      `${this.apiUrl}/admin/nomenclatures/applications`,
-      appData,
-      { headers: this.getHeaders() }
-    ).pipe(catchError(this.handleError));
-  }
-
-  updateApplication(id: number, appData: any): Observable<NomenclatureResponse> {
-    return this.http.put<NomenclatureResponse>(
-      `${this.apiUrl}/admin/nomenclatures/applications/${id}`,
-      appData,
-      { headers: this.getHeaders() }
-    ).pipe(catchError(this.handleError));
-  }
-
-  deleteApplication(id: number): Observable<NomenclatureResponse> {
-    return this.http.delete<NomenclatureResponse>(
-      `${this.apiUrl}/admin/nomenclatures/applications/${id}`,
-      { headers: this.getHeaders() }
-    ).pipe(catchError(this.handleError));
-  }
 
   // ==================== ZONES ====================
   getZones(): Observable<Nomenclature[]> {
@@ -137,9 +95,7 @@ export class NomenclatureService {
     ).pipe(catchError(this.handleError));
   }
 
-
-  // In nomenclature.service.ts
-getTunisianGovernorates(): Observable<Nomenclature[]> {
+  getTunisianGovernorates(): Observable<Nomenclature[]> {
   return this.http.get<NomenclatureResponse>(
     `${this.apiUrl}/admin/nomenclatures/zones/tunisian-governorates`,
     { headers: this.getHeaders() }
@@ -147,17 +103,17 @@ getTunisianGovernorates(): Observable<Nomenclature[]> {
     map(response => response.success ? response.data : []),
     catchError(this.handleError)
   );
-}
+  }
 
-getZonesByType(type: string): Observable<Nomenclature[]> {
-  return this.http.get<NomenclatureResponse>(
-    `${this.apiUrl}/admin/nomenclatures/zones/type/${type}`,
-    { headers: this.getHeaders() }
-  ).pipe(
-    map(response => response.success ? response.data : []),
-    catchError(this.handleError)
-  );
-}
+  getZonesByType(type: string): Observable<Nomenclature[]> {
+    return this.http.get<NomenclatureResponse>(
+      `${this.apiUrl}/admin/nomenclatures/zones/type/${type}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => response.success ? response.data : []),
+      catchError(this.handleError)
+    );
+  }
 
   // ==================== STRUCTURES ====================
   getStructures(): Observable<Structure[]> {
@@ -203,6 +159,19 @@ getZonesByType(type: string): Observable<Nomenclature[]> {
     ).pipe(catchError(this.handleError));
   }
 
+
+  generateClientCode(clientName: string): Observable<any> {
+  return this.http.get<any>(
+    `${this.apiUrl}/admin/nomenclatures/structures/generate-client-code`,
+    { 
+      headers: this.getHeaders(),
+      params: { clientName: clientName }
+    }
+  ).pipe(
+    catchError(this.handleError)
+  );
+  }
+
   // ==================== UTILS ====================
   getStats(): Observable<any> {
     return this.http.get<NomenclatureResponse>(
@@ -230,29 +199,29 @@ getZonesByType(type: string): Observable<Nomenclature[]> {
   }
 
 
-  getInternesStructures(): Observable<Structure[]> {
-  return this.http.get<NomenclatureResponse>(
-    `${this.apiUrl}/admin/nomenclatures/structures/internes`,
-    { headers: this.getHeaders() }
-  ).pipe(
-    map(response => {
-      console.log('Internes structures response:', response); // Debug log
-      return response.success ? response.data : [];
-    }),
-    catchError(this.handleError)
-  );
-}
+  getResponsableStructures(): Observable<Structure[]> {
+    return this.http.get<NomenclatureResponse>(
+      `${this.apiUrl}/admin/nomenclatures/structures/responsables`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => {
+        console.log('responsables structures response:', response); // Debug log
+        return response.success ? response.data : [];
+      }),
+      catchError(this.handleError)
+    );
+  }
 
-getExternesStructures(): Observable<Structure[]> {
-  return this.http.get<NomenclatureResponse>(
-    `${this.apiUrl}/admin/nomenclatures/structures/externes`,
-    { headers: this.getHeaders() }
-  ).pipe(
-    map(response => {
-      console.log('Externes structures response:', response); // Debug log
-      return response.success ? response.data : [];
-    }),
-    catchError(this.handleError)
-  );
-}
+  getBeneficielStructures(): Observable<Structure[]> {
+    return this.http.get<NomenclatureResponse>(
+      `${this.apiUrl}/admin/nomenclatures/structures/beneficiels`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      map(response => {
+        console.log('beneficiels structures response:', response); // Debug log
+        return response.success ? response.data : [];
+      }),
+      catchError(this.handleError)
+    );
+  }
 }

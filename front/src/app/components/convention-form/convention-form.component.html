@@ -1,0 +1,355 @@
+<div class="container mx-auto p-3 md:p-4">
+  <!-- Header -->
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button (click)="cancel()" 
+                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+        <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white">
+            {{ isEditing ? 'Modifier la Convention' : 'Nouvelle Convention' }}
+          </h2>
+          <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
+            {{ isEditing ? 'Modifiez les informations de la convention' : 'Créez une nouvelle convention commerciale' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="mb-4 p-3 bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-900/5 border border-green-200 dark:border-green-800/30 rounded-xl">
+    <div class="flex items-center">
+      <div class="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center mr-3">
+        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <span class="text-green-700 dark:text-green-300 text-sm font-medium">{{ successMessage }}</span>
+      <span class="ml-2 text-xs text-green-600 dark:text-green-400">Redirection en cours...</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="mb-4 p-3 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-900/10 dark:to-red-900/5 border border-red-200 dark:border-red-800/30 rounded-xl">
+    <div class="flex items-center">
+      <div class="w-8 h-8 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center mr-3">
+        <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <span class="text-red-700 dark:text-red-300 text-sm font-medium">{{ errorMessage }}</span>
+      <button (click)="clearMessages()" class="ml-auto text-red-500 hover:text-red-700">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && isEditing" class="text-center py-12">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+    <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">Chargement de la convention...</p>
+  </div>
+
+  <!-- Form -->
+  <div *ngIf="!loading || !isEditing" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/30 p-6">
+    <form (ngSubmit)="saveConvention()" class="space-y-5">
+      <!-- Reference fields -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Référence Convention *
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="formData.referenceConvention"
+            name="referenceConvention"
+            [disabled]="isEditing"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+            placeholder="CONV-2024-001"
+          />
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Format: CONV-YYYY-XXX</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Référence ERP *
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="formData.referenceERP"
+            name="referenceERP"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+            placeholder="ERP-REF-001"
+          />
+        </div>
+      </div>
+
+      <!-- Application and Structure Beneficiel -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Application *
+          </label>
+          <select 
+            [(ngModel)]="formData.applicationId" 
+            name="applicationId" 
+            required
+            (change)="onProjectSelected(formData.applicationId)" 
+            [disabled]="isEditing"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          >
+            <option value="">Sélectionner une application</option>
+            <option *ngFor="let application of applications" [value]="application.id">
+              {{ application.code }} - {{ application.name }}
+            </option>
+          </select>
+          <div *ngIf="!isEditing && applications.length === 0" class="mt-2 text-xs text-yellow-600 dark:text-yellow-400">
+            Toutes les applications ont déjà des conventions. Créez d'abord une nouvelle application.
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Structure Beneficiel *
+          </label>
+          <select
+            [(ngModel)]="formData.structureBeneficielId"
+            name="structureBeneficielId"
+            [disabled]="isEditing"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          >
+            <option value="">Sélectionner une structure Beneficiel</option>
+            <option *ngFor="let structure of externesStructures" [value]="structure.id">
+              {{ structure.code }} 
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Info message for app date sync -->
+      <div *ngIf="formData.applicationId" class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div class="text-xs">
+            <p class="font-medium text-blue-700 dark:text-blue-300 mb-1">
+              ⚡ Mise à jour automatique de l'application
+            </p>
+            <p class="text-blue-600 dark:text-blue-400">
+              Les dates de l'application <span class="font-semibold">{{ getApplicationName(formData.applicationId) }}</span> 
+              seront automatiquement mises à jour avec la date de début la plus ancienne et la date de fin la plus récente.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Structure Responsable -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Structure Responsable *
+          </label>
+          <select
+            [(ngModel)]="formData.structureResponsableId"
+            name="structureResponsableId"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          >
+            <option value="">Sélectionner une structure responsable</option>
+            <option *ngFor="let structure of internesStructures" [value]="structure.id">
+              {{ structure.code }} - {{ structure.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Libellé -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          Libellé *
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="formData.libelle"
+          name="libelle"
+          required
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          placeholder="Libellé de la convention"
+        />
+      </div>
+
+      <!-- Dates -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Date Début *
+          </label>
+          <input
+            type="date"
+            [(ngModel)]="formData.dateDebut"
+            name="dateDebut"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Date Fin *
+          </label>
+          <input
+            type="date"
+            [(ngModel)]="formData.dateFin"
+            name="dateFin"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Date Signature
+          </label>
+          <input
+            type="date"
+            [(ngModel)]="formData.dateSignature"
+            name="dateSignature"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+          />
+        </div>
+      </div>
+
+      <!-- Financial Fields -->
+      <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+        <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-3">Informations financières</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Montant HT (TND) *
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="formData.montantHT"
+              name="montantHT"
+              (ngModelChange)="onMontantHTChange()"
+              step="0.01"
+              min="0"
+              required
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+              placeholder="0.00"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              TVA (%)
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="formData.tva"
+              name="tva"
+              (ngModelChange)="onTvaChange()"
+              step="0.01"
+              min="0"
+              max="100"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+              placeholder="19.00"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Montant TTC (TND)
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="formData.montantTTC"
+              name="montantTTC"
+              readonly
+              class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 text-sm"
+              placeholder="Calculé automatiquement"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Number of Users -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          Nombre d'utilisateurs *
+        </label>
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <input
+              type="number"
+              [(ngModel)]="formData.nbUsers"
+              name="nbUsers"
+              (ngModelChange)="onNbUsersChange()"
+              (focus)="onNbUsersFocus()"
+              min="1"
+              step="1"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+              placeholder="Saisir le nombre d'utilisateurs"
+            />
+          </div>
+          <div *ngIf="userLimits" class="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-700 dark:text-blue-300">
+            <span *ngIf="userLimits.minUser">Min: {{ userLimits.minUser }}</span>
+            <span *ngIf="userLimits.maxUser"> | Max: {{ userLimits.maxUser }}</span>
+          </div>
+        </div>
+        <div *ngIf="userRuleMessage" class="mt-1.5 text-xs px-3 py-1.5 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-yellow-700 dark:text-yellow-300">
+          <span class="font-medium">Règle appliquée:</span> {{ userRuleMessage }}
+        </div>
+      </div>
+
+      <!-- Périodicité -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          Modalités de Paiement *
+        </label>
+        <select
+  [(ngModel)]="formData.periodicite"
+  name="periodicite"
+  (ngModelChange)="onPeriodiciteChange()"
+  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+>
+  <option value="">Sélectionner</option>
+  <option *ngFor="let periodicite of periodicites" [value]="periodicite">
+    {{ periodicite }}
+  </option>
+</select>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button type="button" (click)="cancel()" 
+                class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm">
+          Annuler
+        </button>
+        <button type="submit" [disabled]="loading" 
+                class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+          <span *ngIf="loading">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isEditing ? 'Mise à jour...' : 'Création...' }}
+          </span>
+          <span *ngIf="!loading">{{ isEditing ? 'Mettre à jour' : 'Créer la convention' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -20,9 +20,6 @@ export interface Facture {
   updatedAt: string;
   structureResponsableName: string;
   structureBeneficielName: string;
-  conventionReference: string;
-  conventionLibelle: string;
-  conventionId: number;
 
   archived: boolean;
   enRetard: boolean;
@@ -35,6 +32,17 @@ export interface Facture {
   paiementType?: string; 
   joursDetails?: string;
   joursNumber?: number;
+
+  applicationId:number;
+  applicationName:string;
+  applicationCode:string;
+
+   conventionReference?:string;
+  conventionLibelle?:string;
+  conventionId?:number;
+  
+  // Add these convention fields
+  periodicite?: string;
  
 }
 
@@ -99,5 +107,16 @@ export class FactureService {
   // Get invoice statistics
   getStats(): Observable<any> {
     return this.http.get(`${this.apiUrl}/api/factures/stats`);
+  }
+
+
+  // Update facture
+  updateFacture(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/api/factures/${id}`, data);
+  }
+
+  // Delete facture
+  deleteFacture(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/api/factures/${id}`);
   }
 }

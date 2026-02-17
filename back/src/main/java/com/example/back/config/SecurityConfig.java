@@ -83,6 +83,9 @@ public class SecurityConfig {
                         .requestMatchers("/profile/update-with-avatar").authenticated()
                         .requestMatchers("/profile/upload-avatar").authenticated()
 
+                        .requestMatchers("/api/mails/groups/**").authenticated()
+                        // Other mail endpoints
+                        .requestMatchers("/api/mails/**").authenticated()
 
 
                         // In SecurityConfig.java

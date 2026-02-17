@@ -45,6 +45,7 @@ public class ApplicationMapper {
             response.setChefDeProjetUsername(application.getChefDeProjet().getUsername());
             response.setChefDeProjetFullName(application.getChefProjetName());
             response.setChefDeProjetEmail(application.getChefDeProjet().getEmail());
+            response.setChefDeProjetProfileImage(application.getChefDeProjet().getProfileImage());
         }
 
         // Conventions

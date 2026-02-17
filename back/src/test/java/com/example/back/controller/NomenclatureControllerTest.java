@@ -100,7 +100,6 @@ public class NomenclatureControllerTest {
         structure1.setCode("STR001");
         structure1.setName("Structure 1");
         structure1.setDescription("Description for structure 1");
-        structure1.setAddress("Address 1");
         structure1.setPhone("0123456789");
         structure1.setEmail("structure1@example.com");
         structure1.setTypeStructure("CLIENT");
@@ -110,7 +109,6 @@ public class NomenclatureControllerTest {
         structure2.setCode("STR002");
         structure2.setName("Structure 2");
         structure2.setDescription("Description for structure 2");
-        structure2.setAddress("Address 2");
         structure2.setPhone("9876543210");
         structure2.setEmail("structure2@example.com");
         structure2.setTypeStructure("FOURNISSEUR");
@@ -403,7 +401,6 @@ public class NomenclatureControllerTest {
         request.setCode("NEWSTR");
         request.setName("New Structure");
         request.setDescription("New structure description");
-        request.setAddress("New Address");
         request.setPhone("1112223333");
         request.setEmail("new@example.com");
         request.setTypeStructure("CLIENT");
@@ -435,7 +432,6 @@ public class NomenclatureControllerTest {
         request.setCode("EXISTINGSTR");
         request.setName("New Structure");
         request.setDescription("Description");
-        request.setAddress("Address");
         request.setPhone("1112223333");
         request.setEmail("test@example.com");
         request.setTypeStructure("CLIENT");
@@ -460,7 +456,6 @@ public class NomenclatureControllerTest {
         request.setCode("UPDATEDSTR");
         request.setName("Updated Structure");
         request.setDescription("Updated description");
-        request.setAddress("Updated Address");
         request.setPhone("4445556666");
         request.setEmail("updated@example.com");
         request.setTypeStructure("FOURNISSEUR");
