@@ -123,20 +123,20 @@ login(loginRequest: LoginRequest): Observable<AuthResponse> {
   }
 
 
-  refreshUser(): Observable<User> {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.token}`
-    });
-    
-    return this.http.get<User>(`${this.apiUrl}/profile/me`, { headers }).pipe(
-      tap(user => {
-        // Update current user with full profile data including profileImage
-        const updatedUser = { ...user };
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-        this.currentUserSubject.next(updatedUser);
-      })
-    );
-  }
+refreshUser(): Observable<User> {
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${this.token}`
+  });
+  
+  return this.http.get<User>(`${this.apiUrl}/profile/me`, { headers }).pipe(
+    tap(user => {
+      // Update current user with full profile data including profileImage and notifMode
+      const updatedUser = { ...user };
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      this.currentUserSubject.next(updatedUser);
+    })
+  );
+}
 
   getProfile(): Observable<User> {
     const headers = new HttpHeaders({

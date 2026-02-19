@@ -7,7 +7,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+<script>
+    if (typeof global === 'undefined') {
+      window.global = window;
+    }
+    if (typeof process === 'undefined') {
+      window.process = { env: {}, nextTick: (fn) => setTimeout(fn, 0) };
+    }
+    if (typeof Buffer === 'undefined') {
+      window.Buffer = {
+        isBuffer: () => false,
+        from: (str) => str
+      };
+    }
+  </script>
+  </head>
 <body>
   <app-root></app-root>
 </body>

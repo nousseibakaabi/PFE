@@ -47,7 +47,7 @@ export interface ApplicationRequest {
   code: string;
   name: string;
   description: string;
-  chefDeProjetId?: number;
+  chefDeProjetId: number | null;
   clientName: string;
   clientEmail?: string;
   clientPhone?: string;
@@ -135,10 +135,6 @@ deleteApplication(id: number): Observable<ApiResponse> {
     return this.http.get(`${this.apiUrl}/api/applications/unassigned`);
   }
 
-  // Assign chef de projet to application
-  assignChefDeProjet(applicationId: number, chefDeProjetId: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/api/applications/${applicationId}/assign-chef/${chefDeProjetId}`, {});
-  }
 
   getSuggestedApplicationCode(): Observable<any> {
     return this.http.get(`${this.apiUrl}/api/applications/generate-code`);

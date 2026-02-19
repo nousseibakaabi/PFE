@@ -8,6 +8,7 @@ import com.example.back.payload.response.FactureResponse;
 import com.example.back.repository.*;
 import com.example.back.service.ConventionService;
 import com.example.back.service.HistoryService;
+import com.example.back.service.NotificationService;
 import com.example.back.service.UserContextService;
 import com.example.back.service.mapper.FactureMapper;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +54,10 @@ public class FactureController {
 
     @Autowired
     private HistoryService historyService;
+
+    @Autowired
+    private NotificationService notificationService;
+
 
     // Helper method to check if user can access invoice
     private boolean canAccessFacture(Long factureId, User currentUser) {
@@ -196,6 +202,8 @@ public class FactureController {
 
             Facture updated = factureRepository.save(facture);
 
+            checkAndCreateNotificationForFacture(updated);
+
             // LOG HISTORY: Facture update
             historyService.logFactureUpdate(oldFacture, updated, currentUser);
 
@@ -293,6 +301,12 @@ public class FactureController {
 
             Facture updated = factureRepository.save(facture);
 
+
+            if ("PAYE".equals(updated.getStatutPaiement())) {
+                notificationService.deleteNotificationsForFacture(updated.getId());
+                log.info("Deleted notifications for paid facture {}", updated.getNumeroFacture());
+            }
+
             // LOG HISTORY: Payment registration
             historyService.logFacturePayment(updated, currentUser, request.getReferencePaiement());
 
@@ -313,6 +327,30 @@ public class FactureController {
         } catch (Exception e) {
             log.error("Error registering payment: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to register payment"));
+        }
+    }
+
+
+    /**
+     * Méthode utilitaire pour vérifier et créer une notification
+     */
+    private void checkAndCreateNotificationForFacture(Facture facture) {
+        if ("PAYE".equals(facture.getStatutPaiement())) {
+            return; // Pas de notifications pour les factures payées
+        }
+
+        LocalDate today = LocalDate.now();
+        long daysUntilDue = ChronoUnit.DAYS.between(today, facture.getDateEcheance());
+
+        if (daysUntilDue <= 5 && daysUntilDue >= -5) {
+            try {
+                notificationService.createFactureDueNotification(facture, (int) daysUntilDue);
+                log.info("Created notification for facture {} ({} days)",
+                        facture.getNumeroFacture(), daysUntilDue);
+            } catch (Exception e) {
+                log.error("Failed to create notification for facture {}: {}",
+                        facture.getNumeroFacture(), e.getMessage());
+            }
         }
     }
 
@@ -361,6 +399,8 @@ public class FactureController {
             }
 
             Facture saved = factureRepository.save(facture);
+
+            checkAndCreateNotificationForFacture(saved);
 
             // LOG HISTORY: Facture creation
             historyService.logFactureCreate(saved, currentUser);

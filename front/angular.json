@@ -14,7 +14,9 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
                "allowedCommonJsDependencies": [
-              "apexcharts"
+              "apexcharts",
+              "@stomp/stompjs",
+              "sockjs-client"
             ],
             "outputPath": "dist/front",
             "index": "src/index.html",

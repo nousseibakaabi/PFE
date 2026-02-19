@@ -12,8 +12,8 @@
       
         </div>
         <div>
-          <h2 class="text-lg font-bold text-gray-800 dark:text-white">{{ 'Profile' | translate }}</h2>
-          <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{{ 'Manage your account settings' | translate }}</p>
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white">{{ 'Profile'  }}</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{{ 'Manage your account settings'  }}</p>
         </div>
       </div>
       
@@ -51,7 +51,7 @@
     <div class="flex items-center gap-2">
       <div class="w-1 h-1 bg-gray-400 rounded-full"></div>
       <span class="text-gray-600 dark:text-gray-400 text-sm">
-        {{ user?.department || ('No department' | translate) }}
+        {{ user?.department || ('No department' ) }}
       </span>
     </div>
   </div>
@@ -63,21 +63,21 @@
       <!-- Stats -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/10 dark:to-blue-900/5 p-3 rounded-xl">
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ 'Member Since' | translate }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ 'Member Since'  }}</p>
           <p class="text-sm font-semibold text-gray-800 dark:text-white">{{ user?.createdAt | date:'MMM y' }}</p>
         </div>
         <div class="bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-900/5 p-3 rounded-xl">
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ 'Last Login' | translate }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ 'Last Login'  }}</p>
           <p class="text-sm font-semibold text-gray-800 dark:text-white">{{ user?.lastLogin | date:'MMM d' }}</p>
         </div>
         <div class="bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/10 dark:to-purple-900/5 p-3 rounded-xl">
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ 'Status' | translate }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ 'Status'  }}</p>
           <span [class]="getStatusClass()" class="text-xs font-semibold">
             {{ getAccountStatus() }}
           </span>
         </div>
         <div class="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/10 dark:to-amber-900/5 p-3 rounded-xl">
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ 'Failed Logins' | translate }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ 'Failed Logins'  }}</p>
           <p class="text-sm font-semibold text-gray-800 dark:text-white">{{ user?.failedLoginAttempts || 0 }}</p>
         </div>
       </div>
@@ -94,8 +94,8 @@
         </svg>
       </div>
       <div>
-        <h4 class="text-base font-bold text-gray-800 dark:text-white">{{ 'Personal Information' | translate }}</h4>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ 'Basic personal details' | translate }}</p>
+        <h4 class="text-base font-bold text-gray-800 dark:text-white">{{ 'Personal Information'  }}</h4>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ 'Basic personal details'  }}</p>
       </div>
     </div>
     <button (click)="isProfileInfoModal = true"
@@ -103,7 +103,7 @@
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
       </svg>
-      {{ 'Edit' | translate }}
+      {{ 'Edit'  }}
     </button>
   </div>
   
@@ -117,7 +117,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'First Name' | translate }}</p>
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'First Name'  }}</p>
           <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ user?.firstName || '—' }}</p>
         </div>
       </div>
@@ -132,7 +132,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Last Name' | translate }}</p>
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Last Name'  }}</p>
           <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ user?.lastName || '—' }}</p>
         </div>
       </div>
@@ -147,7 +147,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Phone' | translate }}</p>
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Phone'  }}</p>
           <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ user?.phone || '—' }}</p>
         </div>
       </div>
@@ -165,8 +165,8 @@
         </svg>
       </div>
       <div>
-        <h4 class="text-base font-bold text-gray-800 dark:text-white">{{ 'Account Security' | translate }}</h4>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ 'Security settings and information' | translate }}</p>
+        <h4 class="text-base font-bold text-gray-800 dark:text-white">{{ 'Account Security'  }}</h4>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ 'Security settings and information'  }}</p>
       </div>
     </div>
     <button (click)="isPasswordModal = true"
@@ -174,7 +174,7 @@
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
       </svg>
-      {{ 'Change Password' | translate }}
+      {{ 'Change Password'  }}
     </button>
   </div>
   
@@ -191,7 +191,7 @@
               </svg>
             </div>
             <div>
-              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Username' | translate }}</p>
+              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Username'  }}</p>
               <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ user?.username || '—' }}</p>
             </div>
           </div>
@@ -208,7 +208,7 @@
               </svg>
             </div>
             <div>
-              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Account Created' | translate }}</p>
+              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Account Created'  }}</p>
               <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ user?.createdAt | date:'mediumDate' || '—' }}</p>
             </div>
           </div>
@@ -228,15 +228,15 @@
               </svg>
             </div>
             <div>
-              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ '2FA Status' | translate }}</p>
+              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ '2FA Status'  }}</p>
               <span class="inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full mt-0.5" 
                     [class]="user?.twoFactorEnabled ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'">
-                {{ user?.twoFactorEnabled ? 'Enabled' : 'Disabled' | translate }}
+                {{ user?.twoFactorEnabled ? 'Enabled' : 'Disabled'  }}
               </span>
             </div>
           </div>
           <button *ngIf="!user?.twoFactorEnabled" class="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
-            {{ 'Enable' | translate }}
+            {{ 'Enable'  }}
           </button>
         </div>
       </div>
@@ -251,7 +251,7 @@
               </svg>
             </div>
             <div>
-              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Last Password Change' | translate }}</p>
+              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Last Password Change'  }}</p>
               <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">{{ user?.lastPasswordChange | date:'mediumDate' || '—' }}</p>
             </div>
           </div>
@@ -275,8 +275,8 @@
         </svg>
       </div>
       <div>
-        <h4 class="text-base font-bold text-gray-800 dark:text-white">{{ 'Notification Preferences' | translate }}</h4>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ 'Choose how you receive notifications' | translate }}</p>
+        <h4 class="text-base font-bold text-gray-800 dark:text-white">{{ 'Notification Preferences'  }}</h4>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ 'Choose how you receive notifications'  }}</p>
       </div>
     </div>
     
@@ -289,7 +289,7 @@
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
-      <span>{{ notificationLoading ? 'Saving...' : 'Save' | translate }}</span>
+      <span>{{ notificationLoading ? 'Saving...' : 'Save'  }}</span>
     </button>
   </div>
   
@@ -302,12 +302,12 @@
         </svg>
       </div>
       <div>
-        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Current Selection' | translate }}</p>
+        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'Current Selection'  }}</p>
         <p class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">
-          {{ getNotificationModeText() | translate }}
+          {{ getNotificationModeText()  }}
         </p>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          {{ getNotificationModeDescription() | translate }}
+          {{ getNotificationModeDescription()  }}
         </p>
       </div>
     </div>
@@ -324,10 +324,10 @@
   <div class="flex items-center mb-2">
     <input type="radio" formControlName="notifMode" value="email" 
            class="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:bg-gray-700">
-    <span class="ml-2 text-sm font-medium text-gray-800 dark:text-white">{{ 'Email' | translate }}</span>
+    <span class="ml-2 text-sm font-medium text-gray-800 dark:text-white">{{ 'Email'  }}</span>
   </div>
   <p class="text-xs text-gray-500 dark:text-gray-400 pl-6">
-    {{ 'Receive notifications via email only' | translate }}
+    {{ 'Receive notifications via email only'  }}
   </p>
 </label>
 
@@ -338,10 +338,10 @@
   <div class="flex items-center mb-2">
     <input type="radio" formControlName="notifMode" value="sms" 
            class="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:bg-gray-700">
-    <span class="ml-2 text-sm font-medium text-gray-800 dark:text-white">{{ 'SMS' | translate }}</span>
+    <span class="ml-2 text-sm font-medium text-gray-800 dark:text-white">{{ 'SMS'  }}</span>
   </div>
   <p class="text-xs text-gray-500 dark:text-gray-400 pl-6">
-    {{ 'Receive notifications via SMS only' | translate }}
+    {{ 'Receive notifications via SMS only'  }}
   </p>
 </label>
 
@@ -352,10 +352,10 @@
   <div class="flex items-center mb-2">
     <input type="radio" formControlName="notifMode" value="both" 
            class="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:bg-gray-700">
-    <span class="ml-2 text-sm font-medium text-gray-800 dark:text-white">{{ 'Both' | translate }}</span>
+    <span class="ml-2 text-sm font-medium text-gray-800 dark:text-white">{{ 'Both'  }}</span>
   </div>
   <p class="text-xs text-gray-500 dark:text-gray-400 pl-6">
-    {{ 'Receive notifications via both email and SMS' | translate }}
+    {{ 'Receive notifications via both email and SMS'  }}
   </p>
 </label>
     </div>
@@ -363,17 +363,17 @@
     <!-- Important Note -->
     <div class="mt-4 p-3 bg-gradient-to-r from-amber-50 to-amber-100/50 dark:from-amber-900/10 dark:to-amber-900/5 border border-amber-200 dark:border-amber-800/30 rounded-xl">
       <p class="text-xs text-amber-700 dark:text-amber-300">
-        <strong>{{ 'Note:' | translate }}</strong> {{ 'SMS notifications require a valid phone number to be set in your profile.' | translate }}
+        <strong>{{ 'Note:'  }}</strong> {{ 'SMS notifications require a valid phone number to be set in your profile.'  }}
       </p>
     </div>
     
     <!-- Messages -->
     <div *ngIf="notificationError" class="p-3 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-900/10 dark:to-red-900/5 border border-red-200 dark:border-red-800/30 rounded-xl">
-      <p class="text-sm text-red-600 dark:text-red-300">{{ notificationError | translate }}</p>
+      <p class="text-sm text-red-600 dark:text-red-300">{{ notificationError  }}</p>
     </div>
 
     <div *ngIf="notificationSuccess" class="p-3 bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-900/5 border border-green-200 dark:border-green-800/30 rounded-xl">
-      <p class="text-sm text-green-600 dark:text-green-400">{{ 'Notification preferences updated successfully!' | translate }}</p>
+      <p class="text-sm text-green-600 dark:text-green-400">{{ 'Notification preferences updated successfully!'  }}</p>
     </div>
   </form>
 </div>
@@ -384,8 +384,8 @@
   <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-5 animate-fadeIn">
     <div class="flex justify-between items-center mb-5">
       <div>
-        <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ 'Edit Profile' | translate }}</h3>
-        <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">{{ 'Update your personal information' | translate }}</p>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ 'Edit Profile'  }}</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">{{ 'Update your personal information'  }}</p>
       </div>
       <button (click)="closeProfileInfoModal()" 
               class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
@@ -420,7 +420,7 @@
         </div>
         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">JPG, PNG or GIF. Max 2MB</p>
         <p *ngIf="selectedFile" class="mt-1 text-xs text-green-600 dark:text-green-400">
-          {{ 'New photo selected' | translate }}
+          {{ 'New photo selected'  }}
         </p>
       </div>
 
@@ -428,31 +428,31 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {{ 'First Name' | translate }} *
+            {{ 'First Name'  }} *
           </label>
           <input type="text" formControlName="firstName" 
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm">
           <div *ngIf="personalInfoForm.get('firstName')?.invalid && personalInfoForm.get('firstName')?.touched" 
                class="mt-1 text-xs text-red-500">
-            {{ 'Required' | translate }}
+            {{ 'Required'  }}
           </div>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {{ 'Last Name' | translate }} *
+            {{ 'Last Name'  }} *
           </label>
           <input type="text" formControlName="lastName" 
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm">
           <div *ngIf="personalInfoForm.get('lastName')?.invalid && personalInfoForm.get('lastName')?.touched" 
                class="mt-1 text-xs text-red-500">
-            {{ 'Required' | translate }}
+            {{ 'Required'  }}
           </div>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {{ 'Email' | translate }}
+            {{ 'Email'  }}
           </label>
           <input type="email" formControlName="email" readonly
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-600 dark:text-gray-300 text-sm">
@@ -460,9 +460,9 @@
 
         <div>
   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-    {{ 'Phone' | translate }}
+    {{ 'Phone'  }}
     <span class="text-xs text-amber-600 dark:text-amber-400 ml-1">
-      ({{ 'Required for SMS notifications' | translate }})
+      ({{ 'Required for SMS notifications'  }})
     </span>
   </label>
   <input type="tel" formControlName="phone" 
@@ -472,18 +472,18 @@
 
       <!-- Messages -->
       <div *ngIf="error" class="p-3 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-900/10 dark:to-red-900/5 border border-red-200 dark:border-red-800/30 rounded-xl">
-        <p class="text-sm text-red-600 dark:text-red-300">{{ error | translate }}</p>
+        <p class="text-sm text-red-600 dark:text-red-300">{{ error  }}</p>
       </div>
 
       <div *ngIf="personalInfoSuccess" class="p-3 bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-900/5 border border-green-200 dark:border-green-800/30 rounded-xl">
-        <p class="text-sm text-green-600 dark:text-green-400">{{ 'Profile updated successfully!' | translate }}</p>
+        <p class="text-sm text-green-600 dark:text-green-400">{{ 'Profile updated successfully!'  }}</p>
       </div>
 
       <!-- Actions -->
       <div class="flex space-x-3 pt-2">
         <button type="button" (click)="closeProfileInfoModal()" 
                 class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm">
-          {{ 'Cancel' | translate }}
+          {{ 'Cancel'  }}
         </button>
         <button type="submit" [disabled]="personalInfoLoading || personalInfoForm.invalid"
                 class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
@@ -492,9 +492,9 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ 'Saving' | translate }}...
+            {{ 'Saving'  }}...
           </span>
-          <span *ngIf="!personalInfoLoading">{{ 'Save Changes' | translate }}</span>
+          <span *ngIf="!personalInfoLoading">{{ 'Save Changes'  }}</span>
         </button>
       </div>
     </form>
@@ -506,8 +506,8 @@
   <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-5 animate-fadeIn">
     <div class="flex justify-between items-center mb-5">
       <div>
-        <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ 'Change Password' | translate }}</h3>
-        <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">{{ 'Update your password securely' | translate }}</p>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white">{{ 'Change Password'  }}</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mt-0.5">{{ 'Update your password securely'  }}</p>
       </div>
       <button (click)="closePasswordModal()" 
               class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
@@ -521,80 +521,80 @@
       <div class="space-y-3">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {{ 'Current Password' | translate }} *
+            {{ 'Current Password'  }} *
           </label>
           <input type="password" formControlName="currentPassword" 
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm">
           <div *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched" 
                class="mt-1 text-xs text-red-500">
-            {{ 'Required' | translate }}
+            {{ 'Required'  }}
           </div>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {{ 'New Password' | translate }} *
+            {{ 'New Password'  }} *
           </label>
           <input type="password" formControlName="newPassword" 
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm">
           <div *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched" 
                class="mt-1 text-xs text-red-500">
-            {{ 'Min 6 characters' | translate }}
+            {{ 'Min 6 characters'  }}
           </div>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            {{ 'Confirm Password' | translate }} *
+            {{ 'Confirm Password'  }} *
           </label>
           <input type="password" formControlName="confirmPassword" 
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm">
           <div *ngIf="passwordForm.hasError('mismatch')" 
                class="mt-1 text-xs text-red-500">
-            {{ 'Passwords do not match' | translate }}
+            {{ 'Passwords do not match'  }}
           </div>
         </div>
       </div>
 
       <!-- Password Requirements -->
       <div class="p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-900/10 dark:to-gray-900/5 rounded-xl">
-        <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">{{ 'Password Requirements:' | translate }}</p>
+        <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">{{ 'Password Requirements:'  }}</p>
         <ul class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
           <li class="flex items-center">
             <svg class="w-3 h-3 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
             </svg>
-            {{ 'At least 6 characters' | translate }}
+            {{ 'At least 6 characters'  }}
           </li>
           <li class="flex items-center">
             <svg class="w-3 h-3 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
             </svg>
-            {{ 'Letters and numbers' | translate }}
+            {{ 'Letters and numbers'  }}
           </li>
           <li class="flex items-center">
             <svg class="w-3 h-3 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
             </svg>
-            {{ 'Avoid common passwords' | translate }}
+            {{ 'Avoid common passwords'  }}
           </li>
         </ul>
       </div>
 
       <!-- Messages -->
       <div *ngIf="error" class="p-3 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-900/10 dark:to-red-900/5 border border-red-200 dark:border-red-800/30 rounded-xl">
-        <p class="text-sm text-red-600 dark:text-red-300">{{ error | translate }}</p>
+        <p class="text-sm text-red-600 dark:text-red-300">{{ error  }}</p>
       </div>
 
       <div *ngIf="passwordSuccess" class="p-3 bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-900/5 border border-green-200 dark:border-green-800/30 rounded-xl">
-        <p class="text-sm text-green-600 dark:text-green-400">{{ 'Password changed successfully!' | translate }}</p>
+        <p class="text-sm text-green-600 dark:text-green-400">{{ 'Password changed successfully!'  }}</p>
       </div>
 
       <!-- Actions -->
       <div class="flex space-x-3 pt-2">
         <button type="button" (click)="closePasswordModal()" 
                 class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm">
-          {{ 'Cancel' | translate }}
+          {{ 'Cancel'  }}
         </button>
         <button type="submit" [disabled]="passwordLoading || passwordForm.invalid"
                 class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
@@ -603,9 +603,9 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ 'Changing' | translate }}...
+            {{ 'Changing'  }}...
           </span>
-          <span *ngIf="!passwordLoading">{{ 'Change Password' | translate }}</span>
+          <span *ngIf="!passwordLoading">{{ 'Change Password'  }}</span>
         </button>
       </div>
     </form>

@@ -52,14 +52,15 @@ public class AdminController {
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> allUsers = userRepository.findAll();
 
-        // Filter out users with ADMIN role
         List<User> nonAdminUsers = allUsers.stream()
                 .filter(user -> user.getRoles().stream()
-                        .noneMatch(role -> role.getName() == ERole.ROLE_ADMIN))  
+                        .noneMatch(role -> role.getName() == ERole.ROLE_ADMIN))
+                .filter(user -> !"system".equals(user.getUsername()))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(nonAdminUsers);
     }
+
 
     @PostMapping("/users/{userId}/lock")
     @PreAuthorize("hasRole('ADMIN')")

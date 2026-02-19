@@ -99,24 +99,107 @@
           </div>
         </div>
 
-        <div *ngIf="shouldShowChefField()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Chef de Projet
-            </label>
-            <select
-              [(ngModel)]="applicationForm.chefDeProjetId"
-              name="chefDeProjetId"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-            >
-              <option value="">Non assigné</option>
-              <option *ngFor="let chef of chefsProjet" [value]="chef.id">
-                {{ chef.firstName }} {{ chef.lastName }} ({{ chef.username }})
-              </option>
-            </select>
+
+        <!-- Chef de Projet Selection with Workload in Custom Dropdown -->
+<!-- Chef de Projet Selection with Workload in Dropdown -->
+<div *ngIf="shouldShowChefField()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+      Chef de Projet
+    </label>
+    
+    <!-- Loading indicator -->
+    <div *ngIf="workloadLoading" class="mb-2 text-xs text-gray-500 dark:text-gray-400">
+      <i class="fas fa-spinner fa-spin mr-1"></i> Chargement des charges...
+    </div>
+    
+    <!-- Custom dropdown with workload indicators and avatars -->
+    <div class="relative">
+      <button 
+        type="button"
+        (click)="toggleChefDropdown()"
+        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm flex items-center justify-between">
+        <span *ngIf="!getSelectedChef()" class="text-gray-500 dark:text-gray-400">Sélectionner un chef de projet</span>
+        <span *ngIf="getSelectedChef() as chef" class="flex items-center">
+          <div class="h-6 w-6 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 mr-2">
+            <img [src]="getChefAvatarUrl(chef)" 
+                 [alt]="chef.firstName"
+                 class="h-full w-full object-cover"
+                 (error)="handleChefImageError($event, chef)">
+          </div>
+          <span>{{ chef.firstName }} {{ chef.lastName }}</span>
+          <ng-container *ngIf="getChefWorkload(chef.id) as workload">
+            <span class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full"
+                  [ngClass]="getWorkloadClass(workload.currentWorkload)">
+              {{ workload.currentWorkload.toFixed(1) }}%
+            </span>
+            <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">
+              ({{ workload.currentApps }} applications)
+            </span>
+          </ng-container>
+        </span>
+        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      
+      <!-- Dropdown menu -->
+      <div *ngIf="showChefDropdown" 
+           class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+        <div class="py-1">
+          <!-- Non assigné option -->
+          <div (click)="selectChef(null)" 
+              class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-700">
+            <span class="text-gray-500 dark:text-gray-400">Non assigné</span>
+          </div>
+          
+          <!-- Chef options -->
+          <div *ngFor="let chef of chefsProjet" 
+               (click)="selectChef(chef)"
+               class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center"
+               [class.bg-blue-50]="applicationForm.chefDeProjetId === chef.id">
+            
+            <!-- Avatar -->
+            <div class="h-8 w-8 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3 flex-shrink-0">
+              <img [src]="getChefAvatarUrl(chef)" 
+                   [alt]="chef.firstName"
+                   class="h-full w-full object-cover"
+                   (error)="handleChefImageError($event, chef)">
+            </div>
+            
+            <!-- Name and workload -->
+            <div class="flex-1 flex items-center justify-between">
+              <span class="text-sm font-medium text-gray-900 dark:text-white">
+                {{ chef.firstName }} {{ chef.lastName }}
+              </span>
+              
+              <ng-container *ngIf="getChefWorkload(chef.id) as workload">
+                <div class="flex items-center ml-2">
+                  <span class="px-2 py-0.5 text-xs font-medium rounded-full mr-1"
+                        [ngClass]="getWorkloadClass(workload.currentWorkload)">
+                    {{ workload.currentWorkload.toFixed(1) }}%
+                  </span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ workload.currentApps }} Apps
+                  </span>
+                </div>
+              </ng-container>
+              
+              <!-- Loading state -->
+              <span *ngIf="!getChefWorkload(chef.id) && workloadLoading" 
+                    class="text-xs text-gray-400">
+                <i class="fas fa-spinner fa-spin"></i>
+              </span>
+            </div>
           </div>
         </div>
-        
+      </div>
+    </div>
+    
+
+  </div>
+</div>
+  
 
         <!-- Client Info -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

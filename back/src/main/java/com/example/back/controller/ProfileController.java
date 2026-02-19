@@ -60,7 +60,8 @@ public class ProfileController {
                 user.getCreatedAt(),
                 user.getLastLogin(),
                 roles,
-                user.getProfileImage()
+                user.getProfileImage(),
+                user.getNotifMode()
         );
 
         return ResponseEntity.ok(profileResponse);

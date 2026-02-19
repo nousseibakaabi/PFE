@@ -1,0 +1,176 @@
+<!-- src/app/components/notifications/notifications.component.html -->
+<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+  <!-- Header -->
+  <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Notifications</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        View and manage all your notifications
+      </p>
+    </div>
+    
+    <!-- Actions -->
+    <div class="mt-4 flex items-center gap-3 sm:mt-0">
+      <button
+        *ngIf="hasUnreadNotifications()"
+        (click)="markAllAsRead()"
+        class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+      >
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Mark all as read
+      </button>
+      
+      <button
+        (click)="refreshNotifications()"
+        class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+      >
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Notifications List -->
+  <div class="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+    <!-- Loading State -->
+    <div *ngIf="isLoading && notifications.length === 0" class="flex flex-col items-center justify-center py-16">
+      <div class="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600 dark:border-gray-700 dark:border-t-blue-500"></div>
+      <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">Loading notifications...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && notifications.length === 0" class="flex flex-col items-center justify-center py-16">
+      <svg class="h-16 w-16 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+      </svg>
+      <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No notifications</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">You don't have any notifications yet.</p>
+    </div>
+
+    <!-- Notifications List -->
+    <div *ngIf="notifications.length > 0" class="divide-y divide-gray-200 dark:divide-gray-800">
+      <div
+        *ngFor="let notification of notifications"
+        class="relative cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
+        [ngClass]="getNotificationRowClass(notification)"
+        (click)="onNotificationClick(notification)"
+      >
+        <div class="flex items-start gap-4 p-4 sm:p-6">
+          <!-- Icon -->
+          <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+               [ngClass]="getIconBackgroundClass(notification.type)">
+            <i class="fas text-lg" [ngClass]="getNotificationIcon(notification.type)"></i>
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 min-w-0 pr-8">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-base font-medium text-gray-900 dark:text-white"
+                    [ngClass]="getTitleClass(notification)">
+                  {{ notification.title }}
+                </h3>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  {{ notification.message }}
+                </p>
+              </div>
+              
+              <!-- Delete button -->
+              <button
+                (click)="onDeleteClick(notification.id, $event)"
+                class="flex-shrink-0 rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-red-400 transition-colors"
+                title="Delete notification"
+              >
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Metadata -->
+            <div class="mt-2 flex flex-wrap items-center gap-3">
+              <!-- Days badge -->
+              <span *ngIf="notification.daysUntilDue !== undefined" 
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    [ngClass]="getDaysBadgeClass(notification.daysUntilDue)">
+                <i class="fas mr-1 text-xs" [ngClass]="getDaysIconClass(notification.daysUntilDue)"></i>
+                {{ getDaysStatusText(notification.daysUntilDue) }}
+              </span>
+
+              <!-- Reference -->
+              <span class="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                <i class="fas fa-hashtag"></i>
+                {{ notification.referenceCode }}
+              </span>
+
+              <!-- Type -->
+              <span class="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                <i class="fas" [ngClass]="getReferenceTypeIcon(notification.referenceType)"></i>
+                {{ notification.referenceType }}
+              </span>
+
+              <!-- Time -->
+              <span class="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                <i class="fas fa-clock"></i>
+                {{ formatTime(notification.createdAt) }}
+              </span>
+
+              <!-- Read status -->
+              <span *ngIf="notification.isRead" class="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                <i class="fas fa-check-circle"></i>
+                Read
+              </span>
+              <span *ngIf="!notification.isRead" class="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                <i class="fas fa-envelope"></i>
+                Unread
+              </span>
+            </div>
+
+            <!-- Notification Channels -->
+            <div *ngIf="notification.emailSent || notification.smsSent" class="mt-2 flex items-center gap-2">
+              <span *ngIf="notification.emailSent" 
+                    class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                <i class="fas fa-envelope text-xs"></i>
+                Email sent
+              </span>
+              <span *ngIf="notification.smsSent" 
+                    class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                <i class="fas fa-mobile-alt text-xs"></i>
+                SMS sent
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading More -->
+      <div *ngIf="hasMore" class="flex justify-center py-6">
+        <button
+          *ngIf="!isLoading"
+          (click)="loadMore()"
+          class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+          Load more
+        </button>
+        
+        <div *ngIf="isLoading" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+          Loading more...
+        </div>
+      </div>
+
+      <!-- End of list -->
+      <div *ngIf="!hasMore && notifications.length > 0" 
+           class="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        You've reached the end of your notifications
+      </div>
+    </div>
+  </div>
+</div>

@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
 import { UserService } from 'src/app/services/user.service';
 import { HistoryService, HistoryEntry } from '../../services/history.service';
+import { WorkloadService, WorkloadCheck, AlternativeChef } from '../../services/workload.service';
 
 @Component({
   selector: 'app-application-detail',
@@ -39,6 +40,13 @@ export class ApplicationDetailComponent implements OnInit {
   groupedApplicationHistory: { date: string, entries: HistoryEntry[] }[] = [];
 
 
+  showWorkloadWarning = false;
+  workloadCheck: WorkloadCheck | null = null;
+  workloadLoading = false;
+  alternativeChefs: AlternativeChef[] = [];
+
+  Math = Math;
+
 
 
 
@@ -51,7 +59,8 @@ export class ApplicationDetailComponent implements OnInit {
     private conventionService: ConventionService,
     private authService: AuthService,
     private userService: UserService,
-    public historyService: HistoryService
+    public historyService: HistoryService,
+    private workloadService: WorkloadService
     ) {}
 
   ngOnInit(): void {
@@ -358,30 +367,94 @@ closeAssignChefModal(): void {
 // Select a chef
 selectChef(chef: any): void {
   this.selectedChefId = chef.id;
+  
+  // Check workload when chef is selected
+  if (this.application && chef.id) {
+    this.checkWorkload(chef.id);
+  }
 }
 
-// Assign chef to application
+
+checkWorkload(chefId: number): void {
+  if (!this.application) return;
+  
+  this.workloadLoading = true;
+  this.workloadService.checkAssignment(chefId, this.application.id).subscribe({
+    next: (response) => {
+      if (response.success && response.data) {
+        this.workloadCheck = response.data;
+        this.showWorkloadWarning = !response.data.canAssign && !response.data.assignWithCaution;
+        this.alternativeChefs = response.data.alternativeChefs || [];
+      }
+      this.workloadLoading = false;
+    },
+    error: (error) => {
+      console.error('Error checking workload:', error);
+      this.workloadLoading = false;
+    }
+  });
+}
+
 assignChef(): void {
   if (!this.selectedChefId || !this.application) return;
   
   this.assigning = true;
-  this.applicationService.assignChefDeProjet(this.application.id, this.selectedChefId).subscribe({
+  
+  // Use the new workload endpoint with force=false by default
+  this.workloadService.assignWithWorkloadCheck(
+    this.selectedChefId, 
+    this.application.id, 
+    false
+  ).subscribe({
     next: (response) => {
       if (response.success) {
-        this.successMessage = 'Chef de projet assigné avec succès';
-        this.loadApplicationDetails(this.application!.id); // Reload to update
+        this.successMessage = response.warning 
+          ? 'Chef de projet assigné avec avertissement (charge élevée)'
+          : 'Chef de projet assigné avec succès';
+        this.loadApplicationDetails(this.application!.id);
         this.closeAssignChefModal();
       } else {
-        this.errorMessage = response.message || 'Failed to assign chef';
+        this.errorMessage = response.message || 'Échec de l\'assignation';
       }
       this.assigning = false;
     },
     error: (error) => {
       console.error('Error assigning chef:', error);
-      this.errorMessage = error.error?.message || 'Failed to assign chef';
+      this.errorMessage = error.error?.message || 'Échec de l\'assignation';
       this.assigning = false;
     }
   });
+}
+
+// Add method to force assign despite workload warning
+forceAssignChef(): void {
+  if (!this.selectedChefId || !this.application) return;
+  
+  if (confirm('Attention: Ce chef de projet a une charge de travail élevée. Voulez-vous vraiment l\'assigner?')) {
+    this.assigning = true;
+    
+    this.workloadService.assignWithWorkloadCheck(
+      this.selectedChefId, 
+      this.application.id, 
+      true // force = true
+    ).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.successMessage = 'Chef de projet assigné (forcé)';
+          this.loadApplicationDetails(this.application!.id);
+          this.closeAssignChefModal();
+        } else {
+          this.errorMessage = response.message || 'Échec de l\'assignation';
+        }
+        this.assigning = false;
+      },
+      error: (error) => {
+        console.error('Error assigning chef:', error);
+        this.errorMessage = error.error?.message || 'Échec de l\'assignation';
+        this.assigning = false;
+      }
+    });
+  }
 }
 
 // Helper method to get chef avatar URL for modal

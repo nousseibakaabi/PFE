@@ -1,15 +1,10 @@
 package com.example.back.service;
 
-import com.example.back.entity.Application;
-import com.example.back.entity.Convention;
-import com.example.back.entity.User;
-import com.example.back.entity.Structure;
+import com.example.back.entity.*;
 import com.example.back.payload.request.ApplicationRequest;
 import com.example.back.payload.response.ApplicationResponse;
-import com.example.back.repository.ApplicationRepository;
-import com.example.back.repository.UserRepository;
-import com.example.back.repository.StructureRepository;
-import com.example.back.repository.ConventionRepository;
+import com.example.back.payload.response.MailResponse;
+import com.example.back.repository.*;
 import com.example.back.service.mapper.ApplicationMapper;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -45,6 +41,21 @@ public class ApplicationService {
     @Autowired
     private HistoryService historyService;
 
+    @Autowired
+    private SmsService smsService;
+
+    @Autowired
+    private MailService mailService;
+
+    @Autowired
+    private WorkloadService workloadService;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
     /**
      * Create a new application
      */
@@ -65,7 +76,7 @@ public class ApplicationService {
 
             // Fetch chef de projet - make it optional
             User chefDeProjet = null;
-            if (request.getChefDeProjetId() != null) {
+            if (request.getChefDeProjetId() != null && request.getChefDeProjetId() > 0) {
                 chefDeProjet = userRepository.findById(request.getChefDeProjetId())
                         .orElseThrow(() -> new RuntimeException("Chef de Projet not found"));
 
@@ -98,6 +109,27 @@ public class ApplicationService {
             User currentUser = getCurrentUser();
             historyService.logApplicationCreate(savedApplication, currentUser);
 
+            // ===== IF CHEF WAS ASSIGNED DURING CREATION, USE WORKLOAD SERVICE =====
+            if (chefDeProjet != null && currentUser != null) {
+                log.info("Chef de projet assigned during creation - using workload service");
+
+                // Call workload service to handle assignment with validation and notification
+                WorkloadService.AssignmentResult result = workloadService.assignApplication(
+                        chefDeProjet.getId(),
+                        savedApplication.getId(),
+                        false // force = false by default
+                );
+
+                if (result.isSuccess()) {
+                    log.info("Workload validation passed for chef: {}", chefDeProjet.getUsername());
+                } else if (result.isWarning()) {
+                    log.warn("Workload warning for chef: {} - {}", chefDeProjet.getUsername(), result.getMessage());
+                } else if (result.isBlocked()) {
+                    log.error("Workload blocked for chef: {} - {}", chefDeProjet.getUsername(), result.getMessage());
+                    throw new RuntimeException("Cannot assign chef due to workload limits: " + result.getMessage());
+                }
+            }
+
             return applicationMapper.toResponse(savedApplication);
 
         } catch (RuntimeException e) {
@@ -108,7 +140,6 @@ public class ApplicationService {
             throw new RuntimeException("Failed to create application: " + e.getMessage());
         }
     }
-
     /**
      * Update application
      */
@@ -124,6 +155,15 @@ public class ApplicationService {
             // Store old values for history
             Application oldApplication = cloneApplication(application);
 
+            // Track if chef changed
+            Long oldChefId = application.getChefDeProjet() != null ?
+                    application.getChefDeProjet().getId() : null;
+            Long newChefId = request.getChefDeProjetId() != null && request.getChefDeProjetId() > 0 ?
+                    request.getChefDeProjetId() : null;
+
+            boolean chefChanged = (oldChefId == null && newChefId != null) ||
+                    (oldChefId != null && !oldChefId.equals(newChefId));
+
             // Check access based on role
             if ("ROLE_ADMIN".equals(currentRole)) {
                 // Admin can update all applications
@@ -137,6 +177,11 @@ public class ApplicationService {
                 if (application.getChefDeProjet() == null ||
                         !application.getChefDeProjet().getId().equals(currentUser.getId())) {
                     throw new RuntimeException("Access denied: You can only update your own applications");
+                }
+
+                // Chef de projet cannot change the chef assignment
+                if (chefChanged) {
+                    throw new RuntimeException("Access denied: You cannot change the chef de projet assignment");
                 }
             }
             else {
@@ -169,17 +214,19 @@ public class ApplicationService {
             application.setMaxUser(request.getMaxUser());
             application.setMinUser(request.getMinUser());
 
+            User newChef = null;
+
             // Only Admin can change chef de projet
             if ("ROLE_ADMIN".equals(currentRole)) {
-                if (request.getChefDeProjetId() != null) {
-                    User chefDeProjet = userRepository.findById(request.getChefDeProjetId())
+                if (request.getChefDeProjetId() != null && request.getChefDeProjetId() > 0) {
+                    newChef = userRepository.findById(request.getChefDeProjetId())
                             .orElseThrow(() -> new RuntimeException("Chef de Projet not found"));
 
-                    if (!chefDeProjet.getRoles().stream()
+                    if (!newChef.getRoles().stream()
                             .anyMatch(role -> role.getName().name().equals("ROLE_CHEF_PROJET"))) {
                         throw new RuntimeException("Selected user is not a Chef de Projet");
                     }
-                    application.setChefDeProjet(chefDeProjet);
+                    application.setChefDeProjet(newChef);
                 } else {
                     application.setChefDeProjet(null);
                 }
@@ -198,6 +245,30 @@ public class ApplicationService {
                         oldApplication.getStatus(), updatedApplication.getStatus());
             }
 
+            // ===== IF CHEF CHANGED, USE WORKLOAD SERVICE =====
+            if (chefChanged && newChef != null && currentUser != null) {
+                log.info("Chef de projet changed from {} to {} - using workload service",
+                        oldChefId, newChefId);
+
+                // Call workload service to handle assignment with validation and notification
+                WorkloadService.AssignmentResult result = workloadService.assignApplication(
+                        newChef.getId(),
+                        updatedApplication.getId(),
+                        false // force = false by default
+                );
+
+                if (result.isSuccess()) {
+                    log.info("Workload validation passed for chef: {}", newChef.getUsername());
+                } else if (result.isWarning()) {
+                    log.warn("Workload warning for chef: {} - {}", newChef.getUsername(), result.getMessage());
+                    // Still return success but with a warning message
+                    return applicationMapper.toResponse(updatedApplication);
+                } else if (result.isBlocked()) {
+                    log.error("Workload blocked for chef: {} - {}", newChef.getUsername(), result.getMessage());
+                    throw new RuntimeException("Cannot assign chef due to workload limits: " + result.getMessage());
+                }
+            }
+
             return applicationMapper.toResponse(updatedApplication);
 
         } catch (RuntimeException e) {
@@ -208,7 +279,6 @@ public class ApplicationService {
             throw new RuntimeException("Failed to update application: " + e.getMessage());
         }
     }
-
     /**
      * Delete application with access control
      */
@@ -262,6 +332,7 @@ public class ApplicationService {
         }
     }
 
+
     @Transactional
     public ApplicationResponse assignChefDeProjet(Long applicationId, Long chefDeProjetId) {
         try {
@@ -285,14 +356,21 @@ public class ApplicationService {
                 throw new RuntimeException("Selected user is not a Chef de Projet");
             }
 
-            application.setChefDeProjet(chefDeProjet);
-            Application updatedApplication = applicationRepository.save(application);
+            // ===== USE WORKLOAD SERVICE TO HANDLE ASSIGNMENT =====
+            User currentUser = getCurrentUser();
 
-            log.info("Chef de projet {} assigned to application {}",
-                    chefDeProjet.getUsername(), application.getCode());
+            WorkloadService.AssignmentResult result = workloadService.assignApplication(
+                    chefDeProjetId,
+                    applicationId,
+                    false // force = false by default
+            );
+
+            if (!result.isSuccess() && !result.isWarning()) {
+                throw new RuntimeException("Assignment failed: " + result.getMessage());
+            }
 
             // LOG HISTORY: Assign chef de projet
-            User currentUser = getCurrentUser();
+            Application updatedApplication = applicationRepository.findById(applicationId).get();
             historyService.logApplicationAssignChef(updatedApplication, oldChef, chefDeProjet, currentUser);
 
             return applicationMapper.toResponse(updatedApplication);
@@ -304,6 +382,270 @@ public class ApplicationService {
             log.error("Unexpected error assigning chef de projet: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to assign chef de projet");
         }
+    }
+
+
+    private String formatAlternatives(List<WorkloadService.AlternativeChef> alternatives) {
+        if (alternatives == null || alternatives.isEmpty()) {
+            return "No available chefs found";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (WorkloadService.AlternativeChef alt : alternatives) {
+            sb.append(String.format("• %s (Current workload: %.1f%%, Projected: %.1f%%)\n",
+                    alt.getChefName(),
+                    alt.getCurrentWorkload(),
+                    alt.getProjectedWorkload()));
+        }
+        return sb.toString();
+    }
+    /**
+     * Send assignment notification based on user's notification mode
+     */
+    private void sendAssignmentNotification(Application application, User chefDeProjet, User admin) {
+        log.info("========== ASSIGNMENT NOTIFICATION ==========");
+        log.info("Application: {} - {}", application.getCode(), application.getName());
+        log.info("Chef de Projet: {} (ID: {})", chefDeProjet.getUsername(), chefDeProjet.getId());
+        log.info("Chef Email: {}", chefDeProjet.getEmail());
+        log.info("Chef Phone: {}", chefDeProjet.getPhone());
+        log.info("Chef NotifMode: {}", chefDeProjet.getNotifMode());
+        log.info("Admin: {} {}", admin.getFirstName(), admin.getLastName());
+
+        String notifMode = chefDeProjet.getNotifMode();
+        if (notifMode == null || notifMode.trim().isEmpty()) {
+            notifMode = "email"; // Default to email
+            log.info("NotifMode was null/empty, defaulting to: {}", notifMode);
+        }
+
+        String subject = "📋 Nouvelle application assignée: " + application.getCode();
+        String message = buildAssignmentMessage(application, admin);
+
+        boolean emailSent = false;
+        boolean smsSent = false;
+
+        // Send email if mode is email or both
+        if (notifMode.equals("email") || notifMode.equals("both")) {
+            log.info("Attempting to send EMAIL to: {}", chefDeProjet.getEmail());
+            emailSent = sendAssignmentEmail(chefDeProjet, subject, message);
+            if (emailSent) {
+                log.info("✅ EMAIL sent successfully to {}", chefDeProjet.getEmail());
+            } else {
+                log.error("❌ Failed to send EMAIL to {}", chefDeProjet.getEmail());
+            }
+        }
+
+        // Send SMS if mode is sms or both
+        if (notifMode.equals("sms") || notifMode.equals("both")) {
+            log.info("Attempting to send SMS to: {}", chefDeProjet.getPhone());
+            smsSent = sendAssignmentSms(chefDeProjet, message);
+            if (smsSent) {
+                log.info("✅ SMS sent successfully to {}", chefDeProjet.getPhone());
+            } else {
+                log.error("❌ Failed to send SMS to {}", chefDeProjet.getPhone());
+            }
+        }
+
+        log.info("Notification results - Email: {}, SMS: {}", emailSent, smsSent);
+        log.info("========== END NOTIFICATION ==========");
+    }
+
+
+    private void sendAssignmentEmailViaNotification(User chefDeProjet, Notification notification, Facture dummyFacture) {
+        try {
+            // Use your existing mail service that works with notifications
+            // You'll need to modify your MailService to handle assignment notifications
+            // or use the notification service
+            if (notificationService != null) {
+                notificationService.sendNotificationViaChannels(notification, dummyFacture, 0);
+                log.info("✅ Email notification sent via notification service to {}", chefDeProjet.getEmail());
+            } else {
+                log.error("NotificationService not available");
+            }
+        } catch (Exception e) {
+            log.error("❌ Failed to send email notification: {}", e.getMessage());
+        }
+    }
+
+    private void sendAssignmentSmsViaNotification(User chefDeProjet, Notification notification, Facture dummyFacture) {
+        try {
+            if (chefDeProjet.getPhone() == null || chefDeProjet.getPhone().isEmpty()) {
+                log.warn("⚠️ User {} has no phone number, cannot send SMS", chefDeProjet.getUsername());
+                return;
+            }
+
+            if (notificationService != null) {
+                notificationService.sendNotificationViaChannels(notification, dummyFacture, 0);
+                log.info("✅ SMS notification sent via notification service to {}", chefDeProjet.getPhone());
+            } else {
+                log.error("NotificationService not available");
+            }
+        } catch (Exception e) {
+            log.error("❌ Failed to send SMS notification: {}", e.getMessage());
+        }
+    }
+    /**
+     * Send email notification
+     */
+    private boolean sendAssignmentEmail(User chefDeProjet, String subject, String message) {
+        try {
+            log.info("Preparing email for: {}", chefDeProjet.getEmail());
+
+            // Create HTML email content
+            String htmlContent = buildHtmlEmailContent(chefDeProjet, message);
+
+            // Get system sender
+            User systemSender = getSystemSender();
+
+            com.example.back.payload.request.MailRequest request = new com.example.back.payload.request.MailRequest();
+            request.setSubject(subject);
+            request.setContent(htmlContent);
+            request.setTo(java.util.Arrays.asList(chefDeProjet.getEmail()));
+            request.setImportance("NORMAL");
+
+            log.info("Calling mailService.sendMail()...");
+            MailResponse response = mailService.sendMail(request, systemSender, null);
+
+            log.info("Mail created with ID: {}", response.getId());
+            return true;
+
+        } catch (Exception e) {
+            log.error("Failed to send email: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+    /**
+     * Send SMS notification
+     */
+    private boolean sendAssignmentSms(User chefDeProjet, String message) {
+        try {
+            // Check if user has phone number
+            if (chefDeProjet.getPhone() == null || chefDeProjet.getPhone().isEmpty()) {
+                log.warn("User {} has no phone number, skipping SMS", chefDeProjet.getUsername());
+                return false;
+            }
+
+            // Check if SMS is enabled
+            if (!smsService.isSmsEnabled()) {
+                log.warn("SMS is disabled in configuration");
+                return false;
+            }
+
+            // SMS should be shorter, so use a condensed version
+            String smsMessage = buildSmsMessage(message);
+            log.info("SMS message: {}", smsMessage);
+
+            // Use the appropriate SMS method
+            smsService.sendTestSms(chefDeProjet.getPhone(), smsMessage);
+
+            log.info("SMS sent to {}", chefDeProjet.getPhone());
+            return true;
+
+        } catch (Exception e) {
+            log.error("Failed to send SMS: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Build the assignment message
+     */
+    private String buildAssignmentMessage(Application application, User admin) {
+        return String.format(
+                "Vous avez été assigné comme Chef de Projet pour l'application %s - %s par %s %s.\n\n" +
+                        "Détails de l'application:\n" +
+                        "• Code: %s\n" +
+                        "• Nom: %s\n" +
+                        "• Client: %s\n" +
+                        "• Email client: %s\n" +
+                        "• Téléphone client: %s\n" +
+                        "• Dates: %s - %s\n" +
+                        "• Statut: %s\n\n" +
+                        "Connectez-vous à l'application pour plus de détails.",
+
+                application.getCode(),
+                application.getName(),
+                admin.getFirstName(),
+                admin.getLastName(),
+                application.getCode(),
+                application.getName(),
+                application.getClientName(),
+                application.getClientEmail() != null ? application.getClientEmail() : "Non spécifié",
+                application.getClientPhone() != null ? application.getClientPhone() : "Non spécifié",
+                application.getDateDebut() != null ? application.getDateDebut().toString() : "Non définie",
+                application.getDateFin() != null ? application.getDateFin().toString() : "Non définie",
+                application.getStatus()
+        );
+    }
+
+    /**
+     * Build HTML email content
+     */
+    private String buildHtmlEmailContent(User chefDeProjet, String message) {
+        return "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "<meta charset='UTF-8'>" +
+                "<style>" +
+                "body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
+                ".container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
+                ".header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0; }" +
+                ".content { background: #f9f9f9; padding: 20px; border-radius: 0 0 10px 10px; }" +
+                ".footer { margin-top: 20px; font-size: 12px; color: #999; text-align: center; }" +
+                "</style>" +
+                "</head>" +
+                "<body>" +
+                "<div class='container'>" +
+                "<div class='header'>" +
+                "<h2>📋 Nouvelle assignation Chef de Projet</h2>" +
+                "</div>" +
+                "<div class='content'>" +
+                "<p>Bonjour <strong>" + chefDeProjet.getFirstName() + " " + chefDeProjet.getLastName() + "</strong>,</p>" +
+                "<p>" + message.replace("\n", "<br>") + "</p>" +
+                "</div>" +
+                "<div class='footer'>" +
+                "<p>Cet email a été envoyé automatiquement par le système de gestion.</p>" +
+                "</div>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
+    }
+
+    /**
+     * Build SMS message (shorter version)
+     */
+    private String buildSmsMessage(String fullMessage) {
+        // Extract just the essential info for SMS
+        String[] lines = fullMessage.split("\n");
+        StringBuilder sms = new StringBuilder();
+
+        for (String line : lines) {
+            if (line.contains("assigné comme Chef de Projet")) {
+                sms.append(line).append(" ");
+            } else if (line.contains("• Code:")) {
+                sms.append(line.replace("• ", "")).append(" ");
+            } else if (line.contains("• Nom:")) {
+                sms.append(line.replace("• ", "")).append(" ");
+            } else if (line.contains("• Client:")) {
+                sms.append(line.replace("• ", "")).append(" ");
+            } else if (line.contains("Connectez-vous")) {
+                // Don't include login message in SMS to save space
+                break;
+            }
+        }
+
+        return sms.toString().trim();
+    }
+
+    /**
+     * Get system sender user (you may need to create this user)
+     */
+    private User getSystemSender() {
+        return userRepository.findByUsername("system")
+                .orElseGet(() -> {
+                    // If system user doesn't exist, return the admin as fallback
+                    return userRepository.findByUsername("admin")
+                            .orElseThrow(() -> new RuntimeException("No system or admin user found"));
+                });
     }
 
     /**
@@ -833,6 +1175,52 @@ public class ApplicationService {
         } catch (Exception e) {
             log.error("Error fetching applications without conventions: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to fetch applications without conventions");
+        }
+    }
+
+    private Notification createAssignmentNotification(Application application, User chefDeProjet, User admin) {
+        try {
+            Notification notification = new Notification();
+            notification.setUser(chefDeProjet);
+            notification.setTitle("📋 Nouvelle application assignée");
+            notification.setType("SUCCESS");
+            notification.setNotificationType("APPLICATION_ASSIGNED");
+
+            String message = String.format(
+                    "Vous avez été assigné comme Chef de Projet pour l'application %s - %s par %s %s.\n\n" +
+                            "Détails de l'application:\n" +
+                            "• Code: %s\n" +
+                            "• Nom: %s\n" +
+                            "• Client: %s\n" +
+                            "• Dates: %s - %s\n" +
+                            "• Statut: %s",
+                    application.getCode(),
+                    application.getName(),
+                    admin.getFirstName(),
+                    admin.getLastName(),
+                    application.getCode(),
+                    application.getName(),
+                    application.getClientName(),
+                    application.getDateDebut() != null ? application.getDateDebut().toString() : "Non définie",
+                    application.getDateFin() != null ? application.getDateFin().toString() : "Non définie",
+                    application.getStatus()
+            );
+            notification.setMessage(message);
+
+            notification.setReferenceId(application.getId());
+            notification.setReferenceType("APPLICATION");
+            notification.setReferenceCode(application.getCode());
+
+            notification.setIsRead(false);
+            notification.setIsSent(false);
+            notification.setEmailSent(false);
+            notification.setSmsSent(false);
+
+            // Save to database
+            return notificationRepository.save(notification);
+        } catch (Exception e) {
+            log.error("Failed to create assignment notification", e);
+            return null;
         }
     }
 }

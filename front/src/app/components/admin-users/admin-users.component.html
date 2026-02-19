@@ -893,6 +893,101 @@
           
         </div>
       </div>
+
+
+      <!-- Add this inside the assignment modal, after the project list -->
+
+<!-- Workload Summary for Selected Chef -->
+<div *ngIf="selectedUserForAssignment && getChefWorkload(selectedUserForAssignment.id) as workload" class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+  <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+    <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+    Charge de travail actuelle
+  </h4>
+  
+  <div class="flex items-center justify-between mb-2">
+    <span class="text-xs text-gray-600 dark:text-gray-400">Charge globale</span>
+    <span class="text-sm font-bold" [style.color]="getWorkloadColor(workload.currentWorkload)">
+      {{ workload.currentWorkload.toFixed(1) }}%
+    </span>
+  </div>
+  
+  <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mb-3">
+    <div class="h-2 rounded-full transition-all duration-300"
+         [style.width.%]="workload.currentWorkload"
+         [style.background]="getWorkloadColor(workload.currentWorkload)">
+    </div>
+  </div>
+  
+  <div class="grid grid-cols-3 gap-2 text-center text-xs">
+    <div>
+      <div class="text-gray-500 dark:text-gray-400">Applications</div>
+      <div class="font-medium text-gray-800 dark:text-white">{{ workload.currentApps }}</div>
+    </div>
+    <div>
+      <div class="text-gray-500 dark:text-gray-400">Valeur</div>
+      <div class="font-medium text-gray-800 dark:text-white">{{ (workload.totalValue / 1000).toFixed(0) }}k TND</div>
+    </div>
+    <div>
+      <div class="text-gray-500 dark:text-gray-400">Durée</div>
+      <div class="font-medium text-gray-800 dark:text-white">{{ Math.floor(workload.totalDuration / 30) }} mois</div>
+    </div>
+  </div>
+</div>
+
+<!-- Workload Check Results -->
+<div *ngIf="workloadCheck && !workloadCheck.canAssign && !workloadLoadingForChef" 
+     class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+  <div class="flex items-start">
+    <svg class="w-5 h-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+    </svg>
+    <div>
+      <p class="text-sm font-medium text-red-800 dark:text-red-300 mb-1">
+        {{ workloadCheck.message }}
+      </p>
+      <div class="text-xs text-red-700 dark:text-red-400 space-y-1">
+        <p>• Charge actuelle: {{ workloadCheck.analysis.currentWorkload.toFixed(1) }}%</p>
+        <p>• Charge projetée: {{ workloadCheck.analysis.projectedWorkload.toFixed(1) }}%</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Workload Warning for Caution -->
+<div *ngIf="workloadCheck && workloadCheck.assignWithCaution && !workloadLoadingForChef" 
+     class="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+  <div class="flex items-start">
+    <svg class="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+    </svg>
+    <div>
+      <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">
+        Attention: {{ workloadCheck.message }}
+      </p>
+      <p class="text-xs text-yellow-700 dark:text-yellow-400">
+        Charge projetée: {{ workloadCheck.analysis.projectedWorkload.toFixed(1) }}%
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Force Assign Toggle -->
+<div *ngIf="workloadCheck && !workloadCheck.canAssign && !workloadLoadingForChef" class="mb-4">
+  <label class="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
+    <input type="checkbox" 
+           [checked]="forceAssignMode"
+           (change)="toggleForceAssign()"
+           class="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500 mr-3">
+    <span class="text-sm text-gray-700 dark:text-gray-300">
+      <span class="font-medium">Forcer l'assignation</span>
+      <span class="text-xs text-gray-500 dark:text-gray-400 block mt-1">
+        Ignorer les limites de charge de travail
+      </span>
+    </span>
+  </label>
+</div>
       
       <!-- Modal Footer -->
       <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">

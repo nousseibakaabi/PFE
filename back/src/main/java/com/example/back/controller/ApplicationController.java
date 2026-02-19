@@ -10,6 +10,7 @@ import com.example.back.repository.ApplicationRepository;
 import com.example.back.repository.ConventionRepository;
 import com.example.back.repository.UserRepository;
 import com.example.back.service.ApplicationService;
+import com.example.back.service.WorkloadService;
 import com.example.back.service.mapper.ConventionMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,10 @@ public class ApplicationController {
 
     @Autowired
     private ConventionMapper conventionMapper;
+
+    @Autowired
+    private WorkloadService workloadService;
+
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET', 'COMMERCIAL_METIER', 'DECIDEUR')")
@@ -259,25 +264,6 @@ public class ApplicationController {
         }
     }
 
-    // Add endpoint to assign chef de projet to application
-    @PutMapping("/{id}/assign-chef/{chefDeProjetId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> assignChefDeProjetToApplication(@PathVariable Long id,
-                                                             @PathVariable Long chefDeProjetId) {
-        try {
-            ApplicationResponse application = applicationService.assignChefDeProjet(id, chefDeProjetId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Chef de projet assigned successfully");
-            response.put("data", application);
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("Error assigning chef de projet: ", e);
-            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
-        }
-    }
 
     @GetMapping("/generate-code")
     @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")
@@ -364,8 +350,6 @@ public class ApplicationController {
     }
 
 
-    // Add to ApplicationController.java
-
     /**
      * Get date summary for an application (to see if dates are synced with conventions)
      */
@@ -404,4 +388,68 @@ public class ApplicationController {
     }
 
 
+    @GetMapping("/workload/check")
+    @PreAuthorize("hasAnyRole('ADMIN','CHEF_PROJET')")
+    public ResponseEntity<?> checkAssignment(
+            @RequestParam Long chefId,
+            @RequestParam Long applicationId) {
+        try {
+            WorkloadService.AssignmentCheck check = workloadService.checkAssignment(chefId, applicationId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", check);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error checking assignment: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/workload/dashboard")
+    @PreAuthorize("hasAnyRole('ADMIN','CHEF_PROJET')")
+    public ResponseEntity<?> getWorkloadDashboard() {
+        try {
+            WorkloadService.WorkloadDashboard dashboard = workloadService.getWorkloadDashboard();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", dashboard);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error fetching workload dashboard: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/workload/assign")
+    @PreAuthorize("hasAnyRole('ADMIN','CHEF_PROJET')")
+    public ResponseEntity<?> assignWithWorkloadCheck(
+            @RequestParam Long chefId,
+            @RequestParam Long applicationId,
+            @RequestParam(defaultValue = "false") boolean force) {
+        try {
+            WorkloadService.AssignmentResult result = workloadService.assignApplication(
+                    chefId,
+                    applicationId,
+                    force
+            );
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", result.isSuccess());
+            response.put("warning", result.isWarning());
+            response.put("blocked", result.isBlocked());
+            response.put("message", result.getMessage());
+            response.put("data", result.getCheck());
+            response.put("updatedWorkload", result.getUpdatedWorkload());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error assigning with workload check: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
 }

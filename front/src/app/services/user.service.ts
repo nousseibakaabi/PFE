@@ -12,9 +12,15 @@ export interface User {
   lastName: string;
   phone?: string;
   department?: string;
-  enabled: boolean;
   roles: string[];
   profileImage?: string;
+  notifMode?: string;  
+  enabled?: boolean;
+  lockedByAdmin?: boolean;
+  accountLockedUntil?: string;
+  failedLoginAttempts?: number;
+  createdAt?: string;
+  lastLogin?: string;
 }
 
 @Injectable({

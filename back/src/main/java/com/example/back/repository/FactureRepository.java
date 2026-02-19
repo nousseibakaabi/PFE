@@ -23,6 +23,7 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
     List<Facture> findByStatutPaiement(String statutPaiement);
 
 
+    List<Facture> findByStatutPaiementIn(List<String> statuts);
 
     @Query("SELECT SUM(f.montantTTC) FROM Facture f WHERE f.statutPaiement = 'PAYE' AND YEAR(f.datePaiement) = :year AND MONTH(f.datePaiement) = :month")
     BigDecimal findTotalPayeParMois(@Param("year") int year, @Param("month") int month);

@@ -41,6 +41,9 @@ public class ConventionService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     // ============= FINANCIAL CALCULATION METHODS =============
 
     /**
@@ -314,10 +317,44 @@ public class ConventionService {
         }
 
         log.info("========== INVOICE GENERATION COMPLETE ==========");
+
+        checkNotificationsForAllInvoices(convention);
+
     }
 
-    // Add this method to ConventionService.java
 
+    private void checkNotificationsForAllInvoices(Convention convention) {
+        log.info("Checking notifications for all invoices of convention {}", convention.getReferenceConvention());
+
+        LocalDate today = LocalDate.now();
+        List<Facture> factures = factureRepository.findByConventionId(convention.getId());
+
+        for (Facture facture : factures) {
+            if (!"PAYE".equals(facture.getStatutPaiement())) {
+                checkAndCreateNotificationForFacture(facture, today);
+            }
+        }
+    }
+
+
+    private void checkAndCreateNotificationForFacture(Facture facture, LocalDate today) {
+        if (facture.getDateEcheance() == null) return;
+
+        long daysUntilDue = ChronoUnit.DAYS.between(today, facture.getDateEcheance());
+
+        // Créer des notifications pour les jours J-5 à J0 et pour les retards jusqu'à 5 jours
+        if (daysUntilDue <= 5 && daysUntilDue >= -5) {
+            log.info("Facture {} due in {} days - Creating notification",
+                    facture.getNumeroFacture(), daysUntilDue);
+
+            try {
+                notificationService.createFactureDueNotification(facture, (int) daysUntilDue);
+            } catch (Exception e) {
+                log.error("Failed to create notification for facture {}: {}",
+                        facture.getNumeroFacture(), e.getMessage());
+            }
+        }
+    }
     /**
      * Calculate total number of periods based on periodicity
      */
@@ -399,6 +436,8 @@ public class ConventionService {
         convention = conventionRepository.findById(conventionId).get();
 
         generateInvoicesForConvention(convention);
+
+        checkNotificationsForAllInvoices(convention);
 
         // Update convention status after invoice changes
         updateConventionStatusRealTime(conventionId);
@@ -516,6 +555,9 @@ public class ConventionService {
 
         // Generate invoices based on TTC
         generateInvoicesForConvention(savedConvention);
+
+        checkNotificationsForAllInvoices(savedConvention);
+
 
         return savedConvention;
     }
@@ -656,6 +698,8 @@ public class ConventionService {
             log.info("Financial data or dates/periodicity changed for convention {}, regenerating invoices",
                     convention.getReferenceConvention());
             regenerateInvoicesForConvention(updatedConvention.getId());
+            checkNotificationsForAllInvoices(updatedConvention);
+
         }
 
         return updatedConvention;

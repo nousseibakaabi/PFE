@@ -45,6 +45,9 @@ import { FactureDetailComponent } from './components/facture-detail/facture-deta
 import { ConventionFormComponent } from './components/convention-form/convention-form.component';
 import { ApplicationFormComponent } from './components/application-form/application-form.component';
 import { HistoryComponent } from './components/history/history.component';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+import { NotificationsComponent } from './components/notifications/notifications.component';
+import { CommonModule, DatePipe } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -82,7 +85,8 @@ import { HistoryComponent } from './components/history/history.component';
     FactureDetailComponent,
     ConventionFormComponent,
     ApplicationFormComponent,
-    HistoryComponent
+    HistoryComponent,
+    NotificationsComponent
     ],
   imports: [
     BrowserModule,
@@ -91,7 +95,9 @@ import { HistoryComponent } from './components/history/history.component';
     RouterModule,
     HttpClientModule,
     ReactiveFormsModule,
-    FullCalendarModule
+    FullCalendarModule,
+    InfiniteScrollModule,
+    CommonModule
 
     
   ],
@@ -103,7 +109,8 @@ import { HistoryComponent } from './components/history/history.component';
       useClass: AuthInterceptor,
       multi: true
     },
-    StatsService
+    StatsService,
+    DatePipe
   ],
   bootstrap: [AppComponent]
 })

@@ -16,11 +16,12 @@ public class ProfileResponse {
     private LocalDateTime lastLogin;
     private List<String> roles;
     private String profileImage;
+    private String notifMode;
 
     // Constructor
     public ProfileResponse(Long id, String username, String email, String firstName,
                            String lastName, String phone, String department, Boolean enabled,
-                           LocalDateTime createdAt, LocalDateTime lastLogin, List<String> roles , String profileImage) {
+                           LocalDateTime createdAt, LocalDateTime lastLogin, List<String> roles , String profileImage , String notifMode) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -33,6 +34,7 @@ public class ProfileResponse {
         this.lastLogin = lastLogin;
         this.roles = roles;
         this.profileImage = profileImage;
+        this.notifMode = notifMode;
     }
 
     // Getters and Setters
@@ -130,4 +132,15 @@ public class ProfileResponse {
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
     }
+
+
+    public String getNotifMode() {
+        return notifMode;
+    }
+
+    public void setNotifMode(String notifMode) {
+        this.notifMode = notifMode;
+    }
+
+
 }

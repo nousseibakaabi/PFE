@@ -25,6 +25,7 @@ import { ApplicationDetailComponent } from './components/application-detail/appl
 import { ApplicationFormComponent } from './components/application-form/application-form.component';
 import { ApplicationComponent } from './components/application/application.component';
 import { HistoryComponent } from './components/history/history.component';
+import { NotificationsComponent } from './components/notifications/notifications.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -159,6 +160,7 @@ const routes: Routes = [
   data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHEF_PROJET'] }
   },
 
+  { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },
   { path: 'mailBox', component: MailBoxComponent, canActivate: [AuthGuard] },
   { path: '**', component: NotFoundComponent } 
 ];

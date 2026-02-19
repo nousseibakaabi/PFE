@@ -9,6 +9,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslationService } from '../partials/traduction/translation.service';
 import { ApplicationService}from 'src/app/services/application.service';
 import { HistoryEntry, HistoryService } from 'src/app/services/history.service';
+import { WorkloadService, WorkloadDTO } from '../../services/workload.service';
 
 interface AdminUser {
   id: number;
@@ -106,6 +107,14 @@ unassignedProjects: any[] = [];
   userHistory: HistoryEntry[] = [];
   loadingHistory = false;
 
+  chefsWorkload: Map<number, WorkloadDTO> = new Map();
+  workloadLoading = false;
+  workloadCheck: any = null;
+  showWorkloadWarning = false;
+  alternativeChefs: any[] = [];
+  workloadLoadingForChef = false;
+  forceAssignMode = false;
+
   constructor(
     private authService: AuthService,
     private http: HttpClient,
@@ -115,7 +124,9 @@ unassignedProjects: any[] = [];
     private fb: FormBuilder,
     private trasnlationService: TranslationService,
     private applicationServive : ApplicationService,
-    public historyService: HistoryService
+    public historyService: HistoryService,
+    private workloadService: WorkloadService
+
 
   ) {
     // Initialize forms
@@ -1021,66 +1032,84 @@ hideErrorMessage(): void {
 
 
 showAssignProjectsModal(user: AdminUser): void {
-    this.selectedUserForAssignment = user;
-    
-    // Fetch unassigned projects
-    this.applicationServive.getUnassignedApplications().subscribe({
-      next: (response: any) => {
-  if (response.success) {
-          this.unassignedProjects = response.data;
-          this.projectsToAssign = []; // Reset selections
-          this.showAssignmentModal = true;
-        }
-      },
-      error: (error) => {
-        console.error('Error fetching unassigned projects:', error);
-        this.showError('Failed to load unassigned projects');
+  this.selectedUserForAssignment = user;
+  
+  // Fetch unassigned projects
+  this.applicationServive.getUnassignedApplications().subscribe({
+    next: (response: any) => {
+      if (response.success) {
+        this.unassignedProjects = response.data;
+        this.projectsToAssign = []; // Reset selections
+        this.showAssignmentModal = true;
+        
+        // Load workload data
+        this.loadChefsWorkload();
       }
-    });
-  }
-
-  // Handle project selection in modal
-  toggleProjectSelection(project: any): void {
-    const index = this.projectsToAssign.findIndex(p => p.id === project.id);
-    if (index === -1) {
-      this.projectsToAssign.push(project);
-    } else {
-      this.projectsToAssign.splice(index, 1);
+    },
+    error: (error) => {
+      console.error('Error fetching unassigned projects:', error);
+      this.showError('Failed to load unassigned projects');
     }
-  }
+  });
+}
 
-  // Check if project is selected
+
+
+
+
   isProjectSelected(project: any): boolean {
     return this.projectsToAssign.some(p => p.id === project.id);
   }
 
-  // Assign selected projects to chef de projet
-  assignSelectedProjects(): void {
-    if (!this.selectedUserForAssignment || this.projectsToAssign.length === 0) {
-      return;
+toggleProjectSelection(project: any): void {
+  const index = this.projectsToAssign.findIndex(p => p.id === project.id);
+  if (index === -1) {
+    this.projectsToAssign.push(project);
+    // Check workload for each selected project
+    if (this.selectedUserForAssignment) {
+      this.checkWorkloadForProject(this.selectedUserForAssignment.id, project.id);
     }
+  } else {
+    this.projectsToAssign.splice(index, 1);
+    if (this.projectsToAssign.length === 0) {
+      this.workloadCheck = null;
+      this.showWorkloadWarning = false;
+      this.alternativeChefs = [];
+    }
+  }
+}
 
-    const chefId = this.selectedUserForAssignment.id;
-    let completedAssignments = 0;
-    let failedAssignments = 0;
+// Override assignSelectedProjects to use workload check
+assignSelectedProjects(): void {
+  if (!this.selectedUserForAssignment || this.projectsToAssign.length === 0) {
+    return;
+  }
 
-    // Show loading
-    this.loading = true;
+  const chefId = this.selectedUserForAssignment.id;
+  let completedAssignments = 0;
+  let failedAssignments = 0;
 
-    // Assign each selected project
-    this.projectsToAssign.forEach((project, index) => {
-      this.applicationServive.assignChefDeProjet(project.id, chefId).subscribe({
-        next: () => {
+  this.loading = true;
+
+  this.projectsToAssign.forEach((project, index) => {
+    // Use workload service with force mode
+    this.workloadService.assignWithWorkloadCheck(
+      chefId, 
+      project.id, 
+      this.forceAssignMode
+    ).subscribe({
+      next: (response) => {
+        if (response.success) {
           completedAssignments++;
           console.log(`Project ${project.code} assigned successfully`);
           
-          // Remove from unassigned projects list
           this.unassignedProjects = this.unassignedProjects.filter(p => p.id !== project.id);
           
           if (completedAssignments + failedAssignments === this.projectsToAssign.length) {
             this.loading = false;
             this.showAssignmentModal = false;
             this.projectsToAssign = [];
+            this.workloadCheck = null;
             
             if (failedAssignments === 0) {
               this.showSuccess(`Successfully assigned ${completedAssignments} project(s) to ${this.selectedUserForAssignment?.firstName} ${this.selectedUserForAssignment?.lastName}`);
@@ -1088,9 +1117,8 @@ showAssignProjectsModal(user: AdminUser): void {
               this.showError(`Assigned ${completedAssignments} project(s), failed to assign ${failedAssignments} project(s)`);
             }
           }
-        },
-        error: (error) => {
-          console.error('Error assigning project:', error);
+        } else {
+          console.error('Error assigning project:', response.message);
           failedAssignments++;
           
           if (completedAssignments + failedAssignments === this.projectsToAssign.length) {
@@ -1102,9 +1130,28 @@ showAssignProjectsModal(user: AdminUser): void {
             }
           }
         }
-      });
+      },
+      error: (error) => {
+        console.error('Error assigning project:', error);
+        failedAssignments++;
+        
+        if (completedAssignments + failedAssignments === this.projectsToAssign.length) {
+          this.loading = false;
+          if (completedAssignments > 0) {
+            this.showSuccess(`Partially assigned ${completedAssignments} project(s), ${failedAssignments} failed`);
+          } else {
+            this.showError('Failed to assign projects');
+          }
+        }
+      }
     });
-  }
+  });
+}
+
+// Toggle force assign mode
+toggleForceAssign(): void {
+  this.forceAssignMode = !this.forceAssignMode;
+}
 
   // Close assignment modal
   closeAssignmentModal(): void {
@@ -1300,6 +1347,64 @@ getChangedFieldsArray(entry: any): { field: string, old: any, new: any }[] {
     old: changes[key].old,
     new: changes[key].new
   }));
+}
+
+
+loadChefsWorkload(): void {
+  this.workloadLoading = true;
+  this.workloadService.getWorkloadDashboard().subscribe({
+    next: (response) => {
+      if (response.success && response.data?.workloads) {
+        response.data.workloads.forEach((w: WorkloadDTO) => {
+          this.chefsWorkload.set(w.chefId, w);
+        });
+      }
+      this.workloadLoading = false;
+    },
+    error: (error) => {
+      console.error('Error loading workload:', error);
+      this.workloadLoading = false;
+    }
+  });
+}
+
+// Get workload for a specific chef
+getChefWorkload(chefId: number): WorkloadDTO | undefined {
+  return this.chefsWorkload.get(chefId);
+}
+
+// Get workload color
+getWorkloadColor(workload: number): string {
+  return this.workloadService.getWorkloadClass(workload);
+}
+
+// Get workload status
+getWorkloadStatus(workload: number): string {
+  return this.workloadService.getWorkloadStatus(workload);
+}
+
+// Get progress bar class
+getWorkloadBarClass(workload: number): string {
+  return this.workloadService.getProgressBarClass(workload);
+}
+
+// Check workload when selecting project
+checkWorkloadForProject(chefId: number, applicationId: number): void {
+  this.workloadLoadingForChef = true;
+  this.workloadService.checkAssignment(chefId, applicationId).subscribe({
+    next: (response) => {
+      if (response.success && response.data) {
+        this.workloadCheck = response.data;
+        this.showWorkloadWarning = !response.data.canAssign && !response.data.assignWithCaution;
+        this.alternativeChefs = response.data.alternativeChefs || [];
+      }
+      this.workloadLoadingForChef = false;
+    },
+    error: (error) => {
+      console.error('Error checking workload:', error);
+      this.workloadLoadingForChef = false;
+    }
+  });
 }
 
 }

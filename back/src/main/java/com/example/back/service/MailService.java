@@ -1,4 +1,3 @@
-// MailService.java
 package com.example.back.service;
 
 import com.example.back.entity.*;
@@ -28,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,7 +56,6 @@ public class MailService {
     @Autowired
     private UserRepository userRepository;
 
-
     @Autowired
     private MailDraftAttachmentRepository draftAttachmentRepository;
 
@@ -72,7 +71,6 @@ public class MailService {
     @Autowired
     private MailFolderService folderService;
 
-
     @Autowired
     private MailGroupRepository groupRepository;
 
@@ -81,10 +79,13 @@ public class MailService {
 
     // ============= SEND EMAIL =============
 
-
     @Transactional
     public MailResponse sendMail(MailRequest request, User sender, List<MultipartFile> files) throws IOException {
+        log.info("========== MAIL SENDING DEBUG ==========");
         log.info("Sending mail from: {} with subject: {}", sender.getEmail(), request.getSubject());
+        log.info("TO recipients: {}", request.getTo());
+        log.info("CC recipients: {}", request.getCc());
+        log.info("BCC recipients: {}", request.getBcc());
 
         // Create mail entity
         Mail mail = new Mail();
@@ -105,6 +106,7 @@ public class MailService {
 
         // Save mail first to get ID
         Mail savedMail = mailRepository.save(mail);
+        log.info("Mail saved with ID: {}", savedMail.getId());
 
         // Add recipients - each with their own status
         List<MailRecipient> allRecipients = new ArrayList<>();
@@ -115,29 +117,42 @@ public class MailService {
         senderRecipient.setEmail(sender.getEmail());
         senderRecipient.setName(sender.getFirstName() + " " + sender.getLastName());
         senderRecipient.setUser(sender);
-        senderRecipient.setType("FROM"); // Special type for sender
-        senderRecipient.setIsRead(true); // Sender always sees as read
+        senderRecipient.setType("FROM");
+        senderRecipient.setIsRead(true);
         senderRecipient.setIsStarred(false);
         senderRecipient.setIsArchived(false);
         senderRecipient.setIsDeleted(false);
         allRecipients.add(senderRecipient);
+        log.info("Added sender recipient: {}", sender.getEmail());
 
-        // TO recipients - pass currentUser (sender) to expandGroups
-        if (request.getTo() != null) {
-            allRecipients.addAll(createRecipients(savedMail, request.getTo(), "TO", sender));
+        // TO recipients
+        if (request.getTo() != null && !request.getTo().isEmpty()) {
+            log.info("Processing TO recipients: {}", request.getTo());
+            List<MailRecipient> toRecipients = createRecipients(savedMail, request.getTo(), "TO", sender);
+            log.info("Created {} TO recipients", toRecipients.size());
+            allRecipients.addAll(toRecipients);
         }
 
         // CC recipients
-        if (request.getCc() != null) {
-            allRecipients.addAll(createRecipients(savedMail, request.getCc(), "CC", sender));
+        if (request.getCc() != null && !request.getCc().isEmpty()) {
+            log.info("Processing CC recipients: {}", request.getCc());
+            List<MailRecipient> ccRecipients = createRecipients(savedMail, request.getCc(), "CC", sender);
+            log.info("Created {} CC recipients", ccRecipients.size());
+            allRecipients.addAll(ccRecipients);
         }
 
         // BCC recipients
-        if (request.getBcc() != null) {
-            allRecipients.addAll(createRecipients(savedMail, request.getBcc(), "BCC", sender));
+        if (request.getBcc() != null && !request.getBcc().isEmpty()) {
+            log.info("Processing BCC recipients: {}", request.getBcc());
+            List<MailRecipient> bccRecipients = createRecipients(savedMail, request.getBcc(), "BCC", sender);
+            log.info("Created {} BCC recipients", bccRecipients.size());
+            allRecipients.addAll(bccRecipients);
         }
 
+        log.info("Total recipients to save: {}", allRecipients.size());
         recipientRepository.saveAll(allRecipients);
+        log.info("Recipients saved successfully");
+
         savedMail.setRecipients(allRecipients);
 
         // Handle attachments
@@ -145,21 +160,259 @@ public class MailService {
             List<MailAttachment> attachments = saveAttachments(savedMail, files);
             attachmentRepository.saveAll(attachments);
             savedMail.setAttachments(attachments);
-        }
-
-        // If this was sent from a draft, delete the draft
-        if (request.getDraftId() != null) {
-            draftRepository.deleteById(request.getDraftId());
+            log.info("Saved {} attachments", attachments.size());
         }
 
         log.info("Mail sent successfully with ID: {}", savedMail.getId());
+        log.info("========== END MAIL DEBUG ==========");
 
         return mailMapper.toResponse(savedMail, sender.getEmail());
     }
 
+    // ============= SYSTEM NOTIFICATION EMAILS =============
+
+    /**
+     * Send facture due notification through the integrated mail system
+     */
+    @Transactional
+    public MailResponse sendFactureDueNotification(User recipient, Facture facture, int daysUntilDue) {
+        log.info("Sending facture due notification to: {} for facture: {}", recipient.getEmail(), facture.getNumeroFacture());
+
+        // Create the mail subject based on days until due
+        String subject;
+        if (daysUntilDue > 0) {
+            subject = daysUntilDue == 1 ?
+                    "🔔 Rappel: Facture due demain - " + facture.getNumeroFacture() :
+                    "🔔 Rappel: Facture due dans " + daysUntilDue + " jours - " + facture.getNumeroFacture();
+        } else if (daysUntilDue == 0) {
+            subject = "⚠️ URGENT: Facture due aujourd'hui - " + facture.getNumeroFacture();
+        } else {
+            subject = "🚨 ALERTE: Facture en retard de " + Math.abs(daysUntilDue) + " jours - " + facture.getNumeroFacture();
+        }
+
+        // Build the HTML content
+        String content = buildFactureDueEmailContent(recipient, facture, daysUntilDue);
+
+        User systemSender = getSystemSender();
+
+        // Create mail request
+        MailRequest request = new MailRequest();
+        request.setSubject(subject);
+        request.setContent(content);
+        request.setImportance(getImportanceLevel(daysUntilDue));
+        request.setTo(Arrays.asList(recipient.getEmail()));
+
+        try {
+            // Send through the integrated mail system
+            return sendMail(request, systemSender, null);
+        } catch (IOException e) {
+            log.error("Failed to send facture due notification: {}", e.getMessage());
+            throw new RuntimeException("Failed to send notification email", e);
+        }
+    }
+
+    /**
+     * Send facture due notification to multiple recipients
+     */
+    @Transactional
+    public List<MailResponse> sendFactureDueNotificationToMultiple(List<User> recipients, Facture facture, int daysUntilDue) {
+        List<MailResponse> responses = new ArrayList<>();
+        for (User recipient : recipients) {
+            try {
+                MailResponse response = sendFactureDueNotification(recipient, facture, daysUntilDue);
+                responses.add(response);
+            } catch (Exception e) {
+                log.error("Failed to send notification to {}: {}", recipient.getEmail(), e.getMessage());
+            }
+        }
+        return responses;
+    }
+
+    /**
+     * Build HTML content for facture due email
+     */
+    private String buildFactureDueEmailContent(User recipient, Facture facture, int daysUntilDue) {
+        Convention convention = facture.getConvention();
+        Application application = convention != null ? convention.getApplication() : null;
+
+        // Get status color and icon
+        String statusColor;
+        String statusIcon;
+        String statusText;
+
+        if (daysUntilDue > 0) {
+            statusColor = daysUntilDue <= 2 ? "#f59e0b" : "#3b82f6"; // Orange for 1-2 days, Blue for 3-5 days
+            statusIcon = "⏰";
+            statusText = daysUntilDue == 1 ? "Due demain" : "Due dans " + daysUntilDue + " jours";
+        } else if (daysUntilDue == 0) {
+            statusColor = "#ef4444"; // Red for today
+            statusIcon = "⚠️";
+            statusText = "Due aujourd'hui";
+        } else {
+            statusColor = "#dc2626"; // Dark red for overdue
+            statusIcon = "🚨";
+            statusText = "En retard de " + Math.abs(daysUntilDue) + " jours";
+        }
+
+        StringBuilder content = new StringBuilder();
+        content.append("<!DOCTYPE html>");
+        content.append("<html>");
+        content.append("<head>");
+        content.append("<meta charset='UTF-8'>");
+        content.append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+        content.append("<style>");
+        content.append("body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1f2937; margin: 0; padding: 0; }");
+        content.append(".email-wrapper { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }");
+        content.append(".header { padding: 24px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }");
+        content.append(".header h1 { margin: 0; font-size: 24px; font-weight: 600; }");
+        content.append(".header p { margin: 8px 0 0; opacity: 0.9; font-size: 14px; }");
+        content.append(".content { padding: 32px; }");
+        content.append(".greeting { font-size: 16px; margin-bottom: 24px; }");
+        content.append(".status-badge { display: inline-block; padding: 8px 16px; border-radius: 9999px; font-weight: 600; font-size: 14px; margin-bottom: 24px; background-color: ").append(statusColor).append("; color: white; }");
+        content.append(".facture-card { background-color: #f9fafb; border-radius: 8px; padding: 24px; margin: 24px 0; border-left: 4px solid ").append(statusColor).append("; }");
+        content.append(".facture-card h2 { margin: 0 0 16px; font-size: 18px; color: #374151; }");
+        content.append(".detail-row { display: flex; margin-bottom: 12px; }");
+        content.append(".detail-label { width: 140px; font-weight: 500; color: #6b7280; }");
+        content.append(".detail-value { flex: 1; color: #1f2937; font-weight: 500; }");
+        content.append(".highlight { color: ").append(statusColor).append("; font-weight: 700; }");
+        content.append(".amount { font-size: 24px; font-weight: 700; color: #059669; }");
+        content.append(".actions { margin-top: 32px; text-align: center; }");
+        content.append(".button { display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; margin: 0 8px; }");
+        content.append(".button:hover { background-color: #2563eb; }");
+        content.append(".footer { padding: 24px 32px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center; background-color: #f9fafb; }");
+        content.append("</style>");
+        content.append("</head>");
+        content.append("<body>");
+        content.append("<div class='email-wrapper'>");
+
+        // Header
+        content.append("<div class='header'>");
+        content.append("<h1>").append(statusIcon).append(" Rappel de Facture</h1>");
+        content.append("<p>Système de gestion des factures</p>");
+        content.append("</div>");
+
+        // Content
+        content.append("<div class='content'>");
+        content.append("<div class='greeting'>");
+        content.append("<p>Bonjour <strong>").append(recipient.getFirstName()).append(" ").append(recipient.getLastName()).append("</strong>,</p>");
+        content.append("</div>");
+
+        // Status badge
+        content.append("<div class='status-badge'>").append(statusIcon).append(" ").append(statusText).append("</div>");
+
+        // Message based on status
+        if (daysUntilDue > 0) {
+            if (daysUntilDue == 1) {
+                content.append("<p>Une facture sera due <span class='highlight'>demain</span>. Veuillez prendre les mesures nécessaires.</p>");
+            } else {
+                content.append("<p>Une facture sera due dans <span class='highlight'>").append(daysUntilDue).append(" jours</span>. Veuillez planifier le paiement.</p>");
+            }
+        } else if (daysUntilDue == 0) {
+            content.append("<p><strong>⚠️ Attention:</strong> Une facture est due <span class='highlight'>aujourd'hui</span>. Un paiement immédiat est requis.</p>");
+        } else {
+            content.append("<p><strong>🚨 Urgent:</strong> Une facture est en retard de <span class='highlight'>").append(Math.abs(daysUntilDue)).append(" jours</span>. Des pénalités peuvent s'appliquer.</p>");
+        }
+
+        // Facture details card
+        content.append("<div class='facture-card'>");
+        content.append("<h2>Détails de la facture</h2>");
+
+        content.append("<div class='detail-row'>");
+        content.append("<span class='detail-label'>Numéro:</span>");
+        content.append("<span class='detail-value'>").append(facture.getNumeroFacture()).append("</span>");
+        content.append("</div>");
+
+        if (convention != null) {
+            content.append("<div class='detail-row'>");
+            content.append("<span class='detail-label'>Convention:</span>");
+            content.append("<span class='detail-value'>").append(convention.getReferenceConvention()).append("</span>");
+            content.append("</div>");
+
+            content.append("<div class='detail-row'>");
+            content.append("<span class='detail-label'>Libellé:</span>");
+            content.append("<span class='detail-value'>").append(convention.getLibelle()).append("</span>");
+            content.append("</div>");
+        }
+
+        if (application != null) {
+            content.append("<div class='detail-row'>");
+            content.append("<span class='detail-label'>Application:</span>");
+            content.append("<span class='detail-value'>").append(application.getCode()).append(" - ").append(application.getName()).append("</span>");
+            content.append("</div>");
+
+            content.append("<div class='detail-row'>");
+            content.append("<span class='detail-label'>Client:</span>");
+            content.append("<span class='detail-value'>").append(application.getClientName()).append("</span>");
+            content.append("</div>");
+        }
+
+        content.append("<div class='detail-row'>");
+        content.append("<span class='detail-label'>Date d'échéance:</span>");
+        content.append("<span class='detail-value'>").append(
+                facture.getDateEcheance().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        ).append("</span>");
+        content.append("</div>");
+
+        content.append("<div class='detail-row'>");
+        content.append("<span class='detail-label'>Montant TTC:</span>");
+        content.append("<span class='detail-value amount'>").append(facture.getMontantTTC()).append(" TND</span>");
+        content.append("</div>");
+
+        content.append("</div>");
+
+        // Actions
+        content.append("<div class='actions'>");
+        content.append("<a href='#' class='button' style='background-color: #10b981;'>✅ Marquer comme payée</a>");
+        content.append("<a href='#' class='button' style='background-color: #3b82f6;'>👁️ Voir la facture</a>");
+        content.append("</div>");
+
+        content.append("</div>");
+
+        // Footer
+        content.append("<div class='footer'>");
+        content.append("<p>Cet email a été envoyé automatiquement par le système de gestion.</p>");
+        content.append("<p>© 2024 - Tous droits réservés</p>");
+        content.append("</div>");
+
+        content.append("</div>");
+        content.append("</body>");
+        content.append("</html>");
+
+        return content.toString();
+    }
+
+    /**
+     * Get the importance level based on days until due
+     */
+    private String getImportanceLevel(int daysUntilDue) {
+        if (daysUntilDue <= 0) {
+            return "HIGH";
+        } else if (daysUntilDue <= 2) {
+            return "HIGH";
+        } else {
+            return "NORMAL";
+        }
+    }
+
+    /**
+     * Get system sender user
+     */
+    private User getSystemSender() {
+
+        return userRepository.findByUsername("system")
+                .orElseGet(() -> {
+                    throw new RuntimeException("No system user found for sending notifications");
+                });
+    }
+
+    // ============= EXISTING METHODS =============
 
     private List<MailRecipient> createRecipients(Mail mail, List<String> emails, String type, User currentUser) {
+        log.info("createRecipients called with type: {}, emails: {}", type, emails);
+
         List<String> expandedEmails = expandGroups(emails, currentUser);
+        log.info("Expanded emails: {}", expandedEmails);
+
         List<MailRecipient> recipients = new ArrayList<>();
 
         // First, add the group identifiers themselves
@@ -167,13 +420,14 @@ public class MailService {
             if (email != null && email.startsWith("GROUP:")) {
                 MailRecipient groupRecipient = new MailRecipient();
                 groupRecipient.setMail(mail);
-                groupRecipient.setEmail(email.trim()); // Keep the GROUP: prefix
+                groupRecipient.setEmail(email.trim());
                 groupRecipient.setType(type);
                 groupRecipient.setIsRead(false);
                 groupRecipient.setIsStarred(false);
                 groupRecipient.setIsArchived(false);
                 groupRecipient.setIsDeleted(false);
                 recipients.add(groupRecipient);
+                log.info("Added group recipient: {}", email);
             }
         }
 
@@ -181,6 +435,7 @@ public class MailService {
         for (String email : expandedEmails) {
             // Skip if this email is already added as a group recipient
             if (recipients.stream().anyMatch(r -> r.getEmail().equals(email))) {
+                log.info("Skipping duplicate email: {}", email);
                 continue;
             }
 
@@ -188,22 +443,32 @@ public class MailService {
             recipient.setMail(mail);
             recipient.setEmail(email.trim());
             recipient.setType(type);
-
             recipient.setIsRead(false);
             recipient.setIsStarred(false);
             recipient.setIsArchived(false);
             recipient.setIsDeleted(false);
 
-            userRepository.findByEmail(email.trim()).ifPresent(u -> {
-                recipient.setName(u.getFirstName() + " " + u.getLastName());
-                recipient.setUser(u);
-            });
+            log.info("Looking up user by email: {}", email.trim());
+            Optional<User> userOpt = userRepository.findByEmail(email.trim());
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                recipient.setName(user.getFirstName() + " " + user.getLastName());
+                recipient.setUser(user);
+                log.info("Found user: {} with ID: {}", user.getUsername(), user.getId());
+            } else {
+                log.warn("No user found with email: {}", email);
+                // Still add the recipient but without user reference
+                recipient.setName(email.trim());
+            }
 
             recipients.add(recipient);
+            log.info("Added recipient: {} with type: {}", email, type);
         }
 
+        log.info("createRecipients returning {} recipients", recipients.size());
         return recipients;
     }
+
 
     private List<MailAttachment> saveAttachments(Mail mail, List<MultipartFile> files) throws IOException {
         List<MailAttachment> attachments = new ArrayList<>();
@@ -372,7 +637,6 @@ public class MailService {
 
     // ============= INDIVIDUAL ACTIONS =============
 
-
     @Transactional
     public void markAsRead(Long mailId, String userEmail) {
         Mail mail = mailRepository.findById(mailId)
@@ -459,7 +723,6 @@ public class MailService {
                 });
     }
 
-
     public Page<MailResponse> getTrash(String userEmail, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("sentAt").descending());
         Page<Mail> mails = mailRepository.findTrashByUserEmail(userEmail, pageable);
@@ -491,9 +754,6 @@ public class MailService {
             mailRepository.save(mail);
         }
     }
-
-
-
 
     @Transactional
     public MailDraft saveDraft(MailDraftRequest request, User user, List<MultipartFile> files) throws IOException {
@@ -567,7 +827,7 @@ public class MailService {
         return attachments;
     }
 
-// ============= GET DRAFT BY ID =============
+    // ============= GET DRAFT BY ID =============
 
     public MailDraft getDraftById(Long id, User user) {
         MailDraft draft = draftRepository.findById(id)
@@ -580,7 +840,7 @@ public class MailService {
         return draft;
     }
 
-// ============= UPDATE DRAFT =============
+    // ============= UPDATE DRAFT =============
 
     @Transactional
     public MailDraft updateDraft(Long id, MailDraftRequest request, User user, List<MultipartFile> files) throws IOException {
@@ -614,7 +874,7 @@ public class MailService {
         return draftRepository.save(draft);
     }
 
-// ============= DELETE DRAFT =============
+    // ============= DELETE DRAFT =============
 
     @Transactional
     public void deleteDraft(Long id, User user) {
@@ -634,7 +894,7 @@ public class MailService {
         draftRepository.delete(draft);
     }
 
-// ============= GET DRAFTS WITH RECIPIENTS PARSED =============
+    // ============= GET DRAFTS WITH RECIPIENTS PARSED =============
 
     public List<MailDraftResponse> getDraftsWithDetails(User user) {
         List<MailDraft> drafts = draftRepository.findByUserOrderByLastSavedAtDesc(user);
@@ -651,16 +911,13 @@ public class MailService {
             // Parse recipients from JSON
             try {
                 if (draft.getToRecipients() != null) {
-                    response.setTo(objectMapper.readValue(draft.getToRecipients(), new TypeReference<List<String>>() {
-                    }));
+                    response.setTo(objectMapper.readValue(draft.getToRecipients(), new TypeReference<List<String>>() {}));
                 }
                 if (draft.getCcRecipients() != null) {
-                    response.setCc(objectMapper.readValue(draft.getCcRecipients(), new TypeReference<List<String>>() {
-                    }));
+                    response.setCc(objectMapper.readValue(draft.getCcRecipients(), new TypeReference<List<String>>() {}));
                 }
                 if (draft.getBccRecipients() != null) {
-                    response.setBcc(objectMapper.readValue(draft.getBccRecipients(), new TypeReference<List<String>>() {
-                    }));
+                    response.setBcc(objectMapper.readValue(draft.getBccRecipients(), new TypeReference<List<String>>() {}));
                 }
             } catch (Exception e) {
                 log.error("Error parsing draft recipients", e);
@@ -683,10 +940,6 @@ public class MailService {
 
         return result;
     }
-
-
-
-
 
     private List<String> expandGroups(List<String> recipients, User currentUser) {
         if (recipients == null) return new ArrayList<>();
@@ -719,14 +972,11 @@ public class MailService {
         return expanded;
     }
 
-
     public Page<MailResponse> getGroupMails(Long groupId, String userEmail, int page, int size) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return folderService.getMailsForGroup(groupId, user, page, size);
     }
-
-
 
     public MailStatsResponse getStats(String userEmail) {
         MailStatsResponse stats = new MailStatsResponse();
@@ -751,7 +1001,7 @@ public class MailService {
         stats.setCustomGroupsCount(customGroupsCount);
         stats.setTotalGroupsCount(systemGroupsCount + customGroupsCount);
 
-        // NEW: Group mail statistics
+        // Group mail statistics
         long totalGroupMails = mailRepository.countAllGroupMailsForUser(user);
         long unreadGroupMails = mailRepository.countUnreadGroupMailsForUser(user);
 
@@ -764,5 +1014,4 @@ public class MailService {
 
         return stats;
     }
-
 }

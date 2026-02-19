@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApplicationService, Application, ApplicationRequest, ApiResponse } from '../../services/application.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
+import { WorkloadService, WorkloadDTO } from '../../services/workload.service'; // ADD THIS
 import { Location } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-application-form',
@@ -17,18 +19,28 @@ export class ApplicationFormComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  showChefDropdown = false;
+
+
+  baseUrl = environment.baseUrl;
+  Math = Math;
+
   // Current user info
   currentUser: any = null;
   isAdmin = false;
   isChefProjet = false;
   chefsProjet: any[] = [];
+  
+  // NEW: Workload data for chefs
+  chefsWorkload: Map<number, WorkloadDTO> = new Map();
+  workloadLoading = false;
 
   // Application form
   applicationForm: ApplicationRequest = {
     code: '',
     name: '',
     description: '',
-    chefDeProjetId: 0,
+    chefDeProjetId: null,
     clientName: '',
     clientEmail: '',
     clientPhone: '',
@@ -53,7 +65,8 @@ export class ApplicationFormComponent implements OnInit {
     private location: Location,
     private applicationService: ApplicationService,
     private userService: UserService,
-    private authService: AuthService
+    private authService: AuthService,
+    private workloadService: WorkloadService // ADD THIS
   ) {}
 
   ngOnInit(): void {
@@ -93,12 +106,47 @@ export class ApplicationFormComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.chefsProjet = response.data;
+          this.loadChefsWorkload();
         }
       },
       error: (error) => {
         console.error('Error loading chefs:', error);
       }
     });
+  }
+
+  // NEW: Load workload for all chefs
+  loadChefsWorkload(): void {
+    this.workloadLoading = true;
+    this.workloadService.getWorkloadDashboard().subscribe({
+      next: (response) => {
+        if (response.success && response.data?.workloads) {
+          response.data.workloads.forEach((w: WorkloadDTO) => {
+            this.chefsWorkload.set(w.chefId, w);
+          });
+        }
+        this.workloadLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading workload:', error);
+        this.workloadLoading = false;
+      }
+    });
+  }
+
+  // NEW: Get workload for a specific chef
+  getChefWorkload(chefId: number): WorkloadDTO | undefined {
+    return this.chefsWorkload.get(chefId);
+  }
+
+  // NEW: Get workload color
+  getWorkloadColor(workload: number): string {
+    return this.workloadService.getWorkloadClass(workload);
+  }
+
+  // NEW: Get workload status
+  getWorkloadStatus(workload: number): string {
+    return this.workloadService.getWorkloadStatus(workload);
   }
 
   loadApplication(id: number): void {
@@ -218,8 +266,6 @@ export class ApplicationFormComponent implements OnInit {
       return false;
     }
 
-    
-
     return true;
   }
 
@@ -261,4 +307,97 @@ export class ApplicationFormComponent implements OnInit {
     if (!this.currentUser) return '';
     return `${this.currentUser.firstName} ${this.currentUser.lastName}`;
   }
+
+
+  // Add these methods for avatar handling (copy from application component)
+
+getChefAvatarUrl(chef: any): string {
+  if (!chef || !chef.profileImage) {
+    let initials = '?';
+    if (chef?.firstName && chef?.lastName) {
+      initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
+    } else if (chef?.firstName) {
+      initials = chef.firstName[0].toUpperCase();
+    } else if (chef?.username) {
+      initials = chef.username[0].toUpperCase();
+    }
+    return this.generateDefaultChefAvatar(initials);
+  }
+  
+  const profileImage = chef.profileImage;
+  if (profileImage.startsWith('http')) {
+    return profileImage;
+  }
+  if (profileImage.startsWith('/uploads/')) {
+    return this.baseUrl + profileImage;
+  }
+  if (profileImage.startsWith('data:image')) {
+    return profileImage;
+  }
+  return this.baseUrl + '/uploads/avatars/' + profileImage;
+}
+
+generateDefaultChefAvatar(initials: string): string {
+  const colors = ['#e9d709', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'];
+  const colorIndex = initials.charCodeAt(0) % colors.length;
+  const color = colors[colorIndex];
+  
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+    <rect width="100" height="100" rx="15" fill="${color}"/>
+    <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" 
+          font-size="38" font-weight="bold" fill="white" dominant-baseline="middle">
+      ${initials}
+    </text>
+  </svg>`;
+  
+  return 'data:image/svg+xml;base64,' + btoa(svg);
+}
+
+handleChefImageError(event: any, chef: any): void {
+  let initials = '?';
+  if (chef?.firstName && chef?.lastName) {
+    initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
+  } else if (chef?.firstName) {
+    initials = chef.firstName[0].toUpperCase();
+  } else if (chef?.username) {
+    initials = chef.username[0].toUpperCase();
+  }
+  event.target.src = this.generateDefaultChefAvatar(initials);
+  event.target.onerror = null;
+}
+  
+getWorkloadClass(workload: number): string {
+  if (workload >= 90) return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+  if (workload >= 70) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
+  if (workload >= 40) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+  return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+}
+
+
+
+// Add these methods
+toggleChefDropdown(): void {
+  this.showChefDropdown = !this.showChefDropdown;
+}
+
+
+selectChef(chef: any | null): void {
+  this.applicationForm.chefDeProjetId = chef ? chef.id : null; // ✅
+  this.showChefDropdown = false;
+}
+
+getSelectedChef(): any | null {
+  if (this.applicationForm.chefDeProjetId === null) return null;
+  return this.chefsProjet.find(c => c.id === this.applicationForm.chefDeProjetId) || null;
+}
+
+
+// Add click outside to close dropdown
+@HostListener('document:click', ['$event'])
+onDocumentClick(event: MouseEvent): void {
+  const target = event.target as HTMLElement;
+  if (!target.closest('.relative')) {
+    this.showChefDropdown = false;
+  }
+}
 }

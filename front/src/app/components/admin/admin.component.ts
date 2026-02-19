@@ -1,7 +1,7 @@
-// src/app/components/admin/admin.component.ts
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { StatsService } from '../../services/stats.service';
 import { ChartService } from '../../services/chart.service';
+import { WorkloadDTO, WorkloadService } from 'src/app/services/workload.service';
 
 @Component({
   selector: 'app-admin',
@@ -35,13 +35,30 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   // Loading state
   isLoading = true;
 
+  workloads: WorkloadDTO[] = [];
+  workloadLoading = false;
+  workloadStats = {
+    totalChefs: 0,
+    overloadedChefs: 0,
+    highWorkloadChefs: 0,
+    availableChefs: 0,
+    averageWorkload: 0
+  };
+
+    Math = Math;
+
+
   constructor(
     private statsService: StatsService,
-    private chartService: ChartService
+    private chartService: ChartService,
+    private workloadService: WorkloadService 
+
   ) {}
 
   ngOnInit(): void {
     this.loadAdminStats();
+    this.loadWorkloadDashboard(); 
+
   }
 
   ngAfterViewInit(): void {
@@ -204,8 +221,44 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     this.revenueTrendChart = null;
   }
 
+ // NEW: Load workload dashboard
+  loadWorkloadDashboard(): void {
+    this.workloadLoading = true;
+    this.workloadService.getWorkloadDashboard().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.workloads = response.data.workloads || [];
+          this.workloadStats = {
+            totalChefs: response.data.totalChefs || 0,
+            overloadedChefs: response.data.overloadedChefs || 0,
+            highWorkloadChefs: response.data.highWorkloadChefs || 0,
+            availableChefs: response.data.availableChefs || 0,
+            averageWorkload: response.data.averageWorkload || 0
+          };
+        }
+        this.workloadLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading workload dashboard:', error);
+        this.workloadLoading = false;
+      }
+    });
+  }
+
+  // NEW: Get workload color
+  getWorkloadColor(workload: number): string {
+    return this.workloadService.getWorkloadClass(workload);
+  }
+
+  // NEW: Get progress bar class
+  getProgressBarClass(workload: number): string {
+    return this.workloadService.getProgressBarClass(workload);
+  }
+
+  // Override refresh to also reload workload
   refreshStats(): void {
     this.loadAdminStats();
+    this.loadWorkloadDashboard();
   }
 
   formatCurrency(value: number): string {
