@@ -814,44 +814,32 @@ public class ConventionService {
         log.info("Checking date transitions for conventions...");
         LocalDate today = LocalDate.now();
 
-        List<Convention> waitingConventions = conventionRepository.findByEtat("EN_ATTENTE");
+        List<Convention> waitingConventions = conventionRepository.findByEtat("PLANIFIE");
         for (Convention convention : waitingConventions) {
             if (!today.isBefore(convention.getDateDebut())) {
                 String oldStatus = convention.getEtat();
-                convention.setEtat("EN_COURS");
+                convention.setEtat("EN COURS");
                 conventionRepository.save(convention);
-                log.info("Convention {} transitioned from EN_ATTENTE to EN_COURS",
+                log.info("Convention {} transitioned from PLANIFIE to EN COURS",
                         convention.getReferenceConvention());
 
                 // LOG HISTORY: Status change
                 try {
-                    historyService.logConventionStatusChange(convention, oldStatus, "EN_COURS");
+                    historyService.logConventionStatusChange(convention, oldStatus, "EN COURS");
                 } catch (Exception e) {
                     log.error("Failed to log status change history: {}", e.getMessage());
                 }
             }
         }
 
-        List<Convention> activeConventions = conventionRepository.findByEtat("EN_COURS");
+        List<Convention> activeConventions = conventionRepository.findByEtat("EN COURS");
         for (Convention convention : activeConventions) {
             if (convention.getDateFin() != null && today.isAfter(convention.getDateFin())) {
                 List<Facture> invoices = factureRepository.findByConventionId(convention.getId());
                 boolean allInvoicesPaid = invoices.stream()
                         .allMatch(invoice -> "PAYE".equals(invoice.getStatutPaiement()));
 
-                if (!allInvoicesPaid) {
-                    String oldStatus = convention.getEtat();
-                    convention.setEtat("EN_RETARD");
-                    conventionRepository.save(convention);
-                    log.info("Convention {} marked as EN_RETARD", convention.getReferenceConvention());
 
-                    // LOG HISTORY: Status change
-                    try {
-                        historyService.logConventionStatusChange(convention, oldStatus, "EN_RETARD");
-                    } catch (Exception e) {
-                        log.error("Failed to log status change history: {}", e.getMessage());
-                    }
-                }
             }
         }
     }

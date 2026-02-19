@@ -499,18 +499,16 @@ public class ConventionController {
             List<Convention> allConventions = conventionRepository.findByArchivedFalse();
 
             long totalConventions = allConventions.size();
-            long enAttente = allConventions.stream()
-                    .filter(c -> "EN_ATTENTE".equals(c.getEtat()))
+            long Planifie = allConventions.stream()
+                    .filter(c -> "PLANIFIE".equals(c.getEtat()))
                     .count();
             long enCours = allConventions.stream()
-                    .filter(c -> "EN_COURS".equals(c.getEtat()))
+                    .filter(c -> "EN COURS".equals(c.getEtat()))
                     .count();
             long termine = allConventions.stream()
                     .filter(c -> "TERMINE".equals(c.getEtat()))
                     .count();
-            long enRetard = allConventions.stream()
-                    .filter(c -> "EN_RETARD".equals(c.getEtat()))
-                    .count();
+
 
             // Financial statistics
             BigDecimal totalMontantHT = allConventions.stream()
@@ -531,10 +529,9 @@ public class ConventionController {
 
             Map<String, Object> stats = new HashMap<>();
             stats.put("total", totalConventions);
-            stats.put("enAttente", enAttente);
+            stats.put("Planifie", Planifie);
             stats.put("enCours", enCours);
             stats.put("termine", termine);
-            stats.put("enRetard", enRetard);
             stats.put("totalMontantHT", totalMontantHT);
             stats.put("totalMontantTTC", totalMontantTTC);
             stats.put("totalNbUsers", totalNbUsers);

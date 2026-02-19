@@ -140,31 +140,17 @@ public class Convention {
 
         // 3. Check if convention hasn't started yet → EN_ATTENTE
         if (today.isBefore(dateDebut)) {
-            this.etat = "EN_ATTENTE";
+            this.etat = "PLANIFIE";
             return;
         }
 
-        // 4. Check for overdue unpaid invoices
-        boolean hasOverdueUnpaidInvoices = hasOverdueUnpaidInvoices();
 
-        // 5. Check if end date is passed AND has unpaid invoices
-        boolean endDatePassedWithUnpaidInvoices = false;
-        if (dateFin != null && today.isAfter(dateFin)) {
-            // If end date passed and not all invoices are paid
-            if (!allInvoicesPaid) {
-                endDatePassedWithUnpaidInvoices = true;
-            }
-        }
 
-        // 6. If has overdue unpaid invoices OR end date passed with unpaid invoices → EN_RETARD
-        if (hasOverdueUnpaidInvoices || endDatePassedWithUnpaidInvoices) {
-            this.etat = "EN_RETARD";
-            return;
-        }
+
 
         // 7. Default: convention is in progress → EN_COURS
         // (today is on or after start date, no overdue invoices, end date not passed or passed but invoices paid)
-        this.etat = "EN_COURS";
+        this.etat = "EN COURS";
     }
 
     /**

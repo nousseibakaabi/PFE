@@ -525,9 +525,8 @@ getHistoryIcon(actionType: string): string {
     if (etat === null) return 'bg-gray-100 text-gray-800';
     
     switch (etat) {
-      case 'EN_ATTENTE': return 'bg-yellow-100 text-yellow-800';
-      case 'EN_COURS': return 'bg-blue-100 text-blue-800';
-      case 'EN_RETARD': return 'bg-red-100 text-red-800';
+      case 'PLANIFIE': return 'bg-yellow-100 text-yellow-800';
+      case 'EN COURS': return 'bg-blue-100 text-blue-800';
       case 'TERMINE': return 'bg-green-100 text-green-800';
       case 'ARCHIVE': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -538,10 +537,10 @@ getHistoryIcon(actionType: string): string {
     if (etat === null) return '-';
     
     switch (etat) {
-      case 'EN_ATTENTE': return 'En Attente';
-      case 'EN_COURS': return 'En Cours';
-      case 'TERMINE': return 'Terminé';
-      case 'ARCHIVE': return 'Archivé';
+      case 'PLANIFIE': return 'Planifiée';
+      case 'EN COURS': return 'En Cours';
+      case 'TERMINE': return 'Terminée';
+      case 'ARCHIVE': return 'Archivée';
       default: return etat;
     }
   }
