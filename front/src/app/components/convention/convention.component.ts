@@ -305,20 +305,6 @@ searchConventions(): void {
   }
 
 
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
   loadRelatedInvoices(conventionId: number): void {
     this.factureService.getFacturesByConvention(conventionId).subscribe({
       next: (response) => {
@@ -413,8 +399,5 @@ openCreateModal(): void {
   this.router.navigate(['/conventions/new']);
 }
 
-openEditModal(convention: Convention): void {
-  this.router.navigate(['/conventions/edit', convention.id]);
-}
 
 }

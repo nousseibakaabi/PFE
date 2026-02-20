@@ -62,7 +62,7 @@ public class Application {
 
     // Status
     @Column(nullable = false)
-    private String status = "PLANIFIE"; // PLANIFIE, EN_COURS, TERMINE, SUSPENDU, ANNULE
+    private String status = "PLANIFIE"; // PLANIFIE, EN_COURS, TERMINE
 
     // Timestamps
     @Column(name = "created_at")
@@ -75,6 +75,14 @@ public class Application {
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Convention> conventions = new ArrayList<>();
 
+    @Column(name = "terminated_at")
+    private LocalDateTime terminatedAt;
+
+    @Column(name = "terminated_by")
+    private String terminatedBy;
+
+    @Column(name = "termination_reason")
+    private String terminationReason;
 
 
     @PrePersist
@@ -172,15 +180,11 @@ public class Application {
     public String getStatusColor() {
         switch (status) {
             case "PLANIFIE":
-                return "blue";
+                return "yellow";
             case "EN_COURS":
-                return "green";
+                return "blue";
             case "TERMINE":
-                return "gray";
-            case "SUSPENDU":
-                return "orange";
-            case "ANNULE":
-                return "red";
+                return "green";
             default:
                 return "gray";
         }
@@ -214,30 +218,92 @@ public class Application {
         return daysRemaining + " jours restants";
     }
 
-    // In Application.java - Update this method
-    public void updateStatusBasedOnDates() {
-        // If status is manually set to SUSPENDU or ANNULE, don't auto-update
-        if ("SUSPENDU".equals(this.status) || "ANNULE".equals(this.status)) {
-            return; // Keep manual status
+
+        // NEW: Calculate days before due date when terminated
+        public Long getDaysRemainingAtTermination() {
+            if (terminatedAt == null || dateFin == null) {
+                return null;
+            }
+            return ChronoUnit.DAYS.between(terminatedAt.toLocalDate(), dateFin);
         }
 
-        // If no start date, it's PLANIFIE
-        if (dateDebut == null) {
-            this.status = "PLANIFIE";
-            return;
+        // NEW: Get termination info for display
+        public String getTerminationInfo() {
+            if (terminatedAt == null) {
+                return "Non terminée";
+            }
+
+            Long daysRemaining = getDaysRemainingAtTermination();
+            String daysText = daysRemaining != null ?
+                    (daysRemaining >= 0 ? daysRemaining + " jours avant échéance" :
+                            Math.abs(daysRemaining) + " jours après échéance") :
+                    "Date d'échéance inconnue";
+
+            return String.format("Terminée le %s par %s (%s)",
+                    terminatedAt.toLocalDate().toString(),
+                    terminatedBy != null ? terminatedBy : "Système",
+                    daysText);
         }
 
-        LocalDate today = LocalDate.now();
-
-        // Check if today is before start date
-        if (today.isBefore(dateDebut)) {
-            this.status = "PLANIFIE";
+        // NEW: Check if terminated early
+        public boolean isTerminatedEarly() {
+            if (terminatedAt == null || dateFin == null) {
+                return false;
+            }
+            return terminatedAt.toLocalDate().isBefore(dateFin);
         }
-        // Check if end date exists and today is after end date
 
-        // Otherwise, it's EN_COURS
-        else {
-            this.status = "EN_COURS";
+        // NEW: Check if terminated on time
+        public boolean isTerminatedOnTime() {
+            if (terminatedAt == null || dateFin == null) {
+                return false;
+            }
+            return terminatedAt.toLocalDate().equals(dateFin);
+        }
+
+        // NEW: Check if terminated late
+        public boolean isTerminatedLate() {
+            if (terminatedAt == null || dateFin == null) {
+                return false;
+            }
+            return terminatedAt.toLocalDate().isAfter(dateFin);
+        }
+
+        // Update the existing updateStatusBasedOnDates method
+        public void updateStatusBasedOnDates() {
+            // If status is TERMINE and we have a terminatedAt date, respect it
+            if ("TERMINE".equals(this.status) && this.terminatedAt != null) {
+                // Keep as terminated - don't auto-update
+                return;
+            }
+
+            // If no start date, it's PLANIFIE
+            if (dateDebut == null) {
+                this.status = "PLANIFIE";
+                return;
+            }
+
+            LocalDate today = LocalDate.now();
+
+            // If there's an end date and today is after end date -> Auto TERMINE
+            if (dateFin != null && today.isAfter(dateFin)) {
+                this.status = "TERMINE";
+                // Only set terminatedAt if not already set (auto-termination)
+                if (this.terminatedAt == null) {
+                    this.terminatedAt = LocalDateTime.now();
+                    this.terminatedBy = "SYSTEM_AUTO";
+                    this.terminationReason = "Date d'échéance dépassée";
+                }
+                return;
+            }
+
+            // If today is before start date -> PLANIFIE
+            if (today.isBefore(dateDebut)) {
+                this.status = "PLANIFIE";
+            }
+            // If today is between start and end date -> EN_COURS
+            else {
+                this.status = "EN_COURS";
+            }
         }
     }
-}

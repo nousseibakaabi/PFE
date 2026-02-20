@@ -41,6 +41,16 @@ export interface Application {
   // Statistics
   conventionsCount: number;
   recentConventions: any[];
+
+
+  terminatedAt?: string;
+  terminatedBy?: string;
+  terminationReason?: string;
+  daysRemainingAtTermination?: number;
+  terminationInfo?: string;
+  terminatedEarly?: boolean;
+  terminatedOnTime?: boolean;
+  terminatedLate?: boolean;
 }
 
 export interface ApplicationRequest {
@@ -51,7 +61,6 @@ export interface ApplicationRequest {
   clientName: string;
   clientEmail?: string;
   clientPhone?: string;
-  clientAddress?: string;
   dateDebut?: string;
   dateFin?: string;
   status?: string;
@@ -60,11 +69,23 @@ export interface ApplicationRequest {
 }
 
 
+// In application.service.ts - Update the ApiResponse interface
+
 export interface ApiResponse {
   success: boolean;
   message?: string;
   data?: any;
   applications?: Application[];
+  // Add terminationInfo property
+  terminationInfo?: {
+    terminatedAt: string;
+    terminatedBy: string;
+    daysRemaining: number;
+    isEarly: boolean;
+    isOnTime: boolean;
+    isLate: boolean;
+    info: string;
+  };
 }
 
 @Injectable({
@@ -152,4 +173,25 @@ deleteApplication(id: number): Observable<ApiResponse> {
   getApplicationsWithoutConventions(): Observable<ApiResponse> {
   return this.http.get<ApiResponse>(`${this.apiUrl}/api/applications/without-conventions`);
   }
+
+
+  manuallyTerminateApplication(id: number, reason?: string): Observable<ApiResponse> {
+    const body = reason ? { reason } : {};
+    return this.http.post<ApiResponse>(`${this.apiUrl}/api/applications/${id}/terminate`, body);
+  }
+
+  checkCanTerminate(application: Application): boolean {
+    return application.status === 'PLANIFIE' || application.status === 'EN_COURS';
+  }
+
+  updateApplicationWithStatusHandling(id: number, data: ApplicationRequest): Observable<ApiResponse> {
+    // If status is being set to TERMINE, use the terminate endpoint
+    if (data.status === 'TERMINE') {
+      return this.manuallyTerminateApplication(id, 'Terminé via formulaire');
+    }
+    
+    // Otherwise use regular update
+    return this.updateApplication(id, data);
+  }
+
 }

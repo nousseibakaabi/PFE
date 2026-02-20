@@ -60,6 +60,16 @@ public class ApplicationMapper {
                     .collect(Collectors.toList()));
         }
 
+
+        response.setTerminatedAt(application.getTerminatedAt());
+        response.setTerminatedBy(application.getTerminatedBy());
+        response.setTerminationReason(application.getTerminationReason());
+        response.setDaysRemainingAtTermination(application.getDaysRemainingAtTermination());
+        response.setTerminationInfo(application.getTerminationInfo());
+        response.setTerminatedEarly(application.isTerminatedEarly());
+        response.setTerminatedOnTime(application.isTerminatedOnTime());
+        response.setTerminatedLate(application.isTerminatedLate());
+
         return response;
     }
 

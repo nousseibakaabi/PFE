@@ -1,9 +1,11 @@
-import { Component, OnInit,HostListener } from '@angular/core';
+// In application-form.component.ts - Add missing properties and methods
+
+import { Component, OnInit, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApplicationService, Application, ApplicationRequest, ApiResponse } from '../../services/application.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
-import { WorkloadService, WorkloadDTO } from '../../services/workload.service'; // ADD THIS
+import { WorkloadService, WorkloadDTO } from '../../services/workload.service';
 import { Location } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
@@ -14,13 +16,15 @@ import { environment } from '../../../environments/environment';
 })
 export class ApplicationFormComponent implements OnInit {
   applicationId: number | null = null;
+  // ADD THIS: application property to store the loaded application
+  application: Application | null = null;
+  
   isEditing = false;
   loading = false;
   errorMessage = '';
   successMessage = '';
 
   showChefDropdown = false;
-
 
   baseUrl = environment.baseUrl;
   Math = Math;
@@ -31,7 +35,7 @@ export class ApplicationFormComponent implements OnInit {
   isChefProjet = false;
   chefsProjet: any[] = [];
   
-  // NEW: Workload data for chefs
+  // Workload data for chefs
   chefsWorkload: Map<number, WorkloadDTO> = new Map();
   workloadLoading = false;
 
@@ -44,7 +48,8 @@ export class ApplicationFormComponent implements OnInit {
     clientName: '',
     clientEmail: '',
     clientPhone: '',
-    clientAddress: '',
+    dateDebut: '',
+    dateFin: '',
     minUser: 0,
     maxUser: 0,
     status: 'PLANIFIE'
@@ -55,8 +60,6 @@ export class ApplicationFormComponent implements OnInit {
     { value: 'PLANIFIE', label: 'Planifié' },
     { value: 'EN_COURS', label: 'En Cours' },
     { value: 'TERMINE', label: 'Terminé' },
-    { value: 'SUSPENDU', label: 'Suspendu' },
-    { value: 'ANNULE', label: 'Annulé' }
   ];
 
   constructor(
@@ -66,7 +69,7 @@ export class ApplicationFormComponent implements OnInit {
     private applicationService: ApplicationService,
     private userService: UserService,
     private authService: AuthService,
-    private workloadService: WorkloadService // ADD THIS
+    private workloadService: WorkloadService
   ) {}
 
   ngOnInit(): void {
@@ -115,7 +118,6 @@ export class ApplicationFormComponent implements OnInit {
     });
   }
 
-  // NEW: Load workload for all chefs
   loadChefsWorkload(): void {
     this.workloadLoading = true;
     this.workloadService.getWorkloadDashboard().subscribe({
@@ -134,17 +136,14 @@ export class ApplicationFormComponent implements OnInit {
     });
   }
 
-  // NEW: Get workload for a specific chef
   getChefWorkload(chefId: number): WorkloadDTO | undefined {
     return this.chefsWorkload.get(chefId);
   }
 
-  // NEW: Get workload color
   getWorkloadColor(workload: number): string {
     return this.workloadService.getWorkloadClass(workload);
   }
 
-  // NEW: Get workload status
   getWorkloadStatus(workload: number): string {
     return this.workloadService.getWorkloadStatus(workload);
   }
@@ -154,6 +153,9 @@ export class ApplicationFormComponent implements OnInit {
     this.applicationService.getApplication(id).subscribe({
       next: (response: ApiResponse) => {
         if (response.success) {
+          // Store the full application object
+          this.application = response.data;
+          
           const app = response.data;
           this.applicationForm = {
             code: app.code,
@@ -163,7 +165,6 @@ export class ApplicationFormComponent implements OnInit {
             clientName: app.clientName,
             clientEmail: app.clientEmail || '',
             clientPhone: app.clientPhone || '',
-            clientAddress: app.clientAddress || '',
             dateDebut: app.dateDebut || '',
             dateFin: app.dateFin || '',
             minUser: app.minUser || 0,
@@ -202,12 +203,58 @@ export class ApplicationFormComponent implements OnInit {
     });
   }
 
-  saveApplication(): void {
-    if (!this.validateForm()) return;
 
-    this.loading = true;
-    
-    if (this.isEditing && this.applicationId) {
+
+saveApplication(): void {
+  if (!this.validateForm()) return;
+
+  this.loading = true;
+  
+  if (this.isEditing && this.applicationId) {
+    // Check if we're setting status to TERMINE
+    if (this.applicationForm.status === 'TERMINE') {
+      // Use special termination method
+      this.applicationService.manuallyTerminateApplication(
+        this.applicationId, 
+        'Terminé via formulaire'
+      ).subscribe({
+        next: (response: any) => {
+          if (response.success) {
+            this.successMessage = 'Application marquée comme terminée avec succès';
+            
+            // Show termination details
+            if (response.terminationInfo) {
+              const info = response.terminationInfo;
+              let terminationDetail = '';
+              
+              if (info.daysRemaining > 0) {
+                terminationDetail = `Terminée ${info.daysRemaining} jours avant l'échéance`;
+              } else if (info.daysRemaining < 0) {
+                terminationDetail = `Terminée ${Math.abs(info.daysRemaining)} jours après l'échéance`;
+              } else if (info.daysRemaining === 0) {
+                terminationDetail = 'Terminée le jour de l\'échéance';
+              }
+              
+              if (terminationDetail) {
+                this.successMessage += ` - ${terminationDetail}`;
+              }
+            }
+            
+            setTimeout(() => {
+              this.router.navigate(['/applications', this.applicationId]);
+            }, 1500);
+          } else {
+            this.errorMessage = response.message || 'Échec de la mise à jour';
+          }
+          this.loading = false;
+        },
+        error: (error) => {
+          this.errorMessage = error.error?.message || 'Erreur lors de la mise à jour';
+          this.loading = false;
+        }
+      });
+    } else {
+      // Regular update for non-TERMINE status
       this.applicationService.updateApplication(this.applicationId, this.applicationForm).subscribe({
         next: (response: ApiResponse) => {
           if (response.success) {
@@ -225,26 +272,28 @@ export class ApplicationFormComponent implements OnInit {
           this.loading = false;
         }
       });
-    } else {
-      this.applicationService.createApplication(this.applicationForm).subscribe({
-        next: (response: ApiResponse) => {
-          if (response.success) {
-            this.successMessage = 'Application créée avec succès';
-            setTimeout(() => {
-              this.router.navigate(['/applications', response.data.id]);
-            }, 1500);
-          } else {
-            this.errorMessage = response.message || 'Échec de la création';
-          }
-          this.loading = false;
-        },
-        error: (error) => {
-          this.errorMessage = error.error?.message || 'Erreur lors de la création';
-          this.loading = false;
-        }
-      });
     }
+  } else {
+    // Create new application
+    this.applicationService.createApplication(this.applicationForm).subscribe({
+      next: (response: ApiResponse) => {
+        if (response.success) {
+          this.successMessage = 'Application créée avec succès';
+          setTimeout(() => {
+            this.router.navigate(['/applications', response.data.id]);
+          }, 1500);
+        } else {
+          this.errorMessage = response.message || 'Échec de la création';
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        this.errorMessage = error.error?.message || 'Erreur lors de la création';
+        this.loading = false;
+      }
+    });
   }
+}
 
   validateForm(): boolean {
     if (!this.applicationForm.code?.trim()) {
@@ -308,11 +357,50 @@ export class ApplicationFormComponent implements OnInit {
     return `${this.currentUser.firstName} ${this.currentUser.lastName}`;
   }
 
+  // Avatar handling methods
+  getChefAvatarUrl(chef: any): string {
+    if (!chef || !chef.profileImage) {
+      let initials = '?';
+      if (chef?.firstName && chef?.lastName) {
+        initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
+      } else if (chef?.firstName) {
+        initials = chef.firstName[0].toUpperCase();
+      } else if (chef?.username) {
+        initials = chef.username[0].toUpperCase();
+      }
+      return this.generateDefaultChefAvatar(initials);
+    }
+    
+    const profileImage = chef.profileImage;
+    if (profileImage.startsWith('http')) {
+      return profileImage;
+    }
+    if (profileImage.startsWith('/uploads/')) {
+      return this.baseUrl + profileImage;
+    }
+    if (profileImage.startsWith('data:image')) {
+      return profileImage;
+    }
+    return this.baseUrl + '/uploads/avatars/' + profileImage;
+  }
 
-  // Add these methods for avatar handling (copy from application component)
+  generateDefaultChefAvatar(initials: string): string {
+    const colors = ['#e9d709', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'];
+    const colorIndex = initials.charCodeAt(0) % colors.length;
+    const color = colors[colorIndex];
+    
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+      <rect width="100" height="100" rx="15" fill="${color}"/>
+      <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" 
+            font-size="38" font-weight="bold" fill="white" dominant-baseline="middle">
+        ${initials}
+      </text>
+    </svg>`;
+    
+    return 'data:image/svg+xml;base64,' + btoa(svg);
+  }
 
-getChefAvatarUrl(chef: any): string {
-  if (!chef || !chef.profileImage) {
+  handleChefImageError(event: any, chef: any): void {
     let initials = '?';
     if (chef?.firstName && chef?.lastName) {
       initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
@@ -321,83 +409,98 @@ getChefAvatarUrl(chef: any): string {
     } else if (chef?.username) {
       initials = chef.username[0].toUpperCase();
     }
-    return this.generateDefaultChefAvatar(initials);
+    event.target.src = this.generateDefaultChefAvatar(initials);
+    event.target.onerror = null;
   }
-  
-  const profileImage = chef.profileImage;
-  if (profileImage.startsWith('http')) {
-    return profileImage;
+    
+  getWorkloadClass(workload: number): string {
+    if (workload >= 90) return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+    if (workload >= 70) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
+    if (workload >= 40) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+    return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
   }
-  if (profileImage.startsWith('/uploads/')) {
-    return this.baseUrl + profileImage;
+
+  toggleChefDropdown(): void {
+    this.showChefDropdown = !this.showChefDropdown;
   }
-  if (profileImage.startsWith('data:image')) {
-    return profileImage;
-  }
-  return this.baseUrl + '/uploads/avatars/' + profileImage;
-}
 
-generateDefaultChefAvatar(initials: string): string {
-  const colors = ['#e9d709', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'];
-  const colorIndex = initials.charCodeAt(0) % colors.length;
-  const color = colors[colorIndex];
-  
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-    <rect width="100" height="100" rx="15" fill="${color}"/>
-    <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" 
-          font-size="38" font-weight="bold" fill="white" dominant-baseline="middle">
-      ${initials}
-    </text>
-  </svg>`;
-  
-  return 'data:image/svg+xml;base64,' + btoa(svg);
-}
-
-handleChefImageError(event: any, chef: any): void {
-  let initials = '?';
-  if (chef?.firstName && chef?.lastName) {
-    initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
-  } else if (chef?.firstName) {
-    initials = chef.firstName[0].toUpperCase();
-  } else if (chef?.username) {
-    initials = chef.username[0].toUpperCase();
-  }
-  event.target.src = this.generateDefaultChefAvatar(initials);
-  event.target.onerror = null;
-}
-  
-getWorkloadClass(workload: number): string {
-  if (workload >= 90) return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-  if (workload >= 70) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
-  if (workload >= 40) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-  return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-}
-
-
-
-// Add these methods
-toggleChefDropdown(): void {
-  this.showChefDropdown = !this.showChefDropdown;
-}
-
-
-selectChef(chef: any | null): void {
-  this.applicationForm.chefDeProjetId = chef ? chef.id : null; // ✅
-  this.showChefDropdown = false;
-}
-
-getSelectedChef(): any | null {
-  if (this.applicationForm.chefDeProjetId === null) return null;
-  return this.chefsProjet.find(c => c.id === this.applicationForm.chefDeProjetId) || null;
-}
-
-
-// Add click outside to close dropdown
-@HostListener('document:click', ['$event'])
-onDocumentClick(event: MouseEvent): void {
-  const target = event.target as HTMLElement;
-  if (!target.closest('.relative')) {
+  selectChef(chef: any | null): void {
+    this.applicationForm.chefDeProjetId = chef ? chef.id : null;
     this.showChefDropdown = false;
   }
-}
+
+  getSelectedChef(): any | null {
+    if (this.applicationForm.chefDeProjetId === null) return null;
+    return this.chefsProjet.find(c => c.id === this.applicationForm.chefDeProjetId) || null;
+  }
+
+  // ADD THIS: Check if application can be terminated
+  checkCanTerminate(application: Application | null): boolean {
+    return !!(application && (application.status === 'PLANIFIE' || application.status === 'EN_COURS'));
+  }
+
+  // ADD THIS: Terminate application method
+  terminateApplication(): void {
+    if (!this.application || !this.checkCanTerminate(this.application)) {
+      this.errorMessage = 'Cette application ne peut pas être terminée';
+      return;
+    }
+    
+    // Optional: Show prompt with reason
+    const reason = prompt('Raison de la terminaison (optionnelle):');
+    
+    if (this.applicationId === null) {
+      this.errorMessage = 'ID d\'application invalide';
+      return;
+    }
+    
+    this.loading = true;
+    this.applicationService.manuallyTerminateApplication(this.applicationId, reason || undefined).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.successMessage = 'Application marquée comme terminée avec succès';
+          
+          // Show termination details
+          if (response.terminationInfo) {
+            const info = response.terminationInfo;
+            let terminationDetail = '';
+            
+            if (info.daysRemaining > 0) {
+              terminationDetail = `Terminée ${info.daysRemaining} jours avant l'échéance`;
+            } else if (info.daysRemaining < 0) {
+              terminationDetail = `Terminée ${Math.abs(info.daysRemaining)} jours après l'échéance`;
+            } else if (info.daysRemaining === 0) {
+              terminationDetail = 'Terminée le jour de l\'échéance';
+            }
+            
+            if (terminationDetail) {
+              this.successMessage += ` - ${terminationDetail}`;
+            }
+          }
+          
+          // Reload application data
+          if (this.applicationId) {
+            this.loadApplication(this.applicationId);
+          }
+        } else {
+          this.errorMessage = response.message || 'Erreur lors de la termination';
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        this.errorMessage = error.error?.message || 'Erreur lors de la termination';
+        this.loading = false;
+      }
+    });
+  }
+
+ 
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.relative')) {
+      this.showChefDropdown = false;
+    }
+  }
 }

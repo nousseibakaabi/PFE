@@ -100,9 +100,7 @@
               <span [class]="'px-4 py-2 text-sm font-medium rounded-full ' + getStatutClass(facture.statutPaiement)">
                 {{ getStatutLabel(facture.statutPaiement) }}
               </span>
-              <span *ngIf="isOverdue()" class="px-4 py-2 text-sm font-medium rounded-full bg-red-100 text-red-800">
-                En retard
-              </span>
+              
             </div>
           </div>
         </div>

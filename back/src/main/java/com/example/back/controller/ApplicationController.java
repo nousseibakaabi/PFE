@@ -452,4 +452,40 @@ public class ApplicationController {
             return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
+
+    
+    @PostMapping("/{id}/terminate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")
+    public ResponseEntity<?> manuallyTerminateApplication(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, String> request) {
+        try {
+            String reason = request != null ? request.get("reason") : null;
+            ApplicationResponse application = applicationService.manuallyTerminateApplication(id, reason);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Application marquée comme terminée avec succès");
+
+            // Add termination info to response
+            Map<String, Object> terminationInfo = new HashMap<>();
+            terminationInfo.put("terminatedAt", application.getTerminatedAt());
+            terminationInfo.put("terminatedBy", application.getTerminatedBy());
+            terminationInfo.put("daysRemaining", application.getDaysRemainingAtTermination());
+            terminationInfo.put("isEarly", application.isTerminatedEarly());
+            terminationInfo.put("isOnTime", application.isTerminatedOnTime());
+            terminationInfo.put("isLate", application.isTerminatedLate());
+            terminationInfo.put("info", application.getTerminationInfo());
+
+            response.put("terminationInfo", terminationInfo);
+            response.put("data", application);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error terminating application: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
 }

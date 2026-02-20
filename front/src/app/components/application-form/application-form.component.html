@@ -281,46 +281,47 @@
   
 
         <!-- Status (only for editing) -->
-        <div *ngIf="isEditing" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Statut
-            </label>
-            
-            <!-- If TERMINE, show read-only -->
-            <div *ngIf="applicationForm.status === 'TERMINE'"
-                 class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 text-sm">
-              {{ getStatusLabel(applicationForm.status) }}
-              <span class="text-xs text-gray-500 dark:text-gray-400 block mt-1">
-                (statut final - non modifiable)
-              </span>
-            </div>
-            
-            <!-- If PLANIFIE or EN COURS -->
-            <select
-              *ngIf="applicationForm.status === 'PLANIFIE' || applicationForm.status === 'EN_COURS'"
-              [(ngModel)]="applicationForm.status"
-              name="status"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-            >
-              <option [value]="applicationForm.status">{{ getStatusLabel(applicationForm.status) }} </option>
-              <option value="SUSPENDU">Suspendu </option>
-              <option value="ANNULE">Annulé </option>
-            </select>
-            
-            <!-- If SUSPENDU or ANNULE -->
-            <select
-              *ngIf="applicationForm.status === 'SUSPENDU' || applicationForm.status === 'ANNULE'"
-              [(ngModel)]="applicationForm.status"
-              name="status"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-            >
-              <option value="SUSPENDU">Suspendu</option>
-              <option value="ANNULE">Annulé</option>
-              <option *ngIf="canReturnToAutoStatus()" value="EN_COURS">Reprendre (retour auto)</option>
-            </select>
-          </div>
-        </div>
+<!-- In application-form.component.html - Update the status section -->
+
+<!-- Status (only for editing) -->
+<div *ngIf="isEditing" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+      Statut
+    </label>
+    
+    <!-- If TERMINE, show read-only with option to change only for admin -->
+    <div *ngIf="applicationForm.status === 'TERMINE'" class="space-y-2">
+      <div class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 text-sm flex items-center">
+        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium mr-2">Terminé</span>
+        <span>(statut final)</span>
+      </div>
+      
+      
+    </div>
+    
+    <!-- If PLANIFIE or EN_COURS, show dropdown with termination option -->
+    <div *ngIf="applicationForm.status === 'PLANIFIE' || applicationForm.status === 'EN_COURS'">
+      <select
+        [(ngModel)]="applicationForm.status"
+        name="status"
+        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+      >
+        <option [value]="applicationForm.status">
+          {{ applicationForm.status === 'PLANIFIE' ? 'Planifié' : 'En Cours' }}
+        </option>
+        <option value="TERMINE" class="text-green-600">
+          ✓ Terminé (manuellement)
+        </option>
+        
+      </select>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+        <i class="fas fa-info-circle mr-1"></i>
+        Le statut peut être modifié manuellement. Les dates continueront d'être synchronisées avec les conventions.
+      </p>
+    </div>
+  </div>
+</div>
 
         <!-- Description -->
         <div>

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApplicationService, Application } from '../../services/application.service';
+import { ApplicationService, Application ,ApplicationRequest, ApiResponse } from '../../services/application.service';
 import { ConventionService } from '../../services/convention.service';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
@@ -77,6 +77,8 @@ export class ApplicationDetailComponent implements OnInit {
     }
   }
 
+
+  
 
     loadCurrentUser(): void {
     this.currentUser = this.authService.getCurrentUser();
@@ -306,26 +308,48 @@ loadApplicationDetails(id: number): void {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'PLANIFIE': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'EN_COURS': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'TERMINE': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-      case 'SUSPENDU': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'ANNULE': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      case 'PLANIFIE': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'EN_COURS': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'TERMINE': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
       default: return 'bg-gray-100 text-gray-800';
     }
   }
 
+  getStatusLabel(status: string | null): string {
+  if (status === null) return '-';
+  
+  switch (status) {
+    case 'PLANIFIE': return 'Planifié';
+    case 'EN_COURS': return 'En Cours';
+    case 'TERMINE': return 'Terminé';
+    default: return status;
+  }
+}
+
   getConventionStatusClass(etat: string): string {
     switch (etat) {
-      case 'EN_ATTENTE': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'EN_COURS': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'EN_RETARD': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      case 'PLANIFIE': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'EN COURS': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
       case 'TERMINE': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
       case 'ARCHIVE': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
       default: return 'bg-gray-100 text-gray-800';
     }
   }
 
+
+  getConventionStatusLabel(etat: string | null): string {
+  if (etat === null) return '-';
+  
+  switch (etat) {
+    case 'PLANIFIE': return 'Planifié';
+    case 'EN COURS': return 'En Cours';
+    case 'TERMINE': return 'Terminé';
+    case 'ARCHIVE': return 'Archivé';
+    default: return etat;
+  }
+}
+
+  
   canEdit(): boolean {
     return this.authService.isAdmin() || this.authService.isChefProjet();
   }
@@ -630,5 +654,115 @@ groupHistoryByDate(history: HistoryEntry[]): { date: string, entries: HistoryEnt
       date,
       entries: groups[date].sort((a, b) => b.timestamp.localeCompare(a.timestamp))
     }));
+}
+
+
+/**
+ * Check if application can be terminated
+ */
+checkCanTerminate(application: Application | null): boolean {
+  return !!(application && (application.status === 'PLANIFIE' || application.status === 'EN_COURS'));
+}
+
+/**
+ * Terminate application manually
+ */
+terminateApplication(): void {
+  if (!this.application || !this.checkCanTerminate(this.application)) {
+    this.errorMessage = 'Cette application ne peut pas être terminée';
+    return;
+  }
+  
+  // Optional: Show prompt with reason
+  const reason = prompt('Raison de la terminaison (optionnelle):', 'Terminé manuellement');
+  
+  if (reason === null) return; // User cancelled
+  
+  this.loading = true;
+  this.applicationService.manuallyTerminateApplication(this.application.id, reason || undefined).subscribe({
+    next: (response: any) => {
+      if (response.success) {
+        this.successMessage = 'Application marquée comme terminée avec succès';
+        
+        // Show termination details
+        if (response.terminationInfo) {
+          const info = response.terminationInfo;
+          let terminationDetail = '';
+          
+          if (info.daysRemaining > 0) {
+            terminationDetail = `Terminée ${info.daysRemaining} jours avant l'échéance`;
+          } else if (info.daysRemaining < 0) {
+            terminationDetail = `Terminée ${Math.abs(info.daysRemaining)} jours après l'échéance`;
+          } else if (info.daysRemaining === 0) {
+            terminationDetail = 'Terminée le jour de l\'échéance';
+          }
+          
+          if (terminationDetail) {
+            this.successMessage += ` - ${terminationDetail}`;
+          }
+        }
+        
+        // Reload application data
+        this.loadApplicationDetails(this.application!.id);
+      } else {
+        this.errorMessage = response.message || 'Erreur lors de la termination';
+      }
+      this.loading = false;
+    },
+    error: (error) => {
+      console.error('Error terminating application:', error);
+      this.errorMessage = error.error?.message || 'Erreur lors de la termination';
+      this.loading = false;
+    }
+  });
+}
+
+
+/**
+ * Get termination badge class
+ */
+getTerminationBadgeClass(application: Application): string {
+  if (application.terminatedEarly) {
+    return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+  } else if (application.terminatedOnTime) {
+    return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+  } else if (application.terminatedLate) {
+    return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+  }
+  return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+}
+
+/**
+ * Get termination status text
+ */
+getTerminationStatusText(application: Application): string {
+  if (application.terminatedEarly) {
+    return 'Terminée en avance';
+  } else if (application.terminatedOnTime) {
+    return 'Terminée à temps';
+  } else if (application.terminatedLate) {
+    return 'Terminée en retard';
+  }
+  return '';
+}
+
+/**
+ * Format days remaining at termination
+ */
+formatDaysRemainingAtTermination(application: Application): string {
+  if (application.daysRemainingAtTermination === undefined || application.daysRemainingAtTermination === null) {
+    return 'Non disponible';
+  }
+  
+  const days = application.daysRemainingAtTermination;
+  
+  if (days > 0) {
+    return `${days} jour${days > 1 ? 's' : ''} avant échéance`;
+  } else if (days < 0) {
+    const absDays = Math.abs(days);
+    return `${absDays} jour${absDays > 1 ? 's' : ''} après échéance`;
+  } else {
+    return 'Le jour même de l\'échéance';
+  }
 }
 }

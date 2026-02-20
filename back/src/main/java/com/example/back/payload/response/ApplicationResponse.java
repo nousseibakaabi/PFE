@@ -43,6 +43,43 @@ public class ApplicationResponse {
     private int conventionsCount;
     private List<ConventionMiniResponse> recentConventions;
 
+
+    private LocalDateTime terminatedAt;
+    private String terminatedBy;
+    private String terminationReason;
+    private Long daysRemainingAtTermination;
+    private String terminationInfo;
+    private boolean terminatedEarly;
+    private boolean terminatedOnTime;
+    private boolean terminatedLate;
+
+    // Getters and setters for new fields
+    public LocalDateTime getTerminatedAt() { return terminatedAt; }
+    public void setTerminatedAt(LocalDateTime terminatedAt) { this.terminatedAt = terminatedAt; }
+
+    public String getTerminatedBy() { return terminatedBy; }
+    public void setTerminatedBy(String terminatedBy) { this.terminatedBy = terminatedBy; }
+
+    public String getTerminationReason() { return terminationReason; }
+    public void setTerminationReason(String terminationReason) { this.terminationReason = terminationReason; }
+
+    public Long getDaysRemainingAtTermination() { return daysRemainingAtTermination; }
+    public void setDaysRemainingAtTermination(Long daysRemainingAtTermination) {
+        this.daysRemainingAtTermination = daysRemainingAtTermination;
+    }
+
+    public String getTerminationInfo() { return terminationInfo; }
+    public void setTerminationInfo(String terminationInfo) { this.terminationInfo = terminationInfo; }
+
+    public boolean isTerminatedEarly() { return terminatedEarly; }
+    public void setTerminatedEarly(boolean terminatedEarly) { this.terminatedEarly = terminatedEarly; }
+
+    public boolean isTerminatedOnTime() { return terminatedOnTime; }
+    public void setTerminatedOnTime(boolean terminatedOnTime) { this.terminatedOnTime = terminatedOnTime; }
+
+    public boolean isTerminatedLate() { return terminatedLate; }
+    public void setTerminatedLate(boolean terminatedLate) { this.terminatedLate = terminatedLate; }
+
     @Data
     public static class ConventionMiniResponse {
         private Long id;

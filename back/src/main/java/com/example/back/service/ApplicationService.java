@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -783,6 +784,53 @@ public class ApplicationService {
     }
 
 
+
+
+    // In ApplicationService.java - Add this method
+
+    /**
+     * Manually set application status to TERMINE
+     * This bypasses automatic date-based logic
+     */
+    @Transactional
+    public ApplicationResponse manuallyTerminateApplication(Long id, String reason) {
+        try {
+            Application application = applicationRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Application not found"));
+
+            String oldStatus = application.getStatus();
+
+            // Calculate days remaining before termination
+            Long daysRemaining = application.getDaysRemaining();
+            User currentUser = getCurrentUser();
+
+            // Manually set to TERMINE with tracking info
+            application.setStatus("TERMINE");
+            application.setTerminatedAt(LocalDateTime.now());
+            application.setTerminatedBy(currentUser != null ?
+                    currentUser.getUsername() : "UNKNOWN");
+            application.setTerminationReason(reason != null ? reason : "Terminé manuellement");
+
+            Application updatedApplication = applicationRepository.save(application);
+
+            String daysText = daysRemaining != null ?
+                    (daysRemaining > 0 ? " (" + daysRemaining + " jours avant échéance)" :
+                            daysRemaining < 0 ? " (" + Math.abs(daysRemaining) + " jours après échéance)" :
+                                    " (le jour de l'échéance)") : "";
+
+            log.info("Application {} manually terminated by user{}. Terminated at: {}, Days remaining: {}",
+                    application.getCode(), daysText, LocalDateTime.now(), daysRemaining);
+
+            // LOG HISTORY: Manual status change
+            historyService.logApplicationStatusChange(updatedApplication, oldStatus, "TERMINE");
+
+            return applicationMapper.toResponse(updatedApplication);
+
+        } catch (Exception e) {
+            log.error("Error manually terminating application: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to terminate application: " + e.getMessage());
+        }
+    }
 
 
 

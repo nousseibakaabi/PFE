@@ -163,8 +163,6 @@ export class ChefProjetComponent implements OnInit {
       PLANIFIE: 0,
       EN_COURS: 0,
       TERMINE: 0,
-      SUSPENDU: 0,
-      ANNULE: 0,
       OTHER: 0
     };
 
@@ -182,9 +180,8 @@ export class ChefProjetComponent implements OnInit {
 
   getConventionStatusSummary(): any {
     const summary = {
-      EN_ATTENTE: 0,
-      EN_COURS: 0,
-      EN_RETARD: 0,
+      PLANIFIE: 0,
+      'EN COURS': 0,
       TERMINE: 0,
       ARCHIVE: 0,
       OTHER: 0
@@ -204,14 +201,16 @@ export class ChefProjetComponent implements OnInit {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'PLANIFIE': return 'bg-blue-100 text-blue-800';
-      case 'EN_COURS': return 'bg-green-100 text-green-800';
-      case 'TERMINE': return 'bg-gray-100 text-gray-800';
-      case 'SUSPENDU': return 'bg-yellow-100 text-yellow-800';
-      case 'ANNULE': return 'bg-red-100 text-red-800';
+      case 'PLANIFIE': return 'bg-yellow-100 text-yellow-800';
+      case 'EN COURS': return 'bg-blue-100 text-blue-800';
+      case 'TERMINE': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   }
+
+
+
+  
 
   refreshData(): void {
     this.loadDashboardData();
@@ -232,9 +231,8 @@ export class ChefProjetComponent implements OnInit {
 
   getConventionStatusClass(etat: string): string {
     switch (etat) {
-      case 'EN_ATTENTE': return 'bg-yellow-100 text-yellow-800';
-      case 'EN_COURS': return 'bg-blue-100 text-blue-800';
-      case 'EN_RETARD': return 'bg-red-100 text-red-800';
+      case 'PLANIFIE': return 'bg-yellow-100 text-yellow-800';
+      case 'EN COURS': return 'bg-blue-100 text-blue-800';
       case 'TERMINE': return 'bg-green-100 text-green-800';
       case 'ARCHIVE': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -243,9 +241,8 @@ export class ChefProjetComponent implements OnInit {
 
   getConventionStatusLabel(etat: string): string {
     switch (etat) {
-      case 'EN_ATTENTE': return 'En Attente';
-      case 'EN_COURS': return 'En Cours';
-      case 'EN_RETARD': return 'En Retard';
+      case 'PLANIFIE': return 'Planifié';
+      case 'EN COURS': return 'En Cours';
       case 'TERMINE': return 'Terminé';
       case 'ARCHIVE': return 'Archivé';
       default: return etat;
@@ -329,17 +326,14 @@ export class ChefProjetComponent implements OnInit {
     return 'text-green-600';
   }
 
+  
   getStatusLabel(status: string): string {
     if (!status) return 'Non défini';
     
     switch (status) {
       case 'PLANIFIE': return 'Planifié';
-      case 'EN_COURS': return 'En Cours';
+      case 'EN COURS': return 'En Cours';
       case 'TERMINE': return 'Terminé';
-      case 'SUSPENDU': return 'Suspendu';
-      case 'ANNULE': return 'Annulé';
-      case 'EN_ATTENTE': return 'En Attente';
-      case 'EN_RETARD': return 'En Retard';
       case 'ARCHIVE': return 'Archivé';
       default: return status;
     }
