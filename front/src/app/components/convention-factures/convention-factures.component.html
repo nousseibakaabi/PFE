@@ -1,0 +1,338 @@
+<div class="container mx-auto p-3 md:p-4 max-w-7xl">
+  <!-- Header with cute decoration -->
+  <div class="mb-6 relative">
+    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 flex gap-1 text-blue-300 text-xs">
+      <span>✧</span> <span>🧾</span> <span>✧</span> <span>🧾</span> <span>✧</span>
+    </div>
+    
+    <div class="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-3 border-2 border-blue-200 dark:border-blue-800">
+      <button (click)="goBack()" 
+              class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200 hover:bg-white dark:hover:bg-blue-900/40 rounded-full transition-all border border-blue-200 dark:border-blue-700 shadow-sm">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>↩ retour</span>
+      </button>
+      
+      <div class="flex items-center gap-3">
+        <span class="text-blue-400">🧾</span>
+        <h1 class="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          {{ conventionReference }}
+        </h1>
+        <span class="text-blue-400">💰</span>
+      </div>
+      
+      <div class="w-16"></div>
+    </div>
+  </div>
+
+  <div class="mb-6 relative">
+ 
+  
+  <!-- Main stats container with soft blue background and shadow -->
+  <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 shadow-xl relative overflow-hidden border border-blue-200 dark:border-blue-800" style="box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3), 0 8px 10px -6px rgba(59, 130, 246, 0.2);">
+    <!-- Soft pattern overlay -->
+    <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 10px 10px, #3b82f6 1px, transparent 1px); background-size: 20px 20px;"></div>
+    
+    <!-- Stats content - all blue now -->
+    <div class="relative flex items-center justify-between text-blue-800 dark:text-blue-200">
+      <!-- Total factures -->
+      <div class="flex items-center gap-3">
+        <div class="bg-blue-200/50 dark:bg-blue-700/50 rounded-xl p-2 backdrop-blur-sm border border-blue-300 dark:border-blue-600">
+          <span class="text-2xl">🧾</span>
+        </div>
+        <div>
+          <p class="text-[10px] font-medium text-blue-600 dark:text-blue-300 tracking-wide">total factures</p>
+          <p class="text-2xl font-bold text-blue-800 dark:text-blue-100">{{ factures.length }}</p>
+        </div>
+      </div>
+      
+      <!-- Divider with star - blue version -->
+      <div class="flex items-center gap-2">
+        <div class="h-8 w-px bg-blue-300 dark:bg-blue-600"></div>
+        <span class="text-blue-400 dark:text-blue-500 text-xs">✧</span>
+        <div class="h-8 w-px bg-blue-300 dark:bg-blue-600"></div>
+      </div>
+      
+      <!-- Montant total TTC -->
+      <div class="flex items-center gap-3">
+        <div class="bg-blue-200/50 dark:bg-blue-700/50 rounded-xl p-2 backdrop-blur-sm border border-blue-300 dark:border-blue-600">
+          <span class="text-2xl">💰</span>
+        </div>
+        <div>
+          <p class="text-[10px] font-medium text-blue-600 dark:text-blue-300 tracking-wide">montant total TTC</p>
+          <p class="text-xl font-bold text-blue-800 dark:text-blue-100">{{ calculateTotalTTC() }} <span class="text-[10px] text-blue-500 dark:text-blue-400">TND</span></p>
+        </div>
+      </div>
+      
+      <!-- Divider with star - blue version -->
+      <div class="flex items-center gap-2">
+        <div class="h-8 w-px bg-blue-300 dark:bg-blue-600"></div>
+        <span class="text-blue-400 dark:text-blue-500 text-xs">✧</span>
+        <div class="h-8 w-px bg-blue-300 dark:bg-blue-600"></div>
+      </div>
+      
+      <!-- Payé / Total -->
+      <div class="flex items-center gap-3">
+        <div class="bg-blue-200/50 dark:bg-blue-700/50 rounded-xl p-2 backdrop-blur-sm border border-blue-300 dark:border-blue-600">
+          <span class="text-2xl">📊</span>
+        </div>
+        <div>
+          <p class="text-[10px] font-medium text-blue-600 dark:text-blue-300 tracking-wide">payé / total</p>
+          <p class="text-xl font-bold text-blue-800 dark:text-blue-100">{{ calculatePaidCount() }}/{{ factures.length }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Cute decorative elements at bottom - blue version -->
+    <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 text-blue-400 dark:text-blue-600 text-xs">
+      <span>⤸</span><span>⤹</span><span>⤸</span><span>⤹</span>
+    </div>
+  </div>
+</div>
+  
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-16">
+    <div class="relative inline-block">
+      <div class="animate-spin rounded-full h-8 w-8 border-2 border-blue-200 border-t-blue-500"></div>
+      <div class="absolute -top-1 -right-1 text-blue-400 animate-ping">🧾</div>
+    </div>
+    <p class="mt-2 text-blue-400 dark:text-blue-300 text-xs flex items-center justify-center gap-1">
+      <span>calcul du total</span>
+      <span class="animate-bounce">.</span>
+      <span class="animate-bounce delay-100">.</span>
+      <span class="animate-bounce delay-200">.</span>
+    </p>
+  </div>
+  
+  <!-- Invoices List - Receipt Roll Style with theme colors -->
+  <div *ngIf="!loading" class="space-y-4">
+
+
+    <!-- Receipt roll container -->
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border-2 border-blue-200 dark:border-blue-800 overflow-hidden relative">
+      
+      <!-- Receipt holes top -->
+      <div class="flex justify-between px-8 pt-2">
+        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+      </div>
+      
+      
+      <!-- Receipt tear line -->
+      <div class="relative my-2">
+        <div class="border-t-2 border-dashed border-blue-200 dark:border-blue-800"></div>
+        <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-blue-100 dark:bg-blue-900 px-4 py-0.5 rounded-full">
+          <span class="text-[10px] text-blue-600 dark:text-blue-300">✦  factures  ✦</span>
+        </div>
+      </div>
+      
+      <!-- Empty state -->
+      <div *ngIf="factures.length === 0" class="text-center py-12">
+        <div class="relative inline-block">
+          <div class="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-4xl">🧾</span>
+          </div>
+          <div class="absolute -top-2 -right-2 text-blue-400 animate-bounce">✨</div>
+        </div>
+        <p class="text-blue-600 dark:text-blue-300 text-sm mb-2">aucune facture pour le moment</p>
+        <p class="text-xs text-gray-400">les nouvelles factures apparaîtront ici</p>
+      </div>
+      
+      <!-- Invoices - Receipt items -->
+      <div *ngIf="factures.length > 0" class="p-4 space-y-3">
+        <div *ngFor="let facture of factures; let i = index" 
+             class="relative group">
+          
+          <!-- Receipt item with hover effect using theme colors -->
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-xl p-4 border-2 border-blue-100 dark:border-blue-900 hover:border-blue-300 dark:hover:border-blue-700 transition-all hover:shadow-lg transform hover:-translate-y-0.5">
+            
+            <!-- Receipt number -->
+            <div class="absolute -left-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
+              {{ i + 1 }}
+            </div>
+            
+            <!-- Header with invoice number and status -->
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">🧾</span>
+                <div>
+                  <span class="text-xs font-bold text-gray-800 dark:text-white">{{ facture.numeroFacture }}</span>
+                  <span class="text-[8px] text-gray-400 ml-2">#{{ facture.id }}</span>
+                </div>
+              </div>
+              <span [class]="'px-2 py-1 text-[10px] font-medium rounded-full ' + getInvoiceStatusClass(facture.statutPaiement)">
+                {{ getInvoiceStatusLabel(facture.statutPaiement) }}
+              </span>
+            </div>
+            
+            <!-- Cute decorative line -->
+            <div class="flex items-center gap-0.5 text-blue-200 text-[8px] mb-3">
+              <span>•</span><span>•</span><span>•</span><span>•</span><span>•</span><span>•</span><span>•</span><span>•</span><span>•</span>
+            </div>
+            
+            <!-- Invoice details in cute card grid -->
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <!-- Date card -->
+              <div class="bg-white dark:bg-gray-700 rounded-lg p-2 shadow-sm">
+                <div class="flex items-center gap-1 text-blue-400 text-[8px] mb-0.5">
+                  <span>📅</span>
+                  <span>facturation</span>
+                </div>
+                <p class="text-[11px] font-medium text-gray-800 dark:text-white">{{ facture.dateFacturation | date:'dd MMM yyyy' }}</p>
+              </div>
+              
+              <!-- Due date card -->
+              <div class="bg-white dark:bg-gray-700 rounded-lg p-2 shadow-sm">
+                <div class="flex items-center gap-1 text-blue-400 text-[8px] mb-0.5">
+                  <span>⏰</span>
+                  <span>échéance</span>
+                </div>
+                <p class="text-[11px] font-medium text-gray-800 dark:text-white">{{ facture.dateEcheance | date:'dd MMM yyyy' }}</p>
+              </div>
+              
+              <!-- HT Amount -->
+              <div class="bg-white dark:bg-gray-700 rounded-lg p-2 shadow-sm">
+                <div class="flex items-center gap-1 text-blue-400 text-[8px] mb-0.5">
+                  <span>📦</span>
+                  <span>HT</span>
+                </div>
+                <p class="text-[11px] font-medium text-gray-800 dark:text-white">{{ formatMontant(facture.montantHT) }} TND</p>
+              </div>
+              
+              <!-- TTC Amount with blue gradient -->
+              <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-2 shadow-sm">
+                <div class="flex items-center gap-1 text-white text-[8px] mb-0.5">
+                  <span>💎</span>
+                  <span>TTC</span>
+                </div>
+                <p class="text-[11px] font-bold text-white">{{ formatMontant(facture.montantTTC) }} TND</p>
+              </div>
+            </div>
+            
+            <!-- Payment reference if exists -->
+            <div *ngIf="facture.referencePaiement" class="mb-2 bg-green-50 dark:bg-green-900/20 rounded-lg p-2 flex items-center gap-2">
+              <span class="text-green-500">💳</span>
+              <span class="text-[9px] text-gray-600 dark:text-gray-400">paiement: {{ facture.referencePaiement }}</span>
+            </div>
+            
+            <!-- Notes if exists -->
+            <div *ngIf="facture.notes" class="mb-3 text-[9px] text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+              ✎ {{ facture.notes }}
+            </div>
+            
+            <!-- Cute action buttons row -->
+            <div class="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-dashed border-blue-200 dark:border-blue-800">
+              <span class="text-[8px] text-blue-300 mr-auto">⋆｡°✩</span>
+              
+              <button *ngIf="facture.statutPaiement !== 'PAYE' && !conventionArchived && canEdit()"
+                      (click)="openPaymentModal(facture)"
+                      class="p-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-all text-[10px] flex items-center gap-1">
+                <span>💸</span>
+                <span class="hidden group-hover:inline">payer</span>
+              </button>
+              
+              <button (click)="viewFactureDetails(facture.id)" 
+                      class="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all text-[10px] flex items-center gap-1">
+                <span>👁️</span>
+                <span class="hidden group-hover:inline">détails</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Receipt footer -->
+      <div class="relative mt-4">
+        <div class="border-t-2 border-dashed border-blue-200 dark:border-blue-800"></div>
+        <div class="flex justify-between px-4 py-2">
+          <span class="text-[8px] text-blue-300">✦  fin du ticket  ✦</span>
+          <span class="text-[8px] text-blue-300">{{ currentDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+      
+      <!-- Receipt holes bottom -->
+      <div class="flex justify-between px-8 pb-2">
+        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Modal - with theme colors -->
+<div *ngIf="showPaymentModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full p-5 animate-fadeIn border-2 border-blue-200 dark:border-blue-800">
+    <!-- Cute modal header -->
+    <div class="flex justify-between items-center mb-4">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">💸</span>
+        <div>
+          <h3 class="text-sm font-bold text-gray-800 dark:text-white">enregistrer paiement</h3>
+          <p *ngIf="selectedFacture" class="text-blue-400 text-[10px] mt-0.5">
+            {{ selectedFacture.numeroFacture }} • {{ formatMontant(selectedFacture.montantTTC) }} TND
+          </p>
+        </div>
+      </div>
+      <button (click)="closePaymentModal()" 
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Decorative line -->
+    <div class="flex items-center gap-1 text-blue-200 text-[8px] mb-4">
+      <span>••••••••••••••••••••••••••</span>
+    </div>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-[10px] font-medium text-gray-600 dark:text-gray-300 mb-1 flex items-center gap-1">
+          <span>🔑</span> référence de paiement *
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="paymentData.referencePaiement"
+          class="w-full px-3 py-2 text-xs border-2 border-blue-200 dark:border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 dark:bg-gray-700 dark:text-white"
+          placeholder="ex: VIREMENT-001"
+        />
+      </div>
+      
+      <div>
+        <label class="block text-[10px] font-medium text-gray-600 dark:text-gray-300 mb-1 flex items-center gap-1">
+          <span>📅</span> date de paiement
+        </label>
+        <input
+          type="date"
+          [(ngModel)]="paymentData.datePaiement"
+          class="w-full px-3 py-2 text-xs border-2 border-blue-200 dark:border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 dark:bg-gray-700 dark:text-white"
+        />
+      </div>
+      
+      <div class="flex gap-2 pt-2">
+        <button type="button" (click)="closePaymentModal()" 
+                class="flex-1 px-3 py-2 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 text-xs">
+          annuler
+        </button>
+        <button (click)="registerPayment()"
+                [disabled]="loading"
+                class="flex-1 px-3 py-2 bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white rounded-xl font-medium text-xs disabled:opacity-50 flex items-center justify-center gap-1">
+          <span *ngIf="loading" class="flex items-center gap-1">
+            <svg class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>...</span>
+          </span>
+          <span *ngIf="!loading">✅ enregistrer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

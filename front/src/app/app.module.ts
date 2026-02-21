@@ -48,6 +48,9 @@ import { HistoryComponent } from './components/history/history.component';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { NotificationsComponent } from './components/notifications/notifications.component';
 import { CommonModule, DatePipe } from '@angular/common';
+import { DatePickerComponent } from './components/date-picker/date-picker.component';
+import { ConventionFacturesComponent } from './components/convention-factures/convention-factures.component';
+import { ConventionHistoryComponent } from './components/convention-history/convention-history.component';
 
 @NgModule({
   declarations: [
@@ -86,7 +89,10 @@ import { CommonModule, DatePipe } from '@angular/common';
     ConventionFormComponent,
     ApplicationFormComponent,
     HistoryComponent,
-    NotificationsComponent
+    NotificationsComponent,
+    DatePickerComponent,
+    ConventionFacturesComponent,
+    ConventionHistoryComponent
     ],
   imports: [
     BrowserModule,

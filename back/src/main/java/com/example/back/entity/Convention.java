@@ -203,51 +203,15 @@ public class Convention {
      * Check if convention should transition from EN_COURS to EN_RETARD
      * Called by scheduled tasks
      */
-    public boolean shouldTransitionToEnRetard() {
-        LocalDate today = LocalDate.now();
-
-        // Should transition if:
-        // 1. Not archived
-        // 2. Currently EN_COURS
-        // 3. End date is not null and today is after end date
-        // 4. Not all invoices are paid
-        if (Boolean.TRUE.equals(archived) ||
-                !"EN_COURS".equals(etat) ||
-                dateFin == null ||
-                today.isBefore(dateFin.plusDays(1))) { // Add 1 day to include end date
-            return false;
-        }
-
-        // Check if not all invoices are paid
-        return !areAllInvoicesPaid();
-    }
 
     /**
      * Check if convention should be marked as TERMINE
      * Called by scheduled tasks
      */
-    public boolean shouldBeTermine() {
-        // Should be TERMINE if:
-        // 1. Not archived
-        // 2. Not already TERMINE
-        // 3. All invoices are paid
-        return !Boolean.TRUE.equals(archived) &&
-                !"TERMINE".equals(etat) &&
-                areAllInvoicesPaid();
-    }
 
     /**
      * Get count of paid invoices
      */
-    public long getPaidInvoicesCount() {
-        if (factures == null) {
-            return 0;
-        }
-
-        return factures.stream()
-                .filter(facture -> "PAYE".equals(facture.getStatutPaiement()))
-                .count();
-    }
 
     /**
      * Get count of unpaid invoices
@@ -520,9 +484,9 @@ public class Convention {
         }
 
         switch (etat) {
-            case "EN_ATTENTE":
+            case "PLANIFIE":
                 return "yellow";
-            case "EN_COURS":
+            case "EN COURS":
                 return "blue";
             case "EN_RETARD":
                 return "red";
@@ -538,26 +502,6 @@ public class Convention {
     /**
      * Get status label for UI display
      */
-    public String getStatusLabel() {
-        if (etat == null) {
-            return "Non défini";
-        }
-
-        switch (etat) {
-            case "EN_ATTENTE":
-                return "En Attente";
-            case "EN_COURS":
-                return "En Cours";
-            case "EN_RETARD":
-                return "En Retard";
-            case "TERMINE":
-                return "Terminé";
-            case "ARCHIVE":
-                return "Archivé";
-            default:
-                return etat;
-        }
-    }
 
     @Override
     public String toString() {

@@ -1,0 +1,215 @@
+/* Add this to your styles.css or component's CSS file */
+
+/* Cute animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Smaller loading spinner */
+.animate-spin {
+  border-width: 2px !important;
+}
+
+/* Card hover effects */
+.bg-white.rounded-xl, [class*="bg-white"].rounded-xl {
+  transition: all 0.2s ease;
+}
+
+.bg-white.rounded-xl:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* Smaller scrollbar for history */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Dark mode scrollbar */
+.dark .overflow-y-auto::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+/* Button hover effects */
+button:not(.bg-gradient-to-r) {
+  transition: all 0.15s ease;
+}
+
+/* Input focus effects */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Status badges with subtle animation */
+[class*="rounded-full"] {
+  transition: all 0.2s ease;
+}
+
+[class*="rounded-full"]:hover {
+  transform: scale(1.02);
+}
+
+/* Cute little decoration for container */
+.container {
+  position: relative;
+}
+
+/* Smaller text on mobile */
+@media (max-width: 640px) {
+  .text-xs {
+    font-size: 0.7rem;
+  }
+  
+  .text-sm {
+    font-size: 0.75rem;
+  }
+  
+  .p-4 {
+    padding: 0.75rem;
+  }
+  
+  .gap-4 {
+    gap: 0.75rem;
+  }
+}
+
+/* Dark mode adjustments */
+.dark .bg-white {
+  background: #1f2937;
+}
+
+/* Modal backdrop blur */
+.backdrop-blur-sm {
+  backdrop-filter: blur(3px);
+}
+
+/* Invoice item hover effect */
+.border-gray-200:hover {
+  border-color: #93c5fd;
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.02), transparent);
+}
+
+/* Stats card number emphasis */
+.font-semibold.text-green-500,
+.font-semibold.text-red-500,
+.font-semibold.text-blue-500,
+.font-semibold.text-orange-500 {
+  font-size: 0.8rem;
+}
+
+/* Cute little touch for headers */
+.bg-gradient-to-r {
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-gradient-to-r::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: skewX(-15deg) translateX(100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: skewX(-15deg) translateX(-200%);
+  }
+}
+
+/* Reduce animation for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .bg-gradient-to-r::after {
+    animation: none;
+  }
+  
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+}
+
+
+
+/* Make left side extra small */
+.lg\:col-span-2 {
+  /* Convention info card values */
+  .text-sm {
+    font-size: 0.75rem !important; /* 12px */
+    line-height: 1rem;
+  }
+  
+  /* Section titles */
+  .text-base.font-bold {
+    font-size: 0.8125rem !important; /* 13px */
+  }
+  
+  /* Invoice numbers */
+  .text-sm.font-medium {
+    font-size: 0.6875rem !important; /* 11px */
+  }
+  
+  /* History timestamps */
+  .text-xs.text-gray-400 {
+    font-size: 0.625rem !important; /* 10px */
+  }
+  
+  /* History badges */
+  .px-1\.5.py-0\.5.text-xs {
+    font-size: 0.625rem !important; /* 10px */
+    padding: 0.125rem 0.375rem;
+  }
+  
+  /* Changes grid */
+  .grid-cols-3.gap-1.text-xs {
+    font-size: 0.625rem !important; /* 10px */
+  }
+}
+
+/* Make archive info card extra small */
+div[class*="bg-gradient-to-r from-gray-50"] {
+  .text-\[11px\] {
+    font-size: 0.6875rem; /* 11px */
+  }
+  
+  .p-2\.5 {
+    padding: 0.625rem;
+  }
+  
+  .gap-1\.5 {
+    gap: 0.375rem;
+  }
+}

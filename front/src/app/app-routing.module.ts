@@ -26,6 +26,8 @@ import { ApplicationFormComponent } from './components/application-form/applicat
 import { ApplicationComponent } from './components/application/application.component';
 import { HistoryComponent } from './components/history/history.component';
 import { NotificationsComponent } from './components/notifications/notifications.component';
+import { ConventionFacturesComponent } from './components/convention-factures/convention-factures.component';
+import { ConventionHistoryComponent } from './components/convention-history/convention-history.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -159,6 +161,19 @@ const routes: Routes = [
   canActivate: [AuthGuard],
   data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHEF_PROJET'] }
   },
+
+{
+  path: 'conventions/:id/factures',
+component: ConventionFacturesComponent,
+canActivate: [AuthGuard],
+data: { roles: ['ROLE_ADMIN', 'ROLE_COMMERCIAL_METIER', 'ROLE_CHEF_PROJET', 'ROLE_DECIDEUR'] }
+},
+{
+  path: 'conventions/:id/history',
+component: ConventionHistoryComponent,
+canActivate: [AuthGuard],
+data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHEF_PROJET'] }
+},
 
   { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },
   { path: 'mailBox', component: MailBoxComponent, canActivate: [AuthGuard] },

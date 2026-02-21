@@ -791,9 +791,8 @@ public class HistoryService {
     private String getConventionStatusLabel(String status) {
         if (status == null) return "Inconnu";
         switch (status) {
-            case "EN_ATTENTE": return "En Attente";
-            case "EN_COURS": return "En Cours";
-            case "EN_RETARD": return "En Retard";
+            case "PLANIFIE": return "Planifié";
+            case "EN COURS": return "En Cours";
             case "TERMINE": return "Terminé";
             case "ARCHIVE": return "Archivé";
             default: return status;

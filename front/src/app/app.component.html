@@ -4,7 +4,11 @@
   <!-- Show sidebar only on dashboard/profile routes -->
   <app-sidebar *ngIf="showLayout()" [isSidebarOpen]="isSidebarOpen"></app-sidebar>
   
-  <div class="flex w-full flex-col">
+  <!-- MAIN CONTENT AREA - Add margin-left that changes based on sidebar state -->
+  <div 
+    class="flex w-full flex-col transition-all duration-300 ease-in-out"
+    [class]="showLayout() ? (isSidebarOpen ? 'lg:ml-[260px]' : 'lg:ml-[90px]') : ''"
+  >
     <!-- Show header only on dashboard/profile routes -->
     <app-header *ngIf="showLayout()"></app-header>
     
@@ -14,7 +18,11 @@
       (overlayClick)="toggleSidebar()">
     </app-overlay>
     
-    <main [class]="showLayout() ? 'flex-1 overflow-x-hidden overflow-y-auto' : 'w-full'">
+    <!-- Make this the scrollable container -->
+    <main 
+      [class]="showLayout() ? 'flex-1 overflow-y-auto' : 'w-full'"
+      [style.height]="showLayout() ? 'calc(100vh - 64px)' : 'auto'"
+    >
       <router-outlet></router-outlet>
     </main>
   </div>

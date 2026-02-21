@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit , HostListener} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConventionService, Convention, ConventionRequest } from '../../services/convention.service';
 import { NomenclatureService, Structure } from '../../services/nomenclature.service';
@@ -48,6 +48,22 @@ export class ConventionFormComponent implements OnInit {
   isCalculatingTTC: boolean = false;
   isDeterminingUsers: boolean = false;
 
+  showApplicationDropdown: boolean = false;
+  applicationSearchTerm: string = '';
+  filteredApplications: any[] = [];
+
+  showBeneficielDropdown: boolean = false;
+  showResponsableDropdown: boolean = false;
+  showPeriodiciteDropdown: boolean = false;
+
+  // Search terms
+  beneficielSearchTerm: string = '';
+  responsableSearchTerm: string = '';
+
+  // Filtered lists
+  filteredBeneficielStructures: any[] = [];
+  filteredResponsableStructures: any[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -67,6 +83,9 @@ ngOnInit(): void {
   // Load structures (these are needed for both create and edit)
   this.loadResponsablesStructures();
   this.loadBeneficielsStructures();
+
+  this.filteredBeneficielStructures = [...this.externesStructures];
+  this.filteredResponsableStructures = [...this.internesStructures];
 
   // Check if we're editing (has id in route)
   this.route.params.subscribe(params => {
@@ -504,4 +523,177 @@ saveConvention(): void {
     this.errorMessage = '';
     this.successMessage = '';
   }
+
+
+
+// Toggle dropdown
+toggleApplicationDropdown(): void {
+  if (!this.isEditing) {
+    this.showApplicationDropdown = !this.showApplicationDropdown;
+    if (this.showApplicationDropdown) {
+      this.applicationSearchTerm = '';
+      this.filteredApplications = [...this.applications];
+    }
+  }
+}
+
+// Filter applications
+filterApplications(): void {
+  if (!this.applicationSearchTerm.trim()) {
+    this.filteredApplications = [...this.applications];
+    return;
+  }
+  
+  const term = this.applicationSearchTerm.toLowerCase().trim();
+  this.filteredApplications = this.applications.filter(app => 
+    app.code?.toLowerCase().includes(term) || 
+    app.name?.toLowerCase().includes(term)
+  );
+}
+
+// Select application
+selectApplication(app: any): void {
+  this.formData.applicationId = app.id;
+  this.showApplicationDropdown = false;
+  this.onProjectSelected(app.id);
+}
+
+// Get selected application name
+getSelectedApplicationName(): string {
+  if (!this.formData.applicationId) return '';
+  const app = this.applications.find(a => a.id === this.formData.applicationId);
+  return app ? `${app.code} - ${app.name}` : '';
+}
+
+@HostListener('document:click', ['$event'])
+onDocumentClick(event: MouseEvent): void {
+  const target = event.target as HTMLElement;
+  if (!target.closest('.relative')) {
+    this.showApplicationDropdown = false;
+    this.showBeneficielDropdown = false;
+    this.showResponsableDropdown = false;
+    this.showPeriodiciteDropdown = false;
+  }
+}
+
+
+// Toggle dropdowns
+toggleDropdown(type: string): void {
+  if (type === 'beneficiel' && !this.isEditing) {
+    this.showBeneficielDropdown = !this.showBeneficielDropdown;
+    this.showResponsableDropdown = false;
+    this.showPeriodiciteDropdown = false;
+    this.showApplicationDropdown = false;
+    if (this.showBeneficielDropdown) {
+      this.beneficielSearchTerm = '';
+      this.filteredBeneficielStructures = [...this.externesStructures];
+    }
+  } else if (type === 'responsable') {
+    this.showResponsableDropdown = !this.showResponsableDropdown;
+    this.showBeneficielDropdown = false;
+    this.showPeriodiciteDropdown = false;
+    this.showApplicationDropdown = false;
+    if (this.showResponsableDropdown) {
+      this.responsableSearchTerm = '';
+      this.filteredResponsableStructures = [...this.internesStructures];
+    }
+  } else if (type === 'periodicite') {
+    this.showPeriodiciteDropdown = !this.showPeriodiciteDropdown;
+    this.showBeneficielDropdown = false;
+    this.showResponsableDropdown = false;
+    this.showApplicationDropdown = false;
+  }
+}
+
+// Filter beneficiel structures
+filterBeneficielStructures(): void {
+  if (!this.beneficielSearchTerm.trim()) {
+    this.filteredBeneficielStructures = [...this.externesStructures];
+    return;
+  }
+  
+  const term = this.beneficielSearchTerm.toLowerCase().trim();
+  this.filteredBeneficielStructures = this.externesStructures.filter(s => 
+    s.code?.toLowerCase().includes(term) || 
+    s.name?.toLowerCase().includes(term)
+  );
+}
+
+// Filter responsable structures
+filterResponsableStructures(): void {
+  if (!this.responsableSearchTerm.trim()) {
+    this.filteredResponsableStructures = [...this.internesStructures];
+    return;
+  }
+  
+  const term = this.responsableSearchTerm.toLowerCase().trim();
+  this.filteredResponsableStructures = this.internesStructures.filter(s => 
+    s.code?.toLowerCase().includes(term) || 
+    s.name?.toLowerCase().includes(term)
+  );
+}
+
+// Select beneficiel structure
+selectBeneficielStructure(structure: any): void {
+  this.formData.structureBeneficielId = structure.id;
+  this.showBeneficielDropdown = false;
+}
+
+// Select responsable structure
+selectResponsableStructure(structure: any): void {
+  this.formData.structureResponsableId = structure.id;
+  this.showResponsableDropdown = false;
+}
+
+// Select periodicite
+selectPeriodicite(periodicite: string): void {
+  this.formData.periodicite = periodicite;
+  this.showPeriodiciteDropdown = false;
+  this.onPeriodiciteChange();
+}
+
+// Get selected names
+getSelectedBeneficielName(): string {
+  if (!this.formData.structureBeneficielId) return '';
+  const structure = this.externesStructures.find(s => s.id === this.formData.structureBeneficielId);
+  return structure ? `${structure.code} - ${structure.name}` : '';
+}
+
+getSelectedResponsableName(): string {
+  if (!this.formData.structureResponsableId) return '';
+  const structure = this.internesStructures.find(s => s.id === this.formData.structureResponsableId);
+  return structure ? `${structure.code} - ${structure.name}` : '';
+}
+
+
+// Add this method to your ConventionFormComponent class
+onDateChange(type: string, date: string): void {
+  console.log(`Date ${type} changed to:`, date);
+  
+  // You can add validation logic here
+  if (type === 'debut' && this.formData.dateFin) {
+    // Check if date fin is before date debut
+    const debut = new Date(date);
+    const fin = new Date(this.formData.dateFin);
+    
+    if (fin < debut) {
+      // If fin is before debut, reset fin
+      this.formData.dateFin = '';
+      this.errorMessage = 'La date de fin ne peut pas être antérieure à la date de début';
+    }
+  }
+  
+  if (type === 'fin' && this.formData.dateDebut) {
+    // Check if date fin is before date debut
+    const debut = new Date(this.formData.dateDebut);
+    const fin = new Date(date);
+    
+    if (fin < debut) {
+      this.errorMessage = 'La date de fin ne peut pas être antérieure à la date de début';
+    } else {
+      this.errorMessage = ''; // Clear error if valid
+    }
+  }
+}
+
 }

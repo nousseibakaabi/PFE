@@ -1,0 +1,183 @@
+/* Date Picker Styles - Smaller & Cuter */
+.date-picker-wrapper {
+  position: relative;
+}
+
+/* Calendar animation */
+@keyframes cuteFade {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: cuteFade 0.15s ease-out;
+}
+
+/* Calendar days grid */
+.grid-cols-7 {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+/* Calendar popup - smaller */
+.calendar-popup {
+  width: 14rem !important; /* 224px - smaller */
+  padding: 0.625rem !important; /* 10px */
+  border-radius: 0.75rem !important; /* 12px - cuter rounded */
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Month/Year header - smaller */
+.calendar-header {
+  margin-bottom: 0.5rem !important;
+}
+
+.calendar-header button {
+  padding: 0.25rem !important; /* 4px */
+  border-radius: 0.5rem !important; /* 8px */
+}
+
+.calendar-header button svg {
+  width: 0.875rem !important; /* 14px */
+  height: 0.875rem !important; /* 14px */
+}
+
+.calendar-header span {
+  font-size: 0.6875rem !important; /* 11px */
+  font-weight: 500;
+}
+
+/* Week days - smaller */
+.week-day {
+  font-size: 0.5625rem !important; /* 9px */
+  font-weight: 400;
+  color: #9ca3af;
+  padding-bottom: 0.125rem;
+}
+
+/* Calendar days - smaller */
+.calendar-day {
+  font-size: 0.625rem !important; /* 10px */
+  padding: 0.25rem 0 !important; /* 4px top/bottom */
+  border-radius: 0.5rem !important; /* 8px */
+  transition: all 0.15s ease;
+  min-width: 1.5rem;
+}
+
+/* Selected date - cuter */
+.calendar-day.selected {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 2px 4px -2px rgba(59, 130, 246, 0.4);
+}
+
+/* Hover effect for days - cuter */
+.calendar-day:not(.selected):not(:disabled):hover {
+  background-color: #dbeafe;
+  transform: scale(1.05);
+}
+
+.dark .calendar-day:not(.selected):not(:disabled):hover {
+  background-color: rgba(30, 58, 138, 0.4);
+}
+
+/* Today button - smaller & cuter */
+.today-button {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  font-size: 0.5625rem !important; /* 9px */
+  color: #3b82f6;
+  border-radius: 0.5rem;
+  transition: all 0.15s ease;
+}
+
+.today-button:hover {
+  background-color: #eff6ff;
+  transform: scale(1.02);
+}
+
+.dark .today-button:hover {
+  background-color: rgba(30, 58, 138, 0.2);
+}
+
+/* Input field - cuter */
+.cute-date-input {
+  padding: 0.5rem 0.75rem !important; /* 8px 12px */
+  font-size: 0.6875rem !important; /* 11px */
+  border-radius: 0.75rem !important; /* 12px */
+  background-color: #f9fafb;
+  transition: all 0.15s ease;
+}
+
+.cute-date-input:hover {
+  border-color: #93c5fd;
+  background-color: white;
+}
+
+/* Calendar icon - smaller */
+.calendar-icon {
+  width: 0.875rem !important; /* 14px */
+  height: 0.875rem !important; /* 14px */
+  right: 0.625rem !important; /* 10px */
+  top: 0.625rem !important; /* 10px */
+  color: #9ca3af;
+  transition: color 0.15s ease;
+}
+
+.date-picker-wrapper:hover .calendar-icon {
+  color: #3b82f6;
+}
+
+/* Dark mode adjustments */
+.dark .cute-date-input {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .calendar-popup {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+/* Disabled days */
+.calendar-day:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Border divider - cuter */
+.calendar-divider {
+  border-top: 1px solid #f3f4f6;
+  margin: 0.5rem 0 0.25rem 0;
+}
+
+.dark .calendar-divider {
+  border-top-color: #374151;
+}
+
+
+/* Make input border blue when focused/clicked */
+.date-picker-wrapper input:focus,
+.date-picker-wrapper input:active {
+  border-color: #3b82f6 !important;
+  ring-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+  outline: none !important;
+}
+
+/* For dark mode */
+.dark .date-picker-wrapper input:focus,
+.dark .date-picker-wrapper input:active {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Optional: make the calendar icon blue when input is focused */
+.date-picker-wrapper:focus-within .calendar-icon {
+  color: #3b82f6 !important;
+}

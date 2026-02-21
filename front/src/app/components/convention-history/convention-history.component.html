@@ -1,0 +1,185 @@
+<div class="container mx-auto p-3 md:p-4 max-w-7xl">
+  <!-- Header with cute decoration -->
+  <div class="mb-6 relative">
+    <!-- Decorative header -->
+    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 flex gap-1 text-blue-300 text-xs">
+      <span>✧</span> <span>✦</span> <span>✧</span> <span>✦</span> <span>✧</span>
+    </div>
+    
+    <div class="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-3 border-2 border-blue-200 dark:border-blue-800">
+      <button (click)="goBack()" 
+              class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200 hover:bg-white dark:hover:bg-blue-900/40 rounded-full transition-all border border-blue-200 dark:border-blue-700 shadow-sm">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>↩ retour</span>
+      </button>
+      
+      <div class="flex items-center gap-3">
+        <span class="text-blue-400">⌛</span>
+        <h1 class="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          {{ conventionReference }}
+        </h1>
+        <span class="text-blue-400">📜</span>
+      </div>
+      
+      <div class="w-16"></div>
+    </div>
+  </div>
+  
+  <!-- Loading State with cute animation -->
+  <div *ngIf="loading" class="text-center py-16">
+    <div class="relative inline-block">
+      <div class="animate-spin rounded-full h-8 w-8 border-2 border-blue-200 border-t-blue-600"></div>
+      <div class="absolute -top-1 -right-1 text-blue-400 animate-ping">✨</div>
+      <div class="absolute -bottom-1 -left-1 text-blue-400 animate-ping delay-300">🌟</div>
+    </div>
+    <p class="mt-3 text-blue-500 dark:text-blue-300 text-xs flex items-center justify-center gap-1">
+      <span>voyage dans le temps</span>
+      <span class="animate-bounce">.</span>
+      <span class="animate-bounce delay-100">.</span>
+      <span class="animate-bounce delay-200">.</span>
+    </p>
+  </div>
+  
+  <!-- History Timeline - Tree Style -->
+  <div *ngIf="!loading" class="relative">
+    <!-- Cute floating decorations -->
+    <div class="absolute -top-4 -left-4 text-blue-200 dark:text-blue-800 text-2xl opacity-30">🌿</div>
+    <div class="absolute -bottom-4 -right-4 text-blue-200 dark:text-blue-800 text-2xl opacity-30">🍃</div>
+    
+    <!-- Main container with vintage paper effect -->
+    <div >
+      
+      <!-- Vintage paper texture overlay-->
+      <!-- <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.1"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div> -->
+      
+      <!-- Header with total count in cute badge -->
+      <div class="flex items-center justify-between mb-8 relative">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">📖</span>
+          <h2 class="text-base font-bold text-gray-800 dark:text-white">Historique de convention</h2>
+        </div>
+        <div class="bg-white dark:bg-gray-700 px-4 py-2 rounded-full shadow-md border-2 border-blue-200 dark:border-blue-700">
+          <span class="text-xs font-medium text-blue-600 dark:text-blue-300">{{ conventionHistory.length }} entrée<span *ngIf="conventionHistory.length > 1">s</span></span>
+        </div>
+      </div>
+      
+      <!-- Empty state -->
+      <div *ngIf="conventionHistory.length === 0" class="text-center py-12">
+        <div class="relative inline-block">
+          <div class="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-4xl">📭</span>
+          </div>
+          <div class="absolute -top-2 -right-2 text-blue-400 animate-bounce">✨</div>
+        </div>
+        <p class="text-blue-600 dark:text-blue-300 text-sm mb-2">rien à signaler pour le moment</p>
+        <p class="text-xs text-gray-400">l'historique apparaîtra ici quand des modifications seront faites</p>
+      </div>
+      
+      <!-- History Tree - Like the image but cuter -->
+      <div *ngIf="conventionHistory.length > 0" class="relative">
+        <!-- Main timeline line with gradient using theme colors -->
+        <div class="absolute left-8 top-8 bottom-8 w-0.5 bg-gradient-to-b from-blue-400 via-yellow-400 to-green-400 dark:from-blue-600 dark:via-yellow-600 dark:to-green-600 rounded-full"></div>
+        
+        <div class="space-y-8">
+          <div *ngFor="let group of groupedHistory; let last = last" class="relative">
+            <!-- Year marker with theme colors -->
+            <div class="flex items-center gap-4 mb-4">
+              <div class="relative flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg transform -rotate-3 hover:rotate-0 transition-transform">
+                <span class="text-white font-bold text-sm">{{ group.date  }}</span>
+                <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border-2 border-white dark:border-gray-800"></div>
+              </div>
+              <div class="flex-1 h-0.5 bg-gradient-to-r from-blue-300 to-transparent"></div>
+            </div>
+            
+            <!-- Entries for this year -->
+            <div class="space-y-4 ml-12">
+              <div *ngFor="let entry of group.entries; let i = index" 
+                   class="relative group animate-fadeIn" 
+                   [style.animation-delay]="i * 0.1 + 's'">
+                
+                <!-- Timeline dot with theme colors -->
+                <div class="absolute -left-8 top-5 w-4 h-4">
+                  <div class="w-4 h-4 bg-white dark:bg-gray-700 border-2 border-blue-400 rounded-full group-hover:scale-125 transition-transform shadow-md"></div>
+                  <div class="absolute top-1 left-1 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                </div>
+                
+                <!-- Entry card with theme color border -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border-l-4"
+                     [ngClass]="{
+                       'border-blue-400': entry.actionType === 'UPDATE',
+                       'border-green-400': entry.actionType === 'CREATE' || entry.actionType === 'RESTORE',
+                       'border-yellow-400': entry.actionType === 'STATUS_CHANGE',
+                       'border-red-400': entry.actionType === 'DELETE',
+                       'border-gray-400': entry.actionType === 'ARCHIVE'
+                     }"
+                     class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-0.5">
+                  
+                  <!-- Top row with time and action -->
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-mono">
+                        ⏰ {{ entry.timeFormatted }}
+                      </span>
+                      <span [class]="'px-2 py-1 text-[10px] font-medium rounded-full ' + getConventionHistoryActionClass(entry.actionType)">
+                        {{ entry.actionTypeLabel }}
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-1 text-gray-400 text-[10px]">
+                      <span>👤</span>
+                      <span>{{ entry.userFullName || 'utilisateur' }}</span>
+                      <span class="text-blue-300">✦</span>
+                      <span>{{ entry.userRole || 'admin' }}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Description in cute bubble with theme color -->
+                  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-3 mb-3 border border-blue-100 dark:border-blue-800">
+                    <p class="text-xs text-gray-700 dark:text-gray-300 italic">
+                      "{{ entry.description }}"
+                    </p>
+                  </div>
+                  
+                 <!-- Changes details - ONLY show fields that actually changed -->
+<div *ngIf="entry.hasChanges && entry.newValues" class="mt-3">
+  <p class="text-[10px] font-medium text-blue-500 mb-2 flex items-center gap-1">
+    <span>🍃</span> modifications détectées
+  </p>
+  <div class="space-y-2">
+    <!-- Filter to only show fields where old value != new value -->
+    <div *ngFor="let key of getChangedFieldsOnly(entry)" 
+         class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2 border border-blue-100 dark:border-blue-900">
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] font-medium text-blue-600 dark:text-blue-400 min-w-[80px] capitalize">{{ formatFieldName(key) }}</span>
+        <div class="flex-1 flex items-center gap-2 text-[10px]">
+          <span class="line-through text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded">{{ formatChangeValue(entry.oldValues?.[key]) }}</span>
+          <span class="text-yellow-500">→</span>
+          <span class="text-green-500 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">{{ formatChangeValue(entry.newValues[key]) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+                  
+                  <!-- Cute leaf decoration -->
+                  <div class="absolute -bottom-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-blue-300">🍂</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Branch connector for last item -->
+            <div *ngIf="!last" class="ml-12 pl-4 border-l-2 border-dashed border-blue-200 dark:border-blue-800 h-4"></div>
+          </div>
+        </div>
+        
+        <!-- Tree roots decoration -->
+        <div class="mt-8 flex justify-center gap-1 text-blue-300 text-xs">
+          <span>⤸</span><span>⤹</span><span>⤸</span><span>⤹</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -705,5 +705,21 @@ formatChangeValue(value: any): string {
 }
 
 
+getAllHistoryEntries(): HistoryEntry[] {
+  if (!this.groupedConventionHistory) return [];
+  return this.groupedConventionHistory.reduce((acc, group) => {
+    return [...acc, ...group.entries];
+  }, [] as HistoryEntry[]);
+}
+
+// Navigate to all invoices page
+viewAllInvoices(): void {
+  this.router.navigate(['/conventions', this.conventionId, 'factures']);
+}
+
+// Navigate to all history page
+viewAllHistory(): void {
+  this.router.navigate(['/conventions', this.conventionId, 'history']);
+}
 
 }

@@ -70,3 +70,62 @@
   background-color: #f3f4f6;
   transform: translateX(2px);
 }
+
+
+:host {
+  display: block;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: hidden;
+  z-index: 99999;
+}
+
+/* Remove the fixed height from .sidebar .flex-1 */
+.sidebar .flex-1 {
+  overflow-y: auto;
+  /* Remove the fixed height - let it be natural */
+}
+
+/* Hide scrollbar for cleaner look (optional) */
+.sidebar .flex-1::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar .flex-1::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar .flex-1::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.sidebar .flex-1::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Add these styles to your existing menu-item styles */
+.menu-item {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: #f3f4f6;
+  transform: translateX(2px);
+}
+
+.menu-item-active:hover {
+  background-color: #4f46e5;
+  transform: translateX(2px);
+}
+
+.menu-item-inactive:hover {
+  background-color: #f3f4f6;
+  transform: translateX(2px);
+}
