@@ -94,7 +94,7 @@
         <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/30">
           <div class="text-xs text-center">
             <span class="text-gray-500 dark:text-gray-400">Taux: </span>
-            <span class="text-purple-500 dark:text-purple-400 font-medium">{{quickStats.collectionRate | number:'1.0-1'}}%</span>
+            <span class="text-purple-500 dark:text-purple-400 font-medium"> {{ ( quickStats.totalRevenue * 100 / 1000000) | number:'1.0-0' }}%</span>
           </div>
         </div>
       </div>

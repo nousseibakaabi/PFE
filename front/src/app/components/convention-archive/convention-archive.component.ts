@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-convention-archive',
@@ -17,7 +18,14 @@ export class ConventionArchiveComponent implements OnInit {
   filteredConventions: Convention[] = [];
   loading = false;
   errorMessage = '';
+  successMessage = '';
   searchTerm = '';
+
+  showRestoreModal = false;
+  selectedConventionForRestore: any = null;
+  restoreLoading = false;
+  restoreErrorMessage = '';
+  restoreSuccessMessage = '';
 
   constructor(
     private conventionService: ConventionService,
@@ -66,23 +74,8 @@ loadArchivedConventions(): void {
     );
   }
 
-  restoreConvention(id: number): void {
-    if (confirm('Êtes-vous sûr de vouloir restaurer cette convention ?')) {
-      this.loading = true;
-      this.conventionService.restoreConvention(id).subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.loadArchivedConventions(); // Refresh the list
-          }
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Restore error:', error);
-          this.errorMessage = error.error?.message || 'Échec de la restauration';
-          this.loading = false;
-        }
-      });
-    }
+  restoreConvention(id: number): Observable<any> {
+    return this.conventionService.restoreConvention(id);
   }
 
   formatArchivedDate(dateString: string): string {
@@ -108,6 +101,47 @@ loadArchivedConventions(): void {
   this.router.navigate(['/conventions', id]);
 }
 
+
+// Open restore modal
+openRestoreModal(convention: any, event: Event): void {
+  event.stopPropagation(); // Prevent card click
+  this.selectedConventionForRestore = convention;
+  this.showRestoreModal = true;
+  this.restoreErrorMessage = '';
+}
+
+// Close restore modal
+closeRestoreModal(): void {
+  this.showRestoreModal = false;
+  this.selectedConventionForRestore = null;
+  this.restoreLoading = false;
+  this.restoreErrorMessage = '';
+}
+
+// Confirm restore
+confirmRestore(): void {
+  if (!this.selectedConventionForRestore) return;
+  
+  this.restoreLoading = true;
+  this.restoreErrorMessage = '';
+  
+  // Call your restore API
+  this.restoreConvention(this.selectedConventionForRestore.id)
+    .subscribe({
+      next: (response) => {
+        this.restoreLoading = false;
+        this.closeRestoreModal();
+        // Show success message
+        this.successMessage = 'Convention restaurée avec succès';
+        // Refresh your list
+        this.loadArchivedConventions(); // or whatever your refresh method is
+      },
+      error: (error) => {
+        this.restoreLoading = false;
+        this.restoreErrorMessage = error.error?.message || 'Erreur lors de la restauration';
+      }
+    });
+}
 
   
 }

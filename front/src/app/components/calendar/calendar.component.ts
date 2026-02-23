@@ -39,38 +39,54 @@ export class CalendarComponent implements OnInit {
     this.loadCalendarStats();
   }
 
-  private initCalendarOptions(): void {
-    this.calendarOptions = {
-      plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
-      initialView: 'dayGridMonth',
-      selectable: true,
-      editable: false,
-      droppable: false,
-      eventClick: this.handleEventClick.bind(this),
-      events: [],
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-      },
-      // REMOVE THESE - they interfere with our custom styling
-      // eventColor: '#3788d8',
-      // eventTextColor: '#ffffff',
-      weekends: true,
-      dayMaxEvents: 3,
-      height: '500px',
-      contentHeight: 'auto',
-      aspectRatio: 1.5,
-      eventDidMount: this.handleEventMount.bind(this),
-      datesSet: this.handleDatesChange.bind(this),
-      dayMaxEventRows: 3,
-      eventMaxStack: 3,
-      dayCellContent: (arg) => {
-        return { html: `<span class="fc-daygrid-day-number">${arg.dayNumberText}</span>` };
-      }
-    };
-  }
-
+private initCalendarOptions(): void {
+  this.calendarOptions = {
+    plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+    initialView: 'dayGridMonth',
+    selectable: true,
+    editable: false,
+    droppable: false,
+    eventClick: this.handleEventClick.bind(this),
+    events: [],
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    buttonText: {
+      today: "Aujourd'hui",
+      month: 'Mois',
+      week: 'Semaine',
+      day: 'Jour'
+    },
+    // Add French locale
+    locale: 'fr',
+    allDayText: 'Toute la journée',
+    // Customize day headers to be smaller
+    dayHeaderFormat: { 
+      weekday: 'short' // This will show "lun.", "mar.", etc. instead of full names
+    },
+    weekends: true,
+    dayMaxEvents: 2,
+    height: 'auto',
+    contentHeight: 320,
+    aspectRatio: 1.3,
+    eventDidMount: this.handleEventMount.bind(this),
+    datesSet: this.handleDatesChange.bind(this),
+    dayMaxEventRows: 2,
+    eventMaxStack: 2,
+    eventTimeFormat: {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    },
+    displayEventTime: false,
+    displayEventEnd: false,
+    dayCellContent: (arg) => {
+      return { html: `<span class="fc-daygrid-day-number text-[11px]">${arg.dayNumberText}</span>` };
+    }
+  };
+}
   navigateTo(route: string[]): void {
   this.router.navigate(route);
 }
@@ -318,7 +334,7 @@ get overdueCount(): number {
 
 
 
-  handleEventMount(info: any): void {
+handleEventMount(info: any): void {
   const event = info.event;
   const extendedProps = event.extendedProps;
   
@@ -326,7 +342,7 @@ get overdueCount(): number {
     const status = extendedProps.status;
     const isOverdue = extendedProps.isOverdue;
     
-    // ONLY add CSS classes - NO inline styles!
+    // Add CSS classes
     if (status === 'PAYE') {
       info.el.classList.add('fc-event-paid');
     } 
@@ -337,18 +353,32 @@ get overdueCount(): number {
       info.el.classList.add('fc-event-unpaid');
     }
     else {
-      // Default fallback
       info.el.classList.add('fc-event-default');
     }
     
-    // Add tooltip
+    // Make the event title shorter (just invoice number)
+    const titleEl = info.el.querySelector('.fc-event-title');
+    if (titleEl) {
+      const fullTitle = event.title;
+      // Extract just the invoice number part
+      const match = fullTitle.match(/#[A-Z0-9-]+/);
+      if (match) {
+        titleEl.textContent = match[0]; // Show only #FACT-2026-CON
+      } else {
+        // If no pattern match, truncate
+        titleEl.textContent = fullTitle.length > 12 ? fullTitle.substring(0, 7) + '..' : fullTitle;
+      }
+    }
+    
+    // Add tooltip with full info
     info.el.title = `${event.title}\nStatus: ${this.getStatusText({
       extendedProps,
       id: event.id
     } as CalendarEvent)}\nAmount: ${extendedProps.amount || '0'} TND`;
     
-    // Add click handler
-    info.el.addEventListener('click', () => {
+    // Add click handler - FIXED: Added MouseEvent type
+    info.el.addEventListener('click', (e: MouseEvent) => {
+      e.stopPropagation();
       const clickedEvent = this.calendarEvents.find(e => 
         e.id?.toString() === event.id
       );

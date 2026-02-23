@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FactureService, Facture } from '../../services/facture.service';
 import { ConventionService } from '../../services/convention.service';
 import { AuthService } from '../../services/auth.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-convention-factures',
@@ -32,7 +33,9 @@ export class ConventionFacturesComponent implements OnInit {
     private router: Router,
     private factureService: FactureService,
     private conventionService: ConventionService,
-    private authService: AuthService
+    private authService: AuthService,
+    private location: Location,
+
   ) {}
 
   ngOnInit(): void {
@@ -71,7 +74,7 @@ export class ConventionFacturesComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/conventions', this.conventionId]);
+    this.location.back();
   }
 
   viewFactureDetails(id: number): void {

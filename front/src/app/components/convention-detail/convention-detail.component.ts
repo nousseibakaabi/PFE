@@ -7,6 +7,7 @@ import { TimeFormatService } from '../../services/time-format.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HistoryService, HistoryEntry } from '../../services/history.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-convention-detail',
@@ -83,8 +84,8 @@ export class ConventionDetailComponent implements OnInit {
     private factureService: FactureService,
     private authService: AuthService,
     public timeFormatService: TimeFormatService,
-    public historyService: HistoryService
-
+    public historyService: HistoryService,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -269,7 +270,7 @@ getHistoryIcon(actionType: string): string {
 
   // Navigation
   goBack(): void {
-    this.router.navigate(['/conventions']);
+    this.location.back();
   }
 
   editConvention(): void {

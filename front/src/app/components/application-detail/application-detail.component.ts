@@ -7,6 +7,7 @@ import { environment } from '../../../environments/environment';
 import { UserService } from 'src/app/services/user.service';
 import { HistoryService, HistoryEntry } from '../../services/history.service';
 import { WorkloadService, WorkloadCheck, AlternativeChef } from '../../services/workload.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-application-detail',
@@ -60,7 +61,8 @@ export class ApplicationDetailComponent implements OnInit {
     private authService: AuthService,
     private userService: UserService,
     public historyService: HistoryService,
-    private workloadService: WorkloadService
+    private workloadService: WorkloadService,
+    private location: Location
     ) {}
 
   ngOnInit(): void {
@@ -275,7 +277,7 @@ loadApplicationDetails(id: number): void {
   }
 
   goBack(): void {
-    this.router.navigate(['/applications']);
+    this.location.back();
   }
 
   editApplication(): void {

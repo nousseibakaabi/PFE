@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConventionService } from '../../services/convention.service';
 import { HistoryService, HistoryEntry } from '../../services/history.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-convention-history',
@@ -20,7 +21,9 @@ export class ConventionHistoryComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private conventionService: ConventionService,
-    public historyService: HistoryService
+    public historyService: HistoryService,
+    private location: Location,
+
   ) {}
 
   ngOnInit(): void {
@@ -93,7 +96,7 @@ groupHistory(): void {
 }
 
   goBack(): void {
-    this.router.navigate(['/conventions', this.conventionId]);
+    this.location.back();
   }
 
   getConventionHistoryActionClass(actionType: string): string {

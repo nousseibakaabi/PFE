@@ -203,7 +203,7 @@ resetFilters(): void {
   
   // From convention stats (calculate active from status distribution)
   if (this.conventionStats?.statusDistribution) {
-    const activeStatuses = ['EN_COURS', 'EN_ATTENTE'];
+    const activeStatuses = ['EN COURS', 'PLANIFIE'];
     this.quickStats.activeConventions = this.conventionStats.statusDistribution
       .filter((status: any) => activeStatuses.includes(status.name))
       .reduce((sum: number, status: any) => sum + (status.count || 0), 0);
@@ -618,14 +618,10 @@ getProgressWidth(value: number, max: number): number {
 
   getConventionEtatLabel(etat: string): string {
   switch (etat) {
-    case 'NO_STATUS': return 'Pas de Statut';
-    case 'EN_ATTENTE': return 'En Attente';
-    case 'EN_COURS': return 'En Cours';
-    case 'EN_RETARD': return 'En Retard';
+    case 'PLANIFIE': return 'Planifié';
+    case 'EN COURS': return 'En Cours';
     case 'TERMINE': return 'Terminé';
     case 'ARCHIVE': return 'Archivé';
-    case 'RESILIE': return 'Résilié';
-    case 'ANNULE': return 'Annulé';
     default: return etat;
   }
 }

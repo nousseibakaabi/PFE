@@ -226,7 +226,7 @@ public class StatsController {
                             Collectors.counting()
                     ));
 
-            List<String> allStatuses = Arrays.asList("NO_STATUS", "EN_ATTENTE", "EN_COURS", "EN_RETARD", "TERMINE", "ARCHIVE");
+            List<String> allStatuses = Arrays.asList("PLANIFIE", "EN COURS", "TERMINE", "ARCHIVE");
             for (String status : allStatuses) {
                 Map<String, Object> statusMap = new HashMap<>();
                 statusMap.put("name", status);
@@ -257,7 +257,7 @@ public class StatsController {
             Map<String, BigDecimal> amountByStatus = new HashMap<>();
             for (Convention convention : accessibleConventions) {
                 String etat = convention.getEtat() != null ? convention.getEtat() : "NO_STATUS";
-                BigDecimal montant = convention.getMontantTotal() != null ? convention.getMontantTotal() : BigDecimal.ZERO;
+                BigDecimal montant = convention.getMontantTTC() != null ? convention.getMontantTTC() : BigDecimal.ZERO;
                 amountByStatus.merge(etat, montant, BigDecimal::add);
             }
             stats.put("amountByStatus", amountByStatus);
@@ -537,7 +537,7 @@ public class StatsController {
 
             // Total Contract Value
             BigDecimal totalContractValue = accessibleConventions.stream()
-                    .map(c -> c.getMontantTotal() != null ? c.getMontantTotal() : BigDecimal.ZERO)
+                    .map(c -> c.getMontantTTC() != null ? c.getMontantTTC() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             stats.put("totalContractValue", totalContractValue);
 
@@ -564,15 +564,15 @@ public class StatsController {
 
             // Top Earning Conventions
             List<Map<String, Object>> topEarningConventions = accessibleConventions.stream()
-                    .filter(c -> c.getMontantTotal() != null)
-                    .sorted((c1, c2) -> c2.getMontantTotal().compareTo(c1.getMontantTotal()))
+                    .filter(c -> c.getMontantTTC() != null)
+                    .sorted((c1, c2) -> c2.getMontantTTC().compareTo(c1.getMontantTTC()))
                     .limit(5)
                     .map(c -> {
                         Map<String, Object> conventionInfo = new HashMap<>();
                         conventionInfo.put("reference", c.getReferenceConvention());
                         conventionInfo.put("libelle", c.getLibelle());
                         conventionInfo.put("structureResponsable", c.getStructureResponsable() != null ? c.getStructureResponsable().getName() : "N/A");
-                        conventionInfo.put("montantTotal", c.getMontantTotal());
+                        conventionInfo.put("montantTotal", c.getMontantTTC());
                         conventionInfo.put("etat", c.getEtat());
                         return conventionInfo;
                     })
@@ -732,23 +732,27 @@ public class StatsController {
 
         long totalConventions = accessibleConventions.size();
         long activeConventions = accessibleConventions.stream()
-                .filter(c -> "EN_COURS".equals(c.getEtat()))
+                .filter(c -> "EN COURS".equals(c.getEtat()))
+                .count();
+        long planifiedConventions = accessibleConventions.stream()
+                .filter(c -> "PLANIFIE".equals(c.getEtat()))
                 .count();
         long terminatedConventions = accessibleConventions.stream()
                 .filter(c -> "TERMINE".equals(c.getEtat()))
                 .count();
-        long lateConventions = accessibleConventions.stream()
-                .filter(c -> "EN_RETARD".equals(c.getEtat()))
+
+        long archivedConventions = accessibleConventions.stream()
+                .filter(c -> "ARCHIVE".equals(c.getEtat()))
                 .count();
-        long noStatusConventions = accessibleConventions.stream()
-                .filter(c -> c.getEtat() == null)
-                .count();
+
 
         stats.put("totalConventions", totalConventions);
         stats.put("activeConventions", activeConventions);
         stats.put("terminatedConventions", terminatedConventions);
-        stats.put("lateConventions", lateConventions);
-        stats.put("noStatusConventions", noStatusConventions);
+        stats.put("archivedConventions",archivedConventions);
+        stats.put("planifiedConventions",planifiedConventions);
+
+
         stats.put("conventionCompletionRate",
                 totalConventions > 0 ? ((double) terminatedConventions / totalConventions) * 100 : 0);
 
@@ -859,20 +863,13 @@ public class StatsController {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalContractValue = accessibleConventions.stream()
-                .map(c -> c.getMontantTotal() != null ? c.getMontantTotal() : BigDecimal.ZERO)
+                .map(c -> c.getMontantTTC() != null ? c.getMontantTTC() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-     /*   BigDecimal totalProjectBudget = BigDecimal.valueOf(accessibleProjects.stream()
-                .filter(p -> p.getBudget() != null)
-                .mapToDouble(Application::getBudget)
-                .sum());
 
-
-      */
         stats.put("totalRevenue", totalRevenue);
         stats.put("pendingRevenue", pendingRevenue);
         stats.put("totalContractValue", totalContractValue);
-       // stats.put("totalProjectBudget", totalProjectBudget);
 
         return stats;
     }

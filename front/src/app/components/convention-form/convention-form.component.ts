@@ -33,7 +33,7 @@ export class ConventionFormComponent implements OnInit {
     nbUsers: 0,
     montantHT: 0,
     montantTTC: 0,
-    tva: 19,
+    tva: 0,
   };
 
   // Lists for dropdowns
@@ -174,7 +174,7 @@ loadConvention(id: number): void {
           structureBeneficielId: convention.structureBeneficielId || 0,
           applicationId: convention.applicationId || 0,  // This should now find the app in the list
           montantHT: convention.montantHT || 0,
-          tva: convention.tva || 19,
+          tva: convention.tva || 0,
           montantTTC: convention.montantTTC || 0,
           nbUsers: convention.nbUsers || 0,
           periodicite: convention.periodicite || 'MENSUEL'

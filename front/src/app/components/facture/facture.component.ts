@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit ,HostListener } from '@angular/core';
 import { FactureService, Facture, FactureRequest, PaiementRequest } from '../../services/facture.service';
 import { ConventionService } from '../../services/convention.service';
 import { NomenclatureService } from '../../services/nomenclature.service';
@@ -30,14 +30,19 @@ export class FactureComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
-    currentPage = 1;
+  activeActionMenu: number | null = null;
+  menuPosition: 'top' | 'bottom' = 'bottom';
+
+
+
+  currentPage = 1;
   itemsPerPage = 7;
   paginatedFactures: Facture[] = [];
 
 
   applications: any[] = [];
-filterApplicationName: string | null = null;
-activeFilters: { type: string; value: any; label: string }[] = [];
+  filterApplicationName: string | null = null;
+  activeFilters: { type: string; value: any; label: string }[] = [];
 
   // Invoice form
   invoiceForm: FactureRequest = {
@@ -584,4 +589,70 @@ viewFactureDetails(id: number): void {
   this.router.navigate(['/factures', id]);
 }
 
+
+toggleActionMenu(factureId: number, event: MouseEvent): void {
+  // Get the button element
+  const button = event.currentTarget as HTMLElement;
+  const rect = button.getBoundingClientRect();
+  
+  // Calculate space below the button
+  const spaceBelow = window.innerHeight - rect.bottom;
+  
+  // Menu height (approx 280px for your menu)
+  const menuHeight = 280;
+  
+  // Decide position
+  if (spaceBelow < menuHeight) {
+    this.menuPosition = 'top';
+  } else {
+    this.menuPosition = 'bottom';
+  }
+  
+  // Toggle menu
+  if (this.activeActionMenu === factureId) {
+    this.activeActionMenu = null;
+  } else {
+    this.activeActionMenu = factureId;
+  }
+}
+
+// Close menu when clicking outside
+@HostListener('document:click', ['$event'])
+onDocumentClick(event: MouseEvent): void {
+  const target = event.target as HTMLElement;
+  if (!target.closest('.relative')) {
+    this.activeActionMenu = null;
+  }
+}
+
+// Close menu on scroll to prevent weird positioning
+@HostListener('window:scroll', ['$event'])
+onWindowScroll(): void {
+  this.activeActionMenu = null;
+}
+
+// Add these placeholder methods for your actions
+sendReminder(factureId: number): void {
+  console.log('Sending reminder for facture:', factureId);
+  // Implement your logic
+  this.activeActionMenu = null;
+}
+
+generatePDF(factureId: number): void {
+  console.log('Generating PDF for facture:', factureId);
+  // Implement your logic
+  this.activeActionMenu = null;
+}
+
+emailPDF(factureId: number): void {
+  console.log('Emailing PDF for facture:', factureId);
+  // Implement your logic
+  this.activeActionMenu = null;
+}
+
+printFacture(factureId: number): void {
+  console.log('Printing facture:', factureId);
+  // Implement your logic
+  this.activeActionMenu = null;
+}
 }

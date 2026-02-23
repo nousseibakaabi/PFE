@@ -1,4 +1,3 @@
-
 /* Add these to completely override FullCalendar's hover styles */
 .fc-event.fc-event-mirror,
 .fc-event.fc-event-selected,
@@ -510,4 +509,539 @@
   color: white !important;
   font-weight: 600 !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+
+
+/* ===== SUPER COMPACT CALENDAR STYLES ===== */
+/* These styles make the calendar TINY and CUTE */
+
+::ng-deep .mini-calendar .fc {
+  font-family: inherit;
+  font-size: 0.6rem;
+}
+
+::ng-deep .mini-calendar .fc-toolbar.fc-header-toolbar {
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+::ng-deep .mini-calendar .fc-toolbar-title {
+  font-size: 0.7rem !important;
+  font-weight: 600;
+}
+
+::ng-deep .mini-calendar .fc-button {
+  padding: 0.1rem 0.25rem !important;
+  font-size: 0.5rem !important;
+  background-color: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+  border-radius: 0.2rem !important;
+  box-shadow: none !important;
+  height: auto !important;
+  line-height: 1.2 !important;
+  text-transform: capitalize !important;
+  background-image: none !important;
+}
+
+::ng-deep .mini-calendar .fc-button-group .fc-button {
+  margin-right: 1px !important;
+}
+
+::ng-deep .mini-calendar .fc-button-primary:not(:disabled):hover {
+  background-color: #e5e7eb !important;
+  border-color: #d1d5db !important;
+}
+
+::ng-deep .mini-calendar .fc-button-primary:disabled {
+  opacity: 0.5;
+}
+
+/* Fix day cells - make them TINY */
+::ng-deep .mini-calendar .fc-daygrid-day {
+  padding: 0 !important;
+  height: 45px !important;
+  max-height: 45px !important;
+  overflow: hidden;
+}
+
+::ng-deep .mini-calendar .fc-daygrid-day-frame {
+  min-height: 45px !important;
+  height: 45px !important;
+  padding: 0 !important;
+}
+
+/* Make day numbers TINY */
+::ng-deep .mini-calendar .fc-daygrid-day-number {
+  font-size: 0.5rem !important;
+  padding: 1px 2px 0 0 !important;
+  color: #6b7280;
+  line-height: 1 !important;
+}
+
+/* Make day headers ULTRA TINY - FIXED */
+::ng-deep .mini-calendar .fc-col-header-cell {
+  padding: 0 !important;
+  height: 18px !important;
+  max-height: 18px !important;
+  line-height: 18px !important;
+  font-size: 0.4rem !important;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+::ng-deep .mini-calendar .fc-col-header-cell-cushion {
+  padding: 0 !important;
+  font-size: 0.4rem !important;
+  line-height: 18px !important;
+  text-decoration: none !important;
+}
+
+/* Make the header row container smaller */
+::ng-deep .mini-calendar .fc-col-header {
+  height: 18px !important;
+  min-height: 18px !important;
+  max-height: 18px !important;
+}
+
+::ng-deep .mini-calendar .fc-col-header tbody {
+  height: 18px !important;
+  min-height: 18px !important;
+  max-height: 18px !important;
+}
+
+::ng-deep .mini-calendar .fc-col-header tr {
+  height: 18px !important;
+  min-height: 18px !important;
+  max-height: 18px !important;
+}
+
+/* Fix events container */
+::ng-deep .mini-calendar .fc-daygrid-day-events {
+  min-height: auto !important;
+  margin-top: 0 !important;
+}
+
+::ng-deep .mini-calendar .fc-daygrid-event-harness {
+  margin: 0 !important;
+}
+
+::ng-deep .mini-calendar .fc-daygrid-day-bottom {
+  font-size: 0.45rem;
+  margin-top: 1px !important;
+}
+
+::ng-deep .mini-calendar .fc-daygrid-more-link {
+  font-size: 0.45rem;
+  padding: 0 1px !important;
+}
+
+/* Make events TINY */
+::ng-deep .mini-calendar .fc-event {
+  border: none !important;
+  border-radius: 1px !important;
+  padding: 0 !important;
+  margin: 1px 0 !important;
+  font-size: 0.45rem !important;
+  line-height: 1 !important;
+  cursor: pointer;
+  font-weight: 500;
+  height: 14px !important;
+  max-height: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-shadow: none !important;
+  border-left: 2px solid transparent !important;
+}
+
+::ng-deep .mini-calendar .fc-event-title {
+  padding: 0 2px !important;
+  font-size: 0.45rem !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+}
+
+::ng-deep .mini-calendar .fc-event-main {
+  padding: 0 !important;
+  height: 14px !important;
+  line-height: 14px !important;
+}
+
+::ng-deep .mini-calendar .fc-event-main-frame {
+  height: 14px !important;
+  line-height: 14px !important;
+}
+
+/* Override event colors for mini calendar */
+::ng-deep .mini-calendar .fc-event-paid {
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%) !important;
+  border-left-color: #059669 !important;
+}
+
+::ng-deep .mini-calendar .fc-event-unpaid {
+  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%) !important;
+  border-left-color: #D97706 !important;
+}
+
+::ng-deep .mini-calendar .fc-event-overdue {
+  background: linear-gradient(135deg, #EF4444 0%, #F87171 100%) !important;
+  border-left-color: #DC2626 !important;
+  animation: gentlePulse 3s ease-in-out infinite !important;
+}
+
+::ng-deep .mini-calendar .fc-event-default {
+  background: linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%) !important;
+  border-left-color: #4B5563 !important;
+}
+
+/* Hide event dot */
+::ng-deep .mini-calendar .fc-daygrid-event-dot {
+  display: none !important;
+}
+
+::ng-deep .mini-calendar .fc-scrollgrid {
+  border: none !important;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+::ng-deep .mini-calendar .fc-theme-standard td, 
+::ng-deep .mini-calendar .fc-theme-standard th {
+  border: 1px solid #f3f4f6;
+}
+
+::ng-deep .mini-calendar .fc-day-today {
+  background-color: #f3f4f6 !important;
+}
+
+::ng-deep .mini-calendar .fc-day-today .fc-daygrid-day-number {
+  font-weight: bold;
+  color: #2563eb;
+}
+
+/* Dark mode for mini calendar */
+::ng-deep .dark .mini-calendar .fc-day-today {
+  background-color: #1f2937 !important;
+}
+
+::ng-deep .dark .mini-calendar .fc-day-today .fc-daygrid-day-number {
+  color: #60a5fa;
+}
+
+::ng-deep .dark .mini-calendar .fc-button {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #e5e7eb !important;
+}
+
+::ng-deep .dark .mini-calendar .fc-col-header-cell {
+  color: #e5e7eb;
+}
+
+::ng-deep .dark .mini-calendar .fc-daygrid-day-number {
+  color: #9ca3af;
+}
+
+::ng-deep .dark .mini-calendar .fc-theme-standard td, 
+::ng-deep .dark .mini-calendar .fc-theme-standard th {
+  border-color: #374151;
+}
+
+/* Fix arrows/icons */
+::ng-deep .mini-calendar .fc-icon {
+  font-size: 0.5rem !important;
+  line-height: 1 !important;
+  height: auto !important;
+  width: auto !important;
+}
+
+::ng-deep .mini-calendar .fc-prev-button, 
+::ng-deep .mini-calendar .fc-next-button {
+  padding: 0.1rem 0.2rem !important;
+}
+
+::ng-deep .mini-calendar .fc-icon-chevron-left:before,
+::ng-deep .mini-calendar .fc-icon-chevron-right:before {
+  font-size: 0.5rem !important;
+  line-height: 1 !important;
+}
+
+
+/* Add to your calendar.component.css */
+
+/* Stylish Calendar Enhancements */
+::ng-deep .stylish-calendar .fc {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+::ng-deep .stylish-calendar .fc-toolbar-title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+  letter-spacing: -0.01em;
+}
+
+.dark ::ng-deep .stylish-calendar .fc-toolbar-title {
+  color: #f3f4f6 !important;
+}
+
+::ng-deep .stylish-calendar .fc-button {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+  font-weight: 500 !important;
+  padding: 0.4rem 0.8rem !important;
+  border-radius: 0.5rem !important;
+  font-size: 0.75rem !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.15s ease !important;
+}
+
+::ng-deep .stylish-calendar .fc-button:hover {
+  background: #f9fafb !important;
+  border-color: #d1d5db !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+::ng-deep .stylish-calendar .fc-button-primary:not(:disabled).fc-button-active {
+  background: #f3f4f6 !important;
+  border-color: #9ca3af !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+::ng-deep .stylish-calendar .fc-col-header-cell {
+  padding: 0.5rem 0 !important;
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+  color: #6b7280 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: linear-gradient(to bottom, #f9fafb, #f3f4f6);
+}
+
+.dark ::ng-deep .stylish-calendar .fc-col-header-cell {
+  background: linear-gradient(to bottom, #1f2937, #111827);
+  color: #9ca3af !important;
+}
+
+::ng-deep .stylish-calendar .fc-daygrid-day {
+  border: 1px solid #f3f4f6 !important;
+  transition: background-color 0.2s ease;
+}
+
+::ng-deep .stylish-calendar .fc-daygrid-day:hover {
+  background-color: #f9fafb !important;
+}
+
+.dark ::ng-deep .stylish-calendar .fc-daygrid-day:hover {
+  background-color: #1f2937 !important;
+}
+
+::ng-deep .stylish-calendar .fc-daygrid-day-number {
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  color: #4b5563 !important;
+  padding: 0.3rem 0.3rem 0 0 !important;
+}
+
+.dark ::ng-deep .stylish-calendar .fc-daygrid-day-number {
+  color: #d1d5db !important;
+}
+
+::ng-deep .stylish-calendar .fc-day-today {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+}
+
+.dark ::ng-deep .stylish-calendar .fc-day-today {
+  background: linear-gradient(135deg, #0c4a6e, #075985) !important;
+}
+
+::ng-deep .stylish-calendar .fc-event {
+  border-radius: 4px !important;
+  padding: 0.2rem 0.3rem !important;
+  font-size: 0.65rem !important;
+  font-weight: 500 !important;
+  margin: 1px 0 !important;
+  border-left: 3px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+::ng-deep .stylish-calendar .fc-event-title {
+  font-weight: 500 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* Add to your calendar.component.css */
+
+/* Make day headers smaller */
+::ng-deep .stylish-calendar .fc-col-header-cell {
+  padding: 0.3rem 0 !important;
+  font-size: 0.65rem !important; /* Smaller font */
+  font-weight: 600 !important;
+  color: #6b7280 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+::ng-deep .stylish-calendar .fc-col-header-cell-cushion {
+  font-size: 0.65rem !important;
+  text-decoration: none !important;
+}
+
+/* Make day numbers smaller */
+::ng-deep .stylish-calendar .fc-daygrid-day-number {
+  font-size: 0.7rem !important;
+  font-weight: 500 !important;
+  color: #4b5563 !important;
+  padding: 0.2rem 0.2rem 0 0 !important;
+}
+
+/* Make day cells slightly smaller */
+::ng-deep .stylish-calendar .fc-daygrid-day-frame {
+  min-height: 70px !important;
+  height: 70px !important;
+}
+
+/* Adjust event size for smaller days */
+::ng-deep .stylish-calendar .fc-event {
+  font-size: 0.6rem !important;
+  padding: 0.1rem 0.2rem !important;
+  margin: 1px 0 !important;
+  height: 16px !important;
+  line-height: 14px !important;
+}
+
+
+/* Make calendar toolbar buttons smaller */
+::ng-deep .stylish-calendar .fc-toolbar .fc-button {
+  padding: 0.2rem 0.4rem !important;
+  font-size: 0.65rem !important;
+  background: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+  border-radius: 0.375rem !important;
+  box-shadow: none !important;
+  height: auto !important;
+  line-height: 1.2 !important;
+  text-transform: capitalize !important;
+}
+
+::ng-deep .stylish-calendar .fc-toolbar .fc-button-group .fc-button {
+  margin-right: 2px !important;
+}
+
+::ng-deep .stylish-calendar .fc-toolbar-title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+}
+
+/* Make the "today" button smaller */
+::ng-deep .stylish-calendar .fc-toolbar .fc-today-button {
+  padding: 0.2rem 0.6rem !important;
+  font-size: 0.65rem !important;
+}
+
+/* Make the prev/next buttons smaller */
+::ng-deep .stylish-calendar .fc-toolbar .fc-prev-button,
+::ng-deep .stylish-calendar .fc-toolbar .fc-next-button {
+  padding: 0.2rem 0.3rem !important;
+}
+
+::ng-deep .stylish-calendar .fc-toolbar .fc-icon {
+  font-size: 0.6rem !important;
+}
+
+
+/* Make prev/next icons even smaller */
+::ng-deep .stylish-calendar .fc-toolbar .fc-prev-button .fc-icon,
+::ng-deep .stylish-calendar .fc-toolbar .fc-next-button .fc-icon {
+  font-size: 0.45rem !important;
+  line-height: 1 !important;
+}
+
+::ng-deep .stylish-calendar .fc-toolbar .fc-prev-button,
+::ng-deep .stylish-calendar .fc-toolbar .fc-next-button {
+  padding: 0.1rem 0.2rem !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Override FullCalendar's default icon sizes */
+::ng-deep .stylish-calendar .fc-toolbar .fc-icon-chevron-left:before,
+::ng-deep .stylish-calendar .fc-toolbar .fc-icon-chevron-right:before {
+  font-size: 0.45rem !important;
+  line-height: 1 !important;
+}
+
+
+/* Fix hover states - make them DARKER not white */
+::ng-deep .stylish-calendar .fc-event-paid:hover {
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%) !important; /* Darker green */
+  transform: translateY(-1px) scale(1.01) !important;
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4) !important;
+}
+
+::ng-deep .stylish-calendar .fc-event-unpaid:hover {
+  background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%) !important; /* Darker orange */
+  transform: translateY(-1px) scale(1.01) !important;
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4) !important;
+}
+
+::ng-deep .stylish-calendar .fc-event-overdue:hover {
+  background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%) !important; /* Darker red */
+  transform: translateY(-1px) scale(1.01) !important;
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4) !important;
+  animation: none !important; /* Stop pulse on hover */
+}
+
+::ng-deep .stylish-calendar .fc-event-default:hover {
+  background: linear-gradient(135deg, #4B5563 0%, #6B7280 100%) !important; /* Darker gray */
+  transform: translateY(-1px) scale(1.01) !important;
+  box-shadow: 0 4px 8px rgba(107, 114, 128, 0.4) !important;
+}
+
+/* Active/click state - even darker */
+::ng-deep .stylish-calendar .fc-event-paid:active {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+::ng-deep .stylish-calendar .fc-event-unpaid:active {
+  background: linear-gradient(135deg, #B45309 0%, #D97706 100%) !important;
+}
+
+::ng-deep .stylish-calendar .fc-event-overdue:active {
+  background: linear-gradient(135deg, #B91C1C 0%, #DC2626 100%) !important;
+}
+
+::ng-deep .stylish-calendar .fc-event-default:active {
+  background: linear-gradient(135deg, #374151 0%, #4B5563 100%) !important;
+}
+
+/* Keep text white on hover/active */
+::ng-deep .stylish-calendar .fc-event-paid:hover .fc-event-title,
+::ng-deep .stylish-calendar .fc-event-unpaid:hover .fc-event-title,
+::ng-deep .stylish-calendar .fc-event-overdue:hover .fc-event-title,
+::ng-deep .stylish-calendar .fc-event-default:hover .fc-event-title,
+::ng-deep .stylish-calendar .fc-event-paid:active .fc-event-title,
+::ng-deep .stylish-calendar .fc-event-unpaid:active .fc-event-title,
+::ng-deep .stylish-calendar .fc-event-overdue:active .fc-event-title,
+::ng-deep .stylish-calendar .fc-event-default:active .fc-event-title {
+  color: white !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
