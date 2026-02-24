@@ -27,6 +27,9 @@ export class ConventionArchiveComponent implements OnInit {
   restoreErrorMessage = '';
   restoreSuccessMessage = '';
 
+  currentPage: number = 1;
+  itemsPerPage: number = 2;
+
   constructor(
     private conventionService: ConventionService,
     private authService: AuthService,
@@ -37,23 +40,51 @@ export class ConventionArchiveComponent implements OnInit {
     this.loadArchivedConventions();
   }
 
-loadArchivedConventions(): void {
-    this.loading = true;
-    this.conventionService.getArchivedConventions().subscribe({
-      next: (response) => {
-        if (response.success) {
-          // The backend already filters by current user
-          this.archivedConventions = response.data;
-          this.filteredConventions = [...this.archivedConventions];
+  loadArchivedConventions(): void {
+      this.loading = true;
+      this.conventionService.getArchivedConventions().subscribe({
+        next: (response) => {
+          if (response.success) {
+            // The backend already filters by current user
+            this.archivedConventions = response.data;
+            this.filteredConventions = [...this.archivedConventions];
+          }
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading archived conventions:', error);
+          this.errorMessage = 'Échec du chargement des conventions archivées';
+          this.loading = false;
         }
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading archived conventions:', error);
-        this.errorMessage = 'Échec du chargement des conventions archivées';
-        this.loading = false;
-      }
-    });
+      });
+  }
+
+
+  get paginatedConventions(): any[] {
+  const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+  const endIndex = startIndex + this.itemsPerPage;
+  return this.filteredConventions.slice(startIndex, endIndex);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredConventions.length / this.itemsPerPage);
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+
+  getItemNumber(index: number): number {
+  return (this.currentPage - 1) * this.itemsPerPage + index + 1;
   }
 
   searchConventions(): void {
@@ -72,6 +103,8 @@ loadArchivedConventions(): void {
       conv.archivedReason?.toLowerCase().includes(term) ||
       conv.archivedBy?.toLowerCase().includes(term)
     );
+
+    this.currentPage = 1; 
   }
 
   restoreConvention(id: number): Observable<any> {

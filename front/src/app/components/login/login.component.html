@@ -14,7 +14,7 @@
       <i *ngIf="isDarkMode" class="fas fa-sun"></i>
     </span>
     <span class="dark-mode-text">
-      {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
+      {{ isDarkMode ? 'Mode clair' : 'Mode sombre' }}
     </span>
   </button>
 </div>
@@ -29,9 +29,9 @@
         </div>
         
         <div class="welcome-content">
-          <h1 class="welcome-title">Welcome Back!</h1>
+          <h1 class="welcome-title">Bon Retour !</h1>
           <p class="welcome-subtitle">
-            Sign in to your account to continue
+Connectez-vous à votre compte pour continuer.
           </p>
         </div>
       </div>
@@ -40,8 +40,8 @@
       <div class="login-right-panel">
         <!-- Login Header -->
         <div class="login-header">
-          <h2 class="login-title">Login</h2>
-          <p class="login-subtitle">Enter your credentials to continue</p>
+          <h2 class="login-title">Se Connecter</h2>
+          <p class="login-subtitle">Entrez vos identifiants pour continuer</p>
         </div>
         
         <!-- Avatar Container -->
@@ -178,7 +178,8 @@
               (input)="onEmailInput($event)"
               formControlName="usernameOrEmail"
             />
-            <label class="form-label">Email</label>
+            <label class="form-label">Adresse e-mail ou Nom d’utilisateur
+</label>
           </div>
 
           <!-- Password Input -->
@@ -193,7 +194,7 @@
               (input)="onPasswordInput($event)"
               formControlName="password"
             />
-            <label class="form-label">Password</label>
+            <label class="form-label">Mot de passe</label>
             
             <!-- Password Toggle -->
             <button 
@@ -219,15 +220,14 @@
             class="login-submit-btn"
             [disabled]="loading"
           >
-            <span *ngIf="!loading">Login</span>
-            <span *ngIf="loading">Logging in...</span>
+            <span *ngIf="!loading">Connexion</span>
+            <span *ngIf="loading">Connexion en cours...</span>
           </button>
 
           <!-- Forgot Password Link -->
           <div class="forgot-password-link">
             <button type="button" class="forgot-password" (click)="forgotPassword()">
-              Forgot your password?
-            </button>
+Mot de passe oublié ?            </button>
           </div>
         </form>
       </div>

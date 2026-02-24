@@ -157,10 +157,10 @@ getNotificationModeText(): string {
 getNotificationModeDescription(): string {
   const mode = this.user?.notifMode;
   switch(mode) {
-    case 'email': return 'Receive notifications via email only';
-    case 'sms': return 'Receive notifications via SMS only';
-    case 'both': return 'Receive notifications via both email and SMS';
-    default: return 'Email notifications only';
+    case 'email': return 'Recevoir les notifications uniquement par email';
+    case 'sms': return 'Recevoir les notifications uniquement par SMS';
+    case 'both': return 'Recevoir les notifications par email et SMS';
+    default: return 'Notifications par email uniquement';
   }
 }
 

@@ -9,17 +9,18 @@
       </div>
     </div>
     
-    <h2 class="title">Check your email!</h2>
+    <h2 class="title">Vérifiez votre e-mail !</h2>
     
     <div class="message">
-      We've sent password reset instructions to
+      Nous avons envoyé les instructions de réinitialisation du mot de passe à
       <br>
-      <strong>{{ email || 'your email address' }}</strong>
+      <strong>{{ email || 'votre adresse e-mail' }}</strong>
     </div>
     
     <div class="instructions">
-      The link will expire in 24 hours. If you don't see the email, 
-      check your spam folder or try again.
+      Le lien expirera dans 24 heures. Si vous ne voyez pas l’e-mail,
+      vérifiez votre dossier spam ou réessayez.
+
     </div>
     
     <div class="button-group">
@@ -32,14 +33,14 @@
           <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
           <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
         </svg>
-        {{ isResending ? 'Sending...' : 'Resend email' }}
+        {{ isResending ? 'Envoi en cours...' : 'Renvoyer l’e-mail' }}
       </button>
     </div>
     
     
 
     <div *ngIf="resendSuccess" class="success-message">
-      Email resent successfully!
+      E-mail renvoyé avec succès!
     </div>
     <div *ngIf="resendError" class="error-message">
       {{ resendError }}
