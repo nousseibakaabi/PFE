@@ -115,12 +115,6 @@ export class WorkloadService {
     });
   }
 
-  /**
-   * Get workload for a specific chef
-   */
-  getChefWorkload(chefId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/api/applications/workload/chef/${chefId}`);
-  }
 
   /**
    * Get workload color based on percentage

@@ -53,6 +53,8 @@ export interface Convention {
   minUser?: number;
   maxUser?: number;
   
+  renewalVersion?: number;
+  
   // Chef de projet info
   chefDeProjetId?: number;
   chefDeProjetName?: string;
@@ -82,6 +84,21 @@ export interface ConventionRequest {
   tva : number;
 
 }
+
+
+export interface RenewalRequest {
+  referenceERP: string;
+  libelle: string;
+  dateDebut: string;
+  dateFin: string;
+  dateSignature: string;
+  montantHT: number;
+  tva: number;
+  montantTTC: number;
+  nbUsers: number;
+  periodicite: string;
+}
+
 
 export interface ArchiveConventionRequest {
   reason: string;
@@ -191,10 +208,23 @@ export class ConventionService {
   return this.http.get(`${this.apiUrl}/api/conventions/by-application/${applicationId}`);
   }
 
+  renewConvention(id: number, data: RenewalRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/conventions/${id}/renew`, data);
+  }
 
 
+  getArchivedConventionsByApplication(applicationId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/api/conventions/application/${applicationId}/archived`);
+  }
 
 
+  getPreviousVersions(id: number): Observable<any> {
+  return this.http.get(`${this.apiUrl}/api/conventions/${id}/previous-versions`);
+  }
+
+  getOldConventionById(oldId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/api/conventions/old/${oldId}`);
+  }
 
   
 }

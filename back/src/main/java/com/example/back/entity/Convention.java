@@ -88,6 +88,20 @@ public class Convention {
     @Column(name = "nb_users")
     private Long nbUsers;
 
+
+    // In Convention.java, add this field
+    @Column(name = "renewal_version")
+    private Integer renewalVersion = 0; // 0 = original, 1 = first renewal, etc.
+
+    @OneToMany(mappedBy = "currentConvention", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OldConvention> oldVersions = new ArrayList<>();
+
+    // Getter and setter
+    public Integer getRenewalVersion() { return renewalVersion; }
+    public void setRenewalVersion(Integer renewalVersion) { this.renewalVersion = renewalVersion; }
+    public List<OldConvention> getOldVersions() { return oldVersions; }
+    public void setOldVersions(List<OldConvention> oldVersions) { this.oldVersions = oldVersions; }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

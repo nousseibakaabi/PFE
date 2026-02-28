@@ -1,235 +1,330 @@
-<div class="login-component-wrapper">
-  <div class="login-page">
-    <div class="login-main-container">
+<div class="min-h-screen bg-gradient-to-br from-gray to-gray dark:from-slate-950 dark:to-slate-900 flex items-center justify-center p-4 transition-colors duration-500 relative overflow-hidden">
+  <!-- Floating SVG Icons - Positioned on sides only -->
+<div class="absolute inset-0 overflow-hidden pointer-events-none">
+  <!-- LEFT SIDE ICONS -->
+  
+  <div class="absolute left-[5%] top-[8%] -translate-x-1/4 animate-float-slow">
+    <div class="w-12 h-12 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-xl flex items-center justify-center transform rotate-12 hover:rotate-0 transition-all duration-500 shadow-lg shadow-[#7EC8E0]/20 dark:shadow-[#7EC8E0]/5">
+      <svg class="w-6 h-6 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    </div>
+  </div>
 
-      <!-- Dark Mode Toggle (Optional) -->
-<div class="dark-mode-toggle">
-  <button 
-    type="button" 
-    class="dark-mode-btn"
-    (click)="toggleDarkMode()"
-  >
-    <span class="dark-mode-icon">
-      <i *ngIf="!isDarkMode" class="fas fa-moon"></i>
-      <i *ngIf="isDarkMode" class="fas fa-sun"></i>
-    </span>
-    <span class="dark-mode-text">
-      {{ isDarkMode ? 'Mode clair' : 'Mode sombre' }}
-    </span>
-  </button>
+  <div class="absolute left-[6%] top-[45%] -translate-x-1/4 animate-float-medium animation-delay-2000">
+    <div class="w-10 h-10 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-xl flex items-center justify-center transform -rotate-6 hover:rotate-0 transition-all duration-500 shadow-lg shadow-[#7EC8E0]/20 dark:shadow-[#7EC8E0]/5">
+     <svg class="w-5 h-5 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="absolute left-[10%] top-[65%] -translate-x-1/4 animate-float animation-delay-1000">
+    <div class="w-12 h-12 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-xl flex items-center justify-center transform -rotate-12 hover:rotate-0 transition-all duration-500 shadow-lg shadow-[#7EC8E0]/20 dark:shadow-[#7EC8E0]/5">
+      <svg class="w-6 h-6 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="absolute left-[6%] top-[85%] -translate-x-1/4 animate-float-slow-reverse animation-delay-3000">
+    <div class="w-10 h-10 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-xl flex items-center justify-center transform rotate-45 hover:rotate-0 transition-all duration-500 shadow-lg shadow-[#7EC8E0]/20 dark:shadow-[#7EC8E0]/5">
+      <svg class="w-5 h-5 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="absolute left-[8%] top-[28%] -translate-x-1/4 animate-float-fast">
+    <div class="w-12 h-12 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-xl flex items-center justify-center transform rotate-90 hover:rotate-0 transition-all duration-500 shadow-lg shadow-[#7EC8E0]/20 dark:shadow-[#7EC8E0]/5">
+      <svg class="w-6 h-6 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE ICONS -->
+
+  <!-- Envelope Icons - Right -->
+  <div class="absolute right-[5%] top-[10%] translate-x-1/4 animate-float-slow animation-delay-1500">
+    <div class="w-12 h-12 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-xl flex items-center justify-center transform -rotate-12 hover:rotate-0 transition-all duration-500 shadow-lg shadow-[#7EC8E0]/20 dark:shadow-[#7EC8E0]/5">
+      <svg class="w-7 h-7 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="absolute right-[6%] top-[50%] translate-x-1/4 animate-float-medium animation-delay-500">
+    <div class="w-10 h-10 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-xl flex items-center justify-center transform rotate-45 hover:rotate-0 transition-all duration-500 shadow-lg shadow-[#7EC8E0]/20 dark:shadow-[#7EC8E0]/5">
+     <svg class="w-6 h-6 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- Lock Icons - Right -->
+  <div class="absolute right-[10%] top-[65%] translate-x-1/4 animate-float animation-delay-2500">
+    <div class="w-14 h-14 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-xl flex items-center justify-center transform rotate-12 hover:rotate-0 transition-all duration-500 shadow-lg shadow-[#7EC8E0]/20 dark:shadow-[#7EC8E0]/5">
+      <svg class="w-5 h-5 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- Key Icons - Right -->
+  <div class="absolute right-[6%] top-[85%] translate-x-1/4 animate-float-slow animation-delay-3500">
+    <div class="w-12 h-12 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-xl flex items-center justify-center transform -rotate-45 hover:rotate-0 transition-all duration-500 shadow-lg shadow-[#7EC8E0]/20 dark:shadow-[#7EC8E0]/5">
+       <svg class="w-6 h-6 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- Bell Icons - Right -->
+  <div class="absolute right-[8%] top-[28%] translate-x-1/4 animate-float-fast animation-delay-2000">
+    <div class="w-10 h-10 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-xl flex items-center justify-center transform rotate-90 hover:rotate-0 transition-all duration-500 shadow-lg shadow-[#7EC8E0]/20 dark:shadow-[#7EC8E0]/5">
+      <svg class="w-5 h-5 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    </div>
+  </div>
+
+
+
+  <!-- Star Icons - Left (smaller decorative) -->
+  <div class="absolute left-5 top-[50%] -translate-y-1/2 animate-ping-slow opacity-30">
+    <div class="w-8 h-8 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-lg flex items-center justify-center">
+      <svg class="w-4 h-4 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- Star Icons - Right (smaller decorative) -->
+  <div class="absolute right-5 top-[40%] -translate-y-1/2 animate-ping-slow animation-delay-2000 opacity-30">
+    <div class="w-6 h-6 bg-[#7EC8E0]/10 dark:bg-[#7EC8E0]/5 backdrop-blur-sm rounded-lg flex items-center justify-center">
+      <svg class="w-3 h-3 text-[#7EC8E0]/40 dark:text-[#7EC8E0]/20" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- Additional floating circles on sides -->
+  <div class="absolute left-10 top-[20%] w-16 h-16 border-2 border-[#7EC8E0]/10 dark:border-[#7EC8E0]/5 rounded-full animate-float-slow opacity-30"></div>
+  <div class="absolute right-10 bottom-[30%] w-20 h-20 border-2 border-[#7EC8E0]/10 dark:border-[#7EC8E0]/5 rounded-full animate-float-medium animation-delay-2000 opacity-30"></div>
+  <div class="absolute left-5 bottom-[15%] w-12 h-12 border-2 border-[#7EC8E0]/10 dark:border-[#7EC8E0]/5 rounded-lg animate-float-fast rotate-45 opacity-30"></div>
+  <div class="absolute right-5 top-[75%] w-14 h-14 border-2 border-[#7EC8E0]/10 dark:border-[#7EC8E0]/5 rounded-full animate-float-slow animation-delay-1000 opacity-30"></div>
 </div>
+
+  <!-- Dark Mode Toggle -->
+  <div class="fixed top-6 right-6 z-50">
+    <button (click)="toggleDarkMode()" 
+      class="p-3 rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-xl border border-white/20 dark:border-white/5 text-[#7EC8E0] dark:text-[#7EC8E0] hover:scale-110 transition-all active:scale-95 flex items-center gap-2 font-medium text-sm">
+      <span class="material-icons text-xl">{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</span>
+      <span class="hidden sm:inline">{{ isDarkMode ? 'Mode Clair' : 'Mode Sombre' }}</span>
+    </button>
+  </div>
+
+  <div class="w-full max-w-5xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row border border-white/30 dark:border-white/10 relative z-10">
+    <!-- Left Section: Illustration & Bear -->
+    <div class="flex-1 bg-gradient-to-br bg-[#7EC8E0] dark:from-[#4A8AA5] dark:to-[#2D5A70] p-12 flex flex-col items-center justify-center relative overflow-hidden min-h-[300px] md:min-h-[600px]">
+      <!-- Decorative Blobs -->
+      <div class="absolute -top-20 -left-20 w-64 h-64 bg-white/20 rounded-full blur-3xl animate-float"></div>
+      <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-white/30 rounded-full blur-3xl animate-float-slow"></div>
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse-slow"></div>
       
-      <!-- Left Panel - Welcome Section -->
-      <div class="login-left-panel">
-        <div class="tech-circles">
-          <div class="tech-circle circle-1"></div>
-          <div class="tech-circle circle-2"></div>
-          <div class="tech-circle circle-3"></div>
-          <div class="tech-circle circle-4"></div>
-        </div>
-        
-        <div class="welcome-content">
-          <h1 class="welcome-title">Bon Retour !</h1>
-          <p class="welcome-subtitle">
-Connectez-vous à votre compte pour continuer.
-          </p>
+      <div class="relative z-10 text-center mb-8">
+        <h1 class="text-white text-4xl font-bold mb-4 tracking-tight drop-shadow-lg">Bon Retour !</h1>
+        <p class="text-white/90 text-lg max-w-xs mx-auto drop-shadow">Nous sommes ravis de vous revoir. Connectez-vous à votre compte !</p>
+      </div>
+
+      <!-- Bear Avatar Container - YOU WILL PUT YOUR BEAR SVG HERE -->
+      <div class="relative z-10 w-64 h-64 bg-white/20 rounded-full p-4 backdrop-blur-md border-2 border-white/30 shadow-2xl hover:scale-105 transition-transform duration-500">
+        <div class="w-full h-full rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center overflow-hidden">
+          <!-- YOUR BEAR SVG GOES HERE -->
+           <svg #mySVG class="w-full h-full" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <circle id="armMaskPath" cx="100" cy="100" r="100"/>  
+            </defs>
+            <clipPath id="armMask">
+              <use href="#armMaskPath" overflow="visible"/>
+            </clipPath>
+            <circle cx="100" cy="100" r="100" fill="#a9ddf3" opacity="0.5"/>
+            
+            <g class="body">
+              <path #bodyBGchanged style="display: none;" fill="#FFFFFF" d="M200,122h-35h-14.9V72c0-27.6-22.4-50-50-50s-50,22.4-50,50v50H35.8H0l0,91h200L200,122z"/>
+              <path #bodyBG stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" d="M200,158.5c0-20.2-14.8-36.5-35-36.5h-14.9V72.8c0-27.4-21.7-50.4-49.1-50.8c-28-0.5-50.9,22.1-50.9,50v50 H35.8C16,122,0,138,0,157.8L0,213h200L200,158.5z"/>
+              <path fill="#DDF1FA" d="M100,156.4c-22.9,0-43,11.1-54.1,27.7c15.6,10,34.2,15.9,54.1,15.9s38.5-5.8,54.1-15.9 C143,167.5,122.9,156.4,100,156.4z"/>
+            </g>
+            
+            <g class="ears">
+              <g #outerEarL fill="#ddf1fa" stroke="#3a5e77" stroke-width="2.5">
+                <circle cx="47" cy="83" r="11.5"/>
+                <path d="M46.3 78.9c-2.3 0-4.1 1.9-4.1 4.1 0 2.3 1.9 4.1 4.1 4.1" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+              <g #earHairL>
+                <rect x="51" y="64" fill="#FFFFFF" width="15" height="35"/>
+                <path d="M53.4 62.8C48.5 67.4 45 72.2 42.8 77c3.4-.1 6.8-.1 10.1.1-4 3.7-6.8 7.6-8.2 11.6 2.1 0 4.2 0 6.3.2-2.6 4.1-3.8 8.3-3.7 12.5 1.2-.7 3.4-1.4 5.2-1.9" fill="#fff" stroke="#3a5e77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+              <g #outerEarR>
+                <circle fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" cx="153" cy="83" r="11.5"/>
+                <path fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M153.7,78.9 c2.3,0,4.1,1.9,4.1,4.1c0,2.3-1.9,4.1-4.1,4.1"/>
+              </g>
+              <g #earHairR>
+                <rect x="134" y="64" fill="#FFFFFF" width="15" height="35"/>
+                <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M146.6,62.8 c4.9,4.6,8.4,9.4,10.6,14.2c-3.4-0.1-6.8-0.1-10.1,0.1c4,3.7,6.8,7.6,8.2,11.6c-2.1,0-4.2,0-6.3,0.2c2.6,4.1,3.8,8.3,3.7,12.5 c-1.2-0.7-3.4-1.4-5.2-1.9"/>
+              </g>
+            </g>
+            
+            <path #chin d="M84.1 121.6c2.7 2.9 6.1 5.4 9.8 7.5l.9-4.5c2.9 2.5 6.3 4.8 10.2 6.5 0-1.9-.1-3.9-.2-5.8 3 1.2 6.2 2 9.7 2.5-.3-2.1-.7-4.1-1.2-6.1" fill="none" stroke="#3a5e77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path #face fill="#DDF1FA" d="M134.5,46v35.5c0,21.815-15.446,39.5-34.5,39.5s-34.5-17.685-34.5-39.5V46"/>
+            <path #hair fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M81.457,27.929 c1.755-4.084,5.51-8.262,11.253-11.77c0.979,2.565,1.883,5.14,2.712,7.723c3.162-4.265,8.626-8.27,16.272-11.235 c-0.737,3.293-1.588,6.573-2.554,9.837c4.857-2.116,11.049-3.64,18.428-4.156c-2.403,3.23-5.021,6.391-7.852,9.474"/>
+            
+            <g #eyebrow>
+              <path fill="#FFFFFF" d="M138.142,55.064c-4.93,1.259-9.874,2.118-14.787,2.599c-0.336,3.341-0.776,6.689-1.322,10.037 c-4.569-1.465-8.909-3.222-12.996-5.226c-0.98,3.075-2.07,6.137-3.267,9.179c-5.514-3.067-10.559-6.545-15.097-10.329 c-1.806,2.889-3.745,5.73-5.816,8.515c-7.916-4.124-15.053-9.114-21.296-14.738l1.107-11.768h73.475V55.064z"/>
+              <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M63.56,55.102 c6.243,5.624,13.38,10.614,21.296,14.738c2.071-2.785,4.01-5.626,5.816-8.515c4.537,3.785,9.583,7.263,15.097,10.329 c1.197-3.043,2.287-6.104,3.267-9.179c4.087,2.004,8.427,3.761,12.996,5.226c0.545-3.348,0.986-6.696,1.322-10.037 c4.913-0.481,9.857-1.34,14.787-2.599"/>
+            </g>
+            
+            <g #eyeL><circle cx="85.5" cy="78.5" r="3.5" fill="#3a5e77"/><circle cx="84" cy="76" r="1" fill="#fff"/></g>
+            <g #eyeR><circle cx="114.5" cy="78.5" r="3.5" fill="#3a5e77"/><circle cx="113" cy="76" r="1" fill="#fff"/></g>
+            
+            <g #mouth>
+              <path #mouthBG fill="#617E92" d="M100.2,101c-0.4,0-1.4,0-1.8,0c-2.7-0.3-5.3-1.1-8-2.5c-0.7-0.3-0.9-1.2-0.6-1.8 c0.2-0.5,0.7-0.7,1.2-0.7c0.2,0,0.5,0.1,0.6,0.2c3,1.5,5.8,2.3,8.6,2.3s5.7-0.7,8.6-2.3c0.2-0.1,0.4-0.2,0.6-0.2 c0.5,0,1,0.3,1.2,0.7c0.4,0.7,0.1,1.5-0.6,1.9c-2.6,1.4-5.3,2.2-7.9,2.5C101.7,101,100.5,101,100.2,101z"/>
+              <path #mouthSmallBG style="display: none;" fill="#617E92" d="M100.2,101c-0.4,0-1.4,0-1.8,0c-2.7-0.3-5.3-1.1-8-2.5c-0.7-0.3-0.9-1.2-0.6-1.8 c0.2-0.5,0.7-0.7,1.2-0.7c0.2,0,0.5,0.1,0.6,0.2c3,1.5,5.8,2.3,8.6,2.3s5.7-0.7,8.6-2.3c0.2-0.1,0.4-0.2,0.6-0.2 c0.5,0,1,0.3,1.2,0.7c0.4,0.7,0.1,1.5-0.6,1.9c-2.6,1.4-5.3,2.2-7.9,2.5C101.7,101,100.5,101,100.2,101z"/>
+              <path #mouthMediumBG style="display: none;" d="M95,104.2c-4.5,0-8.2-3.7-8.2-8.2v-2c0-1.2,1-2.2,2.2-2.2h22c1.2,0,2.2,1,2.2,2.2v2 c0,4.5-3.7,8.2-8.2,8.2H95z"/>
+              <path #mouthLargeBG style="display: none;" d="M100 110.2c-9 0-16.2-7.3-16.2-16.2 0-2.3 1.9-4.2 4.2-4.2h24c2.3 0 4.2 1.9 4.2 4.2 0 9-7.2 16.2-16.2 16.2z" fill="#617e92" stroke="#3a5e77" stroke-linejoin="round" stroke-width="2.5"/>
+              <defs><path #mouthMaskPath id="mouthMaskPath" d="M100.2,101c-0.4,0-1.4,0-1.8,0c-2.7-0.3-5.3-1.1-8-2.5c-0.7-0.3-0.9-1.2-0.6-1.8 c0.2-0.5,0.7-0.7,1.2-0.7c0.2,0,0.5,0.1,0.6,0.2c3,1.5,5.8,2.3,8.6,2.3s5.7-0.7,8.6-2.3c0.2-0.1,0.4-0.2,0.6-0.2 c0.5,0,1,0.3,1.2,0.7c0.4,0.7,0.1,1.5-0.6,1.9c-2.6,1.4-5.3,2.2-7.9,2.5C101.7,101,100.5,101,100.2,101z"/></defs>
+              <clipPath id="mouthMask"><use href="#mouthMaskPath" overflow="visible"/></clipPath>
+              <g clip-path="url(#mouthMask)">
+                <g #tongue><circle cx="100" cy="107" r="8" fill="#cc4a6c"/><ellipse cx="100" cy="100.5" rx="3" ry="1.5" opacity=".1" fill="#fff"/></g>
+              </g>
+              <path clip-path="url(#mouthMask)" #tooth style="fill:#FFFFFF;" d="M106,97h-4c-1.1,0-2-0.9-2-2v-2h8v2C108,96.1,107.1,97,106,97z"/>
+              <path #mouthOutline fill="none" stroke="#3A5E77" stroke-width="2.5" stroke-linejoin="round" d="M100.2,101c-0.4,0-1.4,0-1.8,0c-2.7-0.3-5.3-1.1-8-2.5c-0.7-0.3-0.9-1.2-0.6-1.8 c0.2-0.5,0.7-0.7,1.2-0.7c0.2,0,0.5,0.1,0.6,0.2c3,1.5,5.8,2.3,8.6,2.3s5.7-0.7,8.6-2.3c0.2-0.1,0.4-0.2,0.6-0.2 c0.5,0,1,0.3,1.2,0.7c0.4,0.7,0.1,1.5-0.6,1.9c-2.6,1.4-5.3,2.2-7.9,2.5C101.7,101,100.5,101,100.2,101z"/>
+            </g>
+            
+            <path #nose d="M97.7 79.9h4.7c1.9 0 3 2.2 1.9 3.7l-2.3 3.3c-.9 1.3-2.9 1.3-3.8 0l-2.3-3.3c-1.3-1.6-.2-3.7 1.8-3.7z" fill="#3a5e77"/>
+            
+            <g class="arms" clip-path="url(#armMask)">
+              <g #armL style="visibility: hidden;">
+                <polygon fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="121.3,98.4 111,59.7 149.8,49.3 169.8,85.4"/>
+                <path fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M134.4,53.5l19.3-5.2c2.7-0.7,5.4,0.9,6.1,3.5v0c0.7,2.7-0.9,5.4-3.5,6.1l-10.3,2.8"/>
+                <path fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M150.9,59.4l26-7c2.7-0.7,5.4,0.9,6.1,3.5v0c0.7,2.7-0.9,5.4-3.5,6.1l-21.3,5.7"/>
+                <g #twoFingers>      
+                  <path fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M158.3,67.8l23.1-6.2c2.7-0.7,5.4,0.9,6.1,3.5v0c0.7,2.7-0.9,5.4-3.5,6.1l-23.1,6.2"/>
+                  <path fill="#A9DDF3" d="M180.1,65l2.2-0.6c1.1-0.3,2.2,0.3,2.4,1.4v0c0.3,1.1-0.3,2.2-1.4,2.4l-2.2,0.6L180.1,65z"/>
+                  <path fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M160.8,77.5l19.4-5.2c2.7-0.7,5.4,0.9,6.1,3.5v0c0.7,2.7-0.9,5.4-3.5,6.1l-18.3,4.9"/>
+                  <path fill="#A9DDF3" d="M178.8,75.7l2.2-0.6c1.1-0.3,2.2,0.3,2.4,1.4v0c0.3,1.1-0.3,2.2-1.4,2.4l-2.2,0.6L178.8,75.7z"/>
+                </g>
+                <path fill="#A9DDF3" d="M175.5,55.9l2.2-0.6c1.1-0.3,2.2,0.3,2.4,1.4v0c0.3,1.1-0.3,2.2-1.4,2.4l-2.2,0.6L175.5,55.9z"/>
+                <path fill="#A9DDF3" d="M152.1,50.4l2.2-0.6c1.1-0.3,2.2,0.3,2.4,1.4v0c0.3,1.1-0.3,2.2-1.4,2.4l-2.2,0.6L152.1,50.4z"/>
+                <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M123.5,97.8 c-41.4,14.9-84.1,30.7-108.2,35.5L1.2,81c33.5-9.9,71.9-16.5,111.9-21.8"/>
+                <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M108.5,60.4 c7.7-5.3,14.3-8.4,22.8-13.2c-2.4,5.3-4.7,10.3-6.7,15.1c4.3,0.3,8.4,0.7,12.3,1.3c-4.2,5-8.1,9.6-11.5,13.9 c3.1,1.1,6,2.4,8.7,3.8c-1.4,2.9-2.7,5.8-3.9,8.5c2.5,3.5,4.6,7.2,6.3,11c-4.9-0.8-9-0.7-16.2-2.7"/>
+                <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M94.5,103.8 c-0.6,4-3.8,8.9-9.4,14.7c-2.6-1.8-5-3.7-7.2-5.7c-2.5,4.1-6.6,8.8-12.2,14c-1.9-2.2-3.4-4.5-4.5-6.9c-4.4,3.3-9.5,6.9-15.4,10.8 c-0.2-3.4,0.1-7.1,1.1-10.9"/>
+                <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M97.5,63.9 c-1.7-2.4-5.9-4.1-12.4-5.2c-0.9,2.2-1.8,4.3-2.5,6.5c-3.8-1.8-9.4-3.1-17-3.8c0.5,2.3,1.2,4.5,1.9,6.8c-5-0.6-11.2-0.9-18.4-1 c2,2.9,0.9,3.5,3.9,6.2"/>
+              </g>
+              <g #armR style="visibility: hidden;">
+                <path fill="#ddf1fa" stroke="#3a5e77" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M265.4 97.3l10.4-38.6-38.9-10.5-20 36.1z"/>
+                <path fill="#ddf1fa" stroke="#3a5e77" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M252.4 52.4L233 47.2c-2.7-.7-5.4.9-6.1 3.5-.7 2.7.9 5.4 3.5 6.1l10.3 2.8M226 76.4l-19.4-5.2c-2.7-.7-5.4.9-6.1 3.5-.7 2.7.9 5.4 3.5 6.1l18.3 4.9M228.4 66.7l-23.1-6.2c-2.7-.7-5.4.9-6.1 3.5-.7 2.7.9 5.4 3.5 6.1l23.1 6.2M235.8 58.3l-26-7c-2.7-.7-5.4.9-6.1 3.5-.7 2.7.9 5.4 3.5 6.1l21.3 5.7"/>
+                <path fill="#a9ddf3" d="M207.9 74.7l-2.2-.6c-1.1-.3-2.2.3-2.4 1.4-.3 1.1.3 2.2 1.4 2.4l2.2.6 1-3.8zM206.7 64l-2.2-.6c-1.1-.3-2.2.3-2.4 1.4-.3 1.1.3 2.2 1.4 2.4l2.2.6 1-3.8zM211.2 54.8l-2.2-.6c-1.1-.3-2.2.3-2.4 1.4-.3 1.1.3 2.2 1.4 2.4l2.2.6 1-3.8zM234.6 49.4l-2.2-.6c-1.1-.3-2.2.3-2.4 1.4-.3 1.1.3 2.2 1.4 2.4l2.2.6 1-3.8z"/>
+                <path fill="#fff" stroke="#3a5e77" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M263.3 96.7c41.4 14.9 84.1 30.7 108.2 35.5l14-52.3C352 70 313.6 63.5 273.6 58.1"/>
+                <path fill="#fff" stroke="#3a5e77" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M278.2 59.3l-18.6-10 2.5 11.9-10.7 6.5 9.9 8.7-13.9 6.4 9.1 5.9-13.2 9.2 23.1-.9M284.5 100.1c-.4 4 1.8 8.9 6.7 14.8 3.5-1.8 6.7-3.6 9.7-5.5 1.8 4.2 5.1 8.9 10.1 14.1 2.7-2.1 5.1-4.4 7.1-6.8 4.1 3.4 9 7 14.7 11 1.2-3.4 1.8-7 1.7-10.9M314 66.7s5.4-5.7 12.6-7.4c1.7 2.9 3.3 5.7 4.9 8.6 3.8-2.5 9.8-4.4 18.2-5.7.1 3.1.1 6.1 0 9.2 5.5-1 12.5-1.6 20.8-1.9-1.4 3.9-2.5 8.4-2.5 8.4"/>
+              </g>        
+            </g>
+          </svg>
         </div>
       </div>
-      
-      <!-- Right Panel - Login Form -->
-      <div class="login-right-panel">
-        <!-- Login Header -->
-        <div class="login-header">
-          <h2 class="login-title">Se Connecter</h2>
-          <p class="login-subtitle">Entrez vos identifiants pour continuer</p>
-        </div>
-        
-        <!-- Avatar Container -->
-        <div class="avatar-container">
-          <div class="svgContainer">
-            <div>
-              <!-- Keep your existing SVG code exactly as it is -->
-              <svg #mySVG class="mySVG" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 200 200">
-                <defs>
-                  <circle id="armMaskPath" cx="100" cy="100" r="100"/>  
-                </defs>
-                <clipPath id="armMask">
-                  <use xlink:href="#armMaskPath" overflow="visible"/>
-                </clipPath>
-                <circle cx="100" cy="100" r="100" fill="#a9ddf3"/>
-                <g class="body">
-                  <path #bodyBGchanged class="bodyBGchanged" style="display: none;" fill="#FFFFFF" d="M200,122h-35h-14.9V72c0-27.6-22.4-50-50-50s-50,22.4-50,50v50H35.8H0l0,91h200L200,122z"/>
-                  <path #bodyBG class="bodyBGnormal" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoinn="round" fill="#FFFFFF" d="M200,158.5c0-20.2-14.8-36.5-35-36.5h-14.9V72.8c0-27.4-21.7-50.4-49.1-50.8c-28-0.5-50.9,22.1-50.9,50v50 H35.8C16,122,0,138,0,157.8L0,213h200L200,158.5z"/>
-                  <path fill="#DDF1FA" d="M100,156.4c-22.9,0-43,11.1-54.1,27.7c15.6,10,34.2,15.9,54.1,15.9s38.5-5.8,54.1-15.9 C143,167.5,122.9,156.4,100,156.4z"/>
-                </g>
-                <g class="earL">
-                  <g #outerEarL class="outerEar" fill="#ddf1fa" stroke="#3a5e77" stroke-width="2.5">
-                    <circle cx="47" cy="83" r="11.5"/>
-                    <path d="M46.3 78.9c-2.3 0-4.1 1.9-4.1 4.1 0 2.3 1.9 4.1 4.1 4.1" stroke-linecap="round" stroke-linejoin="round"/>
-                  </g>
-                  <g #earHairL class="earHair">
-                    <rect x="51" y="64" fill="#FFFFFF" width="15" height="35"/>
-                    <path d="M53.4 62.8C48.5 67.4 45 72.2 42.8 77c3.4-.1 6.8-.1 10.1.1-4 3.7-6.8 7.6-8.2 11.6 2.1 0 4.2 0 6.3.2-2.6 4.1-3.8 8.3-3.7 12.5 1.2-.7 3.4-1.4 5.2-1.9" fill="#fff" stroke="#3a5e77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </g>
-                </g>
-                <g class="earR">
-                  <g #outerEarR class="outerEar">
-                    <circle fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" cx="153" cy="83" r="11.5"/>
-                    <path fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M153.7,78.9 c2.3,0,4.1,1.9,4.1,4.1c0,2.3-1.9,4.1-4.1,4.1"/>
-                  </g>
-                  <g #earHairR class="earHair">
-                    <rect x="134" y="64" fill="#FFFFFF" width="15" height="35"/>
-                    <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M146.6,62.8 c4.9,4.6,8.4,9.4,10.6,14.2c-3.4-0.1-6.8-0.1-10.1,0.1c4,3.7,6.8,7.6,8.2,11.6c-2.1,0-4.2,0-6.3,0.2c2.6,4.1,3.8,8.3,3.7,12.5 c-1.2-0.7-3.4-1.4-5.2-1.9"/>
-                  </g>
-                </g>
-                <path #chin class="chin" d="M84.1 121.6c2.7 2.9 6.1 5.4 9.8 7.5l.9-4.5c2.9 2.5 6.3 4.8 10.2 6.5 0-1.9-.1-3.9-.2-5.8 3 1.2 6.2 2 9.7 2.5-.3-2.1-.7-4.1-1.2-6.1" fill="none" stroke="#3a5e77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path #face class="face" fill="#DDF1FA" d="M134.5,46v35.5c0,21.815-15.446,39.5-34.5,39.5s-34.5-17.685-34.5-39.5V46"/>
-                <path #hair class="hair" fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M81.457,27.929 c1.755-4.084,5.51-8.262,11.253-11.77c0.979,2.565,1.883,5.14,2.712,7.723c3.162-4.265,8.626-8.27,16.272-11.235 c-0.737,3.293-1.588,6.573-2.554,9.837c4.857-2.116,11.049-3.64,18.428-4.156c-2.403,3.23-5.021,6.391-7.852,9.474"/>
-                <g #eyebrow class="eyebrow">
-                  <path fill="#FFFFFF" d="M138.142,55.064c-4.93,1.259-9.874,2.118-14.787,2.599c-0.336,3.341-0.776,6.689-1.322,10.037 c-4.569-1.465-8.909-3.222-12.996-5.226c-0.98,3.075-2.07,6.137-3.267,9.179c-5.514-3.067-10.559-6.545-15.097-10.329 c-1.806,2.889-3.745,5.73-5.816,8.515c-7.916-4.124-15.053-9.114-21.296-14.738l1.107-11.768h73.475V55.064z"/>
-                  <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M63.56,55.102 c6.243,5.624,13.38,10.614,21.296,14.738c2.071-2.785,4.01-5.626,5.816-8.515c4.537,3.785,9.583,7.263,15.097,10.329 c1.197-3.043,2.287-6.104,3.267-9.179c4.087,2.004,8.427,3.761,12.996,5.226c0.545-3.348,0.986-6.696,1.322-10.037 c4.913-0.481,9.857-1.34,14.787-2.599"/>
-                </g>
-                <g #eyeL class="eyeL">
-                  <circle cx="85.5" cy="78.5" r="3.5" fill="#3a5e77"/>
-                  <circle cx="84" cy="76" r="1" fill="#fff"/>
-                </g>
-                <g #eyeR class="eyeR">
-                  <circle cx="114.5" cy="78.5" r="3.5" fill="#3a5e77"/>
-                  <circle cx="113" cy="76" r="1" fill="#fff"/>
-                </g>
-                <g #mouth class="mouth">
-                  <path #mouthBG class="mouthBG" fill="#617E92" d="M100.2,101c-0.4,0-1.4,0-1.8,0c-2.7-0.3-5.3-1.1-8-2.5c-0.7-0.3-0.9-1.2-0.6-1.8 c0.2-0.5,0.7-0.7,1.2-0.7c0.2,0,0.5,0.1,0.6,0.2c3,1.5,5.8,2.3,8.6,2.3s5.7-0.7,8.6-2.3c0.2-0.1,0.4-0.2,0.6-0.2 c0.5,0,1,0.3,1.2,0.7c0.4,0.7,0.1,1.5-0.6,1.9c-2.6,1.4-5.3,2.2-7.9,2.5C101.7,101,100.5,101,100.2,101z"/>
-                  <path #mouthSmallBG style="display: none;" class="mouthSmallBG" fill="#617E92" d="M100.2,101c-0.4,0-1.4,0-1.8,0c-2.7-0.3-5.3-1.1-8-2.5c-0.7-0.3-0.9-1.2-0.6-1.8 c0.2-0.5,0.7-0.7,1.2-0.7c0.2,0,0.5,0.1,0.6,0.2c3,1.5,5.8,2.3,8.6,2.3s5.7-0.7,8.6-2.3c0.2-0.1,0.4-0.2,0.6-0.2 c0.5,0,1,0.3,1.2,0.7c0.4,0.7,0.1,1.5-0.6,1.9c-2.6,1.4-5.3,2.2-7.9,2.5C101.7,101,100.5,101,100.2,101z"/>
-                  <path #mouthMediumBG style="display: none;" class="mouthMediumBG" d="M95,104.2c-4.5,0-8.2-3.7-8.2-8.2v-2c0-1.2,1-2.2,2.2-2.2h22c1.2,0,2.2,1,2.2,2.2v2 c0,4.5-3.7,8.2-8.2,8.2H95z"/>
-                  <path #mouthLargeBG style="display: none;" class="mouthLargeBG" d="M100 110.2c-9 0-16.2-7.3-16.2-16.2 0-2.3 1.9-4.2 4.2-4.2h24c2.3 0 4.2 1.9 4.2 4.2 0 9-7.2 16.2-16.2 16.2z" fill="#617e92" stroke="#3a5e77" stroke-linejoin="round" stroke-width="2.5"/>
-                  <defs>
-                    <path #mouthMaskPath id="mouthMaskPath" d="M100.2,101c-0.4,0-1.4,0-1.8,0c-2.7-0.3-5.3-1.1-8-2.5c-0.7-0.3-0.9-1.2-0.6-1.8 c0.2-0.5,0.7-0.7,1.2-0.7c0.2,0,0.5,0.1,0.6,0.2c3,1.5,5.8,2.3,8.6,2.3s5.7-0.7,8.6-2.3c0.2-0.1,0.4-0.2,0.6-0.2 c0.5,0,1,0.3,1.2,0.7c0.4,0.7,0.1,1.5-0.6,1.9c-2.6,1.4-5.3,2.2-7.9,2.5C101.7,101,100.5,101,100.2,101z"/>
-                  </defs>
-                  <clipPath id="mouthMask">
-                    <use xlink:href="#mouthMaskPath" overflow="visible"/>
-                  </clipPath>
-                  <g clip-path="url(#mouthMask)">
-                    <g #tongue class="tongue">
-                      <circle cx="100" cy="107" r="8" fill="#cc4a6c"/>
-                      <ellipse class="tongueHighlight" cx="100" cy="100.5" rx="3" ry="1.5" opacity=".1" fill="#fff"/>
-                    </g>
-                  </g>
-                  <path clip-path="url(#mouthMask)" #tooth class="tooth" style="fill:#FFFFFF;" d="M106,97h-4c-1.1,0-2-0.9-2-2v-2h8v2C108,96.1,107.1,97,106,97z"/>
-                  <path #mouthOutline class="mouthOutline" fill="none" stroke="#3A5E77" stroke-width="2.5" stroke-linejoin="round" d="M100.2,101c-0.4,0-1.4,0-1.8,0c-2.7-0.3-5.3-1.1-8-2.5c-0.7-0.3-0.9-1.2-0.6-1.8 c0.2-0.5,0.7-0.7,1.2-0.7c0.2,0,0.5,0.1,0.6,0.2c3,1.5,5.8,2.3,8.6,2.3s5.7-0.7,8.6-2.3c0.2-0.1,0.4-0.2,0.6-0.2 c0.5,0,1,0.3,1.2,0.7c0.4,0.7,0.1,1.5-0.6,1.9c-2.6,1.4-5.3,2.2-7.9,2.5C101.7,101,100.5,101,100.2,101z"/>
-                </g>
-                <path #nose class="nose" d="M97.7 79.9h4.7c1.9 0 3 2.2 1.9 3.7l-2.3 3.3c-.9 1.3-2.9 1.3-3.8 0l-2.3-3.3c-1.3-1.6-.2-3.7 1.8-3.7z" fill="#3a5e77"/>
-                <g class="arms" clip-path="url(#armMask)">
-                  <g #armL class="armL" style="visibility: hidden;">
-                    <polygon fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="121.3,98.4 111,59.7 149.8,49.3 169.8,85.4"/>
-                    <path fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M134.4,53.5l19.3-5.2c2.7-0.7,5.4,0.9,6.1,3.5v0c0.7,2.7-0.9,5.4-3.5,6.1l-10.3,2.8"/>
-                    <path fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M150.9,59.4l26-7c2.7-0.7,5.4,0.9,6.1,3.5v0c0.7,2.7-0.9,5.4-3.5,6.1l-21.3,5.7"/>
-                    
-                    <g #twoFingers class="twoFingers">      
-                      <path fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M158.3,67.8l23.1-6.2c2.7-0.7,5.4,0.9,6.1,3.5v0c0.7,2.7-0.9,5.4-3.5,6.1l-23.1,6.2"/>
-                      <path fill="#A9DDF3" d="M180.1,65l2.2-0.6c1.1-0.3,2.2,0.3,2.4,1.4v0c0.3,1.1-0.3,2.2-1.4,2.4l-2.2,0.6L180.1,65z"/>
-                      <path fill="#DDF1FA" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M160.8,77.5l19.4-5.2c2.7-0.7,5.4,0.9,6.1,3.5v0c0.7,2.7-0.9,5.4-3.5,6.1l-18.3,4.9"/>
-                      <path fill="#A9DDF3" d="M178.8,75.7l2.2-0.6c1.1-0.3,2.2,0.3,2.4,1.4v0c0.3,1.1-0.3,2.2-1.4,2.4l-2.2,0.6L178.8,75.7z"/>
-                    </g>
-                    <path fill="#A9DDF3" d="M175.5,55.9l2.2-0.6c1.1-0.3,2.2,0.3,2.4,1.4v0c0.3,1.1-0.3,2.2-1.4,2.4l-2.2,0.6L175.5,55.9z"/>
-                    <path fill="#A9DDF3" d="M152.1,50.4l2.2-0.6c1.1-0.3,2.2,0.3,2.4,1.4v0c0.3,1.1-0.3,2.2-1.4,2.4l-2.2,0.6L152.1,50.4z"/>
-                    <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M123.5,97.8 c-41.4,14.9-84.1,30.7-108.2,35.5L1.2,81c33.5-9.9,71.9-16.5,111.9-21.8"/>
-                    <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M108.5,60.4 c7.7-5.3,14.3-8.4,22.8-13.2c-2.4,5.3-4.7,10.3-6.7,15.1c4.3,0.3,8.4,0.7,12.3,1.3c-4.2,5-8.1,9.6-11.5,13.9 c3.1,1.1,6,2.4,8.7,3.8c-1.4,2.9-2.7,5.8-3.9,8.5c2.5,3.5,4.6,7.2,6.3,11c-4.9-0.8-9-0.7-16.2-2.7"/>
-                    <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M94.5,103.8 c-0.6,4-3.8,8.9-9.4,14.7c-2.6-1.8-5-3.7-7.2-5.7c-2.5,4.1-6.6,8.8-12.2,14c-1.9-2.2-3.4-4.5-4.5-6.9c-4.4,3.3-9.5,6.9-15.4,10.8 c-0.2-3.4,0.1-7.1,1.1-10.9"/>
-                    <path fill="#FFFFFF" stroke="#3A5E77" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M97.5,63.9 c-1.7-2.4-5.9-4.1-12.4-5.2c-0.9,2.2-1.8,4.3-2.5,6.5c-3.8-1.8-9.4-3.1-17-3.8c0.5,2.3,1.2,4.5,1.9,6.8c-5-0.6-11.2-0.9-18.4-1 c2,2.9,0.9,3.5,3.9,6.2"/>
-                  </g>
-                  <g #armR class="armR" style="visibility: hidden;">
-                    <path fill="#ddf1fa" stroke="#3a5e77" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2.5" d="M265.4 97.3l10.4-38.6-38.9-10.5-20 36.1z"/>
-                    <path fill="#ddf1fa" stroke="#3a5e77" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2.5" d="M252.4 52.4L233 47.2c-2.7-.7-5.4.9-6.1 3.5-.7 2.7.9 5.4 3.5 6.1l10.3 2.8M226 76.4l-19.4-5.2c-2.7-.7-5.4.9-6.1 3.5-.7 2.7.9 5.4 3.5 6.1l18.3 4.9M228.4 66.7l-23.1-6.2c-2.7-.7-5.4.9-6.1 3.5-.7 2.7.9 5.4 3.5 6.1l23.1 6.2M235.8 58.3l-26-7c-2.7-.7-5.4.9-6.1 3.5-.7 2.7.9 5.4 3.5 6.1l21.3 5.7"/>
-                    <path fill="#a9ddf3" d="M207.9 74.7l-2.2-.6c-1.1-.3-2.2.3-2.4 1.4-.3 1.1.3 2.2 1.4 2.4l2.2.6 1-3.8zM206.7 64l-2.2-.6c-1.1-.3-2.2.3-2.4 1.4-.3 1.1.3 2.2 1.4 2.4l2.2.6 1-3.8zM211.2 54.8l-2.2-.6c-1.1-.3-2.2.3-2.4 1.4-.3 1.1.3 2.2 1.4 2.4l2.2.6 1-3.8zM234.6 49.4l-2.2-.6c-1.1-.3-2.2.3-2.4 1.4-.3 1.1.3 2.2 1.4 2.4l2.2.6 1-3.8z"/>
-                    <path fill="#fff" stroke="#3a5e77" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M263.3 96.7c41.4 14.9 84.1 30.7 108.2 35.5l14-52.3C352 70 313.6 63.5 273.6 58.1"/>
-                    <path fill="#fff" stroke="#3a5e77" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M278.2 59.3l-18.6-10 2.5 11.9-10.7 6.5 9.9 8.7-13.9 6.4 9.1 5.9-13.2 9.2 23.1-.9M284.5 100.1c-.4 4 1.8 8.9 6.7 14.8 3.5-1.8 6.7-3.6 9.7-5.5 1.8 4.2 5.1 8.9 10.1 14.1 2.7-2.1 5.1-4.4 7.1-6.8 4.1 3.4 9 7 14.7 11 1.2-3.4 1.8-7 1.7-10.9M314 66.7s5.4-5.7 12.6-7.4c1.7 2.9 3.3 5.7 4.9 8.6 3.8-2.5 9.8-4.4 18.2-5.7.1 3.1.1 6.1 0 9.2 5.5-1 12.5-1.6 20.8-1.9-1.4 3.9-2.5 8.4-2.5 8.4"/>
-                  </g>        
-                </g>
-              </svg>
-            </div>
-          </div>
+    </div>
+
+    <!-- Right Section: Login Form -->
+    <div class="flex-[1.2] p-8 md:p-16 flex flex-col justify-center">
+      <div class="max-w-md mx-auto w-full">
+        <div class="mb-10">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Connexion </h2>
+          <p class="text-gray-600 dark:text-slate-400">Entrez vos identifiants pour accéder à votre compte</p>
         </div>
 
-      <!-- Error Banner -->
-<div class="error-banner" *ngIf="error" 
-     [class]="error.includes('WARNING') ? 'warning-banner' : 'error-banner'">
-  <span *ngIf="error.includes('WARNING')"></span>
-  <span>{{ error }}</span>
-</div>
+        <!-- Error Message -->
+        <div *ngIf="error" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-700 dark:text-red-400 text-sm flex items-start gap-3 animate-slideDown">
+          <span class="material-icons text-red-500 dark:text-red-400 text-xl">error_outline</span>
+          <span>{{ error }}</span>
+        </div>
 
-        <!-- Login Form -->
-        <form 
-          [formGroup]="loginForm" 
-          (ngSubmit)="onSubmit()" 
-          class="login-form"
-          [class.password-visible]="passwordVisible"
-          [class.avatar-peeking]="passwordVisible" 
-        >
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl text-green-700 dark:text-green-400 text-sm flex items-start gap-3 animate-slideDown">
+          <span class="material-icons text-green-500 dark:text-green-400 text-xl">check_circle</span>
+          <span>{{ successMessage }}</span>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
           <!-- Email Input -->
-          <div class="form-group">
-            <input 
-              #loginEmail 
-              type="email" 
-              class="form-input email-input"
-              placeholder=" "
-              maxlength="254" 
-              (focus)="onEmailFocus($event)"
-              (blur)="onEmailBlur($event)"
-              (input)="onEmailInput($event)"
-              formControlName="usernameOrEmail"
-            />
-            <label class="form-label">Adresse e-mail ou Nom d’utilisateur
-</label>
+          <div class="space-y-2">
+            <label for="email" class="text-sm font-semibold text-gray-700 dark:text-slate-300 ml-1">Adresse Email</label>
+            <div class="relative group">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#7EC8E0] transition-colors">
+                <span class="material-icons text-xl">mail_outline</span>
+              </div>
+              <input #loginEmail id="email" type="email" formControlName="usernameOrEmail"
+                (focus)="onEmailFocus()" (blur)="onEmailBlur()" (input)="onEmailInput()"
+                class="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#7EC8E0]/20 focus:border-[#7EC8E0] transition-all"
+                placeholder="name@example.com"
+                [class.border-red-300]="submitted && f['usernameOrEmail'].errors">
+              <div *ngIf="submitted && f['usernameOrEmail'].errors" class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                <span class="material-icons text-red-500 text-xl">error</span>
+              </div>
+            </div>
+            <div *ngIf="submitted && f['usernameOrEmail'].errors" class="text-red-500 text-xs mt-1 ml-1">
+              <div *ngIf="f['usernameOrEmail'].errors['required']">Adresse Email requise</div>
+            </div>
           </div>
 
           <!-- Password Input -->
-          <div class="form-group password-group">
-            <input 
-              #loginPassword 
-              [type]="passwordVisible ? 'text' : 'password'" 
-              class="form-input password-input"
-              placeholder=" "
-              (focus)="onPasswordFocus()"
-              (blur)="onPasswordBlur()"
-              (input)="onPasswordInput($event)"
-              formControlName="password"
-            />
-            <label class="form-label">Mot de passe</label>
-            
-            <!-- Password Toggle -->
-            <button 
-              type="button"
-              class="eye-toggle-btn"
-              [class.active]="isEyeActive"
-              (mousedown)="onPasswordToggleMouseDown()"
-              (mouseup)="onPasswordToggleMouseUp()"
-              (mouseenter)="isEyeActive = true"
-              (mouseleave)="isEyeActive = passwordVisible"
-              (click)="onPasswordToggleClick($event)"
-            >
-              <span class="eye-toggle-icon">
-                <i [class]="passwordVisible ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
-              </span>
-              
-            </button>
-          </div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between ml-1">
+              <label for="password" class="text-sm font-semibold text-gray-700 dark:text-slate-300">Mot de passe</label>
+              <a href="/forget-password" class="text-xs font-semibold text-[#7EC8E0] hover:text-[#4A8AA5] transition-colors">Mot de passe oublié ?</a>
+            </div>
+            <div class="relative group">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#7EC8E0] transition-colors">
+                <span class="material-icons text-xl">lock_outline</span>
+              </div>
+              <input #loginPassword id="password" [type]="passwordVisible ? 'text' : 'password'" formControlName="password"
+                (focus)="onPasswordFocus()" (blur)="onPasswordBlur()" (input)="onPasswordInput()"
+                class="w-full pl-12 pr-12 py-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#7EC8E0]/20 focus:border-[#7EC8E0] transition-all"
+                placeholder="••••••••"
+                [class.border-red-300]="submitted && f['password'].errors">
+              <button type="button" (click)="onPasswordToggleClick($event)" (mousedown)="onPasswordToggleMouseDown()" (mouseup)="onPasswordToggleMouseUp()"
+                class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-[#7EC8E0] transition-colors">
+                <span class="material-icons text-xl">{{ passwordVisible ? 'visibility' : 'visibility_off' }}</span>
+              </button>
+            </div>
+            <div *ngIf="submitted && f['password'].errors" class="text-red-500 text-xs mt-1 ml-1">
+              <div *ngIf="f['password'].errors['required']">Mot de passe requis</div>
+            </div>
+          </div>       
+          
+          
+
 
           <!-- Submit Button -->
-          <button 
-            type="submit" 
-            class="login-submit-btn"
-            [disabled]="loading"
-          >
-            <span *ngIf="!loading">Connexion</span>
-            <span *ngIf="loading">Connexion en cours...</span>
+          <button type="submit" [disabled]="loading || loginForm.invalid"
+            class="w-full py-4 bg-[#7EC8E0] hover:bg-[#4A8AA5] dark:bg-[#4A8AA5] dark:hover:bg-[#2D5A70] disabled:bg-gray-300 dark:disabled:bg-slate-700 text-white font-bold rounded-2xl shadow-lg shadow-[#7EC8E0]/30 hover:shadow-[#7EC8E0]/40 dark:shadow-[#4A8AA5]/30 dark:hover:shadow-[#4A8AA5]/40 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:cursor-not-allowed">
+            <span *ngIf="!loading" class="flex items-center gap-2">
+              <span class="material-icons text-xl">login</span>
+              Connexion
+            </span>
+            <span *ngIf="loading" class="flex items-center gap-2">
+              <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              Connexion en cours...
+            </span>
           </button>
-
-          <!-- Forgot Password Link -->
-          <div class="forgot-password-link">
-            <button type="button" class="forgot-password" (click)="forgotPassword()">
-Mot de passe oublié ?            </button>
-          </div>
         </form>
+
+       
       </div>
     </div>
   </div>

@@ -34,6 +34,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.back.service.RecaptchaService;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,10 +75,40 @@ public class AuthController {
     @Autowired
     private HistoryService historyService;
 
+    @Autowired
+    private RecaptchaService recaptchaService;
+
+
     private static final int MAX_FAILED_ATTEMPTS = 3;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+
+      /*  String recaptchaToken = loginRequest.getRecaptchaToken();
+
+        // Check if token exists
+        if (recaptchaToken == null || recaptchaToken.isEmpty()) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "reCAPTCHA token is required");
+            response.put("error", "RecaptchaRequired");
+            return ResponseEntity.status(400).body(response);
+        }
+
+        // Verify token with Google
+        boolean isRecaptchaValid = recaptchaService.verifyRecaptcha(recaptchaToken);
+
+        if (!isRecaptchaValid) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "reCAPTCHA verification failed");
+            response.put("error", "RecaptchaFailed");
+            return ResponseEntity.status(400).body(response);
+        }
+
+
+       */
+
         try {
             // Check if account is already locked
             User existingUser = userRepository.findByUsernameOrEmail(loginRequest.getUsernameOrEmail()).orElse(null);

@@ -1,19 +1,20 @@
-// src/app/services/stats.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+// src/app/services/stats.service.ts - Update DashboardStats interface
+
 export interface DashboardStats {
   success: boolean;
-  userRole?: string; // Add user role from backend
+  userRole?: string;
   data: {
     // Convention stats
     totalConventions: number;
     activeConventions: number;
-    terminatedConventions: number; // Changed from expiredConventions
-    lateConventions: number; // New field
-    noStatusConventions: number; // New field
+    planifiedConventions: number;
+    terminatedConventions: number;
+    archivedConventions: number;
     conventionCompletionRate: number;
     
     // Invoice stats
@@ -22,58 +23,96 @@ export interface DashboardStats {
     unpaidFactures: number;
     overdueFactures: number;
     paymentRate: number;
-    totalPaidAmount: number; // New field
-    totalUnpaidAmount: number; // New field
+    totalPaidAmount: number;
+    totalUnpaidAmount: number;
     
-    // User stats (only for admin)
-    totalUsers?: number; // Optional now
+    // Application stats
+    totalApplications: number;
+    activeApplications: number;
+    plannedApplications: number;
+    completedApplications: number;
+    averageProgress: number;
+    applicationCompletionRate: number;
+    
+    // User stats
+    totalUsers?: number;
     activeUsers?: number;
-    lockedUsers?: number;
     chefDeProjetCount?: number;
     commercialMetierCount?: number;
     decideurCount?: number;
+    adminCount?: number;
     
-    // Nomenclature stats (only for admin)
+    // Nomenclature stats
+    structuresResponsable?: number;
+    structuresBeneficiaire?: number;
     totalStructures?: number;
+    tunisianZones?: number;
+    customZones?: number;
     totalZones?: number;
-    totalApplications?: number;
     
     // Financial stats
     totalRevenue: number;
-    pendingRevenue: number; // Changed from pendingPayments
+    pendingRevenue: number;
     totalContractValue: number;
-    totalProjectBudget: number;
-    
-    // Project stats
-    totalProjects: number;
-    activeProjects: number;
-    plannedProjects: number;
-    completedProjects: number;
-    delayedProjects: number;
-    averageProgress: number;
-    projectCompletionRate: number;
-    
-    
     
     // Recent activity
     recentActivity?: {
+      recentApplications: any[];
       recentConventions: any[];
-      recentInvoices: any[];
-      recentProjects: any[];
+      recentFactures: any[];
     };
     
     // Monthly trends
     monthlyTrends?: {
+      applicationTrends: { [key: string]: number };
       conventionTrends: { [key: string]: number };
       revenueTrends: { [key: string]: number };
-     
+    };
+  };
+}
+
+export interface UserDetailedStats {
+  success: boolean;
+  data: {
+    roleDistribution: { [key: string]: number };
+    userActivity: {
+      total: number;
+      active: number;
+      locked: number;
+      inactive: number;
+    };
+    usersByRole: {
+      chefDeProjet: number;
+      commercialMetier: number;
+      decideur: number;
+      admin: number;
+    };
+  };
+}
+
+export interface NomenclatureDetailedStats {
+  success: boolean;
+  userRole?: string;
+  data: {
+    structuresByType: { [key: string]: number };
+    structuresResponsable: number;
+    structuresBeneficiaire: number;
+    zonesByType: { [key: string]: number };
+    tunisianZones: number;
+    customZones: number;
+    nomenclatureCounts: {
+      applications: number;
+      zones: number;
+      structures: number;
+      structuresResponsable: number;
+      structuresBeneficiaire: number;
     };
   };
 }
 
 export interface ConventionDetailedStats {
   success: boolean;
-  userRole?: string; // Add user role
+  userRole?: string;
   data: {
     statusDistribution: Array<{ name: string; count: number }>;
     monthlyConventions: { [key: string]: number };
@@ -84,7 +123,7 @@ export interface ConventionDetailedStats {
 
 export interface FactureDetailedStats {
   success: boolean;
-  userRole?: string; // Add user role
+  userRole?: string;
   data: {
     paymentStatus: Array<{ status: string; count: number; amount: number }>;
     monthlyAmounts: { [key: string]: { total: number; paid: number } };
@@ -95,33 +134,33 @@ export interface FactureDetailedStats {
       dateEcheance: string;
       joursRetard: number;
     }>;
-    topConventionAmounts: Array<{ // NEW FIELD
+    topConventionAmounts: Array<{
       convention: string;
       totalAmount: number;
+      etat: string;
     }>;
-    
   };
 }
 
-export interface UserDetailedStats {
+export interface ApplicationDetailedStats {
   success: boolean;
+  userRole?: string;
   data: {
-    roleDistribution: { [key: string]: number };
-    userActivity: { [key: string]: number };
-  };
-}
-
-export interface NomenclatureDetailedStats {
-  success: boolean;
-  data: {
-    structuresByType: { [key: string]: number };
-    nomenclatureCounts: { [key: string]: number };
+    statusDistribution: Array<{ name: string; count: number }>;
+    monthlyApplications: { [key: string]: number };
+    applicationsByChef: Array<{ chef: string; count: number }>;
+    unassignedApplications: number;
+    progressStats: {
+      averageProgress: number;
+      onTrackApplications: number;
+      delayedApplications: number;
+    };
   };
 }
 
 export interface FinancialDetailedStats {
   success: boolean;
-  userRole?: string; // Add user role
+  userRole?: string;
   data: {
     totalRevenue: number;
     pendingPayments: number;
@@ -131,7 +170,7 @@ export interface FinancialDetailedStats {
     topEarningConventions: Array<{
       reference: string;
       libelle: string;
-      structureInterne: string; // Changed from structure
+      structure: string;
       montantTotal: number;
       etat: string;
     }>;
@@ -139,62 +178,37 @@ export interface FinancialDetailedStats {
   };
 }
 
-export interface ProjectDetailedStats {
-  success: boolean;
-  userRole?: string; // Add user role
-  data: {
-    statusDistribution: Array<{ name: string; count: number }>;
-    monthlyProjects: { [key: string]: number };
-    projectsByApplication: { [key: string]: number };
-    unassignedProjects: number;
-    topApplications: Array<{ application: string; count: number }>;
-    budgetStats: {
-      totalBudget: number;
-      averageBudget: number;
-      
-    };
-    progressStats: {
-      averageProgress: number;
-      onTrackProjects: number;
-      delayedProjects: number;
-    };
-    
-  };
-}
+
+
+
 
 export interface SummaryStats {
   success: boolean;
-  userRole?: string; // Add user role
+  userRole?: string;
   data: {
     totalConventions: number;
     totalFactures: number;
-    totalProjects: number;
+    totalApplications: number;
     conventionsToday: number;
     facturesToday: number;
     dueToday: number;
-    overdueToday: number; // New field
-    todayRevenue: number; // New field
-  
+    overdueToday: number;
+    todayRevenue: number;
   };
 }
 
-
 export interface OverdueAlert {
-  success: boolean;
-  userRole?: string;
-  data: Array<{
-    type: string;
-    message: string;
-    convention?: string;
-    project?: string;
-    amount?: number;
-    dueDate?: string;
-    priority: string;
-    code?: string;
-    progress?: number;
-    endDate?: string;
-  }>;
-  count: number;
+  type: string;
+  message: string;
+  convention?: string;
+  project?: string;
+  application?: string;
+  code?: string;
+  amount?: number;
+  dueDate?: string;
+  endDate?: string;
+  progress?: number;
+  priority: string;
 }
 
 export interface OverdueAlertsResponse {
@@ -232,6 +246,14 @@ export class StatsService {
     return this.http.get<FactureDetailedStats>(`${this.apiUrl}/api/stats/factures/detailed`);
   }
 
+  getApplicationDetailedStats(): Observable<ApplicationDetailedStats> {
+    return this.http.get<ApplicationDetailedStats>(`${this.apiUrl}/api/stats/applications/detailed`);
+  }
+
+  getFinancialDetailedStats(): Observable<FinancialDetailedStats> {
+    return this.http.get<FinancialDetailedStats>(`${this.apiUrl}/api/stats/financial/detailed`);
+  }
+
   getUserDetailedStats(): Observable<UserDetailedStats> {
     return this.http.get<UserDetailedStats>(`${this.apiUrl}/api/stats/users/detailed`);
   }
@@ -240,72 +262,14 @@ export class StatsService {
     return this.http.get<NomenclatureDetailedStats>(`${this.apiUrl}/api/stats/nomenclatures/detailed`);
   }
 
-  getFinancialDetailedStats(): Observable<FinancialDetailedStats> {
-    return this.http.get<FinancialDetailedStats>(`${this.apiUrl}/api/stats/financial/detailed`);
-  }
-
-  getProjectDetailedStats(): Observable<ProjectDetailedStats> {
-    return this.http.get<ProjectDetailedStats>(`${this.apiUrl}/api/stats/projects/detailed`);
-  }
-
-  // ==================== NEW ENDPOINTS ====================
+  // ==================== ALERTS ====================
 
   getOverdueAlerts(): Observable<OverdueAlertsResponse> {
     return this.http.get<OverdueAlertsResponse>(`${this.apiUrl}/api/stats/overdue/alert`);
   }
 
-  // ==================== QUICK ACCESS METHODS ====================
+  // ==================== ROLE-BASED STATS LOADING ====================
 
-  getCommercialStats() {
-    return Promise.all([
-      this.getConventionDetailedStats().toPromise(),
-      this.getFactureDetailedStats().toPromise(),
-      this.getFinancialDetailedStats().toPromise(),
-      this.getProjectDetailedStats().toPromise(),
-      this.getSummaryStats().toPromise(),
-      this.getOverdueAlerts().toPromise()
-    ]);
-  }
-
-  getChefProjetStats() {
-    return Promise.all([
-      this.getDashboardStats().toPromise(),
-      this.getConventionDetailedStats().toPromise(),
-      this.getFactureDetailedStats().toPromise(),
-      this.getProjectDetailedStats().toPromise(),
-      this.getFinancialDetailedStats().toPromise(),
-      this.getSummaryStats().toPromise(),
-      this.getOverdueAlerts().toPromise()
-    ]);
-  }
-
-  getAdminStats() {
-    return Promise.all([
-      this.getDashboardStats().toPromise(),
-      this.getConventionDetailedStats().toPromise(),
-      this.getFactureDetailedStats().toPromise(),
-      this.getUserDetailedStats().toPromise(),
-      this.getNomenclatureDetailedStats().toPromise(),
-      this.getFinancialDetailedStats().toPromise(),
-      this.getProjectDetailedStats().toPromise(),
-      this.getSummaryStats().toPromise(),
-      this.getOverdueAlerts().toPromise()
-    ]);
-  }
-
-  getDecideurStats() {
-    return Promise.all([
-      this.getDashboardStats().toPromise(),
-      this.getConventionDetailedStats().toPromise(),
-      this.getFactureDetailedStats().toPromise(),
-      this.getFinancialDetailedStats().toPromise(),
-      this.getProjectDetailedStats().toPromise(),
-      this.getSummaryStats().toPromise(),
-      this.getOverdueAlerts().toPromise()
-    ]);
-  }
-
-  // Helper method to get stats based on user role
   getStatsByUserRole(userRole: string): Promise<any[]> {
     switch (userRole) {
       case 'ADMIN':
@@ -321,7 +285,51 @@ export class StatsService {
     }
   }
 
+  public getCommercialStats() {
+    return Promise.all([
+      this.getDashboardStats().toPromise(),
+      this.getConventionDetailedStats().toPromise(),
+      this.getFactureDetailedStats().toPromise(),
+      this.getFinancialDetailedStats().toPromise(),
+      this.getSummaryStats().toPromise(),
+      this.getOverdueAlerts().toPromise()
+    ]);
+  }
 
+  public getChefProjetStats() {
+    return Promise.all([
+      this.getDashboardStats().toPromise(),
+      this.getConventionDetailedStats().toPromise(),
+      this.getFactureDetailedStats().toPromise(),
+      this.getApplicationDetailedStats().toPromise(),
+      this.getFinancialDetailedStats().toPromise(),
+      this.getSummaryStats().toPromise(),
+      this.getOverdueAlerts().toPromise()
+    ]);
+  }
 
-  
+  public getDecideurStats() {
+    return Promise.all([
+      this.getDashboardStats().toPromise(),
+      this.getConventionDetailedStats().toPromise(),
+      this.getFactureDetailedStats().toPromise(),
+      this.getApplicationDetailedStats().toPromise(),
+      this.getFinancialDetailedStats().toPromise(),
+      this.getSummaryStats().toPromise(),
+      this.getOverdueAlerts().toPromise()
+    ]);
+  }
+
+  public getAdminStats() {
+    return Promise.all([
+     this.getDashboardStats().toPromise(),           // index 0
+    this.getConventionDetailedStats().toPromise(),  // index 1
+    this.getFactureDetailedStats().toPromise(),     // index 2
+    this.getUserDetailedStats().toPromise(),        // index 3
+    this.getNomenclatureDetailedStats().toPromise(),// index 4
+    this.getFinancialDetailedStats().toPromise(),   // index 5
+    this.getSummaryStats().toPromise(),             // index 6
+    this.getApplicationDetailedStats().toPromise()  // index 7
+    ]);
+  }
 }

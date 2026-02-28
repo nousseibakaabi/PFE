@@ -1,217 +1,231 @@
-
-  <div class="p-4 mx-auto max-w-screen-2xl md:p-6">
-
-<div class="chef-projet-dashboard">
+<div class="p-4 mx-auto max-w-screen-2xl md:p-6">
   <!-- Header -->
-  <div class="dashboard-header mb-6">
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
-      <svg class="w-8 h-8 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-      Tableau de Bord Chef de Projet
-    </h1>
-    <button (click)="refreshData()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
-      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-      </svg>
-      Actualiser
-    </button>
+  <div class="mb-6 bg-gradient-to-r from-blue-700 to-blue-900 rounded-2xl shadow-lg p-5">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-white">Tableau de Bord Chef de Projet</h1>
+          <p class="text-blue-200 text-sm mt-1">Gérez vos applications et conventions</p>
+        </div>
+      </div>
+      <button (click)="refreshData()" 
+              class="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-medium transition-all duration-200 backdrop-blur-lg border border-white/20 flex items-center group">
+        <svg class="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Actualiser
+      </button>
+    </div>
   </div>
 
-  <!-- Add this at the top of your template, after the header -->
-<div *ngIf="successMessage" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-  <div class="flex items-center">
-    <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-    </svg>
-    <span class="text-green-700">{{ successMessage }}</span>
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+      </svg>
+      <span class="text-green-700">{{ successMessage }}</span>
+    </div>
   </div>
-</div>
 
-<div *ngIf="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-  <div class="flex items-center">
-    <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-    </svg>
-    <span class="text-red-700">{{ errorMessage }}</span>
+  <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+      </svg>
+      <span class="text-red-700">{{ errorMessage }}</span>
+    </div>
   </div>
-</div>
 
   <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-8">
-    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    <p class="mt-2 text-gray-600 dark:text-gray-400">Chargement de vos données...</p>
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+    <p class="mt-4 text-gray-600 dark:text-gray-400">Chargement de vos données...</p>
   </div>
 
   <div *ngIf="!loading">
-    <!-- Quick Stats -->
-    <div class="stats-summary grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <!-- My Projects -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <div class="flex items-center">
-          <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900 mr-4">
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <!-- Mes Applications -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-5 border border-gray-100 dark:border-gray-700/30">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Mes Applications</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ myProjects.length }}</p>
+          </div>
+          <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
             <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Mes Applications</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ myProjects.length }}</p>
-          </div>
         </div>
-        <div class="mt-4 grid grid-cols-3 gap-1 text-xs">
-          <div class="text-center">
-            <span class="text-blue-600 font-semibold">{{ getProjectStatusSummary().EN_COURS }}</span>
-            <div class="text-gray-500">En Cours</div>
+        <div class="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2">
+            <span class="text-blue-600 dark:text-blue-400 font-semibold">{{ getProjectStatusSummary().EN_COURS || 0 }}</span>
+            <div class="text-gray-500 dark:text-gray-400">En Cours</div>
           </div>
-          <div class="text-center">
-            <span class="text-yellow-600 font-semibold">{{ getProjectStatusSummary().PLANIFIE }}</span>
-            <div class="text-gray-500">Planifiés</div>
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2">
+            <span class="text-yellow-600 dark:text-yellow-400 font-semibold">{{ getProjectStatusSummary().PLANIFIE || 0 }}</span>
+            <div class="text-gray-500 dark:text-gray-400">Planifiés</div>
           </div>
-          <div class="text-center">
-            <span class="text-green-600 font-semibold">{{ getProjectStatusSummary().TERMINE }}</span>
-            <div class="text-gray-500">Terminés</div>
+          <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
+            <span class="text-green-600 dark:text-green-400 font-semibold">{{ getProjectStatusSummary().TERMINE || 0 }}</span>
+            <div class="text-gray-500 dark:text-gray-400">Terminés</div>
           </div>
         </div>
       </div>
 
-      <!-- My Conventions -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <div class="flex items-center">
-          <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900 mr-4">
+      <!-- Mes Conventions -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-5 border border-gray-100 dark:border-gray-700/30">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Mes Conventions</p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ myConventions.length }}</p>
+          </div>
+          <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
             <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
+        </div>
+        <div class="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2">
+            <span class="text-blue-600 dark:text-blue-400 font-semibold">{{ getConventionStatusSummary()['EN COURS'] || 0 }}</span>
+            <div class="text-gray-500 dark:text-gray-400">En Cours</div>
+          </div>
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2">
+            <span class="text-yellow-600 dark:text-yellow-400 font-semibold">{{ getConventionStatusSummary().PLANIFIE || 0 }}</span>
+            <div class="text-gray-500 dark:text-gray-400">Planifiés</div>
+          </div>
+          <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
+            <span class="text-green-600 dark:text-green-400 font-semibold">{{ getConventionStatusSummary().TERMINE || 0 }}</span>
+            <div class="text-gray-500 dark:text-gray-400">Terminées</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charge de Travail -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-5 border border-gray-100 dark:border-gray-700/30">
+        <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Mes Conventions</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ myConventions.length }}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Charge de Travail</p>
+            <p class="text-2xl font-bold" [style.color]="getWorkloadColor()">{{ myWorkload?.currentWorkload?.toFixed(1) || 0 }}%</p>
+          </div>
+          <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
           </div>
         </div>
-        <div class="mt-4 grid grid-cols-3 gap-1 text-xs">
-          <div class="text-center">
-              <span class="text-blue-600 font-semibold">{{ getConventionStatusSummary()['EN COURS'] }}</span>
-            <div class="text-gray-500">En Cours</div>
+        <div class="mt-4">
+          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div class="h-2 rounded-full transition-all duration-500"
+                 [ngClass]="getWorkloadBarClass()"
+                 [style.width.%]="myWorkload?.currentWorkload || 0">
+            </div>
           </div>
-          <div class="text-center">
-            <span class="text-yellow-600 font-semibold">{{ getConventionStatusSummary().PLANIFIE }}</span>
-            <div class="text-gray-500">Planifiés</div>
-          </div>
-          <div class="text-center">
-            <span class="text-green-600 font-semibold">{{ getConventionStatusSummary().TERMINE }}</span>
-            <div class="text-gray-500">Terminées</div>
+          <div class="mt-3 flex justify-between text-xs">
+            <span class="text-gray-500 dark:text-gray-400">{{ myWorkload?.currentApps || 0 }} applications</span>
+            <span class="font-medium" [style.color]="getWorkloadColor()">{{ getWorkloadStatus() }}</span>
           </div>
         </div>
       </div>
-
-
-     
-
-      <!-- Mes Requests -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-  <div class="flex items-center">
-    <div class="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-900 mr-4">
-      <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-      </svg>
-    </div>
-    <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Mes Requests</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-white">3</p>
-          </div>
-  </div>
-  
-
-   <div class="mt-4 grid grid-cols-3 gap-1 text-xs">
-          <div class="text-center">
-            <span class="text-blue-600 font-semibold">1</span>
-            <div class="text-gray-500">Pending</div>
-          </div>
-          <div class="text-center">
-            <span class="text-red-600 font-semibold">1</span>
-            <div class="text-gray-500">Denied</div>
-          </div>
-          <div class="text-center">
-            <span class="text-green-600 font-semibold">1</span>
-            <div class="text-gray-500">Approved</div>
-          </div>
-        </div>
-</div>
-
-
-
     </div>
 
-
-    </div>
-
-    <!-- Recent Conventions -->
+    <!-- Workload Details Card -->
     <div class="mb-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Conventions Récentes</h2>
-        <span class="text-sm text-gray-500 dark:text-gray-400">{{ myConventions.length }} convention(s)</span>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl shadow-lg p-5 text-white">
+        <h3 class="text-lg font-semibold mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Détails de la Charge
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div class="bg-white/10 rounded-lg p-4">
+            <p class="text-purple-200 text-xs mb-1">Applications</p>
+            <p class="text-2xl font-bold">{{ myWorkload?.currentApps || 0 }}</p>
+          </div>
+          <div class="bg-white/10 rounded-lg p-4">
+            <p class="text-purple-200 text-xs mb-1">Valeur Totale</p>
+            <p class="text-2xl font-bold">{{ formatCurrency(myWorkload?.totalValue || 0) }}</p>
+          </div>
+          <div class="bg-white/10 rounded-lg p-4">
+            <p class="text-purple-200 text-xs mb-1">Durée Totale</p>
+            <p class="text-2xl font-bold">{{ myWorkload?.totalDuration || 0 }} j</p>
+          </div>
+        </div>
+        <div *ngIf="myWorkload && myWorkload.currentWorkload >= 75" class="mt-4 p-3 bg-red-500/30 rounded-lg flex items-center">
+          <svg class="w-5 h-5 mr-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          <span class="text-sm text-white">Charge critique! Veuillez discuter avec l'administrateur.</span>
+        </div>
+        <div *ngIf="myWorkload && myWorkload.currentWorkload < 75" class="mt-4 p-3 bg-green-500/30 rounded-lg flex items-center">
+          <svg class="w-5 h-5 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="text-sm text-white">Vous pouvez accepter de nouveaux projets</span>
+        </div>
       </div>
+    </div>
 
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+
+    <!-- Recent Conventions Section -->
+    <div class="mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700/30 overflow-hidden">
+        <div class="p-5 border-b border-gray-100 dark:border-gray-700/30">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
+            <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Conventions Récentes
+          </h3>
+        </div>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-700">
+          <table class="min-w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700/30">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Référence
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Application
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Dates
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Factures
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Statut
-                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Référence</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Application</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Structure</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dates</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Factures</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Statut</th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr *ngFor="let conv of myConventions.slice(0, 9)" class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td class="px-6 py-4">
-                  <div class="font-medium text-gray-900 dark:text-white">{{ conv.referenceConvention }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ conv.libelle }}</div>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="text-gray-900 dark:text-white">{{ conv.applicationName }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ conv.structureBeneficielName}}</div>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700/30">
+              <tr *ngFor="let conv of myConventions.slice(0, 10)" class="hover:bg-gray-50 dark:hover:bg-gray-700/20">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ conv.referenceConvention }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ conv.applicationName || conv.application?.name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ conv.structureBeneficielName || conv.structureBeneficiel?.name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  {{ conv.dateDebut | date:'dd/MM/yyyy' }} - {{ conv.dateFin | date:'dd/MM/yyyy' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900 dark:text-white">
-                    Début: {{ conv.dateDebut | date:'dd/MM/yyyy' }}
-                  </div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">
-                    Fin: {{ conv.dateFin | date:'dd/MM/yyyy' }}
-                  </div>
-                </td>
-                <td class="px-6 py-4">
                   <div class="flex space-x-2">
-                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                      {{ conv.facturesPayees }} payées
+                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                      {{ conv.facturesPayees || 0 }} payées
                     </span>
-                    <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                      {{ conv.facturesNonPayees }} impayées
+                    <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                      {{ conv.facturesNonPayees || 0 }} impayées
                     </span>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusClass(conv.etat)">
- {{ getStatusLabel(conv?.etat ) }}
+                  <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="getConventionStatusClass(conv.etat)">
+                    {{ getConventionStatusLabel(conv.etat) }}
                   </span>
                 </td>
               </tr>
               <tr *ngIf="myConventions.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                  Aucune convention trouvée pour vos projets
+                <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  Aucune convention trouvée
                 </td>
               </tr>
             </tbody>
@@ -220,112 +234,36 @@
       </div>
     </div>
 
-
-
-    <!-- WORKLOAD CARD - Add after the stats summary section -->
-<div class="mb-6">
-  <div *ngIf="myWorkload" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
-        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-        Charge de Travail
-      </h3>
-      <span class="px-3 py-1 text-xs font-medium rounded-full" 
-            [ngClass]="{
-              'bg-red-100 text-red-800': myWorkload.currentWorkload > 75,
-              'bg-orange-100 text-orange-800': myWorkload.currentWorkload >= 45 && myWorkload.currentWorkload <= 75,
-              'bg-green-100 text-green-800': myWorkload.currentWorkload < 45
-            }">
-        {{ getWorkloadStatus() }}
-      </span>
-    </div>
-    
-    <!-- Workload Progress Bar -->
-    <div class="mb-4">
-      <div class="flex justify-between text-sm mb-1">
-        <span class="text-gray-600 dark:text-gray-400">Charge actuelle</span>
-        <span class="font-semibold" [style.color]="getWorkloadColor()">
-          {{ myWorkload.currentWorkload.toFixed(1) }}%
-        </span>
-      </div>
-      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-        <div class="h-3 rounded-full transition-all duration-500 ease-out"
-             [ngClass]="getWorkloadBarClass()"
-             [style.width.%]="myWorkload.currentWorkload"
-             [style.background]="getWorkloadColor()">
+    <!-- Overdue Alerts -->
+    <div *ngIf="overdueAlerts.length > 0" class="mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-200 dark:border-red-800/30 overflow-hidden">
+        <div class="p-5 border-b border-red-200 dark:border-red-800/30 bg-red-50 dark:bg-red-900/10">
+          <h3 class="text-lg font-semibold text-red-800 dark:text-red-300 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Alertes
+          </h3>
+        </div>
+        <div class="p-5">
+          <div class="space-y-3">
+            <div *ngFor="let alert of overdueAlerts" class="flex items-center p-3 bg-red-50 dark:bg-red-900/10 rounded-lg">
+              <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg mr-3">
+                <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-800 dark:text-white">{{ alert.message }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ alert.type === 'INVOICE_OVERDUE' ? 'Facture' : 'Application' }} • 
+                  Priorité: {{ alert.priority }}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    
-    <!-- Workload Details Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-      <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <div class="text-2xl font-bold text-gray-800 dark:text-white">
-          {{ myWorkload.currentApps }}
-        </div>
-        <div class="text-xs text-gray-500 dark:text-gray-400">Applications</div>
-      </div>
-      
-      <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <div class="text-2xl font-bold text-gray-800 dark:text-white">
-          {{ (myWorkload.totalValue / 1000).toFixed(0) }}k
-        </div>
-        <div class="text-xs text-gray-500 dark:text-gray-400">Valeur (TND)</div>
-      </div>
-      
-      <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <div class="text-2xl font-bold text-gray-800 dark:text-white">
-          {{ Math.floor(myWorkload.totalDuration / 30) }}
-        </div>
-        <div class="text-xs text-gray-500 dark:text-gray-400">Mois total</div>
-      </div>
-    </div>
-    
-    <!-- Detailed metrics -->
-    <div class="mt-4 space-y-2 text-sm">
-      <div class="flex justify-between">
-        <span class="text-gray-600 dark:text-gray-400">Valeur totale:</span>
-        <span class="font-medium text-gray-800 dark:text-white">{{ myWorkload.totalValue.toFixed(2) }} TND</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-600 dark:text-gray-400">Durée totale:</span>
-        <span class="font-medium text-gray-800 dark:text-white">{{ myWorkload.totalDuration }} jours</span>
-      </div>
-      
-    </div>
-    
-    <!-- Warning if overloaded -->
-    <div *ngIf="myWorkload.currentWorkload >= 75" 
-         class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-      <div class="flex items-center">
-        <svg class="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-        </svg>
-        <span class="text-sm text-red-700 dark:text-red-300">
-          Charge de travail critique! Veuillez discuter avec l'administrateur.
-        </span>
-      </div>
-    </div>
-    
-    <!-- Capacity info -->
-    <div *ngIf="myWorkload.currentWorkload < 75" class="mt-4 flex items-center text-sm text-green-600 dark:text-green-400">
-      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <span>Vous pouvez accepter de nouveaux projets</span>
-    </div>
-  </div>
-  
-  <!-- Loading state -->
-  <div *ngIf="workloadLoading" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center">
-    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-    <p class="mt-2 text-gray-600 dark:text-gray-400">Calcul de la charge de travail...</p>
   </div>
 </div>
-
-   
-  </div>
-</div>
-

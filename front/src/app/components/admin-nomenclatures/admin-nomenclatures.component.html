@@ -2,10 +2,10 @@
   <!-- Header -->
   <div class="mb-8">
     <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">
-      {{ 'Nomenclatures Management' | translate }}
+      {{ 'Gestion des nomenclatures' | translate }}
     </h1>
     <p class="text-gray-600 dark:text-gray-300">
-      {{ 'Manage  geographic zones and structures' | translate }}
+      {{ 'Gérer les zones géographiques et les structures' | translate }}
     </p>
   </div>
 
@@ -17,7 +17,7 @@
     <div class="flex items-center justify-between">
       <div>
         <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          {{ 'Geographic Zones' | translate }}
+          {{ 'Zones géographiques' | translate }}
         </span>
         <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats.zones || 0 }}</p>
         
@@ -104,7 +104,7 @@
           class="py-2 px-1 border-b-2 font-medium text-sm"
           (click)="setActiveTab('zones')"
         >
-          {{ 'Geographic Zones' | translate }}
+          {{ 'Zones Géographiques' | translate }}
         </button>
         <button 
           [class]="activeTab === 'structuresR' 
@@ -162,7 +162,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
-        {{ 'Add' | translate }} {{ 
+        {{ 'Ajouter' | translate }} {{ 
           activeTab === 'zones' ? ('Zone' | translate) : ('Structure' | translate)
         }}
       </button>
@@ -172,9 +172,9 @@
     <div *ngIf="showForm" class="p-6 border-b border-gray-200 dark:border-gray-700">
       <div class="mb-4">
         <h3 class="text-lg font-medium text-gray-800 dark:text-white">
-          {{ (isEditing ? 'Edit' : 'Add') | translate }} 
+          {{ (isEditing ? 'Modifier' : 'Ajouter') | translate }} 
           {{  
-             currentFormType === 'zone' ? ('Geographic Zone' | translate) : ('Structure' | translate) }}
+             currentFormType === 'zone' ? ('Zone Géographique' | translate) : ('Structure' | translate) }}
         </h3>
       </div>
 
@@ -195,17 +195,17 @@
   >
   <div *ngIf="zoneForm.get('code')?.value?.startsWith('TN-')" 
        class="text-yellow-600 text-sm mt-1">
-    ⚠️ {{ 'TN- codes are reserved for Tunisian governorates' | translate }}
+    ⚠️ {{ 'Les codes TN- sont réservés aux gouvernorats tunisiens' | translate }}
   </div>
   <div *ngIf="zoneForm.get('code')?.invalid && zoneForm.get('code')?.touched" class="text-red-500 text-sm mt-1">
-    <span *ngIf="zoneForm.get('code')?.errors?.['required']">{{ 'Code is required' | translate }}</span>
-    <span *ngIf="zoneForm.get('code')?.errors?.['minlength']">{{ 'Minimum 2 characters' | translate }}</span>
-    <span *ngIf="zoneForm.get('code')?.errors?.['maxlength']">{{ 'Maximum 20 characters' | translate }}</span>
+    <span *ngIf="zoneForm.get('code')?.errors?.['required']">{{ 'Code est requis' | translate }}</span>
+    <span *ngIf="zoneForm.get('code')?.errors?.['minlength']">{{ 'Minimum 2 caractéres' | translate }}</span>
+    <span *ngIf="zoneForm.get('code')?.errors?.['maxlength']">{{ 'Maximum 20 caractéres' | translate }}</span>
   </div>
 </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Name' | translate }} *
+              {{ 'Nom' | translate }} *
             </label>
             <input
               type="text"
@@ -214,9 +214,9 @@
               [placeholder]="'e.g., Tunis, Sfax...' | translate"
             >
             <div *ngIf="zoneForm.get('name')?.invalid && zoneForm.get('name')?.touched" class="text-red-500 text-sm mt-1">
-              <span *ngIf="zoneForm.get('name')?.errors?.['required']">{{ 'Name is required' | translate }}</span>
-              <span *ngIf="zoneForm.get('name')?.errors?.['minlength']">{{ 'Minimum 2 characters' | translate }}</span>
-              <span *ngIf="zoneForm.get('name')?.errors?.['maxlength']">{{ 'Maximum 100 characters' | translate }}</span>
+              <span *ngIf="zoneForm.get('name')?.errors?.['required']">{{ 'Nom est requis' | translate }}</span>
+              <span *ngIf="zoneForm.get('name')?.errors?.['minlength']">{{ 'Minimum 2 caractéres' | translate }}</span>
+              <span *ngIf="zoneForm.get('name')?.errors?.['maxlength']">{{ 'Maximum 100 caractéres' | translate }}</span>
             </div>
           </div>
         </div>
@@ -239,14 +239,14 @@
             (click)="cancelForm()"
             class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
           >
-            {{ 'Cancel' | translate }}
+            {{ 'Annuler' | translate }}
           </button>
           <button
             type="submit"
             [disabled]="loading || zoneForm.invalid"
             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ loading ? ('Processing...' | translate) : (isEditing ? ('Update' | translate) : ('Create' | translate)) }}
+            {{ loading ? ('Traitement en cours...' | translate) : (isEditing ? ('Mise à jour' | translate) : ('Créer' | translate)) }}
           </button>
         </div>
       </form>
@@ -270,13 +270,13 @@
           [placeholder]="'e.g., STR001' | translate"
         >
         <div *ngIf="structureForm.get('code')?.invalid && structureForm.get('code')?.touched" class="text-red-500 text-sm mt-1">
-          <span *ngIf="structureForm.get('code')?.errors?.['required']">{{ 'Code is required' | translate }}</span>
+          <span *ngIf="structureForm.get('code')?.errors?.['required']">{{ 'Code est requis' | translate }}</span>
         </div>
       </div>
       
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {{ 'Name' | translate }} *
+          {{ 'Nom' | translate }} *
         </label>
         <input
           type="text"
@@ -286,7 +286,7 @@
           [placeholder]="'e.g., Company ABC' | translate"
         >
         <div *ngIf="structureForm.get('name')?.invalid && structureForm.get('name')?.touched" class="text-red-500 text-sm mt-1">
-          <span *ngIf="structureForm.get('name')?.errors?.['required']">{{ 'Name is required' | translate }}</span>
+          <span *ngIf="structureForm.get('name')?.errors?.['required']">{{ 'Nom est requis' | translate }}</span>
         </div>
       </div>
     </div>
@@ -297,7 +297,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="col-span-2 md:col-span-1">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {{ 'Client Name' | translate }} *
+          {{ 'Nom du client' | translate }} *
         </label>
         <input
           type="text"
@@ -307,7 +307,7 @@
           [placeholder]="'e.g., Tunisie Telecom' | translate"
         >
         <div *ngIf="structureForm.get('name')?.invalid && structureForm.get('name')?.touched" class="text-red-500 text-sm mt-1">
-          <span *ngIf="structureForm.get('name')?.errors?.['required']">{{ 'Client name is required' | translate }}</span>
+          <span *ngIf="structureForm.get('name')?.errors?.['required']">{{ 'Nom du client est requis' | translate }}</span>
         </div>
       </div>
       
@@ -320,7 +320,7 @@
       <!-- Show generated code preview (optional) -->
       <div class="col-span-2 md:col-span-1" *ngIf="structureForm.get('code')?.value">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {{ 'Generated Code' | translate }}
+          {{ 'Code généré' | translate }}
         </label>
         <div class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
           {{ structureForm.get('code')?.value }}
@@ -336,7 +336,7 @@
   <div *ngIf="!showBeneficialForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {{ 'Structure Type' | translate }}
+        {{ 'Type de structure' | translate }}
       </label>
       <select
         formControlName="typeStructure"
@@ -375,13 +375,13 @@
   <div>
       <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {{ 'Geographic Zone' | translate }}
+        {{ 'Zone Géographique' | translate }}
       </label>
       <select
         formControlName="zoneId"
         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        <option [ngValue]="null">-- {{ 'Select a zone' | translate }} --</option>
+        <option [ngValue]="null">-- {{ 'Sélectionnez une zone' | translate }} --</option>
         <option *ngFor="let zone of zones" [ngValue]="zone.id">
           {{ zone.code }} - {{ zone.name }}
         </option>
@@ -390,7 +390,7 @@
     
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {{ 'Phone' | translate }}
+        {{ 'Numéro de téléphone' | translate }}
       </label>
       <input
         type="text"
@@ -429,14 +429,14 @@
       (click)="cancelForm()"
       class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
     >
-      {{ 'Cancel' | translate }}
+      {{ 'Annuler' | translate }}
     </button>
     <button
       type="submit"
       [disabled]="loading || structureForm.invalid"
       class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {{ loading ? ('Processing...' | translate) : (isEditing ? ('Update' | translate) : ('Create' | translate)) }}
+      {{ loading ? ('Traitement en cours...' | translate) : (isEditing ? ('Mettre à jour' | translate) : ('Créer' | translate)) }}
     </button>
   </div>
 </form>
@@ -447,7 +447,7 @@
       <!-- Loading -->
       <div *ngIf="loading" class="p-8 text-center">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p class="mt-2 text-gray-600 dark:text-gray-300">{{ 'Loading...' | translate }}</p>
+        <p class="mt-2 text-gray-600 dark:text-gray-300">{{ 'Chargement en cours...' | translate }}</p>
       </div>
 
      
@@ -461,13 +461,13 @@
                 {{ 'Code' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Name' | translate }}
+                {{ 'Nom' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 {{ 'Description' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Created At' | translate }}
+                {{ 'Crée à' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 {{ 'Actions' | translate }}
@@ -493,14 +493,14 @@
                   (click)="showEditForm(zone, 'zone')"
                   class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
                 >
-                  {{ 'Edit' | translate }}
+                  {{ 'Modifier' | translate }}
                 </button>
                 <button
   *ngIf="!isTunisianZone(zone)"
   (click)="confirmDelete(zone, 'zone')"
   class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
 >
-  {{ 'Delete' | translate }}
+  {{ 'Supprimer' | translate }}
 </button>
               </td>
 
@@ -510,7 +510,7 @@
         </table>
         
         <div *ngIf="filteredZones.length === 0" class="p-8 text-center">
-          <p class="text-gray-600 dark:text-gray-300">{{ 'No zones found' | translate }}</p>
+          <p class="text-gray-600 dark:text-gray-300">{{ 'Aucune zone trouvée' | translate }}</p>
         </div>
       </div>
 
@@ -523,10 +523,10 @@
                 {{ 'Code' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Name' | translate }}
+                {{ 'Nom' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Type' | translate }}
+                {{ 'Type de structure' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 {{ 'Email' | translate }}
@@ -561,13 +561,13 @@
                   (click)="showEditForm(structure, 'structure')"
                   class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
                 >
-                  {{ 'Edit' | translate }}
+                  {{ 'Modifier' | translate }}
                 </button>
                 <button
                   (click)="confirmDelete(structure, 'structure')"
                   class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                 >
-                  {{ 'Delete' | translate }}
+                  {{ 'Supprimer' | translate }}
                 </button>
               </td>
             </tr>
@@ -575,7 +575,7 @@
         </table>
         
         <div *ngIf="filteredStructuresR.length === 0" class="p-8 text-center">
-          <p class="text-gray-600 dark:text-gray-300">{{ 'No structures found' | translate }}</p>
+          <p class="text-gray-600 dark:text-gray-300">{{ 'Aucune structure trouvée' | translate }}</p>
         </div>
       </div>
 
@@ -587,10 +587,10 @@
                 {{ 'Code' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Name' | translate }}
+                {{ 'Nom' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Type' | translate }}
+                {{ 'Type de structure' | translate }}
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 {{ 'Email' | translate }}
@@ -625,13 +625,13 @@
                   (click)="showEditForm(structure, 'structure')"
                   class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
                 >
-                  {{ 'Edit' | translate }}
+                  {{ 'Modifier' | translate }}
                 </button>
                 <button
                   (click)="confirmDelete(structure, 'structure')"
                   class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                 >
-                  {{ 'Delete' | translate }}
+                  {{ 'Supprimer' | translate }}
                 </button>
               </td>
             </tr>
@@ -639,7 +639,7 @@
         </table>
         
         <div *ngIf="filteredStructuresB.length === 0" class="p-8 text-center">
-          <p class="text-gray-600 dark:text-gray-300">{{ 'No structures found' | translate }}</p>
+          <p class="text-gray-600 dark:text-gray-300">{{ 'Aucune structure trouvée' | translate }}</p>
         </div>
       </div>
 
@@ -647,7 +647,7 @@
       <div *ngIf="!loading && totalPages > 1" class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between">
           <div class="text-sm text-gray-600 dark:text-gray-300">
-            {{ 'Page' | translate }} {{ currentPage }} {{ 'of' | translate }} {{ totalPages }}
+            {{ 'Page' | translate }} {{ currentPage }} {{ 'sur' | translate }} {{ totalPages }}
           </div>
           <div class="flex space-x-2">
             <button
@@ -655,7 +655,7 @@
               [disabled]="currentPage === 1"
               class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 disabled:opacity-50"
             >
-              {{ 'Previous' | translate }}
+              {{ 'Précédent' | translate }}
             </button>
             
             <div class="flex space-x-1">
@@ -675,7 +675,7 @@
               [disabled]="currentPage === totalPages"
               class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 disabled:opacity-50"
             >
-              {{ 'Next' | translate }}
+              {{ 'Suivant' | translate }}
             </button>
           </div>
         </div>

@@ -2,6 +2,7 @@ package com.example.back.controller;
 
 import com.example.back.entity.Application;
 import com.example.back.entity.Convention;
+import com.example.back.entity.Facture;
 import com.example.back.entity.User;
 import com.example.back.payload.request.ApplicationRequest;
 import com.example.back.payload.response.ApplicationResponse;
@@ -11,12 +12,14 @@ import com.example.back.repository.ConventionRepository;
 import com.example.back.repository.UserRepository;
 import com.example.back.service.ApplicationService;
 import com.example.back.service.WorkloadService;
+import com.example.back.service.mapper.ApplicationMapper;
 import com.example.back.service.mapper.ConventionMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -47,6 +50,9 @@ public class ApplicationController {
 
     @Autowired
     private WorkloadService workloadService;
+
+    @Autowired
+    private ApplicationMapper applicationMapper;
 
 
     @GetMapping
@@ -487,5 +493,65 @@ public class ApplicationController {
             return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
+
+
+    @GetMapping("/archived")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")
+    public ResponseEntity<?> getArchivedApplications() {
+        try {
+            log.info("Fetching archived applications");
+            User currentUser = getCurrentUser();
+            List<Application> archivedApps;
+
+            if (isAdmin()) {
+                // Admin sees all archived applications
+                archivedApps = applicationRepository.findByArchivedTrue();
+                log.info("Admin fetching all archived applications: found {}", archivedApps.size());
+            } else {
+                // Chef de projet sees only their own archived applications
+                archivedApps = applicationRepository.findByChefDeProjetAndArchivedTrue(currentUser);
+                log.info("Chef de projet {} fetching their archived applications: found {}",
+                        currentUser.getUsername(), archivedApps.size());
+            }
+
+            List<ApplicationResponse> responses = archivedApps.stream()
+                    .map(applicationMapper::toResponse)
+                    .collect(Collectors.toList());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", responses);
+            response.put("count", responses.size());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error fetching archived applications: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    private String getCurrentUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    private User getCurrentUser() {
+        String username = getCurrentUsername();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    private boolean isAdmin() {
+        User currentUser = getCurrentUser();
+        return currentUser.getRoles().stream()
+                .anyMatch(role -> role.getName().name().equals("ROLE_ADMIN"));
+    }
+
+    private boolean isChefProjet() {
+        User currentUser = getCurrentUser();
+        return currentUser.getRoles().stream()
+                .anyMatch(role -> role.getName().name().equals("ROLE_CHEF_PROJET"));
+    }
+
+
 
 }

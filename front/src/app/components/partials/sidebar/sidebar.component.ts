@@ -105,9 +105,11 @@ updateCurrentPage(): void {
     { path: 'commercial/calendar', page: 'commercial/calendar' },
     { path: 'commercial', page: 'commercial' },
     { path: 'decideur', page: 'decideur' },
+    {path :'archives/applications', page:'archives/applications'},
     { path: 'applications', page: 'applications'},
     { path: 'chef/calendar', page: 'chef/calendar' },
     { path: 'chef', page: 'chef' },
+    { path: 'requests', page: 'requests' },
     { path: 'profile', page: 'profile' },
   ];
   

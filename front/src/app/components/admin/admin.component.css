@@ -264,3 +264,35 @@ canvas {
 .card-body {
   min-height: 350px;
 }
+
+
+/* src/app/components/admin/admin.component.css */
+.chart-container {
+  position: relative;
+  height: 200px;
+  width: 100%;
+}
+
+canvas.small-chart {
+  max-height: 200px;
+  width: 100% !important;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Responsive tables */
+@media (max-width: 768px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  table {
+    min-width: 600px;
+  }
+}

@@ -1,4 +1,4 @@
-  <div class="container mx-auto p-3 md:p-4 ">
+<div class="p-4 mx-auto max-w-screen-2xl md:p-7 ">
 
   <!-- Loading Spinner -->
   <div *ngIf="isLoading" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -8,96 +8,10 @@
     </div>
   </div>
 
-<!-- Invoice Details Modal - Slightly Larger -->
-<div *ngIf="selectedInvoice" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="selectedInvoice = null">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-[320px] w-full animate-fadeIn" (click)="$event.stopPropagation()">
-    
-    <!-- Modal Header -->
-    <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-      <div class="flex items-center space-x-2.5">
-        <div class="w-7 h-7 rounded-full flex items-center justify-center"
-             [ngClass]="{
-               'bg-green-100 dark:bg-green-900/30': getStatusText(selectedInvoice) === 'Paid',
-               'bg-yellow-100 dark:bg-yellow-900/30': getStatusText(selectedInvoice) === 'Unpaid',
-               'bg-red-100 dark:bg-red-900/30': getStatusText(selectedInvoice) === 'Overdue' || getStatusText(selectedInvoice) === 'Late'
-             }">
-          <i class="fas fa-file-invoice text-xs"
-             [ngClass]="{
-               'text-green-600': getStatusText(selectedInvoice) === 'Paid',
-               'text-yellow-600': getStatusText(selectedInvoice) === 'Unpaid',
-               'text-red-600': getStatusText(selectedInvoice) === 'Overdue' || getStatusText(selectedInvoice) === 'Late'
-             }"></i>
-        </div>
-        <h3 class="font-semibold text-gray-800 dark:text-white text-sm">Détails facture</h3>
-      </div>
-      <button (click)="selectedInvoice = null" 
-              class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-        <i class="fas fa-times text-gray-500 text-[9px]"></i>
-      </button>
-    </div>
-    
-    <!-- Modal Body -->
-    <div class="p-4">
-      <!-- Invoice Title & Status -->
-      <div class="mb-3">
-        <p class="font-medium text-gray-800 dark:text-white text-sm truncate">{{selectedInvoice.title}}</p>
-        <div class="flex items-center justify-between mt-1.5">
-          <span class="text-[10px] px-2 py-0.5 rounded-full"
-                [ngClass]="{
-                  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300': getStatusText(selectedInvoice) === 'Paid',
-                  'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300': getStatusText(selectedInvoice) === 'Unpaid',
-                  'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300': getStatusText(selectedInvoice) === 'Overdue' || getStatusText(selectedInvoice) === 'Late'
-                }">
-            {{getStatusText(selectedInvoice)}}
-          </span>
-          <span class="text-[9px] text-gray-500">{{selectedInvoice.start | date:'dd/MM/yyyy'}}</span>
-        </div>
-      </div>
-
-      <!-- Details Grid -->
-      <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 space-y-2 mb-3">
-        <div class="flex justify-between items-center">
-          <span class="text-[9px] text-gray-500 dark:text-gray-400">Client</span>
-          <span class="text-[10px] font-medium text-gray-700 dark:text-gray-300">{{selectedInvoice.extendedProps?.clientName || 'N/A'}}</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-[9px] text-gray-500 dark:text-gray-400">Montant</span>
-          <span class="text-sm font-bold text-gray-800 dark:text-white">{{selectedInvoice.extendedProps?.amount || '0'}} TND</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-[9px] text-gray-500 dark:text-gray-400">Convention</span>
-          <span class="text-[10px] text-gray-600 dark:text-gray-300">{{selectedInvoice.extendedProps?.conventionReference || 'N/A'}}</span>
-        </div>
-        <div *ngIf="selectedInvoice.extendedProps?.notes" class="pt-2 border-t border-gray-200 dark:border-gray-600 mt-1">
-          <span class="text-[9px] text-gray-500 dark:text-gray-400 block mb-1">Notes</span>
-          <p class="text-[9px] text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-600 p-1.5 rounded">
-            {{selectedInvoice.extendedProps?.notes}}
-          </p>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex space-x-2.5">
-        <button *ngIf="selectedInvoice.id" 
-                (click)="navigateToInvoice(selectedInvoice.id)"
-                class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-[10px] font-medium transition-all duration-200 flex items-center justify-center space-x-1.5">
-          <i class="fas fa-external-link-alt text-[9px]"></i>
-          <span>Voir facture</span>
-        </button>
-        <button (click)="selectedInvoice = null"
-                class="flex-1 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-[10px] font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-          Fermer
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
   <!-- Calendar Header - Compact -->
   <div class="mb-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
   
-
-
      <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div class="flex items-center gap-3">
@@ -310,4 +224,92 @@
     </div>
   </div>
 </div>
+
+
+</div>
+
+
+<!-- Invoice Details Modal - Slightly Larger -->
+<div *ngIf="selectedInvoice" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="selectedInvoice = null">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-[320px] w-full animate-fadeIn" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-7 h-7 rounded-full flex items-center justify-center"
+             [ngClass]="{
+               'bg-green-100 dark:bg-green-900/30': getStatusText(selectedInvoice) === 'Paid',
+               'bg-yellow-100 dark:bg-yellow-900/30': getStatusText(selectedInvoice) === 'Unpaid',
+               'bg-red-100 dark:bg-red-900/30': getStatusText(selectedInvoice) === 'Overdue' || getStatusText(selectedInvoice) === 'Late'
+             }">
+          <i class="fas fa-file-invoice text-xs"
+             [ngClass]="{
+               'text-green-600': getStatusText(selectedInvoice) === 'Paid',
+               'text-yellow-600': getStatusText(selectedInvoice) === 'Unpaid',
+               'text-red-600': getStatusText(selectedInvoice) === 'Overdue' || getStatusText(selectedInvoice) === 'Late'
+             }"></i>
+        </div>
+        <h3 class="font-semibold text-gray-800 dark:text-white text-sm">Détails facture</h3>
+      </div>
+      <button (click)="selectedInvoice = null" 
+              class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+        <i class="fas fa-times text-gray-500 text-[9px]"></i>
+      </button>
+    </div>
+    
+    <!-- Modal Body -->
+    <div class="p-4">
+      <!-- Invoice Title & Status -->
+      <div class="mb-3">
+        <p class="font-medium text-gray-800 dark:text-white text-sm truncate">{{selectedInvoice.title}}</p>
+        <div class="flex items-center justify-between mt-1.5">
+          <span class="text-[10px] px-2 py-0.5 rounded-full"
+                [ngClass]="{
+                  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300': getStatusText(selectedInvoice) === 'Paid',
+                  'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300': getStatusText(selectedInvoice) === 'Unpaid',
+                  'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300': getStatusText(selectedInvoice) === 'Overdue' || getStatusText(selectedInvoice) === 'Late'
+                }">
+            {{getStatusText(selectedInvoice)}}
+          </span>
+          <span class="text-[9px] text-gray-500">{{selectedInvoice.start | date:'dd/MM/yyyy'}}</span>
+        </div>
+      </div>
+
+      <!-- Details Grid -->
+      <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 space-y-2 mb-3">
+        <div class="flex justify-between items-center">
+          <span class="text-[9px] text-gray-500 dark:text-gray-400">Client</span>
+          <span class="text-[10px] font-medium text-gray-700 dark:text-gray-300">{{selectedInvoice.extendedProps?.clientName || 'N/A'}}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-[9px] text-gray-500 dark:text-gray-400">Montant</span>
+          <span class="text-sm font-bold text-gray-800 dark:text-white">{{selectedInvoice.extendedProps?.amount || '0'}} TND</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-[9px] text-gray-500 dark:text-gray-400">Convention</span>
+          <span class="text-[10px] text-gray-600 dark:text-gray-300">{{selectedInvoice.extendedProps?.conventionReference || 'N/A'}}</span>
+        </div>
+        <div *ngIf="selectedInvoice.extendedProps?.notes" class="pt-2 border-t border-gray-200 dark:border-gray-600 mt-1">
+          <span class="text-[9px] text-gray-500 dark:text-gray-400 block mb-1">Notes</span>
+          <p class="text-[9px] text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-600 p-1.5 rounded">
+            {{selectedInvoice.extendedProps?.notes}}
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex space-x-2.5">
+        <button *ngIf="selectedInvoice.id" 
+                (click)="navigateToInvoice(selectedInvoice.id)"
+                class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-[10px] font-medium transition-all duration-200 flex items-center justify-center space-x-1.5">
+          <i class="fas fa-external-link-alt text-[9px]"></i>
+          <span>Voir facture</span>
+        </button>
+        <button (click)="selectedInvoice = null"
+                class="flex-1 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-[10px] font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

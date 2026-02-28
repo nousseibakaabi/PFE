@@ -49,7 +49,7 @@ public class DataInitializer implements CommandLineRunner {
                 zone.setCode(code);
                 zone.setName(name);
                 zone.setType(ZoneType.TUNISIAN_ZONE);
-                zone.setDescription("Governorate of " + name + " - " + arabicName);
+                zone.setDescription("Gouvernorat de " + name + " - " + arabicName);
 
                 zoneGeographiqueRepository.save(zone);
             }

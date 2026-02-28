@@ -3,6 +3,7 @@ package com.example.back.controller;
 import com.example.back.entity.*;
 import com.example.back.payload.request.ArchiveConventionRequest;
 import com.example.back.payload.request.ConventionRequest;
+import com.example.back.payload.request.RenewalRequestDTO;
 import com.example.back.payload.response.ConventionResponse;
 import com.example.back.repository.*;
 import com.example.back.service.ApplicationService;
@@ -59,6 +60,11 @@ public class ConventionController {
     private HistoryService historyService;
 
 
+    @Autowired
+    private OldFactureRepository oldFactureRepository;
+
+    @Autowired
+    private OldConventionRepository oldConventionRepository;
 
 
     @PostMapping("/calculate-ttc")
@@ -791,5 +797,117 @@ public class ConventionController {
             log.error("Error syncing application dates: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
+    }
+
+
+    @PostMapping("/{id}/renew")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
+    @Transactional
+    public ResponseEntity<?> renewConvention(@PathVariable Long id, @RequestBody RenewalRequestDTO renewalData) {
+        try {
+            log.info("========== RENEW CONVENTION ENDPOINT CALLED ==========");
+
+            User currentUser = getCurrentUser();
+            Convention newConvention = conventionService.renewConvention(id, renewalData, currentUser);
+            ConventionResponse response = conventionMapper.toResponse(newConvention);
+
+            Map<String, Object> apiResponse = new HashMap<>();
+            apiResponse.put("success", true);
+            apiResponse.put("message", "Convention renouvelée avec succès");
+            apiResponse.put("data", response);
+
+            return ResponseEntity.ok(apiResponse);
+
+        } catch (Exception e) {
+            log.error("Error renewing convention: {}", e.getMessage(), e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Erreur lors du renouvellement: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+// In ConventionController.java - Add this endpoint
+
+    @GetMapping("/{id}/previous-versions")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'CHEF_PROJET', 'DECIDEUR')")
+    public ResponseEntity<?> getPreviousVersions(@PathVariable Long id) {
+        try {
+            log.info("Fetching previous versions for convention ID: {}", id);
+
+            Convention convention = conventionRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Convention not found"));
+
+            // Get all old versions for this convention
+            List<OldConvention> oldVersions = oldConventionRepository
+                    .findByCurrentConventionOrderByRenewalVersionDesc(convention);
+
+            if (oldVersions.isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("data", null);
+                response.put("message", "Aucune ancienne version trouvée");
+                return ResponseEntity.ok(response);
+            }
+
+            // For each old version, get its old factures
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (OldConvention oldConv : oldVersions) {
+                Map<String, Object> versionData = new HashMap<>();
+                versionData.put("oldConvention", oldConv);
+
+                List<OldFacture> oldFactures = oldFactureRepository.findByOldConvention(oldConv);
+                versionData.put("oldFactures", oldFactures);
+
+                result.add(versionData);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", result);
+            response.put("count", result.size());
+            response.put("currentVersion", convention.getRenewalVersion());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error fetching previous versions: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    // Optional: Get a specific old version by its ID
+    @GetMapping("/old/{oldId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'CHEF_PROJET', 'DECIDEUR')")
+    public ResponseEntity<?> getOldConventionById(@PathVariable Long oldId) {
+        try {
+            log.info("Fetching old convention with ID: {}", oldId);
+
+            OldConvention oldConvention = oldConventionRepository.findById(oldId)
+                    .orElseThrow(() -> new RuntimeException("Old convention not found"));
+
+            List<OldFacture> oldFactures = oldFactureRepository.findByOldConvention(oldConvention);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("oldConvention", oldConvention);
+            result.put("oldFactures", oldFactures);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", result);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error fetching old convention: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    private User getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

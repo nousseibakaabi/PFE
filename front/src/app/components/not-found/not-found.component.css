@@ -68,3 +68,30 @@
   50% { transform: translateY(-10px); }
   100% { transform: translateY(0); }
 }
+/* Page background */
+.dark .not-found-page {
+  background: linear-gradient(135deg, #0f172a 0%, #192336 100%);
+}
+
+/* Card */
+.dark .not-found-card {
+  background: #192336;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(110, 185, 213, 0.15);
+}
+
+/* Text */
+.dark .not-found-content p {
+  color: #cbd5e1;
+}
+
+/* Button */
+.dark .not-found-content a {
+  background: #6EB9D5;   /* your brand accent */
+  color: #0b1220;
+}
+
+.dark .not-found-content a:hover {
+  background: #4A8AA5;
+  box-shadow: 0 10px 20px rgba(110, 185, 213, 0.35);
+}

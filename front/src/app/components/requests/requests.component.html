@@ -1,0 +1,442 @@
+<!-- requests.component.html -->
+<div class="container mx-auto p-4">
+  
+  <!-- Header -->
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white">Demandes</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            {{ isAdmin ? 'Gérez les demandes des chefs de projet' : 'Répondez aux demandes de renouvellement' }}
+          </p>
+        </div>
+      </div>
+      
+      <!-- Filter tabs -->
+      <div class="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+        <button (click)="filterStatus = 'ALL'; applyFilter()" 
+                class="px-3 py-1.5 text-xs font-medium rounded-md transition-all"
+                [class]="filterStatus === 'ALL' ? 'bg-white dark:bg-gray-800 shadow-sm text-blue-600' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
+          Toutes
+        </button>
+        <button (click)="filterStatus = 'PENDING'; applyFilter()" 
+                class="px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1"
+                [class]="filterStatus === 'PENDING' ? 'bg-white dark:bg-gray-800 shadow-sm text-yellow-600' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
+          <span class="w-2 h-2 bg-yellow-500 rounded-full"></span>
+          En attente
+        </button>
+        <button (click)="filterStatus = 'APPROVED'; applyFilter()" 
+                class="px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1"
+                [class]="filterStatus === 'APPROVED' ? 'bg-white dark:bg-gray-800 shadow-sm text-green-600' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
+          <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+          Approuvées
+        </button>
+        <button (click)="filterStatus = 'DENIED'; applyFilter()" 
+                class="px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1"
+                [class]="filterStatus === 'DENIED' ? 'bg-white dark:bg-gray-800 shadow-sm text-red-600' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
+          <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+          Refusées
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="mb-4 p-3 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg">
+    <div class="flex items-center">
+      <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <span class="text-green-700 text-sm">{{ successMessage }}</span>
+      <button (click)="clearMessages()" class="ml-auto text-green-500 hover:text-green-700">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="mb-4 p-3 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg">
+    <div class="flex">
+      <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+        <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <p class="text-red-700 text-sm">{{ errorMessage }}</p>
+      <button (click)="clearMessages()" class="ml-auto text-red-500 hover:text-red-700">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-12">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+    <p class="mt-2 text-gray-600 text-sm">Chargement des demandes...</p>
+  </div>
+
+  <!-- Requests List -->
+  <div *ngIf="!loading && filteredRequests.length === 0" class="text-center py-12 bg-white rounded-xl border border-gray-200">
+    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    </div>
+    <h3 class="text-lg font-bold text-gray-800 mb-2">Aucune demande</h3>
+    <p class="text-gray-500 text-sm max-w-md mx-auto">
+      Vous n'avez aucune demande pour le moment.
+    </p>
+  </div>
+
+  <!-- Requests Grid -->
+  <div *ngIf="!loading && filteredRequests.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div *ngFor="let request of filteredRequests" 
+         class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all">
+      
+      <!-- Header with status -->
+      <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">{{ request.statusIcon }}</span>
+          <span class="text-sm font-medium text-gray-800">{{ request.typeLabel }}</span>
+        </div>
+        <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + request.statusColor">
+          {{ request.status === 'PENDING' ? 'En attente' : 
+             request.status === 'APPROVED' ? 'Approuvée' : 'Refusée' }}
+        </span>
+      </div>
+      
+      <!-- Content -->
+      <div class="p-4">
+        <!-- Application info -->
+        <div class="mb-3">
+          <div class="text-xs text-gray-500 mb-1">Application</div>
+          <div class="text-sm font-medium text-gray-800">
+            {{ request.applicationCode }} - {{ request.applicationName }}
+          </div>
+        </div>
+        
+        <!-- Convention info -->
+        <div class="mb-3">
+          <div class="text-xs text-gray-500 mb-1">Convention</div>
+          <div class="text-sm text-gray-800">{{ request.conventionReference }}</div>
+        </div>
+        
+        <!-- Reason (for pending) -->
+        <div *ngIf="request.reason && request.status === 'PENDING'" class="mb-3">
+          <div class="text-xs text-gray-500 mb-1">Message</div>
+          <div class="text-sm text-gray-600 italic bg-gray-50 p-2 rounded">
+            "{{ request.reason }}"
+          </div>
+        </div>
+        
+        <!-- Denial reason (for denied) -->
+        <div *ngIf="request.denialReason" class="mb-3">
+          <div class="text-xs text-gray-500 mb-1">Raison du refus</div>
+          <div class="text-sm text-red-600 bg-red-50 p-2 rounded">
+            {{ request.denialReason }}
+          </div>
+        </div>
+        
+        <!-- Recommended chef (for suggestions) -->
+        <div *ngIf="request.recommendedChefName" class="mb-3">
+          <div class="text-xs text-gray-500 mb-1">Chef recommandé</div>
+          <div class="text-sm font-medium text-blue-600">
+            {{ request.recommendedChefName }}
+          </div>
+        </div>
+        
+        <!-- Time and requester -->
+        <div class="flex items-center justify-between text-xs text-gray-400 mt-4">
+          <span>De: {{ request.requesterName }}</span>
+          <span>{{ request.timeAgo }}</span>
+        </div>
+      </div>
+      
+      <!-- Actions -->
+      <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
+        <button (click)="openDetailModal(request)" 
+                class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+          Détails
+        </button>
+        
+        <ng-container *ngIf="request.status === 'PENDING'">
+          <!-- For chef de projet: renewal acceptance requests -->
+          <ng-container *ngIf="request.requestType === 'RENEWAL_ACCEPTANCE' && request.targetUserId === currentUser?.id">
+            <button (click)="openResponseModal(request, 'APPROVE')" 
+                    class="px-3 py-1.5 text-xs font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg">
+              Accepter
+            </button>
+            <button (click)="openResponseModal(request, 'DENY')" 
+                    class="px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg">
+              Refuser
+            </button>
+          </ng-container>
+          
+          <!-- For admin: reassignment suggestions -->
+          <ng-container *ngIf="isAdmin && request.requestType === 'REASSIGNMENT_SUGGESTION'">
+            <button (click)="openResponseModal(request, 'APPROVE')" 
+                    class="px-3 py-1.5 text-xs font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg">
+              Approuver
+            </button>
+            <button (click)="openResponseModal(request, 'DENY')" 
+                    class="px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg">
+              Refuser
+            </button>
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Response Modal -->
+  <div *ngIf="showResponseModal && selectedRequest" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="closeResponseModal()">
+    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center gap-3">
+          <div [class]="responseAction === 'APPROVE' ? 'w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center' : 'w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center'">
+            <span class="text-xl">{{ responseAction === 'APPROVE' ? '✅' : '❌' }}</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">
+              {{ responseAction === 'APPROVE' ? 'Approuver la demande' : 'Refuser la demande' }}
+            </h3>
+            <p class="text-xs text-gray-500 mt-1">
+              {{ selectedRequest.typeLabel }}
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal Body -->
+      <div class="p-6">
+        <!-- Application info -->
+        <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500">Application</span>
+            <span class="text-sm font-medium text-gray-800">{{ selectedRequest.applicationName }}</span>
+          </div>
+          <div class="flex justify-between items-center mt-2">
+            <span class="text-xs text-gray-500">Convention</span>
+            <span class="text-sm text-gray-800">{{ selectedRequest.conventionReference }}</span>
+          </div>
+        </div>
+        
+        <!-- Reason field (for denial) -->
+        <div *ngIf="responseAction === 'DENY'" class="mb-4">
+          <label class="block text-xs font-medium text-gray-700 mb-2">
+            Raison du refus <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            [(ngModel)]="responseReason"
+            rows="3"
+            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Expliquez pourquoi vous refusez cette demande..."
+          ></textarea>
+        </div>
+        
+        <!-- Recommendations field (optional) -->
+        <div *ngIf="responseAction === 'DENY'" class="mb-4">
+          <label class="block text-xs font-medium text-gray-700 mb-2">
+            Recommandations (optionnel)
+          </label>
+          <textarea
+            [(ngModel)]="recommendations"
+            rows="2"
+            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Suggestions ou recommandations..."
+          ></textarea>
+        </div>
+        
+        <!-- Chef recommendation (for renewal denial by chef) -->
+        <div *ngIf="responseAction === 'DENY' && selectedRequest.requestType === 'RENEWAL_ACCEPTANCE' && isChefProjet" class="mb-4">
+          <label class="block text-xs font-medium text-gray-700 mb-2">
+            Recommander un autre chef de projet
+          </label>
+          
+          <!-- Chef selection -->
+          <div class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-2">
+            <div *ngFor="let chef of availableChefs" 
+                 (click)="selectedChefId = chef.id"
+                 class="flex items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+                 [class]="selectedChefId === chef.id ? 'bg-blue-50 border border-blue-300' : ''">
+              <input type="radio" 
+                     [checked]="selectedChefId === chef.id"
+                     (change)="selectedChefId = chef.id"
+                     name="chefSelection"
+                     class="h-4 w-4 text-blue-600 mr-3">
+              <div class="flex-1">
+                <div class="flex justify-between">
+                  <span class="text-sm font-medium text-gray-800">{{ chef.firstName }} {{ chef.lastName }}</span>
+                  <span *ngIf="getChefWorkload(chef.id) as workload" 
+                        class="text-xs px-2 py-0.5 rounded-full"
+                        [style.background]="getWorkloadColor(workload.currentWorkload) + '20'"
+                        [style.color]="getWorkloadColor(workload.currentWorkload)">
+                    {{ workload.currentWorkload.toFixed(1) }}%
+                  </span>
+                </div>
+                <p class="text-xs text-gray-500">{{ chef.email }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+        <button (click)="closeResponseModal()" 
+                class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-300">
+          Annuler
+        </button>
+        <button (click)="submitResponse()"
+                [disabled]="loading || (responseAction === 'DENY' && !responseReason.trim())"
+                [class]="responseAction === 'APPROVE' ? 'px-4 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg disabled:opacity-50' : 'px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg disabled:opacity-50'">
+          <span *ngIf="!loading">
+            {{ responseAction === 'APPROVE' ? 'Approuver' : 'Refuser' }}
+          </span>
+          <span *ngIf="loading" class="flex items-center">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Traitement...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div *ngIf="showDetailModal && selectedRequest" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="closeDetailModal()">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">{{ selectedRequest.statusIcon }}</span>
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">Détails de la demande</h3>
+            <span [class]="'px-2 py-1 text-xs font-medium rounded-full inline-block mt-1 ' + selectedRequest.statusColor">
+              {{ selectedRequest.status === 'PENDING' ? 'En attente' : 
+                 selectedRequest.status === 'APPROVED' ? 'Approuvée' : 'Refusée' }}
+            </span>
+          </div>
+        </div>
+        <button (click)="closeDetailModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Modal Body -->
+      <div class="p-6 space-y-4">
+        <!-- Basic Info -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Type</p>
+            <p class="text-sm font-medium text-gray-800">{{ selectedRequest.typeLabel }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Créée le</p>
+            <p class="text-sm text-gray-800">{{ formatDate(selectedRequest.createdAt) }}</p>
+          </div>
+        </div>
+        
+        <!-- Requester -->
+        <div>
+          <p class="text-xs text-gray-500 mb-1">Demandeur</p>
+          <p class="text-sm font-medium text-gray-800">{{ selectedRequest.requesterName }}</p>
+          <p class="text-xs text-gray-500">{{ selectedRequest.requesterEmail }}</p>
+        </div>
+        
+        <!-- Target User -->
+        <div *ngIf="selectedRequest.targetUserName">
+          <p class="text-xs text-gray-500 mb-1">Destinataire</p>
+          <p class="text-sm font-medium text-gray-800">{{ selectedRequest.targetUserName }}</p>
+          <p class="text-xs text-gray-500">{{ selectedRequest.targetUserEmail }}</p>
+        </div>
+        
+        <!-- Application -->
+        <div>
+          <p class="text-xs text-gray-500 mb-1">Application</p>
+          <p class="text-sm font-medium text-blue-600 cursor-pointer hover:underline" (click)="viewApplication(selectedRequest.applicationId!)">
+            {{ selectedRequest.applicationName }}
+          </p>
+          <p class="text-xs text-gray-500">{{ selectedRequest.applicationCode }}</p>
+        </div>
+        
+        <!-- Convention -->
+        <div>
+          <p class="text-xs text-gray-500 mb-1">Nouvelle convention</p>
+          <p class="text-sm font-medium text-blue-600 cursor-pointer hover:underline" (click)="viewConvention(selectedRequest.conventionId!)">
+            {{ selectedRequest.conventionReference }}
+          </p>
+        </div>
+        
+        <!-- Old Convention -->
+        <div *ngIf="selectedRequest.oldConventionReference">
+          <p class="text-xs text-gray-500 mb-1">Ancienne convention</p>
+          <p class="text-sm text-gray-600">{{ selectedRequest.oldConventionReference }} (archivée)</p>
+        </div>
+        
+        <!-- Reason -->
+        <div *ngIf="selectedRequest.reason">
+          <p class="text-xs text-gray-500 mb-1">Message</p>
+          <div class="bg-gray-50 p-3 rounded-lg">
+            <p class="text-sm text-gray-700 italic">"{{ selectedRequest.reason }}"</p>
+          </div>
+        </div>
+        
+        <!-- Recommendations -->
+        <div *ngIf="selectedRequest.recommendations">
+          <p class="text-xs text-gray-500 mb-1">Recommandations</p>
+          <div class="bg-blue-50 p-3 rounded-lg">
+            <p class="text-sm text-blue-700">{{ selectedRequest.recommendations }}</p>
+          </div>
+        </div>
+        
+        <!-- Recommended Chef -->
+        <div *ngIf="selectedRequest.recommendedChefName">
+          <p class="text-xs text-gray-500 mb-1">Chef recommandé</p>
+          <p class="text-sm font-medium text-blue-600">{{ selectedRequest.recommendedChefName }}</p>
+          <p class="text-xs text-gray-500">{{ selectedRequest.recommendedChefEmail }}</p>
+        </div>
+        
+        <!-- Denial Reason -->
+        <div *ngIf="selectedRequest.denialReason">
+          <p class="text-xs text-gray-500 mb-1">Raison du refus</p>
+          <div class="bg-red-50 p-3 rounded-lg">
+            <p class="text-sm text-red-600">{{ selectedRequest.denialReason }}</p>
+          </div>
+        </div>
+        
+        <!-- Processed At -->
+        <div *ngIf="selectedRequest.processedAt">
+          <p class="text-xs text-gray-500 mb-1">Traitée le</p>
+          <p class="text-sm text-gray-800">{{ formatDate(selectedRequest.processedAt) }}</p>
+        </div>
+      </div>
+      
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 border-t border-gray-200 flex justify-end">
+        <button (click)="closeDetailModal()" 
+                class="px-4 py-2 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -194,4 +194,11 @@ deleteApplication(id: number): Observable<ApiResponse> {
     return this.updateApplication(id, data);
   }
 
+
+  getArchivedApplications(): Observable<ApiResponse> {
+  return this.http.get<ApiResponse>(`${this.apiUrl}/api/applications/archived`);
+}
+
+
+
 }

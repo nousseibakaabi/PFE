@@ -12,6 +12,8 @@ export class EmailSendComponent implements OnInit, OnDestroy {
   isResending = false;
   resendSuccess = false;
   resendError = '';
+  isDarkMode = false;
+
 
   constructor(
     private route: ActivatedRoute,
@@ -19,7 +21,34 @@ export class EmailSendComponent implements OnInit, OnDestroy {
     private authService: AuthService
   ) {
     document.body.classList.add('no-navbar');
+    this.checkDarkMode(); 
+
   }
+
+
+  toggleDarkMode(): void {
+  this.isDarkMode = !this.isDarkMode;
+  this.applyDarkMode();
+  localStorage.setItem('darkMode', this.isDarkMode.toString());
+}
+
+  private checkDarkMode(): void {
+  const savedDarkMode = localStorage.getItem('darkMode');
+  if (savedDarkMode) {
+    this.isDarkMode = savedDarkMode === 'true';
+  } else {
+    this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  this.applyDarkMode();
+}
+
+private applyDarkMode(): void {
+  if (this.isDarkMode) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {

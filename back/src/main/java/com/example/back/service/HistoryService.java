@@ -858,4 +858,29 @@ public class HistoryService {
                 .map(historyMapper::toResponse)
                 .collect(Collectors.toList());
     }
+
+    // In HistoryService.java - Add this method
+
+    public void logConventionRenewal(Convention convention, User renewedBy) {
+        try {
+            String description = String.format("Renouvellement de la convention %s par %s %s - Version %d",
+                    convention.getReferenceConvention(),
+                    renewedBy.getFirstName(), renewedBy.getLastName(),
+                    convention.getRenewalVersion() != null ? convention.getRenewalVersion() : 1);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("renewalVersion", convention.getRenewalVersion());
+            data.put("newDateDebut", convention.getDateDebut());
+            data.put("newDateFin", convention.getDateFin());
+            data.put("newMontantTTC", convention.getMontantTTC());
+
+            createHistory("RENEW", "CONVENTION", convention.getId(),
+                    convention.getReferenceConvention(), convention.getLibelle(),
+                    description, null, data, renewedBy);
+
+            log.info("Convention renewal history logged for {}", convention.getReferenceConvention());
+        } catch (Exception e) {
+            log.error("Failed to log convention renewal: {}", e.getMessage());
+        }
+    }
 }

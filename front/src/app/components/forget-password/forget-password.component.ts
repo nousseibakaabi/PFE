@@ -12,14 +12,44 @@ export class ForgetPasswordComponent implements OnDestroy {
   forgetPasswordForm: FormGroup;
   message: string = '';
   error: string = '';
+  isLoading: boolean = false;
+  isDarkMode = false;
 
   constructor(private formBuilder: FormBuilder, private authService: AuthService, private router: Router) {
     this.forgetPasswordForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]]
     });
     document.body.classList.add('no-navbar');
+      this.checkDarkMode(); 
   }
 
+
+
+
+// Add these methods to your component class
+toggleDarkMode(): void {
+  this.isDarkMode = !this.isDarkMode;
+  this.applyDarkMode();
+  localStorage.setItem('darkMode', this.isDarkMode.toString());
+}
+
+private checkDarkMode(): void {
+  const savedDarkMode = localStorage.getItem('darkMode');
+  if (savedDarkMode) {
+    this.isDarkMode = savedDarkMode === 'true';
+  } else {
+    this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  this.applyDarkMode();
+}
+
+private applyDarkMode(): void {
+  if (this.isDarkMode) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
   ngOnDestroy(): void {
     document.body.classList.remove('no-navbar');
   }

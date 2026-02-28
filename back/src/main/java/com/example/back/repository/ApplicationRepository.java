@@ -107,4 +107,9 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
      */
     @Query("SELECT a FROM Application a WHERE NOT EXISTS (SELECT c FROM Convention c WHERE c.application = a AND c.archived = false)")
     List<Application> findApplicationsWithoutConventions();
+
+    List<Application> findByArchivedTrue();
+
+    @Query("SELECT a FROM Application a WHERE a.chefDeProjet = :chef AND a.archived = true")
+    List<Application> findByChefDeProjetAndArchivedTrue(@Param("chef") User chef);
 }

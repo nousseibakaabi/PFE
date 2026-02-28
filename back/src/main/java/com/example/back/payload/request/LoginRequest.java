@@ -10,6 +10,8 @@ public class LoginRequest {
     @NotBlank
     private String password;
 
+    private String recaptchaToken;
+
     // Getters and Setters
     public String getUsernameOrEmail() {
         return usernameOrEmail;
@@ -26,4 +28,14 @@ public class LoginRequest {
     public void setPassword(String password) {
         this.password = password;
     }
+
+
+    public String getRecaptchaToken() {
+        return recaptchaToken;
+    }
+
+    public void setRecaptchaToken(String recaptchaToken) {
+        this.recaptchaToken = recaptchaToken;
+    }
+
 }

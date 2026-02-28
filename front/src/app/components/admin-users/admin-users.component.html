@@ -3,9 +3,9 @@
   <div class="p-4 mx-auto max-w-screen-2xl md:p-6">
     <div class="mb-6">
 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-  {{ 'User management' | translate }}
+  {{ 'Gestion des utilisateurs ' | translate }}
 </h1>
-      <p class="text-gray-600 dark:text-gray-400">{{ 'Manage users and monitor system metrics   ' | translate }}
+      <p class="text-gray-600 dark:text-gray-400">{{ 'Gérer les utilisateurs et surveiller les métriques système ' | translate }}
 </p>
     </div>
 
@@ -30,10 +30,10 @@
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ ' Success' | translate }}
+            {{ ' Succès' | translate }}
           </h3>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ '   Operation completed successfully  ' | translate }}
+                    {{ '   Opération réussie  ' | translate }}
 
           </p>
         </div>
@@ -86,11 +86,11 @@
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                         {{ ' Error' | translate }}
+                         {{ ' Erreur' | translate }}
 
           </h3>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ '   An error occurred   ' | translate }}
+                    {{ '   Une erreur s’est produite   ' | translate }}
 
           </p>
         </div>
@@ -124,7 +124,7 @@
           <div class="flex items-center justify-between">
             <div>
               <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ ' Total Users' | translate }}
+                {{ ' Nombre total d\'utilisateurs' | translate }}
               </span>
               <h3 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                 {{ users.length }}
@@ -145,7 +145,7 @@
           <div class="flex items-center justify-between">
             <div>
               <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ ' Locked Users' | translate }}
+                {{ ' Utilisateurs bloqués' | translate }}
               </span>
               <h3 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                 {{ getLockedUsers().length }}
@@ -166,7 +166,7 @@
           <div class="flex items-center justify-between">
             <div>
               <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ ' Total Failed Attempts' | translate }}
+                {{ ' Nombre total de tentatives échouées' | translate }}
               </span>
               <h3 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                 {{ getTotalFailedAttempts() }}
@@ -187,7 +187,7 @@
           <div class="flex items-center justify-between">
             <div>
               <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ ' Active Users' | translate }}
+                {{ ' Utilisateurs actifs' | translate }}
               </span>
               <h3 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                 {{ getActiveUsersCount() }}
@@ -207,7 +207,7 @@
 <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 mb-6">
        <div class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-      {{ ' User Management' | translate }}
+      {{ ' Gestion des utilisateurs' | translate }}
    </h3>
     <div class="flex items-center gap-2">
       <!-- Filter Dropdown -->
@@ -222,33 +222,33 @@
         <div *ngIf="showFilterDropdown" 
           class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
           <div class="p-3">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ 'Filter by Role' | translate }}</h4>
+            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ 'Filtrer par rôle' | translate }}</h4>
 <!-- In your Filter Dropdown Menu section -->
 <select [(ngModel)]="roleFilter" (change)="applyFilters()" 
   class="w-full mb-3 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white">
-  <option value="">{{ 'All Roles' | translate }}</option>
+  <option value="">{{ 'Tous les rôles' | translate }}</option>
   <option value="Commercial Métier">{{ 'Commercial Métier' | translate }}</option>
   <option value="Décideur">{{ 'Décideur' | translate }}</option>
   <option value="Chef de Projet">{{ 'Chef de Projet' | translate }}</option>
 </select>
 
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ 'Filter by Status' | translate }}</h4>
+            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ 'Filtrer par statut' | translate }}</h4>
             <select [(ngModel)]="statusFilter" (change)="applyFilters()" 
               class="w-full mb-3 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white">
-              <option value="">{{ 'All Status' | translate }}</option>
-              <option value="active">{{ 'Active' | translate }}</option>
-              <option value="temporarily_locked">{{ 'Temporarily Locked' | translate }}</option>
-              <option value="admin_locked">{{ 'Locked by Admin' | translate }}</option>
+              <option value="">{{ 'Tous les statuts' | translate }}</option>
+              <option value="active">{{ 'Actif' | translate }}</option>
+              <option value="temporarily_locked">{{ 'Temporairement bloqué' | translate }}</option>
+              <option value="admin_locked">{{ 'Bloqué par l\'administrateur' | translate }}</option>
             </select>
             
             <div class="flex justify-between">
               <button (click)="clearFilters()" 
                 class="px-2 py-1 text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
-                {{ 'Clear Filters' | translate }}
+                {{ 'Effacer les filtres' | translate }}
               </button>
               <button (click)="toggleFilterDropdown()" 
                 class="px-2 py-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                {{ 'Close' | translate }}
+                {{ 'Fermer' | translate }}
               </button>
             </div>
           </div>
@@ -273,17 +273,17 @@
 <div *ngIf="roleFilter || statusFilter" class="mb-4 flex flex-wrap gap-2">
   <div *ngIf="roleFilter" 
     class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full dark:bg-blue-900 dark:text-blue-300">
-    {{ 'Role:' | translate }} {{ roleFilter }}
+    {{ 'Rôle:' | translate }} {{ roleFilter }}
     <button (click)="roleFilter = ''; applyFilters()" class="ml-1 text-blue-600 hover:text-blue-800">
       <i class="fas fa-times text-xs"></i>
     </button>
   </div>
   <div *ngIf="statusFilter" 
     class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full dark:bg-green-900 dark:text-green-300">
-    {{ 'Status:' | translate }} {{ 
-      statusFilter === 'active' ? 'Active' : 
-      statusFilter === 'temporarily_locked' ? 'Temporarily Locked' : 
-      statusFilter === 'admin_locked' ? 'Locked by Admin' : 
+    {{ 'Statut:' | translate }} {{ 
+      statusFilter === 'active' ? 'Actif' : 
+      statusFilter === 'temporarily_locked' ? 'Temporairement bloqué' : 
+      statusFilter === 'admin_locked' ? 'Bloqué par l\'administrateur' : 
       statusFilter 
     }}
     <button (click)="statusFilter = ''; applyFilters()" class="ml-1 text-green-600 hover:text-green-800">
@@ -295,7 +295,7 @@
       <!-- Loading -->
       <div *ngIf="loading" class="text-center p-8">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
-        <p class="mt-2 text-gray-600 dark:text-gray-400">{{ 'Loading users...' | translate }}</p>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">{{ 'Chargement des utilisateurs...' | translate }}</p>
       </div>
 
       <!-- Users Table -->
@@ -303,11 +303,11 @@
         <table class="w-full min-w-[640px]">
           <thead>
               <tr class="border-b border-gray-200 dark:border-gray-800">
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'User' | translate }}</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Utilisateur' | translate }}</th>
               <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Email' | translate }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Department' | translate }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Role' | translate }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Status' | translate }}</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Département' | translate }}</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Rôle' | translate }}</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Statut' | translate }}</th>
               <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Actions' | translate }}</th>
             </tr>
           </thead>
@@ -333,7 +333,7 @@
     </td>
     <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">{{ user.email }}</td>
 <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
-  {{ (user.department ? user.department : 'Not assigned') | translate }}
+  {{ (user.department ? user.department : 'Non attribué') | translate }}
   <button (click)="openEditDepartmentModal(user)" class="ml-2 text-blue-500 hover:text-blue-700">
     <i class="fas fa-edit text-xs"></i>
   </button>
@@ -356,28 +356,28 @@
         <button 
       (click)="openUserHistoryModal(user)"
       class="rounded-lg bg-purple-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-600 flex items-center transition-all hover:scale-105"
-      title="{{ 'View History' | translate }}">
-      <i class="fas fa-history mr-1"></i> {{ 'History' | translate }}
+      title="{{ 'Voir l\'historique' | translate }}">
+      <i class="fas fa-history mr-1"></i> {{ 'Historique' | translate }}
     </button>
     <button 
       *ngIf="!user.lockedByAdmin" 
       (click)="openConfirmModal(user, 'lock')"
       class="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600 flex items-center transition-all hover:scale-105"
     >
-      <i class="fas fa-lock mr-1"></i> {{ 'Lock' | translate }}
+      <i class="fas fa-lock mr-1"></i> {{ 'Verrouiller' | translate }}
     </button>
     <button 
       *ngIf="user.lockedByAdmin" 
       (click)="openConfirmModal(user, 'unlock')"
       class="rounded-lg bg-green-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-600 flex items-center transition-all hover:scale-105"
     >
-      <i class="fas fa-unlock mr-1"></i> {{ 'Unlock' | translate }}
+      <i class="fas fa-unlock mr-1"></i> {{ 'Déverrouiller' | translate }}
     </button>
 
     <button *ngIf="user.roles.includes('Chef de Projet')"
             (click)="showAssignProjectsModal(user)"
             class="rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-600 flex items-center transition-all hover:scale-105">
-      <i class="fas fa-project-diagram mr-1"></i> {{ 'Assign' | translate }}
+      <i class="fas fa-project-diagram mr-1"></i> {{ 'Assigner' | translate }}
     </button>
   </div>
 </td>
@@ -388,13 +388,13 @@
         <!-- Pagination -->
 <div *ngIf="!loading && users.length > pageSize" class="mt-6 flex items-center justify-between px-4 py-3">
   <div class="text-sm text-gray-700 dark:text-gray-300">
-    {{ 'Showing' | translate }}
+    {{ 'Affichage' | translate }}
     <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span>
-    {{ 'to' | translate }}
+    {{ 'à' | translate }}
     <span class="font-medium">{{ Math.min(currentPage * pageSize, users.length) }}</span>
-    {{ 'of' | translate }}
+    {{ 'sur' | translate }}
     <span class="font-medium">{{ users.length }}</span>
-    {{ 'results' | translate }}
+    {{ 'résultats' | translate }}
   </div>
   
   <div class="flex items-center space-x-2">
@@ -455,8 +455,8 @@
         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
         </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ 'No users found' | translate }}</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ 'No users have been created yet. Click "Add User" to create one.' | translate }}</p>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ 'Aucun utilisateur trouvé' | translate }}</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ 'Aucun utilisateur n\'a encore été créé. Cliquez sur "Ajouter un utilisateur" pour en créer un.' | translate }}</p>
       </div>
     </div>
 
@@ -469,7 +469,7 @@
     <div class="p-4"> <!-- Changed from p-6 to p-4 -->
       <div class="flex justify-between items-center mb-4"> <!-- Changed mb-6 to mb-4 -->
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white"> <!-- Changed text-xl to text-lg -->
-          {{ 'Add New User' | translate }}
+          {{ 'Ajouter un nouvel utilisateur' | translate }}
         </h3>
         <button (click)="closeAddUserModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
           <i class="fas fa-times"></i>
@@ -486,15 +486,15 @@
         <div class="grid grid-cols-1 gap-2"> <!-- Changed grid-cols-2 to grid-cols-1 -->
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"> <!-- Changed text-sm to text-xs -->
-              {{ 'Username' | translate }} *
+              {{ 'Nom d\'utilisateur' | translate }} *
             </label>
             <input type="text" formControlName="username" 
               [class.border-red-500]="addUserForm.get('username')?.invalid && (addUserForm.get('username')?.dirty || addUserForm.get('username')?.touched)"
               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <div *ngIf="addUserForm.get('username')?.invalid && (addUserForm.get('username')?.dirty || addUserForm.get('username')?.touched)" 
               class="text-red-500 text-xs mt-1">
-              <span *ngIf="addUserForm.get('username')?.errors?.['required']">{{ 'Username is required' | translate }}</span>
-              <span *ngIf="addUserForm.get('username')?.errors?.['minlength']">{{ 'Minimum 3 characters required' | translate }}</span>
+              <span *ngIf="addUserForm.get('username')?.errors?.['required']">{{ 'Nom d\'utilisateur requis' | translate }}</span>
+              <span *ngIf="addUserForm.get('username')?.errors?.['minlength']">{{ 'Minimum 3 caractères requis' | translate }}</span>
             </div>
           </div>
 
@@ -507,8 +507,8 @@
               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <div *ngIf="addUserForm.get('email')?.invalid && (addUserForm.get('email')?.dirty || addUserForm.get('email')?.touched)" 
               class="text-red-500 text-xs mt-1">
-              <span *ngIf="addUserForm.get('email')?.errors?.['required']">{{ 'Email is required' | translate }}</span>
-              <span *ngIf="addUserForm.get('email')?.errors?.['email']">{{ 'Please enter a valid email' | translate }}</span>
+              <span *ngIf="addUserForm.get('email')?.errors?.['required']">{{ 'Email requis' | translate }}</span>
+              <span *ngIf="addUserForm.get('email')?.errors?.['email']">{{ 'Veuillez entrer un email valide' | translate }}</span>
             </div>
           </div>
         </div>
@@ -516,7 +516,7 @@
         <!-- Row 2: Password -->
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {{ 'Password' | translate }} *
+            {{ 'Mot de passe' | translate }} *
           </label>
           <div class="relative">
             <input [type]="passwordVisible ? 'text' : 'password'" formControlName="password" 
@@ -529,8 +529,8 @@
           </div>
           <div *ngIf="addUserForm.get('password')?.invalid && (addUserForm.get('password')?.dirty || addUserForm.get('password')?.touched)" 
             class="text-red-500 text-xs mt-1">
-            <span *ngIf="addUserForm.get('password')?.errors?.['required']">{{ 'Password is required' | translate }}</span>
-            <span *ngIf="addUserForm.get('password')?.errors?.['minlength']">{{ 'Minimum 6 characters required' | translate }}</span>
+            <span *ngIf="addUserForm.get('password')?.errors?.['required']">{{ 'Mot de passe requis' | translate }}</span>
+            <span *ngIf="addUserForm.get('password')?.errors?.['minlength']">{{ 'Minimum 6 caractères requis' | translate }}</span>
           </div>
         </div>
 
@@ -538,14 +538,14 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'First Name' | translate }}
+              {{ 'Prénom' | translate }}
             </label>
             <input type="text" formControlName="firstName" 
               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
           </div>
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-             {{ 'Last Name' | translate }}
+             {{ 'Nom de famille' | translate }}
             </label>
             <input type="text" formControlName="lastName" 
               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -556,14 +556,14 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Phone' | translate }}
+              {{ 'Numéro de téléphone' | translate }}
             </label>
             <input type="text" formControlName="phone" 
               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
           </div>
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Department' | translate }}
+              {{ 'Départment' | translate }}
             </label>
             <input type="text" formControlName="department" 
               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -572,7 +572,7 @@
 
    <div>
   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-    {{ 'Roles ' | translate }} *
+    {{ 'Rôles ' | translate }} *
   </label>
   <div class="space-y-1">
     <label *ngFor="let role of availableRoles" 
@@ -589,17 +589,17 @@
   </div>
   <div *ngIf="addUserForm.get('roles')?.invalid && addUserForm.get('roles')?.touched" 
     class="text-red-500 text-xs mt-1">
-    <span *ngIf="addUserForm.get('roles')?.errors?.['required']">{{ 'At least one role is required' | translate }}</span>
+    <span *ngIf="addUserForm.get('roles')?.errors?.['required']">{{ 'Au moins un rôle est requis' | translate }}</span>
   </div>
 </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button type="button" (click)="closeAddUserModal()" 
             class="px-4 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-            {{ 'Cancel' | translate }}
+            {{ 'Annuler' | translate }}
           </button>
           <button type="submit" [disabled]="addUserForm.invalid" 
             class="px-4 py-2 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-            {{ 'Create User' | translate }}
+            {{ 'Créer l\'utilisateur' | translate }}
           </button>
         </div>
       </form>
@@ -613,7 +613,7 @@
     <div class="p-4">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-         {{ 'Department for' | translate }}<span class="text-blue-500">{{ selectedUser.username }}</span>
+         {{ 'Départment pour' | translate }}<span class="text-blue-500">{{ selectedUser.username }}</span>
         </h3>
         <button (click)="closeEditDepartmentModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
           <i class="fas fa-times"></i>
@@ -629,25 +629,25 @@
         <div class="space-y-3">
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Department' | translate }} *
+              {{ 'Départment' | translate }} *
             </label>
             <input type="text" formControlName="department" 
               [class.border-red-500]="editDepartmentForm.get('department')?.invalid && (editDepartmentForm.get('department')?.dirty || editDepartmentForm.get('department')?.touched)"
               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <div *ngIf="editDepartmentForm.get('department')?.invalid && (editDepartmentForm.get('department')?.dirty || editDepartmentForm.get('department')?.touched)" 
               class="text-red-500 text-xs mt-1">
-              {{ 'Department is required' | translate }}
+              {{ 'Départment est requis' | translate }}
             </div>
           </div>
           
           <div class="flex gap-2">
             <button type="button" (click)="closeEditDepartmentModal()" 
               class="w-full px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-              {{ 'Cancel' | translate }}
+              {{ 'Annuler' | translate }}
             </button>
             <button type="submit" [disabled]="editDepartmentForm.invalid" 
               class="w-full px-3 py-2 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-              {{ 'Update' | translate }}
+              {{ 'Mettre à jour' | translate }}
             </button>
           </div>
         </div>
@@ -662,7 +662,7 @@
     <div class="p-4">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-          {{ 'Roles for' | translate }}<span class="text-blue-500">{{ selectedUser.username }}</span>
+          {{ 'Rôles pour' | translate }}<span class="text-blue-500">{{ selectedUser.username }}</span>
         </h3>
         <button (click)="closeEditRoleModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
           <i class="fas fa-times"></i>
@@ -678,7 +678,7 @@
         <div class="space-y-3">
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {{ 'Select Roles' | translate }} *
+              {{ 'Sélectionner le rôle' | translate }} *
             </label>
             <!-- In your Edit Role Modal HTML -->
 <div class="space-y-1">
@@ -694,18 +694,18 @@
 </div>
             <div *ngIf="editRoleForm.get('roles')?.invalid && editRoleForm.get('roles')?.touched" 
               class="text-red-500 text-xs mt-2">
-              {{ 'At least one role is required' | translate }}
+              {{ 'Au moins un rôle est requis' | translate }}
             </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button type="button" (click)="closeEditRoleModal()" 
               class="px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-              {{ 'Cancel' | translate }}
+              {{ 'Annuler' | translate }}
             </button>
             <button type="submit" [disabled]="editRoleForm.invalid" 
               class="px-3 py-2 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-              {{ 'Update Roles' | translate }}
+              {{ 'Mettre à jour le rôle' | translate }}
             </button>
           </div>
         </div>
@@ -735,7 +735,7 @@
             {{ confirmTitle }}
           </h3>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ 'Please confirm your action' | translate }}
+            {{ 'Veuillez confirmer votre action' | translate }}
           </p>
         </div>
       </div>
@@ -774,7 +774,7 @@
           (click)="closeConfirmModal()"
           class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-300 dark:border-gray-600"
         >
-          {{ 'Cancel' | translate }}
+          {{ 'Annuler' | translate }}
         </button>
         <button 
           type="button" 
@@ -787,7 +787,7 @@
           <i [class]="confirmAction === 'lock' 
             ? 'fas fa-lock mr-2' 
             : 'fas fa-unlock mr-2'"></i>
-          {{ confirmAction === 'lock' ? 'Lock User' : 'Unlock User' }}
+          {{ confirmAction === 'lock' ? 'Verrouiller l\'utilisateur' : 'Déverrouiller l\'utilisateur' }}
         </button>
       </div>
 
@@ -812,10 +812,10 @@
           </div>
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ 'Assign Unassigned Applications' | translate }}
+              {{ 'Assigner les applications non assignées' | translate }}
             </h3>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-              {{ 'Assigning to' | translate }}: 
+              {{ 'Assignation à' | translate }}: 
               <span class="font-medium">{{ selectedUserForAssignment.firstName }} {{ selectedUserForAssignment.lastName }}</span>
             </p>
             <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -835,10 +835,10 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
           </svg>
           <h4 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-            {{ 'No unassigned applications' | translate }}
+            {{ 'Aucune application non assignée' | translate }}
           </h4>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {{ 'All applications are already assigned to a chef de projet.' | translate }}
+            {{ 'Toutes les applications sont déjà assignées à un chef de projet.' | translate }}
           </p>
         </div>
         
@@ -884,10 +884,10 @@
         <div class="flex items-center justify-between">
           <div>
             <h4 class="text-sm font-medium text-blue-900 dark:text-blue-300">
-              {{ 'Selected applications' | translate }}
+              {{ 'Application Selectionné' | translate }}
             </h4>
             <p class="text-xs text-blue-700 dark:text-blue-400">
-              {{ projectsToAssign.length }} {{ 'application(s) selected' | translate }}
+              {{ projectsToAssign.length }} {{ 'application(s) seléctionné(s)' | translate }}
             </p>
           </div>
           
@@ -995,7 +995,7 @@
           type="button" 
           (click)="closeAssignmentModal()"
           class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-300 dark:border-gray-600">
-          {{ 'Cancel' | translate }}
+          {{ 'Annuler' | translate }}
         </button>
         <button 
           type="button" 
@@ -1004,10 +1004,10 @@
           class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center">
           <i *ngIf="loading" class="fas fa-spinner fa-spin mr-2"></i>
           <span *ngIf="!loading">
-            {{ 'Assign' | translate }} ({{ projectsToAssign.length }})
+            {{ 'Assigner' | translate }} ({{ projectsToAssign.length }})
           </span>
           <span *ngIf="loading">
-            {{ 'Assigning...' | translate }}
+            {{ 'Assignation en cours...' | translate }}
           </span>
         </button>
       </div>
@@ -1032,7 +1032,7 @@
           </div>
           <div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ 'User History' | translate }}
+              {{ 'Historique de l\'utilisateur' | translate }}
             </h3>
             <p class="text-sm text-gray-500 dark:text-gray-400">
               {{ selectedUserForHistory.firstName }} {{ selectedUserForHistory.lastName }} 
@@ -1052,7 +1052,7 @@
       <div class="mb-4 max-h-[60vh] overflow-y-auto">
         <div *ngIf="loadingHistory" class="text-center py-12">
           <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-purple-600 border-t-transparent"></div>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">{{ 'Loading history...' | translate }}</p>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">{{ 'Chargement de l\'historique...' | translate }}</p>
         </div>
         
         <div *ngIf="!loadingHistory && userHistory.length === 0" class="text-center py-12">
@@ -1060,10 +1060,10 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <h4 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-            {{ 'No history found' | translate }}
+            {{ 'Aucun historique trouvé' | translate }}
           </h4>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {{ 'This user has no recorded activity yet.' | translate }}
+            {{ 'Cet utilisateur n\'a pas encore d\'activité enregistrée.' | translate }}
           </p>
         </div>
         
@@ -1131,7 +1131,7 @@
                     
                     <!-- Metadata -->
                     <div class="mt-2 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                      <span><i class="fas fa-globe mr-1"></i> {{ entry.ipAddress || 'Unknown IP' }}</span>
+                      <span><i class="fas fa-globe mr-1"></i> {{ entry.ipAddress || 'IP inconnu' }}</span>
                       <span *ngIf="entry.userAgent" class="truncate max-w-[200px]" title="{{ entry.userAgent }}">
                         <i class="fas fa-laptop mr-1"></i> {{ entry.userAgent.split(' ')[0] }}
                       </span>
@@ -1150,7 +1150,7 @@
           type="button" 
           (click)="closeUserHistoryModal()"
           class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-300 dark:border-gray-600">
-          {{ 'Close' | translate }}
+          {{ 'Fermer' | translate }}
         </button>
       </div>
     </div>
@@ -1164,10 +1164,10 @@
     <svg class="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
     </svg>
-    <h2 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">{{ 'Access Denied' | translate }}</h2>
-    <p class="mt-2 text-gray-600 dark:text-gray-400">{{ 'You don\'t have permission to access the admin dashboard. Please contact an administrator if you believe this is an error.' | translate }}</p>
+    <h2 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">{{ 'Accès Refusé' | translate }}</h2>
+    <p class="mt-2 text-gray-600 dark:text-gray-400">{{ 'Vous n\'avez pas l\'autorisation d\'accéder au tableau de bord administrateur. Veuillez contacter un administrateur si vous pensez qu\'il s\'agit d\'une erreur.' | translate }}</p>
     <button routerLink="/" class="mt-4 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
-      {{ 'Return to Dashboard' | translate }}
+      {{ 'Retour au Tableau de Bord' | translate }}
     </button>
   </div>
 

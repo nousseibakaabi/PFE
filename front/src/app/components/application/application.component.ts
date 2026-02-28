@@ -148,6 +148,16 @@ export class ApplicationComponent implements OnInit {
     });
   }
 
+
+  
+  getProgressClass(progress: number): string {
+    if (progress >= 90) return 'bg-green-500';
+    if (progress >= 70) return 'bg-blue-500';
+    if (progress >= 50) return 'bg-yellow-500';
+    if (progress >= 30) return 'bg-orange-500';
+    return 'bg-red-500';
+  }
+
   // NEW: Get workload for a specific chef
   getChefWorkload(chefId: number): WorkloadDTO | undefined {
     return this.chefsWorkload.get(chefId);
@@ -505,5 +515,9 @@ openAssignModal(application: Application): void {
   if (workload >= 70) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
   if (workload >= 40) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
   return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+}
+
+goToArchivePage(): void {
+  this.router.navigate(['/archives/applications']);
 }
 }

@@ -31,6 +31,22 @@ public class Application {
 
     private String description;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id")
+    private User createdBy;
+
+    // Archiving fields
+    @Column(name = "archived")
+    private Boolean archived = false;
+
+    @Column(name = "archived_at")
+    private LocalDateTime archivedAt;
+
+    @Column(name = "archived_by")
+    private String archivedBy;
+
+    @Column(name = "archived_reason")
+    private String archivedReason;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chef_de_projet_id")
@@ -306,4 +322,7 @@ public class Application {
                 this.status = "EN_COURS";
             }
         }
-    }
+
+    public User getCreatedBy() { return createdBy; }
+    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
+}

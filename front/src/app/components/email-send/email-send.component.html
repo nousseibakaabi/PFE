@@ -1,50 +1,102 @@
-<div class="container">
-  <div class="success-card">
-    <div class="icon-container">
-      <div class="icon-circle">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#217093" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+<div class="min-h-screen bg-gradient-to-br from-gray to-gray dark:from-slate-950 dark:to-slate-900 flex items-center justify-center p-4 transition-colors duration-500 relative overflow-hidden">
+  
+    <div class="fixed top-6 right-6 z-50">
+  <button (click)="toggleDarkMode()" 
+    class="p-3 rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl border border-gray-200 dark:border-gray-700 text-[#6DB9D5] dark:text-[#6DB9D5] hover:scale-110 transition-all active:scale-95 flex items-center gap-2 font-medium text-sm">
+    <span class="material-icons text-xl">{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</span>
+    <span class="hidden sm:inline">{{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}</span>
+  </button>
+</div>
+
+  <!-- Envelope Square Card -->
+<div class="w-full max-w-md bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 dark:border-white/10 relative z-10 overflow-hidden">
+  
+  <!-- Envelope Flap (OPENED - folded back) -->
+  <div class="relative">
+    <!-- Main envelope body (the pocket) -->
+    <div class="bg-gradient-to-br from-[#6EB9D5] to-[#4A8AA5] dark:from-[#4A8AA5] dark:to-[#2D5A70] p-6 pb-12">
+      <!-- Envelope flap (folded back) -->
+      <div class="absolute -top-6 left-0 right-0">
+        <div class="w-full h-12 bg-[#4A8AA5] dark:bg-[#2D5A70]" style="clip-path: polygon(0% 0%, 100% 0%, 50% 100%);"></div>
+        <!-- Flap shadow -->
+        <div class="absolute top-2 left-0 right-0 h-6 bg-black/10" style="clip-path: polygon(0% 0%, 100% 0%, 50% 100%);"></div>
+      </div>
+      
+      <!-- Envelope opening (the cut) -->
+      <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-8 bg-white/90 dark:bg-slate-900/90 rounded-sm rotate-3 shadow-inner"></div>
+      
+      <!-- Letter peek (showing inside) -->
+      <div class="relative mt-8 mx-4 bg-white dark:bg-slate-800 rounded-lg p-4 shadow-xl rotate-1 hover:rotate-0 transition-transform duration-300">
+
+    <!-- Icon (now inside the letter) -->
+    <div class="flex justify-center mb-4 mt-4">
+      <div class="w-16 h-16 bg-[#6EB9D5]/10 dark:bg-[#6EB9D5]/5 rounded-2xl flex items-center justify-center border-2 border-[#6EB9D5]/20 dark:border-[#6EB9D5]/10 animate-float">
+        <svg class="w-8 h-8 text-[#6EB9D5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       </div>
     </div>
-    
-    <h2 class="title">Vérifiez votre e-mail !</h2>
-    
-    <div class="message">
-      Nous avons envoyé les instructions de réinitialisation du mot de passe à
-      <br>
-      <strong>{{ email || 'votre adresse e-mail' }}</strong>
-    </div>
-    
-    <div class="instructions">
-      Le lien expirera dans 24 heures. Si vous ne voyez pas l’e-mail,
-      vérifiez votre dossier spam ou réessayez.
 
+    <!-- Title -->
+    <h1 class="text-2xl font-bold text-center text-gray-900 dark:text-white mb-2">
+      Vérifie votre boîte
+    </h1>
+
+    <!-- Email -->
+    <div class="text-center mb-6">
+      <span class="text-sm text-gray-500 dark:text-slate-400">Envoyé à</span>
+      <div class="mt-1 font-medium text-[#6EB9D5] dark:text-[#6EB9D5] text-base truncate px-2">
+        {{ email || 'ton@email.com' }}
+      </div>
     </div>
-    
-    <div class="button-group">
-      
-      
-      <button class="secondary-btn" (click)="resendEmail()" [disabled]="isResending">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M23 4v6h-6"></path>
-          <path d="M1 20v-6h6"></path>
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
-          <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
+
+    <!-- Buttons -->
+    <div class="space-y-2">
+      <button (click)="resendEmail()" [disabled]="isResending"
+        class="w-full py-3 bg-[#6EB9D5] hover:bg-[#4A8AA5] dark:bg-[#4A8AA5] dark:hover:bg-[#2D5A70] text-white font-medium rounded-xl text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-[#6EB9D5]/30 dark:shadow-[#4A8AA5]/30 disabled:opacity-50">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
-        {{ isResending ? 'Envoi en cours...' : 'Renvoyer l’e-mail' }}
+        {{ isResending ? 'En cours d\'envoi' : 'Renvoyer' }}
       </button>
-    </div>
-    
-    
 
-    <div *ngIf="resendSuccess" class="success-message">
-      E-mail renvoyé avec succès!
+      <a routerLink="/" 
+        class="block w-full py-3 text-center text-[10px] text-gray-600 dark:text-slate-400 hover:text-[#6EB9D5] dark:hover:text-[#6EB9D5] transition-colors">
+        Retour à la page de connexion
+      </a>
     </div>
-    <div *ngIf="resendError" class="error-message">
-      {{ resendError }}
+
+    <!-- Messages -->
+    <div *ngIf="resendSuccess" 
+      class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-green-700 dark:text-green-400 text-xs flex items-center justify-center gap-2">
+      <span>✓</span>
+      <span>Renvoyé !</span>
+    </div>
+
+    <div *ngIf="resendError" 
+      class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-400 text-xs flex items-center justify-center gap-2">
+      <span>⚠️</span>
+      <span>{{ resendError }}</span>
+    </div>
+  </div>
+        
+      
+      <!-- Envelope bottom edge -->
+      <div class="absolute bottom-0 left-0 right-0 h-4 bg-[#4A8AA5] dark:bg-[#2D5A70] opacity-50"></div>
     </div>
     
+  
+    
+    <!-- Postal marks -->
+    <div class="absolute bottom-4 left-4 text-white/20 text-xs font-mono rotate-12">
+       MAIL
+    </div>
+    <div class="absolute bottom-4 right-4 text-white/20 text-xs font-mono -rotate-12">
+       SUCCESS
+    </div>
   </div>
+  
+  <!-- Envelope Body - Content -->
+  
+</div>
 </div>

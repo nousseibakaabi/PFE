@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConventionService, Convention } from '../../services/convention.service';
+import { ConventionService, Convention, RenewalRequest } from '../../services/convention.service';
 import { FactureService, Facture } from '../../services/facture.service';
 import { AuthService } from '../../services/auth.service';
 import { TimeFormatService } from '../../services/time-format.service';
@@ -75,6 +75,33 @@ export class ConventionDetailComponent implements OnInit {
   loadingHistory = false;
   showAllHistoryModal = false;
   groupedConventionHistory: { date: string, entries: HistoryEntry[] }[] = [];
+
+
+
+  showRenewModal = false;
+  renewLoading = false;
+  renewalFormData: RenewalRequest = {
+    referenceERP: '',
+    libelle: '',
+    dateDebut: '',
+    dateFin: '',
+    dateSignature: '',
+    montantHT: 0,
+    tva: 19,
+    montantTTC: 0,
+    nbUsers: 0,
+    periodicite: 'MENSUEL'
+  };
+
+
+  showPreviousVersionsModal = false;
+  previousVersions: any[] = [];
+  selectedOldVersion: any = null;
+  selectedOldFactures: any[] = [];
+  loadingVersions = false;
+
+
+
 
 
   constructor(
@@ -584,12 +611,7 @@ getHistoryIcon(actionType: string): string {
     this.successMessage = '';
   }
 
-  calculateTTC(): void {
-    if (this.newInvoiceData.montantHT && this.newInvoiceData.tva) {
-      // You can implement this or rely on backend
-      // For now, we'll just show a note
-    }
-  }
+
 
 
   calculateDuration(): number {
@@ -723,4 +745,156 @@ viewAllHistory(): void {
   this.router.navigate(['/conventions', this.conventionId, 'history']);
 }
 
+
+openRenewModal(): void {
+  // Pre-fill with current convention data
+  if (this.convention) {
+    this.renewalFormData = {
+      referenceERP: this.convention.referenceERP || '',
+      libelle: this.convention.libelle || '',
+      dateDebut: this.convention.dateDebut || '',
+      dateFin: this.convention.dateFin || '',
+      dateSignature: this.convention.dateSignature || '',
+      montantHT: this.convention.montantHT || 0,
+      tva: this.convention.tva || 19,
+      montantTTC: this.convention.montantTTC || 0,
+      nbUsers: this.convention.nbUsers || 0,
+      periodicite: this.convention.periodicite || 'MENSUEL'
+    };
+  }
+  this.showRenewModal = true;
+}
+
+closeRenewModal(): void {
+  this.showRenewModal = false;
+}
+
+// In convention-detail.component.ts
+renewConvention(): void {
+  // Validate form data
+  if (!this.renewalFormData.libelle?.trim()) {
+    this.errorMessage = 'Le libellé est requis';
+    return;
+  }
+  
+  if (!this.renewalFormData.dateDebut) {
+    this.errorMessage = 'La date de début est requise';
+    return;
+  }
+  
+  if (!this.renewalFormData.dateFin) {
+    this.errorMessage = 'La date de fin est requise';
+    return;
+  }
+  
+  if (this.renewalFormData.montantHT <= 0) {
+    this.errorMessage = 'Le montant HT doit être supérieur à 0';
+    return;
+  }
+  
+  if (this.renewalFormData.nbUsers <= 0) {
+    this.errorMessage = 'Le nombre d\'utilisateurs doit être supérieur à 0';
+    return;
+  }
+
+  this.renewLoading = true;
+  console.log('Sending renewal data:', this.renewalFormData);
+  
+  this.conventionService.renewConvention(this.conventionId, this.renewalFormData).subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.successMessage = 'Convention renouvelée avec succès';
+        this.closeRenewModal();
+        setTimeout(() => {
+          this.router.navigate(['/conventions', response.data.id]);
+        }, 1500);
+      } else {
+        this.errorMessage = response.message || 'Erreur lors du renouvellement';
+        this.renewLoading = false;
+      }
+    },
+    error: (error) => {
+      console.error('Error renewing convention:', error);
+      this.errorMessage = error.error?.message || 'Erreur lors du renouvellement';
+      this.renewLoading = false;
+    }
+  });
+}
+
+onMontantHTChange(): void {
+  this.calculateTTC();
+}
+
+onTvaChange(): void {
+  this.calculateTTC();
+}
+
+calculateTTC(): void {
+  if (this.renewalFormData.montantHT <= 0) {
+    this.renewalFormData.montantTTC = 0;
+    return;
+  }
+
+  const tva = this.renewalFormData.tva || 19;
+  const tvaAmount = this.renewalFormData.montantHT * tva / 100;
+  this.renewalFormData.montantTTC = this.renewalFormData.montantHT + tvaAmount;
+}
+
+
+
+viewPreviousVersions(): void {
+  if (!this.convention?.id) return;
+  
+  this.loadingVersions = true;
+  this.conventionService.getPreviousVersions(this.convention.id).subscribe({
+    next: (response) => {
+      if (response.success && response.data) {
+        this.previousVersions = response.data;
+        this.showPreviousVersionsModal = true;
+      } else {
+        this.errorMessage = response.message || 'Aucune ancienne version trouvée';
+      }
+      this.loadingVersions = false;
+    },
+    error: (error) => {
+      console.error('Error loading previous versions:', error);
+      this.errorMessage = 'Erreur lors du chargement des anciennes versions';
+      this.loadingVersions = false;
+    }
+  });
+}
+
+closePreviousVersionsModal(): void {
+  this.showPreviousVersionsModal = false;
+  this.previousVersions = [];
+  this.selectedOldVersion = null;
+  this.selectedOldFactures = [];
+}
+
+selectOldVersion(version: any): void {
+  this.selectedOldVersion = version.oldConvention;
+  this.selectedOldFactures = version.oldFactures || [];
+}
+
+formatDate(dateString: string): string {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+// Format date with time
+formatDateTime(dateString: string): string {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
 }

@@ -121,5 +121,9 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     List<Convention> findByApplicationAndArchivedFalseOrderByUpdatedAtDesc(Application application);
 
 
+    List<Convention> findByApplicationAndArchivedTrue(Application application);
+
+    @Query("SELECT c FROM Convention c WHERE c.application.id = :applicationId AND c.archived = true")
+    List<Convention> findByApplicationIdAndArchivedTrue(@Param("applicationId") Long applicationId);
 
 }

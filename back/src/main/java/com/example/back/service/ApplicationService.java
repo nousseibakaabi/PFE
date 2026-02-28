@@ -75,6 +75,10 @@ public class ApplicationService {
                 throw new RuntimeException("Application with this name already exists");
             }
 
+            // Get current user FIRST
+            User currentUser = getCurrentUser();
+            log.info("Current user: {}", currentUser != null ? currentUser.getUsername() : "null");
+
             // Fetch chef de projet - make it optional
             User chefDeProjet = null;
             if (request.getChefDeProjetId() != null && request.getChefDeProjetId() > 0) {
@@ -103,11 +107,13 @@ public class ApplicationService {
             application.setMinUser(request.getMinUser());
             application.setStatus(request.getStatus() != null ? request.getStatus() : "PLANIFIE");
 
+            // Set the createdBy field
+            application.setCreatedBy(currentUser);
+
             Application savedApplication = applicationRepository.save(application);
             log.info("Application created successfully: {}", savedApplication.getCode());
 
-            // LOG HISTORY: Application creation
-            User currentUser = getCurrentUser();
+            // LOG HISTORY: Application creation (use the same currentUser)
             historyService.logApplicationCreate(savedApplication, currentUser);
 
             // ===== IF CHEF WAS ASSIGNED DURING CREATION, USE WORKLOAD SERVICE =====
@@ -141,6 +147,7 @@ public class ApplicationService {
             throw new RuntimeException("Failed to create application: " + e.getMessage());
         }
     }
+
     /**
      * Update application
      */

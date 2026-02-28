@@ -38,7 +38,7 @@ export class AppComponent implements OnInit {
   }
   
   showLayout(): boolean {
-    const layoutRoutes = ['/profile','/admin','/conventions','/factures','/commercial','/decideur','/chef' ,'/calendar' ,'/mailBox','/application','/notifications'];
+    const layoutRoutes = ['/profile','/admin','/conventions','/factures','/commercial','/decideur','/chef' ,'/calendar' ,'/mailBox','/application','/notifications','/requests'];
     return layoutRoutes.some(route => this.currentRoute.includes(route));
   }
 }

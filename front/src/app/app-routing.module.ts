@@ -28,6 +28,8 @@ import { HistoryComponent } from './components/history/history.component';
 import { NotificationsComponent } from './components/notifications/notifications.component';
 import { ConventionFacturesComponent } from './components/convention-factures/convention-factures.component';
 import { ConventionHistoryComponent } from './components/convention-history/convention-history.component';
+import { RequestsComponent } from './components/requests/requests.component';
+import { ApplicationArchiveComponent } from './components/application-archive/application-archive.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -173,6 +175,21 @@ data: { roles: ['ROLE_ADMIN', 'ROLE_COMMERCIAL_METIER', 'ROLE_CHEF_PROJET', 'ROL
 component: ConventionHistoryComponent,
 canActivate: [AuthGuard],
 data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHEF_PROJET'] }
+},
+
+
+{ 
+  path: 'requests', 
+  component: RequestsComponent, 
+  canActivate: [AuthGuard],
+  data: { roles: ['ROLE_ADMIN', 'ROLE_CHEF_PROJET'] } 
+},
+
+{ 
+  path: 'archives/applications', 
+  component: ApplicationArchiveComponent, 
+  canActivate: [AuthGuard],
+  data: { roles: ['ROLE_ADMIN', 'ROLE_CHEF_PROJET'] } 
 },
 
   { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },

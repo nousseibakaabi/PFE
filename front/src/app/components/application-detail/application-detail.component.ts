@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
 import { UserService } from 'src/app/services/user.service';
 import { HistoryService, HistoryEntry } from '../../services/history.service';
-import { WorkloadService, WorkloadCheck, AlternativeChef } from '../../services/workload.service';
+import { WorkloadService, WorkloadCheck, AlternativeChef, WorkloadDTO } from '../../services/workload.service';
 import { Location } from '@angular/common';
 
 @Component({
@@ -38,7 +38,16 @@ export class ApplicationDetailComponent implements OnInit {
   Object = Object;
   showAllHistoryModal = false;
 
+  chefWorkload: any = null;
+
+
+  Workload: WorkloadDTO | null = null;
+
+
+
   groupedApplicationHistory: { date: string, entries: HistoryEntry[] }[] = [];
+
+  activeTab: 'details' | 'conventions' | 'history' | 'chef' = 'details';
 
 
   showWorkloadWarning = false;
@@ -80,6 +89,40 @@ export class ApplicationDetailComponent implements OnInit {
   }
 
 
+
+
+
+
+loadChefWorkload(): void {
+  if (!this.application || !this.application.chefDeProjetId) {
+    this.chefWorkload = null;
+    return;
+  }
+
+  this.workloadLoading = true;
+  
+  // CORRECTION: Utiliser l'ID du chef de projet de l'application, pas le currentUser
+  const chefId = this.application.chefDeProjetId;
+  
+  this.workloadService.getWorkloadDashboard().subscribe({
+    next: (response) => {
+      if (response.success && response.data?.workloads) {
+        // Find the workload for the application's chef
+        this.chefWorkload = response.data.workloads.find(
+          (w: WorkloadDTO) => w.chefId === chefId
+        ) || null;
+        
+        console.log('Chef workload loaded:', this.chefWorkload);
+      }
+      this.workloadLoading = false;
+    },
+    error: (error) => {
+      console.error('Error loading chef workload:', error);
+      this.workloadLoading = false;
+      this.chefWorkload = null;
+    }
+  });
+}
   
 
     loadCurrentUser(): void {
@@ -209,6 +252,11 @@ loadApplicationDetails(id: number): void {
         console.log('Application data:', this.application);
         console.log('Chef profile image:', this.application?.chefDeProjetProfileImage);
         console.log('Chef full name:', this.application?.chefDeProjetFullName);
+        
+        // Load chef workload if chef is assigned
+        if (this.application?.chefDeProjetId) {
+          this.loadChefWorkload();
+        }
       } else {
         this.errorMessage = 'Failed to load application details';
       }
@@ -426,7 +474,6 @@ assignChef(): void {
   
   this.assigning = true;
   
-  // Use the new workload endpoint with force=false by default
   this.workloadService.assignWithWorkloadCheck(
     this.selectedChefId, 
     this.application.id, 
@@ -438,6 +485,12 @@ assignChef(): void {
           ? 'Chef de projet assigné avec avertissement (charge élevée)'
           : 'Chef de projet assigné avec succès';
         this.loadApplicationDetails(this.application!.id);
+        
+        // IMPORTANT: Load the workload after assignment
+        setTimeout(() => {
+          this.loadChefWorkload();
+        }, 500);
+        
         this.closeAssignChefModal();
       } else {
         this.errorMessage = response.message || 'Échec de l\'assignation';

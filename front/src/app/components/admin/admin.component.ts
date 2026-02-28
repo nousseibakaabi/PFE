@@ -1,3 +1,4 @@
+// src/app/components/admin/admin.component.ts
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { StatsService } from '../../services/stats.service';
 import { ChartService } from '../../services/chart.service';
@@ -16,7 +17,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('structureTypeChart') structureTypeChartRef!: ElementRef;
   @ViewChild('revenueTrendChart') revenueTrendChartRef!: ElementRef;
   
-  // Chart instances (using any to avoid TypeScript issues)
+  // Chart instances
   conventionStatusChart: any = null;
   paymentStatusChart: any = null;
   userRoleChart: any = null;
@@ -31,6 +32,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   nomenclatureStats: any = {};
   financialStats: any = {};
   summaryStats: any = {};
+  applicationStats: any = {};
   
   // Loading state
   isLoading = true;
@@ -45,24 +47,20 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     averageWorkload: 0
   };
 
-    Math = Math;
-
+  Math = Math;
 
   constructor(
     private statsService: StatsService,
     private chartService: ChartService,
     private workloadService: WorkloadService 
-
   ) {}
 
   ngOnInit(): void {
     this.loadAdminStats();
     this.loadWorkloadDashboard(); 
-
   }
 
   ngAfterViewInit(): void {
-    // Small delay to ensure view is fully initialized
     setTimeout(() => this.renderCharts(), 100);
   }
 
@@ -70,18 +68,39 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = true;
     
     this.statsService.getAdminStats().then((results: any[]) => {
-      // Process all stats results
-      if (results[0]?.success) this.dashboardStats = results[0].data;
-      if (results[1]?.success) this.conventionStats = results[1].data;
-      if (results[2]?.success) this.factureStats = results[2].data;
-      if (results[3]?.success) this.userStats = results[3].data;
-      if (results[4]?.success) this.nomenclatureStats = results[4].data;
-      if (results[5]?.success) this.financialStats = results[5].data;
-      if (results[6]?.success) this.summaryStats = results[6].data;
+      console.log('Admin stats results:', results); // Debug log
+      
+      // Process all stats results with proper mapping
+      if (results[0]?.success) {
+        this.dashboardStats = this.mapDashboardStats(results[0].data);
+      }
+      if (results[1]?.success) {
+        this.conventionStats = results[1].data;
+      }
+      if (results[2]?.success) {
+        this.factureStats = results[2].data;
+      }
+      if (results[3]?.success) {
+        this.userStats = results[3].data;
+        console.log('User stats:', this.userStats); // Debug log
+      }
+      if (results[4]?.success) {
+        this.nomenclatureStats = results[4].data;
+        console.log('Nomenclature stats:', this.nomenclatureStats); // Debug log
+      }
+      if (results[5]?.success) {
+        this.financialStats = results[5].data;
+      }
+      if (results[6]?.success) {
+        this.summaryStats = results[6].data;
+      }
+      if (results[7]?.success) {
+        this.applicationStats = results[7].data;
+        console.log('Application stats:', this.applicationStats); // Debug log
+      }
       
       this.isLoading = false;
       
-      // Re-render charts with new data
       setTimeout(() => {
         this.destroyCharts();
         this.renderCharts();
@@ -93,10 +112,34 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Map dashboard stats from backend to expected format
+   */
+  mapDashboardStats(data: any): any {
+    return {
+      totalConventions: data.totalConventions || 0,
+      activeConventions: data.activeConventions || 0,
+      planifiedConventions: data.planifiedConventions || 0,
+      terminatedConventions: data.terminatedConventions || 0,
+      archivedConventions: data.archivedConventions || 0,
+      totalFactures: data.totalFactures || 0,
+      paidFactures: data.paidFactures || 0,
+      unpaidFactures: data.unpaidFactures || 0,
+      overdueFactures: data.overdueFactures || 0,
+      totalApplications: data.totalApplications || 0,
+      activeApplications: data.activeApplications || 0,
+      completedApplications: data.completedApplications || 0,
+      plannedApplications: data.plannedApplications || 0,
+      averageProgress: data.averageProgress || 0
+    };
+  }
+
   renderCharts(): void {
     // 1. Convention Status Chart (Pie)
-    if (this.conventionStatusChartRef && this.conventionStats.statusDistribution) {
-      const labels = this.conventionStats.statusDistribution.map((s: any) => s.name);
+    if (this.conventionStatusChartRef && this.conventionStats?.statusDistribution) {
+      const labels = this.conventionStats.statusDistribution.map((s: any) => 
+        this.getConventionEtatLabel(s.name)
+      );
       const data = this.conventionStats.statusDistribution.map((s: any) => s.count);
       
       this.conventionStatusChart = this.chartService.createChart(
@@ -110,6 +153,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           }]
         },
         {
+          responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: {
               position: 'bottom'
@@ -120,8 +165,10 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // 2. Payment Status Chart (Bar)
-    if (this.paymentStatusChartRef && this.factureStats.paymentStatus) {
-      const labels = this.factureStats.paymentStatus.map((p: any) => p.status);
+    if (this.paymentStatusChartRef && this.factureStats?.paymentStatus) {
+      const labels = this.factureStats.paymentStatus.map((p: any) => 
+        this.getFactureStatutLabel(p.status)
+      );
       const data = this.factureStats.paymentStatus.map((p: any) => p.count);
       
       this.paymentStatusChart = this.chartService.createChart(
@@ -134,13 +181,27 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
             data: data,
             backgroundColor: ['#4CAF50', '#FF9800', '#F44336']
           }]
+        },
+        {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
         }
       );
     }
 
     // 3. User Role Chart (Doughnut)
-    if (this.userRoleChartRef && this.userStats.roleDistribution) {
-      const labels = Object.keys(this.userStats.roleDistribution);
+    if (this.userRoleChartRef && this.userStats?.roleDistribution) {
+      const labels = Object.keys(this.userStats.roleDistribution).map(role => 
+        this.getRoleLabel(role)
+      );
       const data = Object.values(this.userStats.roleDistribution) as number[];
       
       this.userRoleChart = this.chartService.createChart(
@@ -154,6 +215,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           }]
         },
         {
+          responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: {
               position: 'bottom'
@@ -164,7 +227,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // 4. Structure Type Chart (Bar)
-    if (this.structureTypeChartRef && this.nomenclatureStats.structuresByType) {
+    if (this.structureTypeChartRef && this.nomenclatureStats?.structuresByType) {
       const labels = Object.keys(this.nomenclatureStats.structuresByType);
       const data = Object.values(this.nomenclatureStats.structuresByType) as number[];
       
@@ -178,14 +241,26 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
             data: data,
             backgroundColor: '#2196F3'
           }]
+        },
+        {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
         }
       );
     }
 
     // 5. Revenue Trend Chart (Line)
-    if (this.revenueTrendChartRef && this.dashboardStats.monthlyTrends?.revenueTrends) {
-      const labels = Object.keys(this.dashboardStats.monthlyTrends.revenueTrends).reverse();
-      const data = Object.values(this.dashboardStats.monthlyTrends.revenueTrends).reverse() as number[];
+    if (this.revenueTrendChartRef && this.financialStats?.revenueByMonth) {
+      const labels = Object.keys(this.financialStats.revenueByMonth);
+      const data = Object.values(this.financialStats.revenueByMonth) as number[];
       
       this.revenueTrendChart = this.chartService.createChart(
         this.revenueTrendChartRef.nativeElement,
@@ -193,7 +268,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         {
           labels: labels,
           datasets: [{
-            label: 'Revenus (€)',
+            label: 'Revenus (TND)',
             data: data,
             backgroundColor: 'rgba(33, 150, 243, 0.2)',
             borderColor: '#2196F3',
@@ -201,6 +276,23 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
             tension: 0.4,
             fill: true
           }]
+        },
+        {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: (value: any) => {
+                  if (value >= 1000) {
+                    return (value / 1000) + 'k';
+                  }
+                  return value;
+                }
+              }
+            }
+          }
         }
       );
     }
@@ -213,7 +305,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     this.chartService.destroyChart(this.structureTypeChart);
     this.chartService.destroyChart(this.revenueTrendChart);
     
-    // Reset chart variables
     this.conventionStatusChart = null;
     this.paymentStatusChart = null;
     this.userRoleChart = null;
@@ -221,11 +312,11 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     this.revenueTrendChart = null;
   }
 
- // NEW: Load workload dashboard
   loadWorkloadDashboard(): void {
     this.workloadLoading = true;
     this.workloadService.getWorkloadDashboard().subscribe({
       next: (response) => {
+        console.log('Workload response:', response); // Debug log
         if (response.success && response.data) {
           this.workloads = response.data.workloads || [];
           this.workloadStats = {
@@ -245,17 +336,47 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // NEW: Get workload color
   getWorkloadColor(workload: number): string {
-    return this.workloadService.getWorkloadClass(workload);
+    if (workload > 75) return '#EF4444';
+    if (workload >= 45) return '#F97316';
+    return '#10B981';
   }
 
-  // NEW: Get progress bar class
   getProgressBarClass(workload: number): string {
-    return this.workloadService.getProgressBarClass(workload);
+    if (workload > 75) return 'bg-red-500';
+    if (workload >= 45) return 'bg-orange-500';
+    return 'bg-green-500';
   }
 
-  // Override refresh to also reload workload
+  getConventionEtatLabel(etat: string): string {
+    switch (etat) {
+      case 'PLANIFIE': return 'Planifié';
+      case 'EN COURS': return 'En Cours';
+      case 'TERMINE': return 'Terminé';
+      case 'ARCHIVE': return 'Archivé';
+      default: return etat;
+    }
+  }
+
+  getFactureStatutLabel(statut: string): string {
+    switch (statut) {
+      case 'PAYE': return 'Payée';
+      case 'NON_PAYE': return 'Non Payée';
+      case 'EN_RETARD': return 'En Retard';
+      default: return statut;
+    }
+  }
+
+  getRoleLabel(role: string): string {
+    switch (role) {
+      case 'ROLE_ADMIN': return 'Admin';
+      case 'ROLE_CHEF_PROJET': return 'Chef de Projet';
+      case 'ROLE_COMMERCIAL_METIER': return 'Commercial';
+      case 'ROLE_DECIDEUR': return 'Décideur';
+      default: return role;
+    }
+  }
+
   refreshStats(): void {
     this.loadAdminStats();
     this.loadWorkloadDashboard();
@@ -264,7 +385,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency: 'EUR',
+      currency: 'TND',
       minimumFractionDigits: 2
     }).format(value);
   }
@@ -274,10 +395,59 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getPercentage(value: number): string {
-    return value.toFixed(1) + '%';
+    return (value || 0).toFixed(1) + '%';
   }
 
   ngOnDestroy(): void {
     this.destroyCharts();
+  }
+
+  getApplicationStatusLabel(status: string): string {
+    switch (status) {
+      case 'PLANIFIE': return 'Planifié';
+      case 'EN_COURS': return 'En Cours';
+      case 'TERMINE': return 'Terminé';
+      default: return status;
+    }
+  }
+
+  getProgressClass(progress: number): string {
+    if (progress >= 90) return 'bg-green-500';
+    if (progress >= 70) return 'bg-blue-500';
+    if (progress >= 50) return 'bg-yellow-500';
+    if (progress >= 30) return 'bg-orange-500';
+    return 'bg-red-500';
+  }
+
+  /**
+   * Calculate percentage value
+   */
+  getPercentageValue(value: number, total: number): number {
+    if (!total || total === 0) return 0;
+    return (value / total) * 100;
+  }
+
+  /**
+   * Get total applications count from status distribution
+   */
+  getTotalApplicationsCount(): number {
+    if (!this.applicationStats?.statusDistribution) return 0;
+    return this.applicationStats.statusDistribution.reduce((sum: number, s: any) => sum + (s.count || 0), 0);
+  }
+
+  /**
+   * Get total conventions count from status distribution
+   */
+  getTotalConventionsCount(): number {
+    if (!this.conventionStats?.statusDistribution) return 0;
+    return this.conventionStats.statusDistribution.reduce((sum: number, s: any) => sum + (s.count || 0), 0);
+  }
+
+  /**
+   * Get total factures count from payment status
+   */
+  getTotalFacturesCount(): number {
+    if (!this.factureStats?.paymentStatus) return 0;
+    return this.factureStats.paymentStatus.reduce((sum: number, p: any) => sum + (p.count || 0), 0);
   }
 }

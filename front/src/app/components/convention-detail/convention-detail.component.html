@@ -1,4 +1,4 @@
-<div class="container mx-auto p-2 md:p-3">
+<div class="p-4 mx-auto max-w-screen-2xl md:p-7">
   <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-8">
     <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
@@ -35,6 +35,26 @@
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
   </svg>
   <span>Archiver</span>
+<button *ngIf="convention && convention.renewalVersion !== undefined && convention.renewalVersion > 0"
+        (click)="viewPreviousVersions()"
+        class="px-2.5 py-1.5 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow flex items-center gap-1">
+  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  <span>Anciennes versions <span *ngIf="convention.renewalVersion">({{ convention.renewalVersion }})</span></span>
+</button>
+
+  
+</button>
+
+<!-- In convention-detail.component.html, add renew button next to archive button -->
+<button *ngIf="!convention.archived && canEdit() && convention.etat === 'TERMINE'"
+        (click)="openRenewModal()"
+        class="px-2.5 py-1.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow flex items-center gap-1">
+  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+  </svg>
+  <span>Renouveler</span>
 </button>
 
         <button *ngIf="convention.archived && canEdit()"
@@ -666,3 +686,398 @@
   </div>
 </div>
 
+<!-- Add this modal to convention-detail.component.html, after the restore modal -->
+
+<!-- Renew Modal with Form -->
+<div *ngIf="showRenewModal" class="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeRenewModal()">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header with purple accent -->
+    <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-white font-bold text-lg">Renouveler la convention</h3>
+            <p class="text-purple-100 text-xs">{{ convention?.referenceConvention }}</p>
+          </div>
+        </div>
+        <button (click)="closeRenewModal()" class="text-white/80 hover:text-white p-1 hover:bg-white/10 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Info Message -->
+    <div class="px-6 pt-4">
+      <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <p class="text-xs text-blue-700 dark:text-blue-300 font-medium">
+              La référence, l'application et la structure bénéficiel restent identiques
+            </p>
+            <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+              Vous pouvez modifier tous les autres champs selon vos besoins.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="p-6">
+      <form (ngSubmit)="renewConvention()" class="space-y-4">
+        <!-- Libellé -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Libellé <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="renewalFormData.libelle"
+            name="libelle"
+            required
+            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+            placeholder="Libellé de la convention"
+          />
+        </div>
+
+        <!-- Reference ERP -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Référence ERP
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="renewalFormData.referenceERP"
+            name="referenceERP"
+            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+            placeholder="ERP-REF-001"
+          />
+        </div>
+
+        <!-- Dates -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Date Début <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              [(ngModel)]="renewalFormData.dateDebut"
+              name="dateDebut"
+              required
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Date Fin <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              [(ngModel)]="renewalFormData.dateFin"
+              name="dateFin"
+              required
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Date Signature
+            </label>
+            <input
+              type="date"
+              [(ngModel)]="renewalFormData.dateSignature"
+              name="dateSignature"
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+        </div>
+
+        <!-- Financial Fields -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Montant HT (TND) <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="renewalFormData.montantHT"
+              name="montantHT"
+              (ngModelChange)="onMontantHTChange()"
+              step="0.01"
+              min="0"
+              required
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+              placeholder="0.00"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              TVA (%)
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="renewalFormData.tva"
+              name="tva"
+              (ngModelChange)="onTvaChange()"
+              step="0.01"
+              min="0"
+              max="100"
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Montant TTC (TND)
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="renewalFormData.montantTTC"
+              name="montantTTC"
+              readonly
+              class="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 cursor-not-allowed"
+              placeholder="Auto"
+            />
+          </div>
+        </div>
+
+        <!-- Users and Periodicity -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Nombre d'utilisateurs <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              [(ngModel)]="renewalFormData.nbUsers"
+              name="nbUsers"
+              min="1"
+              step="1"
+              required
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+              placeholder="Saisir le nombre"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Périodicité <span class="text-red-500">*</span>
+            </label>
+            <select
+              [(ngModel)]="renewalFormData.periodicite"
+              name="periodicite"
+              required
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+            >
+              <option value="MENSUEL">MENSUEL</option>
+              <option value="TRIMESTRIEL">TRIMESTRIEL</option>
+              <option value="SEMESTRIEL">SEMESTRIEL</option>
+              <option value="ANNUEL">ANNUEL</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button type="button" (click)="closeRenewModal()" 
+                  class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            Annuler
+          </button>
+          <button type="submit"
+                  [disabled]="renewLoading"
+                  class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium shadow-sm hover:shadow transition-all disabled:opacity-50 flex items-center justify-center gap-1">
+            <span *ngIf="renewLoading" class="flex items-center gap-1">
+              <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Traitement...</span>
+            </span>
+            <span *ngIf="!renewLoading">Confirmer le renouvellement</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="showPreviousVersionsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="closePreviousVersionsModal()">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="bg-gradient-to-r from-gray-500 to-gray-600 px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-white font-bold text-lg">Anciennes versions de la convention</h3>
+            <p class="text-gray-200 text-xs">{{ convention?.referenceConvention }} - Version actuelle: {{ convention?.renewalVersion }}</p>
+          </div>
+        </div>
+        <button (click)="closePreviousVersionsModal()" class="text-white/80 hover:text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="flex h-[70vh]">
+      <!-- Left sidebar - Versions list -->
+      <div class="w-1/3 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+        <div class="p-3">
+          <h4 class="text-xs font-medium text-gray-500 mb-2">VERSIONS ARCHIVÉES</h4>
+          <div class="space-y-2">
+            <div *ngFor="let version of previousVersions" 
+                 (click)="selectOldVersion(version)"
+                 class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                 [class]="selectedOldVersion?.id === version.oldConvention.id ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : ''">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">📋</span>
+                <div>
+                  <p class="text-sm font-medium">Version {{ version.oldConvention.renewalVersion }}</p>
+                  <p class="text-xs text-gray-500">{{ formatDate(version.oldConvention.dateDebut) }} - {{ formatDate(version.oldConvention.dateFin) }}</p>
+                  <p class="text-xs text-gray-400 mt-1">Archivée: {{ formatDateTime(version.oldConvention.archivedAt) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right content - Selected version details -->
+      <div class="w-2/3 overflow-y-auto p-4" *ngIf="selectedOldVersion">
+        <!-- Archive Info -->
+        <div class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p class="text-xs text-yellow-700 dark:text-yellow-300">
+                <strong>Archivée le:</strong> {{ formatDateTime(selectedOldVersion.archivedAt) }} par {{ selectedOldVersion.archivedBy }}
+              </p>
+              <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                <strong>Raison:</strong> {{ selectedOldVersion.archivedReason }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Convention Details -->
+        <h4 class="text-sm font-bold text-gray-700 mb-3">Détails de la convention</h4>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Libellé</p>
+            <p class="text-sm font-medium">{{ selectedOldVersion.libelle }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Référence ERP</p>
+            <p class="text-sm">{{ selectedOldVersion.referenceERP || '-' }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Période</p>
+            <p class="text-sm">{{ formatDate(selectedOldVersion.dateDebut) }} - {{ formatDate(selectedOldVersion.dateFin) }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Date signature</p>
+            <p class="text-sm">{{ formatDate(selectedOldVersion.dateSignature) || '-' }}</p>
+          </div>
+        </div>
+
+        <!-- Financial Details -->
+        <h4 class="text-sm font-bold text-gray-700 mb-3">Détails financiers</h4>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg">
+            <p class="text-xs text-gray-500 mb-1">Montant HT</p>
+            <p class="text-sm font-medium">{{ formatMontant(selectedOldVersion.montantHT) }} TND</p>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg">
+            <p class="text-xs text-gray-500 mb-1">TVA</p>
+            <p class="text-sm font-medium">{{ selectedOldVersion.tva }}%</p>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg">
+            <p class="text-xs text-gray-500 mb-1">Montant TTC</p>
+            <p class="text-sm font-bold text-blue-600">{{ formatMontant(selectedOldVersion.montantTTC) }} TND</p>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg">
+            <p class="text-xs text-gray-500 mb-1">Utilisateurs</p>
+            <p class="text-sm font-medium">{{ selectedOldVersion.nbUsers }}</p>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg">
+            <p class="text-xs text-gray-500 mb-1">Périodicité</p>
+            <p class="text-sm font-medium">{{ selectedOldVersion.periodicite }}</p>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg">
+            <p class="text-xs text-gray-500 mb-1">Statut</p>
+            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+              {{ selectedOldVersion.etat }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Old Factures -->
+        <h4 class="text-sm font-bold text-gray-700 mb-3">Factures archivées ({{ selectedOldFactures.length }})</h4>
+        <div class="space-y-2 max-h-60 overflow-y-auto">
+          <div *ngFor="let facture of selectedOldFactures" 
+               class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <p class="text-sm font-medium">{{ facture.numeroFacture }}</p>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-xs">
+                  <div><span class="text-gray-500">Facturation:</span> {{ formatDate(facture.dateFacturation) }}</div>
+                  <div><span class="text-gray-500">Échéance:</span> {{ formatDate(facture.dateEcheance) }}</div>
+                  <div><span class="text-gray-500">Montant TTC:</span> {{ formatMontant(facture.montantTTC) }} TND</div>
+                  <div><span class="text-gray-500">Statut:</span> 
+                    <span [class]="'px-2 py-0.5 text-xs font-medium rounded-full ' + getInvoiceStatusClass(facture.statutPaiement)">
+                      {{ getInvoiceStatusLabel(facture.statutPaiement) }}
+                    </span>
+                  </div>
+                </div>
+                <p *ngIf="facture.datePaiement" class="text-xs text-gray-500 mt-1">
+                  Payée le: {{ formatDate(facture.datePaiement) }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state when no version selected -->
+      <div *ngIf="!selectedOldVersion" class="w-2/3 flex items-center justify-center">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <p class="text-gray-500 dark:text-gray-400 text-sm">Sélectionnez une version pour voir les détails</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+      <button (click)="closePreviousVersionsModal()" 
+              class="px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg text-sm font-medium">
+        Fermer
+      </button>
+    </div>
+  </div>
+</div>

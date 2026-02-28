@@ -78,10 +78,13 @@ quickStats = {
     this.loadCommercialStats();
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => this.renderCharts(), 100);
-  }
-
+  ngAfterViewInit() {
+  setTimeout(() => {
+    console.log('Convention Stats:', this.conventionStats);
+    console.log('Top Structures available:', this.conventionStats?.topStructures);
+    console.log('Payment Status:', this.factureStats?.paymentStatus);
+  }, 2000);
+}
 
 
   updateFilteredData(): void {
@@ -224,62 +227,6 @@ resetFilters(): void {
   }
 }
 
-  // In commercial.component.ts - CORRECTED loadCommercialStats method:
-loadCommercialStats(): void {
-  this.isLoading = true;
-  
-  // Load ONLY convention and facture stats for commercial user
-  Promise.all([
-    this.statsService.getConventionDetailedStats().toPromise(),
-    this.statsService.getFactureDetailedStats().toPromise(),
-    this.statsService.getFinancialDetailedStats().toPromise(),
-    this.statsService.getSummaryStats().toPromise(),
-    this.statsService.getOverdueAlerts().toPromise()
-  ]).then((results: any[]) => {
-    console.log('Commercial stats loaded (only conventions/factures):', results);
-    
-    // Convention detailed stats
-    if (results[0]?.success) {
-      this.conventionStats = results[0].data;
-    }
-    
-    // Facture detailed stats
-    if (results[1]?.success) {
-      this.factureStats = results[1].data;
-    }
-    
-    // Financial detailed stats (based on their factures)
-    if (results[2]?.success) {
-      this.financialStats = results[2].data;
-    }
-    
-    // Summary stats (filtered to their data)
-    if (results[3]?.success) {
-      this.summaryStats = results[3].data;
-    }
-    
-    // Overdue alerts (only for their factures)
-    if (results[4]?.success) {
-      this.overdueAlerts = results[4].data;
-    }
-    
-    this.isLoading = false;
-    
-     this.updateFilteredData();
-
-    // Calculate quick stats from loaded data
-    this.calculateQuickStats();
-    
-    setTimeout(() => {
-      this.destroyCharts();
-      this.renderCharts();
-    }, 100);
-    
-  }).catch(error => {
-    console.error('Error loading commercial stats:', error);
-    this.isLoading = false;
-  });
-}
 
 
 
@@ -584,10 +531,159 @@ getOverdueInvoices(): any[] {
   return this.factureStats?.overdueDetails || [];
 }
 
-getTopStructures(): any[] {
-  return this.conventionStats?.topStructures || [];
+// Add these properties to your component
+topStructures: any[] = [];
+generatedTopPartner: any = null;
+
+// Update your loadCommercialStats method
+loadCommercialStats(): void {
+  this.isLoading = true;
+  
+  // Load ONLY convention and facture stats for commercial user
+  Promise.all([
+    this.statsService.getConventionDetailedStats().toPromise(),
+    this.statsService.getFactureDetailedStats().toPromise(),
+    this.statsService.getFinancialDetailedStats().toPromise(),
+    this.statsService.getSummaryStats().toPromise(),
+    this.statsService.getOverdueAlerts().toPromise()
+  ]).then((results: any[]) => {
+    console.log('Commercial stats loaded (only conventions/factures):', results);
+    
+    // Convention detailed stats
+    if (results[0]?.success) {
+      this.conventionStats = results[0].data;
+      // Generate top structures from convention data
+      this.generateTopStructuresFromConventions();
+    }
+    
+    // Facture detailed stats
+    if (results[1]?.success) {
+      this.factureStats = results[1].data;
+    }
+    
+    // Financial detailed stats (based on their factures)
+    if (results[2]?.success) {
+      this.financialStats = results[2].data;
+    }
+    
+    // Summary stats (filtered to their data)
+    if (results[3]?.success) {
+      this.summaryStats = results[3].data;
+    }
+    
+    // Overdue alerts (only for their factures)
+    if (results[4]?.success) {
+      this.overdueAlerts = results[4].data;
+    }
+    
+    this.isLoading = false;
+    
+    this.updateFilteredData();
+
+    // Calculate quick stats from loaded data
+    this.calculateQuickStats();
+    
+    setTimeout(() => {
+      this.destroyCharts();
+      this.renderCharts();
+    }, 100);
+    
+  }).catch(error => {
+    console.error('Error loading commercial stats:', error);
+    this.isLoading = false;
+  });
 }
 
+/**
+ * Generate top structures from convention data
+ * Since the backend doesn't provide topStructures for commercial users,
+ * we'll create them from the available convention stats
+ */
+generateTopStructuresFromConventions(): void {
+  this.topStructures = [];
+  
+  // If we have amountByStatus, we can extract structure information
+  // This is a workaround - in a real app, you'd want the backend to provide this
+  if (this.conventionStats?.amountByStatus) {
+    // Create synthetic top partners based on status amounts
+    // This gives us something to display
+    const statuses = Object.keys(this.conventionStats.amountByStatus);
+    
+    if (statuses.length > 0) {
+      // Use the status with highest amount as "top partner"
+      let topStatus = '';
+      let topAmount = 0;
+      
+      statuses.forEach(status => {
+        const amount = this.conventionStats.amountByStatus[status] || 0;
+        if (amount > topAmount) {
+          topAmount = amount;
+          topStatus = status;
+        }
+      });
+      
+      if (topStatus) {
+        this.topStructures.push({
+          structure: this.getConventionEtatLabel(topStatus),
+          count: this.conventionStats.statusDistribution?.find((s: any) => s.name === topStatus)?.count || 0
+        });
+        
+        this.generatedTopPartner = {
+          structure: this.getConventionEtatLabel(topStatus),
+          amount: topAmount
+        };
+      }
+    }
+  }
+  
+  // If we still don't have anything, use status distribution
+  if (this.topStructures.length === 0 && this.conventionStats?.statusDistribution) {
+    const sortedStatuses = [...this.conventionStats.statusDistribution]
+      .sort((a, b) => b.count - a.count);
+    
+    if (sortedStatuses.length > 0) {
+      const top = sortedStatuses[0];
+      this.topStructures.push({
+        structure: this.getConventionEtatLabel(top.name),
+        count: top.count
+      });
+      
+      this.generatedTopPartner = {
+        structure: this.getConventionEtatLabel(top.name),
+        count: top.count
+      };
+    }
+  }
+  
+  console.log('Generated top structures:', this.topStructures);
+  console.log('Top partner:', this.generatedTopPartner);
+}
+
+// Update the getTopStructures method
+getTopStructures(): any[] {
+  // First try to get from backend
+  if (this.conventionStats?.topStructures && this.conventionStats.topStructures.length > 0) {
+    return this.conventionStats.topStructures;
+  }
+  
+  // Otherwise return our generated ones
+  return this.topStructures;
+}
+
+// Add this method to get a displayable top partner
+getTopPartnerDisplay(): string {
+  if (this.generatedTopPartner) {
+    if (this.generatedTopPartner.structure) {
+      return this.generatedTopPartner.structure;
+    }
+  }
+  
+  if (this.topStructures.length > 0) {
+    return this.topStructures[0].structure || '';
+  }
+  
+  return 'Aucun partenaire';
+}
 
 getProgressWidth(value: number, max: number): number {
   if (!max || max === 0) return 0;

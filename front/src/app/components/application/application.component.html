@@ -1,5 +1,4 @@
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
-  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="p-4 mx-auto max-w-screen-2xl md:p-6">
     
     <!-- Header -->
     <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
@@ -61,6 +60,16 @@
         </button>
       </div>
     </div>
+
+
+    <button *ngIf="isAdmin"
+        (click)="$event.stopPropagation(); goToArchivePage()"
+        class="p-1.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+        title="Voir les archives">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" />
+  </svg>
+</button>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -158,48 +167,42 @@
       <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">Chargement...</p>
     </div>
 
-    <!-- Applications Table/Grid -->
-    <div *ngIf="!loading && filteredApplications.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-200/50 dark:border-gray-700/30">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead class="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Code & Nom
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Client
-              </th>
-              <th *ngIf="isAdmin" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+    <div class="mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700/30 overflow-hidden">
+        <div class="p-5 border-b border-gray-100 dark:border-gray-700/30">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
+            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            Applications
+          </h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700/30">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Code</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nom</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Client</th>
+                <th *ngIf="isAdmin" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Chef de Projet
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Dates & Échéance
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Statut
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr *ngFor="let app of filteredApplications" 
-                class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                (click)="viewApplication(app.id)">
-              <td class="px-6 py-4">
-                <div class="font-medium text-gray-900 dark:text-white">{{ app.code }}</div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">{{ app.name }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dates</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Progrès</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Statut</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700/30">
+              <tr *ngFor="let app of filteredApplications" class="hover:bg-gray-50 dark:hover:bg-gray-700/20"  (click)="viewApplication(app.id)">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ app.code }}
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {{ app.conventionsCount || 0 }} convention(s)
                 </div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="text-gray-900 dark:text-white">{{ app.clientName }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">{{ app.clientEmail }}</div>
-              </td>
-              <td *ngIf="isAdmin" class="px-6 py-4">
+                </td>
+
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ app.name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ app.clientName || 'Non spécifié' }}</td>
+                <td *ngIf="isAdmin" class="px-6 py-4">
                 <div *ngIf="app.chefDeProjetId" class="flex items-center gap-2">
                   <div class="h-8 w-8 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
                     <img [src]="getChefAvatarUrlForApp(app)" 
@@ -214,34 +217,6 @@
                 </div>
                 <div *ngIf="!app.chefDeProjetId" class="text-sm text-gray-500 dark:text-gray-400 italic">
                   Non assigné
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="text-sm text-gray-900 dark:text-white">
-                  <span class="text-xs text-gray-500">Début:</span> {{ formatDate(app.dateDebut) }}
-                </div>
-                <div class="text-sm text-gray-900 dark:text-white">
-                  <span class="text-xs text-gray-500">Fin:</span> {{ formatDate(app.dateFin) }}
-                </div>
-                <div class="text-xs mt-1" [class.text-red-600]="isApplicationDelayed(app)" [class.text-green-600]="!isApplicationDelayed(app)">
-                  {{ app.timeRemainingString }}
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusClass(app.status)">
-                  {{ getStatusLabel(app.status) }}
-                </span>
-              </td>
-              <td class="px-6 py-4" (click)="$event.stopPropagation()">
-                <div class="flex space-x-2">
-                  <button (click)="editApplication(app)"
-                          class="p-1.5 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                          title="Modifier">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  
                   <button *ngIf="isAdmin && !app.chefDeProjetId"
                     (click)="$event.stopPropagation(); openAssignModal(app)"
                     class="p-1.5 text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
@@ -251,10 +226,32 @@
                     </svg>
                   </button>
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  {{ app.dateDebut | date:'dd/MM/yyyy' }} - {{ app.dateFin | date:'dd/MM/yyyy' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
+                      <div class="h-2 rounded-full" [ngClass]="getProgressClass(app.timeBasedProgress)" [style.width.%]="app.timeBasedProgress"></div>
+                    </div>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ app.timeBasedProgress || 0 }}%</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="getStatusClass(app.status)">
+                    {{ getStatusLabel(app.status) }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="filteredApplications.length === 0">
+                <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  Aucune application trouvée
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -392,19 +389,16 @@
                     <p class="text-xs text-gray-500 dark:text-gray-400">
                       @{{ chef.username }} • {{ chef.email }}
                     </p>
-                    <p *ngIf="chef.department" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {{ chef.department }}
-                    </p>
+                    
                   </div>
                   
                   <!-- Workload Badge -->
                   <div *ngIf="getChefWorkload(chef.id) as workload" class="ml-2">
                     <span class="px-2 py-1 text-xs font-medium rounded-full"
                           [ngClass]="{
-                            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300': workload.currentWorkload >= 90,
-                            'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300': workload.currentWorkload >= 70 && workload.currentWorkload < 90,
-                            'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300': workload.currentWorkload >= 40 && workload.currentWorkload < 70,
-                            'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300': workload.currentWorkload < 40
+                            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300': workload.currentWorkload >= 75,
+                            'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300': workload.currentWorkload >= 45 && workload.currentWorkload < 75,
+                            'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300': workload.currentWorkload < 45
                           }">
                       {{ workload.currentWorkload.toFixed(1) }}%
                     </span>
@@ -416,7 +410,7 @@
                   <div class="flex items-center justify-between text-xs mb-1">
                     <span class="text-gray-500 dark:text-gray-400">Charge de travail</span>
                     <span class="font-medium" [style.color]="getWorkloadColor(workload.currentWorkload)">
-                      {{ workload.currentApps }}/{{ workload.maxApps }} projets
+                      {{ workload.currentApps }} projets
                     </span>
                   </div>
                   <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
@@ -427,11 +421,7 @@
                     </div>
                   </div>
                   
-                  <!-- Quick stats -->
-                  <div class="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    <span>Valeur: {{ (workload.totalValue / 1000).toFixed(0) }}k TND</span>
-                    <span>Durée: {{ Math.floor(workload.totalDuration / 30) }} mois</span>
-                  </div>
+                  
                 </div>
                 
                 <!-- Loading indicator for workload -->
@@ -465,9 +455,8 @@
             </p>
             <div class="text-xs text-red-700 dark:text-red-400 space-y-1">
               <p>• Charge actuelle: {{ workloadCheck.analysis.currentWorkload.toFixed(1) }}%</p>
-              <p>• Charge projetée: {{ workloadCheck.analysis.projectedWorkload.toFixed(1) }}%</p>
-              <p *ngIf="workloadCheck.analysis.exceedsCount">⚠️ Dépassement du nombre max de projets</p>
-              <p *ngIf="workloadCheck.analysis.exceedsValue">⚠️ Dépassement de la valeur max</p>
+              <p>• Charge projetée: {{ workloadCheck.analysis.appedWorkload.toFixed(1) }}%</p>
+              <p *ngIf="workloadCheck.analysis.exceedsCount">⚠️ Dépassement du nombre max d'applications</p>
               <p *ngIf="workloadCheck.analysis.exceedsDuration">⚠️ Dépassement de la durée max</p>
             </div>
           </div>
@@ -486,7 +475,7 @@
               Attention: {{ workloadCheck.message }}
             </p>
             <p class="text-xs text-yellow-700 dark:text-yellow-400">
-              Charge projetée: {{ workloadCheck.analysis.projectedWorkload.toFixed(1) }}%
+              Charge projetée: {{ workloadCheck.analysis.appedWorkload.toFixed(1) }}%
             </p>
           </div>
         </div>
@@ -573,4 +562,3 @@
   </div>
 
   
-</div>

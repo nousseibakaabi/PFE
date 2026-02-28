@@ -32,7 +32,6 @@ import { DecideurComponent } from './components/decideur/decideur.component';
 import { ChefProjetComponent } from './components/chef-projet/chef-projet.component';
 import { StatsService } from './services/stats.service';
 import { ConventionArchiveComponent } from './components/convention-archive/convention-archive.component';
-import { AdminApplicationComponent } from './components/admin-application/admin-application.component';
 import { CalendarComponent } from './components/calendar/calendar.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { ApplicationComponent } from './components/application/application.component';
@@ -51,6 +50,10 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { DatePickerComponent } from './components/date-picker/date-picker.component';
 import { ConventionFacturesComponent } from './components/convention-factures/convention-factures.component';
 import { ConventionHistoryComponent } from './components/convention-history/convention-history.component';
+import { RequestsComponent } from './components/requests/requests.component';
+import { RenewalFormModalComponent } from './components/renewal-form-modal/renewal-form-modal.component';
+import { ApplicationArchiveComponent } from './components/application-archive/application-archive.component';
+import { RecaptchaModule, RecaptchaFormsModule } from 'ng-recaptcha';
 
 @NgModule({
   declarations: [
@@ -78,7 +81,6 @@ import { ConventionHistoryComponent } from './components/convention-history/conv
     ChefProjetComponent,
     ConventionArchiveComponent,
     CalendarComponent,
-    AdminApplicationComponent,
     ApplicationComponent,
     ApplicationDetailComponent,
     MailBoxComponent,
@@ -92,7 +94,10 @@ import { ConventionHistoryComponent } from './components/convention-history/conv
     NotificationsComponent,
     DatePickerComponent,
     ConventionFacturesComponent,
-    ConventionHistoryComponent
+    ConventionHistoryComponent,
+    RequestsComponent,
+    RenewalFormModalComponent,
+    ApplicationArchiveComponent
     ],
   imports: [
     BrowserModule,
@@ -103,7 +108,9 @@ import { ConventionHistoryComponent } from './components/convention-history/conv
     ReactiveFormsModule,
     FullCalendarModule,
     InfiniteScrollModule,
-    CommonModule
+    CommonModule,
+    RecaptchaModule,       
+    RecaptchaFormsModule 
 
     
   ],

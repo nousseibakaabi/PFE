@@ -12,6 +12,7 @@ import jakarta.mail.internet.MimeMessage;
 
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class EmailService {
@@ -25,6 +26,12 @@ public class EmailService {
     @Value("${frontend.url:http://localhost:4200}")
     private String frontendUrl;
 
+    private final String PRIMARY_COLOR = "#6EB9D5";
+    private final String DARK_BLUE = "#4A8AA5";
+    private final String SUCCESS_COLOR = "#10b981";
+    private final String WARNING_COLOR = "#f59e0b";
+    private final String ERROR_COLOR = "#ef4444";
+
     // Send simple text email
     public void sendSimpleMessage(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -36,270 +43,407 @@ public class EmailService {
     }
 
     // Send HTML email for password reset
+// Send HTML email for password reset
+// Send HTML email for password reset
     public void sendPasswordResetEmail(String to, String resetToken, String username) throws MessagingException {
         String resetLink = frontendUrl + "/reset-password?token=" + resetToken;
 
-        String subject = "Password Reset Request";
+        String subject = "🔐 Réinitialisation de votre mot de passe";
         String htmlContent = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background-color: #4eb8dd; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
-                    .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px; }
-                    .button { display: inline-block; background-color: #4eb8dd; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 20px 0; }
-                    .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; color: #777; font-size: 12px; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h2>Password Reset Request</h2>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+                .header { background: linear-gradient(135deg, """ + PRIMARY_COLOR +
+                """ 
+                        0%, """ + DARK_BLUE +
+                """ 
+                100%); padding: 30px; text-align: center; }
+                .icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+                .icon svg { width: 40px; height: 40px; fill: white; }
+                .content { padding: 40px; background: #ffffff; }
+                .button { display: inline-block; background: """ + PRIMARY_COLOR +
+                """
+                ; color: white; padding: 14px 32px; text-decoration: none; border-radius: 50px; font-weight: 600; margin: 20px 0; box-shadow: 0 4px 15px rgba(110, 185, 213, 0.3); transition: all 0.3s ease; }
+                .button:hover { background: """ + DARK_BLUE +
+                """
+                ; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(110, 185, 213, 0.4); }
+                .info-box { background: #f8fafc; border-radius: 16px; padding: 20px; margin: 20px 0; border: 1px solid #e2e8f0; }
+                .footer { padding: 30px; text-align: center; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
+                .signature { margin-top: 20px; padding-top: 20px; border-top: 2px dashed """ + PRIMARY_COLOR +
+                """
+                ; }
+                .emoji { font-size: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" fill="white">
+                            <path d="M12 2C8.13 2 5 5.13 5 9v3c0 .5.3.9.7 1.2l-1.4 1.4C3.5 13.9 3 13 3 12V9c0-5 4-9 9-9s9 4 9 9v3c0 .5-.3.9-.7 1.2l-1.4-1.4c.4-.3.7-.7.7-1.2V9c0-3.87-3.13-7-7-7z"/>
+                            <path d="M12 22c-2.2 0-4-1.8-4-4v-1h8v1c0 2.2-1.8 4-4 4z"/>
+                            <circle cx="12" cy="10" r="2"/>
+                        </svg>
                     </div>
-                    <div class="content">
-                        <p>Hello %s,</p>
-                        <p>You have requested to reset your password. Click the button below to create a new password:</p>
-                        <p style="text-align: center;">
-                            <a href="%s" class="button">Reset Password</a>
-                        </p>
-                        <p>If the button doesn't work, copy and paste this link into your browser:</p>
-                        <p><code>%s</code></p>
-                        <p>This link will expire in 24 hours.</p>
+                    <h1 style="color: white; margin: 0; font-size: 28px;">Réinitialisation du mot de passe</h1>
+                </div>
+                <div class="content">
+                    <p style="font-size: 18px; color: """ + PRIMARY_COLOR +
+                """
+                        ;">Bonjour """ + username +
+                    """
+                    ,</p>
+                    <p>Nous avons reçu une demande de réinitialisation de votre mot de passe.</p>
+                    
+                    <div class="info-box">
+                        <p style="margin: 0;"><span class="emoji">⏰</span> Ce lien expire dans <strong>24 heures</strong></p>
+                        <p style="margin: 10px 0 0;"><span class="emoji">🔒</span> Pour votre sécurité, ne partagez jamais ce lien</p>
                     </div>
-                    <div class="footer">
-                        <p>This is an automated message, please do not reply to this email.</p>
+                    
+                    <div style="text-align: center;">
+                        <a href=\"""" + resetLink +
+                    """
+                    \" class="button">🔑 Réinitialiser mon mot de passe</a>
+                    </div>
+                    
+                    <p style="color: #64748b; font-size: 14px; text-align: center;">Ou copiez ce lien :</p>
+                    <p style="background: #f1f5f9; padding: 12px; border-radius: 8px; word-break: break-all; font-size: 12px;">""" + resetLink +
+                    """
+                    </p>
+                    
+                    <div class="signature">
+                        <p style="margin: 10px 0 0;">À très vite sur CNI !</p>
+                        <p style="margin: 20px 0 0; font-weight: 600; color: """ + PRIMARY_COLOR +
+                    """
+                    ;">L'équipe CNI</p>
                     </div>
                 </div>
-            </body>
-            </html>
-            """.formatted(username, resetLink, resetLink);
+                <div class="footer">
+                    <p>© 2026 CNI. Tous droits réservés.</p>
+                    <p style="margin: 5px 0 0;">Cet email a été envoyé à 
+                    """
+                + to +
+                """
+                </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """;
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-        try {
-            helper.setFrom(new InternetAddress(fromEmail, "CNI Administrator"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
-
-        mailSender.send(message);
+        sendHtmlEmail(to, subject, htmlContent);
     }
-
     // Send password reset confirmation email
     public void sendPasswordResetConfirmation(String to, String username) throws MessagingException {
-        String subject = "Password Reset Successful";
+        String subject = "✓ Mot de passe modifié avec succès";
         String htmlContent = """
             <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8">
                 <style>
-                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background-color: #28a745; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
-                    .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px; }
-                    .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; color: #777; font-size: 12px; }
+                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+                    .header { background: linear-gradient(135deg, %s 0%, %s 100%); padding: 30px; text-align: center; }
+                    .icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
+                    .icon svg { width: 40px; height: 40px; fill: white; }
+                    .content { padding: 40px; background: #ffffff; }
+                    .success-badge { background: %s; color: white; padding: 12px 24px; border-radius: 50px; display: inline-block; font-weight: 600; margin-bottom: 20px; }
+                    .tips { background: #f8fafc; border-radius: 16px; padding: 20px; margin: 20px 0; }
+                    .footer { padding: 30px; text-align: center; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
                 </style>
             </head>
             <body>
                 <div class="container">
                     <div class="header">
-                        <h2>Password Reset Successful</h2>
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="white">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                            </svg>
+                        </div>
+                        <h1 style="color: white; margin: 0; font-size: 28px;">Mot de passe modifié !</h1>
                     </div>
                     <div class="content">
-                        <p>Hello %s,</p>
-                        <p>Your password has been successfully reset.</p>
-                        <p>If you did not make this change, please contact our support team immediately.</p>
-                        <p>For security reasons, we recommend that you:</p>
-                        <ul>
-                            <li>Use a strong, unique password</li>
-                            <li>Enable two-factor authentication if available</li>
-                            <li>Avoid using the same password for multiple accounts</li>
-                        </ul>
+                        <div style="text-align: center;">
+                            <div class="success-badge">✓ Opération réussie</div>
+                        </div>
+                        
+                        <p style="font-size: 18px; color: %s;">Bonjour %s,</p>
+                        <p>Votre mot de passe a été modifié avec succès. Votre compte est maintenant sécurisé avec votre nouveau mot de passe.</p>
+                        
+                        <div class="tips">
+                            <h3 style="color: %s; margin-top: 0;">💡 Petits rappels de sécurité :</h3>
+                            <ul style="padding-left: 20px;">
+                                <li>Utilisez un mot de passe unique et fort</li>
+                                <li>Ne le partagez jamais avec personne</li>
+                                <li>Changez-le régulièrement</li>
+                                <li>Activez la double authentification si disponible</li>
+                            </ul>
+                        </div>
+                        
+                        <p style="text-align: center; margin: 30px 0 0;">
+                            <span class="emoji" style="font-size: 24px;">🔐</span>
+                        </p>
+                        
+                        <p style="margin: 20px 0 0;">Si vous n'êtes pas à l'origine de ce changement, contactez-nous immédiatement !</p>
+                        
+                        <p style="margin: 30px 0 0; font-weight: 600; color: %s;">L'équipe CNI</p>
                     </div>
                     <div class="footer">
-                        <p>This is an automated message, please do not reply to this email.</p>
+                        <p>© 2026 CNI. Tous droits réservés.</p>
+                        <p>Email envoyé à %s</p>
                     </div>
                 </div>
             </body>
             </html>
-            """.formatted(username);
+            """.formatted(
+                SUCCESS_COLOR, "#0f9e6a",
+                SUCCESS_COLOR,
+                SUCCESS_COLOR, username,
+                SUCCESS_COLOR,
+                PRIMARY_COLOR, to
+        );
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-        try {
-            helper.setFrom(new InternetAddress(fromEmail, "CNI Administrator"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
-
-        mailSender.send(message);
+        sendHtmlEmail(to, subject, htmlContent);
     }
 
     // Send email when account is locked by admin
     public void sendAccountLockedByAdminEmail(String to, String username) throws MessagingException {
-        String subject = "Account Locked by Administrator";
+        String subject = "🔒 Compte verrouillé par l'administrateur";
         String htmlContent = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background-color: #dc3545; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
-                .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px; }
-                .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; color: #777; font-size: 12px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h2>Account Locked</h2>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+                    .header { background: linear-gradient(135deg, %s 0%, %s 100%); padding: 30px; text-align: center; }
+                    .icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
+                    .icon svg { width: 40px; height: 40px; fill: white; }
+                    .content { padding: 40px; background: #ffffff; }
+                    .warning-box { background: #fff3f3; border-left: 4px solid %s; padding: 20px; margin: 20px 0; border-radius: 8px; }
+                    .footer { padding: 30px; text-align: center; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="white">
+                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                            </svg>
+                        </div>
+                        <h1 style="color: white; margin: 0; font-size: 28px;">Compte verrouillé</h1>
+                    </div>
+                    <div class="content">
+                        <p style="font-size: 18px; color: %s;">Bonjour %s,</p>
+                        
+                        <div class="warning-box">
+                            <p style="margin: 0; font-weight: 600; color: %s;">⚠️ Action administrative</p>
+                            <p style="margin: 10px 0 0;">Votre compte a été verrouillé par un administrateur.</p>
+                        </div>
+                        
+                        <p><strong>📋 Détails :</strong></p>
+                        <ul>
+                            <li><strong>Date :</strong> %s</li>
+                            <li><strong>Type :</strong> Verrouillage administratif</li>
+                            <li><strong>Statut :</strong> Compte inaccessible</li>
+                        </ul>
+                        
+                        <div style="background: #f8fafc; border-radius: 12px; padding: 15px; margin: 20px 0;">
+                            <p style="margin: 0;"><span class="emoji">🔍</span> <strong>Que faire ?</strong></p>
+                            <p style="margin: 10px 0 0;">Contactez l'équipe administrative pour plus d'informations.</p>
+                        </div>
+                        
+                        <p style="margin: 30px 0 0;">Si vous pensez qu'il s'agit d'une erreur, répondez à cet email.</p>
+                        
+                        <p style="margin: 20px 0 0; font-weight: 600; color: %s;">L'équipe CNI</p>
+                    </div>
+                    <div class="footer">
+                        <p>© 2026 CNI. Tous droits réservés.</p>
+                        <p>Notification de sécurité envoyée à %s</p>
+                    </div>
                 </div>
-                <div class="content">
-                    <p>Hello %s,</p>
-                    <p>Your account has been <strong>locked by an administrator</strong>.</p>
-                    <p><strong>Action:</strong> Administrative lock</p>
-                    <p><strong>Reason:</strong> Administrative action</p>
-                    <p>Please contact the system administrator to unlock your account and discuss the reason for this action.</p>
-                    <p>If you believe this is an error, please contact support immediately.</p>
-                </div>
-                <div class="footer">
-                    <p>This is an automated security notification.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """.formatted(username, LocalDateTime.now().toString());
+            </body>
+            </html>
+            """.formatted(
+                ERROR_COLOR, "#b91c1c",
+                ERROR_COLOR,
+                ERROR_COLOR, username,
+                ERROR_COLOR,
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                PRIMARY_COLOR, to
+        );
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-        try {
-            helper.setFrom(new InternetAddress(fromEmail, "CNI Administrator"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
-
-        mailSender.send(message);
+        sendHtmlEmail(to, subject, htmlContent);
     }
 
     // Send email when account is unlocked by admin
     public void sendAccountUnlockedByAdminEmail(String to, String username) throws MessagingException {
-        String subject = "Account Unlocked";
+        String subject = "🔓 Compte déverrouillé";
         String htmlContent = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background-color: #28a745; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
-                .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px; }
-                .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; color: #777; font-size: 12px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h2>Account Unlocked</h2>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+                    .header { background: linear-gradient(135deg, %s 0%, %s 100%); padding: 30px; text-align: center; }
+                    .icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
+                    .icon svg { width: 40px; height: 40px; fill: white; }
+                    .content { padding: 40px; background: #ffffff; }
+                    .success-box { background: #f0fdf4; border-left: 4px solid %s; padding: 20px; margin: 20px 0; border-radius: 8px; }
+                    .footer { padding: 30px; text-align: center; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="white">
+                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" transform="translate(0, 5)"/>
+                            </svg>
+                        </div>
+                        <h1 style="color: white; margin: 0; font-size: 28px;">Compte déverrouillé</h1>
+                    </div>
+                    <div class="content">
+                        <p style="font-size: 18px; color: %s;">Bonjour %s,</p>
+                        
+                        <div class="success-box">
+                            <p style="margin: 0; font-weight: 600; color: %s;">✅ Bonne nouvelle !</p>
+                            <p style="margin: 10px 0 0;">Votre compte a été déverrouillé par un administrateur.</p>
+                        </div>
+                        
+                        <p><strong>📋 Détails :</strong></p>
+                        <ul>
+                            <li><strong>Date :</strong> %s</li>
+                            <li><strong>Action :</strong> Réactivation du compte</li>
+                            <li><strong>Statut :</strong> Compte actif</li>
+                        </ul>
+                        
+                        <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
+                            <p style="margin: 0; font-size: 18px;">🎉 Vous pouvez maintenant vous connecter !</p>
+                        </div>
+                        
+                        <p style="margin: 20px 0 0; font-weight: 600; color: %s;">L'équipe CNI</p>
+                    </div>
+                    <div class="footer">
+                        <p>© 2026 CNI. Tous droits réservés.</p>
+                        <p>Notification envoyée à %s</p>
+                    </div>
                 </div>
-                <div class="content">
-                    <p>Hello %s,</p>
-                    <p>Your account has been <strong>unlocked by an administrator</strong>.</p>
-                    <p>You can now login to your account using your credentials.</p>
-                    <p><strong>Action:</strong> Account unlocked by administrator</p>
-                    <p>If you did not request this unlock or have any concerns, please contact our support team immediately.</p>
-                </div>
-                <div class="footer">
-                    <p>This is an automated notification from the system administrator.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """.formatted(username, LocalDateTime.now().toString());
+            </body>
+            </html>
+            """.formatted(
+                SUCCESS_COLOR, "#0f9e6a",
+                SUCCESS_COLOR,
+                SUCCESS_COLOR, username,
+                SUCCESS_COLOR,
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                PRIMARY_COLOR, to
+        );
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-        try {
-            helper.setFrom(new InternetAddress(fromEmail, "CNI Administrator"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(htmlContent, true);
-
-        mailSender.send(message);
+        sendHtmlEmail(to, subject, htmlContent);
     }
 
     // Send email when account is temporarily locked due to failed attempts
     public void sendAccountTemporarilyLockedEmail(String to, String username, long minutesRemaining) throws MessagingException {
-        String subject = "Account Temporarily Locked";
+        String subject = "⏳ Compte temporairement verrouillé";
         String htmlContent = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background-color: #ffc107; color: #333; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
-                .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px; }
-                .footer { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; color: #777; font-size: 12px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h2>Account Temporarily Locked</h2>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+                    .header { background: linear-gradient(135deg, %s 0%, %s 100%); padding: 30px; text-align: center; }
+                    .icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
+                    .icon svg { width: 40px; height: 40px; fill: white; }
+                    .content { padding: 40px; background: #ffffff; }
+                    .timer-box { background: #fff7ed; border-left: 4px solid %s; padding: 20px; margin: 20px 0; border-radius: 8px; }
+                    .timer { font-size: 36px; font-weight: bold; color: %s; text-align: center; margin: 20px 0; }
+                    .footer { padding: 30px; text-align: center; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="white">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                                <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M6.4 6.4L4.2 4.2M17.6 17.6l2.2 2.2"/>
+                            </svg>
+                        </div>
+                        <h1 style="color: white; margin: 0; font-size: 28px;">Verrouillage temporaire</h1>
+                    </div>
+                    <div class="content">
+                        <p style="font-size: 18px; color: %s;">Bonjour %s,</p>
+                        
+                        <div class="timer-box">
+                            <p style="margin: 0; font-weight: 600; color: %s;">⚠️ Trop de tentatives échouées</p>
+                            <p style="margin: 10px 0 0;">Pour votre sécurité, votre compte est temporairement verrouillé.</p>
+                            
+                            <div class="timer">
+                                ⏱️ %d minutes
+                            </div>
+                            
+                            <p style="text-align: center; margin: 0;">Temps restant avant déverrouillage automatique</p>
+                        </div>
+                        
+                        <p><strong>💡 Conseils :</strong></p>
+                        <ul>
+                            <li>Attendez la fin du délai de %d minutes</li>
+                            <li>Utilisez "Mot de passe oublié" si nécessaire</li>
+                            <li>Vérifiez vos identifiants</li>
+                        </ul>
+                        
+                        <p style="margin: 20px 0 0;">Besoin d'aide ? Contactez notre support.</p>
+                        
+                        <p style="margin: 20px 0 0; font-weight: 600; color: %s;">L'équipe CNI</p>
+                    </div>
+                    <div class="footer">
+                        <p>© 2026 CNI. Tous droits réservés.</p>
+                        <p>Notification de sécurité envoyée à %s</p>
+                    </div>
                 </div>
-                <div class="content">
-                    <p>Hello %s,</p>
-                    <p>Your account has been <strong>temporarily locked</strong> due to multiple failed login attempts.</p>
-                    <p><strong>Lock duration:</strong> %d minute(s)</p>
-                    <p><strong>Reason:</strong> Security - Too many failed login attempts</p>
-                    <p>Your account will be automatically unlocked after the lock period expires.</p>
-                    <p>For security reasons:</p>
-                    <ul>
-                        <li>Ensure you're using the correct password</li>
-                        <li>Consider resetting your password if you've forgotten it</li>
-                        <li>Contact support if you suspect unauthorized access attempts</li>
-                    </ul>
-                </div>
-                <div class="footer">
-                    <p>This is an automated security notification.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """.formatted(username, minutesRemaining);
+            </body>
+            </html>
+            """.formatted(
+                WARNING_COLOR, "#d97706",
+                WARNING_COLOR, WARNING_COLOR,
+                WARNING_COLOR, username,
+                WARNING_COLOR,
+                minutesRemaining,
+                minutesRemaining,
+                PRIMARY_COLOR, to
+        );
 
+        sendHtmlEmail(to, subject, htmlContent);
+    }
+
+    // Helper method to send HTML emails
+    private void sendHtmlEmail(String to, String subject, String htmlContent) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         try {
-            helper.setFrom(new InternetAddress(fromEmail, "CNI Administrator"));
+            helper.setFrom(new InternetAddress(fromEmail, "CNI 💙"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
         helper.setTo(to);
-        helper.setSubject(subject);
+        helper.setSubject("✨ " + subject);
         helper.setText(htmlContent, true);
 
         mailSender.send(message);
     }
-
-
 }

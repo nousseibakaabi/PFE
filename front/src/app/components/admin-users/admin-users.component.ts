@@ -786,13 +786,13 @@ getUserRolesDisplay(user: AdminUser): string {
 
   getLockStatus(user: AdminUser): string {
   if (user.lockedByAdmin) {
-    return 'Locked by Admin';
+    return 'Verrouillé par l\'administrateur';
   } else if (user.accountLockedUntil && new Date(user.accountLockedUntil) > new Date()) {
-    return 'Temporarily Locked';
+    return 'Temporairement bloqué';
   } else if (user.failedLoginAttempts > 0) {
-    return `${user.failedLoginAttempts} failed attempts`;
+    return `${user.failedLoginAttempts} tentatives échouées`;
   }
-  return 'Active';
+  return 'Actif';
 }
 
 getTranslatedLockStatus(user: AdminUser): string {
@@ -873,11 +873,11 @@ getTotalSelectedBudget(): number {
 
   getLockStatusClass(status: string): string {
     switch(status) {
-      case 'Active':
+      case 'Actif':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'Locked by Admin':
+      case 'Bloqué par l\'administrateur':
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      case 'Temporarily Locked':
+      case 'Temporairement bloqué':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
@@ -958,11 +958,11 @@ openConfirmModal(user: AdminUser, action: 'lock' | 'unlock'): void {
   this.confirmAction = action;
   
   if (action === 'lock') {
-    this.confirmTitle = 'Confirm Lock User';
-    this.confirmMessage = `Are you sure you want to lock ${user.firstName} ${user.lastName}? They will not be able to access their account until unlocked.`;
+    this.confirmTitle = 'Confirmer le verrouillage de l\'utilisateur';
+    this.confirmMessage = `Êtes-vous sûr de vouloir verrouiller ${user.firstName} ${user.lastName}? Ils ne pourront pas accéder à leur compte tant qu'il n'est pas déverrouillé.`;
   } else {
-    this.confirmTitle = 'Confirm Unlock User';
-    this.confirmMessage = `Are you sure you want to unlock ${user.firstName} ${user.lastName}? They will regain access to their account.`;
+    this.confirmTitle = 'Confirmer le déverrouillage de l\'utilisateur';
+    this.confirmMessage = `Êtes-vous sûr de vouloir déverrouiller ${user.firstName} ${user.lastName}? Ils retrouveront l'accès à leur compte.`;
   }
   
   this.showConfirmModal = true;
