@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ConventionRepository extends JpaRepository<Convention, Long> {
@@ -20,6 +21,7 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     List<Convention> findAllActiveConventions();
 
 
+    Optional<Convention> findTopByApplicationAndArchivedFalseOrderByCreatedAtDesc(Application application);
 
     // Find archived conventions
     List<Convention> findByArchivedTrue();

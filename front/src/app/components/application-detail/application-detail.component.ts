@@ -40,6 +40,9 @@ export class ApplicationDetailComponent implements OnInit {
 
   chefWorkload: any = null;
 
+  showReassignmentModal = false;
+
+
 
   Workload: WorkloadDTO | null = null;
 
@@ -664,6 +667,7 @@ getHistoryActionClass(actionType: string): string {
     case 'ASSIGN_CHEF': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
     case 'STATUS_CHANGE': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
     case 'DATES_SYNC': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300';
+    
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
   }
 }
@@ -820,4 +824,21 @@ formatDaysRemainingAtTermination(application: Application): string {
     return 'Le jour même de l\'échéance';
   }
 }
+
+
+
+isAppCreator(): boolean {
+  const currentUser = this.authService.getCurrentUser();
+  return this.application?.createdById === currentUser?.id;
+}
+
+openReassignmentRequestModal(): void {
+  this.showReassignmentModal = true;
+}
+
+closeReassignmentRequestModal(): void {
+  this.showReassignmentModal = false;
+}
+
+
 }

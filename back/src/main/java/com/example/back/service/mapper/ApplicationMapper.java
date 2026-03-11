@@ -39,6 +39,13 @@ public class ApplicationMapper {
         response.setDateRange(application.getDateRange());
         response.setTimeRemainingString(application.getTimeRemainingString());
 
+        if (application.getCreatedBy() != null) {
+            response.setCreatedById(application.getCreatedBy().getId());
+            response.setCreatedByUsername(application.getCreatedBy().getUsername());
+            response.setCreatedByFullName(application.getCreatedBy().getFirstName() + " " +
+                    application.getCreatedBy().getLastName());
+        }
+
         // Chef de Projet info
         if (application.getChefDeProjet() != null) {
             response.setChefDeProjetId(application.getChefDeProjet().getId());

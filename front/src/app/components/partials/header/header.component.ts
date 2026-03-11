@@ -74,17 +74,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.languages = this.translationService.languages;
-    this.currentLanguage = this.translationService.getCurrentLanguage();
-    
-    // Test translation server
-    this.translationService.testConnection().subscribe(isActive => {
-      this.translationActive = isActive;
-      if (!isActive) {
-        console.warn('Translation server is not running on localhost:5000');
-      }
-    });
-
     // Subscribe to sidebar state
     this.layoutService.sidebarOpen$.subscribe((isOpen) => {
       this.isSidebarOpen = isOpen;
@@ -468,54 +457,44 @@ formatTime(createdAt: string): string {
     }
     
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#4F46E5"/>
+      <circle cx="50" cy="50" r="48" fill="#FAB40C"/>
       <text x="50" y="58" text-anchor="middle" font-family="Arial" font-size="38" fill="white">${initials}</text>
     </svg>`;
     
     return 'data:image/svg+xml;base64,' + btoa(svg);
   }
 
-  toggleLanguageDropdown(): void {
-    this.isLanguageDropdownOpen = !this.isLanguageDropdownOpen;
-  }
-
-  changeLanguage(langCode: string): void {
-    this.translationService.setLanguage(langCode);
-    this.currentLanguage = langCode;
-    this.isLanguageDropdownOpen = false;
-  }
-
-  getCurrentLanguageFlag(): string {
-    return this.translationService.getLanguageFlag(this.currentLanguage);
-  }
-
-  getCurrentLanguageName(): string {
-    return this.translationService.getLanguageName(this.currentLanguage);
-  }
-
-  openTranslationHelp(): void {
-    const helpMessage = `
-      Translation server not running!
-      
-      To enable translations, please run:
-      
-      1. Open Command Prompt/Terminal
-      2. Install: pip install libretranslate
-      3. Run: libretranslate --host 127.0.0.1 --port 5000
-      4. Keep the window open
-      
-      OR
-      
-      1. Run in background:
-         nohup libretranslate --host 127.0.0.1 --port 5000 > translate.log 2>&1 &
-      
-      Then refresh this page.
-    `;
-    
-    alert(helpMessage);
-  }
+  
 
   navigateToMailBox(): void {
     this.router.navigate(['/mailBox']);
   }
+
+
+  // Add this method to handle image errors
+handleImageError(event: any): void {
+  event.target.src = this.generateDefaultAvatar();
+  event.target.onerror = null;
+}
+
+// Add this method to get user initials for avatar fallback
+getUserInitials(): string {
+  if (!this.currentUser) return 'U';
+  
+  if (this.currentUser.firstName && this.currentUser.lastName) {
+    return (this.currentUser.firstName.charAt(0) + this.currentUser.lastName.charAt(0)).toUpperCase();
+  } else if (this.currentUser.firstName) {
+    return this.currentUser.firstName.charAt(0).toUpperCase();
+  } else if (this.currentUser.lastName) {
+    return this.currentUser.lastName.charAt(0).toUpperCase();
+  } else if (this.currentUser.username) {
+    return this.currentUser.username.charAt(0).toUpperCase();
+  }
+  return 'U';
+}
+
+// Add this method to get user email
+getUserEmail(): string {
+  return this.currentUser?.email || 'No email';
+}
 }

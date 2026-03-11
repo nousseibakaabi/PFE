@@ -1,4 +1,4 @@
-// request.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -49,22 +49,29 @@ export interface RequestAction {
   requestId: number;
   action: 'APPROVE' | 'DENY';
   reason?: string;
+  recommendations?: string;
   recommendedChefId?: number;
+}
+
+
+
+export interface AvailableChef {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  currentWorkload?: number;
+  projectedWorkload?: number;
+  canAccept?: boolean;
+}
+
+export interface CreateReassignmentRequest {
+  applicationId: number;
+  recommendedChefId: number;
+  reason: string;
   recommendations?: string;
 }
 
-export interface RenewalRequest {
-  referenceERP: string;
-  libelle: string;
-  dateDebut: string;
-  dateFin: string;
-  dateSignature: string;
-  montantHT: number;
-  tva: number;
-  montantTTC: number;
-  nbUsers: number;
-  periodicite: string;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -85,4 +92,16 @@ export class RequestService {
   processRequest(action: RequestAction): Observable<any> {
     return this.http.post(`${this.apiUrl}/api/requests/process`, action);
   }
+
+  getAvailableChefs(applicationId?: number): Observable<any> {
+    let url = `${this.apiUrl}/api/requests/chefs/available`;
+    if (applicationId) {
+      url += `?applicationId=${applicationId}`;
+    }
+    return this.http.get(url);
+  }
+
+createReassignmentRequest(data: CreateReassignmentRequest): Observable<any> {
+  return this.http.post(`${this.apiUrl}/api/requests/create-reassignment`, data);
+}
 }

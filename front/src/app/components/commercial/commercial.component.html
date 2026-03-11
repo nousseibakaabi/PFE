@@ -5,14 +5,13 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24">
-  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-</svg>
-      
+          <svg class="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
         </div>
         <div>
-          <h2 class="text-lg font-bold text-gray-800 dark:text-white">Tableau de Bord Commercial</h2>
-          <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">Vue d'ensemble de vos conventions et factures</p>
+          <h2 class="text-[16px] font-bold text-gray-800 dark:text-white">{{ 'Tableau de Bord Commercial' | translate }}</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-[10px] mt-0.5">{{ 'Vue d\'ensemble de vos conventions et factures' | translate }}</p>
         </div>
       </div>
       <button (click)="refreshStats()" 
@@ -20,7 +19,7 @@
         <svg class="w-3.5 h-3.5 mr-1.5 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
-        Actualiser
+        {{ 'Actualiser' | translate }}
       </button>
     </div>
   </div>
@@ -29,7 +28,7 @@
   <div *ngIf="isLoading" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50">
     <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-xl">
       <div class="animate-spin rounded-full h-10 w-10 border-3 border-blue-600 border-t-transparent mx-auto"></div>
-      <p class="mt-3 text-gray-600 dark:text-gray-400 text-xs font-medium">Chargement des statistiques...</p>
+      <p class="mt-3 text-gray-600 dark:text-gray-400 text-xs font-medium">{{ 'Chargement des statistiques...' | translate }}</p>
     </div>
   </div>
 
@@ -40,7 +39,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700/30 shadow-sm hover:shadow transition-all duration-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">Conventions</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">{{ 'Conventions' | translate }}</p>
             <p class="text-lg font-bold text-blue-600 dark:text-blue-400">{{quickStats.totalConventions || 0}}</p>
           </div>
           <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -51,8 +50,8 @@
         </div>
         <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/30">
           <div class="flex justify-between text-xs">
-            <span class="text-gray-500 dark:text-gray-400">{{quickStats.activeConventions}} actives</span>
-            <span class="text-blue-500 dark:text-blue-400 font-medium">{{quickStats.conventionsToday}} auj.</span>
+            <span class="text-gray-500 dark:text-gray-400">{{quickStats.activeConventions}} {{ 'actives' | translate }}</span>
+            <span class="text-blue-500 dark:text-blue-400 font-medium">{{quickStats.conventionsToday}} {{ 'auj.' | translate }}</span>
           </div>
         </div>
       </div>
@@ -61,7 +60,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700/30 shadow-sm hover:shadow transition-all duration-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">Factures</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">{{ 'Factures' | translate }}</p>
             <p class="text-lg font-bold text-green-600 dark:text-green-400">{{quickStats.totalFactures || 0}}</p>
           </div>
           <div class="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -72,8 +71,8 @@
         </div>
         <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/30">
           <div class="flex justify-between text-xs">
-            <span class="text-gray-500 dark:text-gray-400">{{quickStats.paidFactures}} payées</span>
-            <span class="text-green-500 dark:text-green-400 font-medium">{{quickStats.facturesToday}} auj.</span>
+            <span class="text-gray-500 dark:text-gray-400">{{quickStats.paidFactures}} {{ 'payées' | translate }}</span>
+            <span class="text-green-500 dark:text-green-400 font-medium">{{quickStats.facturesToday}} {{ 'auj.' | translate }}</span>
           </div>
         </div>
       </div>
@@ -82,7 +81,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700/30 shadow-sm hover:shadow transition-all duration-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">Revenu</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">{{ 'Revenu' | translate }}</p>
             <p class="text-lg font-bold text-purple-600 dark:text-purple-400">{{formatCurrency(quickStats.totalRevenue)}}</p>
           </div>
           <div class="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
@@ -93,7 +92,7 @@
         </div>
         <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/30">
           <div class="text-xs text-center">
-            <span class="text-gray-500 dark:text-gray-400">Taux: </span>
+            <span class="text-gray-500 dark:text-gray-400">{{ 'Taux:' | translate }} </span>
             <span class="text-purple-500 dark:text-purple-400 font-medium"> {{ ( quickStats.totalRevenue * 100 / 1000000) | number:'1.0-0' }}%</span>
           </div>
         </div>
@@ -103,7 +102,7 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700/30 shadow-sm hover:shadow transition-all duration-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">En Retard</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">{{ 'En Retard' | translate }}</p>
             <p class="text-lg font-bold text-red-600 dark:text-red-400">{{formatCurrency(quickStats.overdueAmount)}}</p>
           </div>
           <div class="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
@@ -114,8 +113,8 @@
         </div>
         <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/30">
           <div class="flex justify-between text-xs">
-            <span class="text-gray-500 dark:text-gray-400">{{quickStats.overdueToday}} factures</span>
-            <span class="text-red-500 dark:text-red-400 font-medium">{{quickStats.dueToday}} dues</span>
+            <span class="text-gray-500 dark:text-gray-400">{{quickStats.overdueToday}} {{ 'factures' | translate }}</span>
+            <span class="text-red-500 dark:text-red-400 font-medium">{{quickStats.dueToday}} {{ 'dues' | translate }}</span>
           </div>
         </div>
       </div>
@@ -133,29 +132,27 @@
             </svg>
           </div>
           <div class="flex-1">
-            <h4 class="font-bold text-gray-800 dark:text-white text-xs mb-0.5">Factures en Retard</h4>
-            <p class="text-gray-600 dark:text-gray-400 text-xs">{{getOverdueInvoices().length}} nécessitent un suivi</p>
+            <h4 class="font-bold text-gray-800 dark:text-white text-xs mb-0.5">{{ 'Factures en Retard' | translate }}</h4>
+            <p class="text-gray-600 dark:text-gray-400 text-xs">{{getOverdueInvoices().length}} {{ 'nécessitent un suivi' | translate }}</p>
           </div>
         </div>
       </div>
 
-     <!-- Top Partner Card - Updated to handle generated data -->
-<div *ngIf="getTopStructures().length > 0 || generatedTopPartner"
-     class="bg-gradient-to-r from-white to-yellow-50 dark:from-gray-800 dark:to-yellow-900/5 rounded-xl p-3 border border-yellow-200 dark:border-yellow-800/20 shadow-sm hover:shadow transition-all duration-200">
-  <div class="flex items-center">
-    <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center mr-2.5">
-      <svg class="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-      </svg>
-    </div>
-    <div class="flex-1">
-      <h4 class="font-bold text-gray-800 dark:text-white text-xs mb-0.5">Top Partenaire</h4>
-      <p class="text-gray-600 dark:text-gray-400 text-xs truncate">{{getTopPartnerDisplay()}}</p>
-    </div>
-  </div>
-</div>
-
-
+      <!-- Top Partner Card -->
+      <div *ngIf="getTopStructures().length > 0 || generatedTopPartner"
+           class="bg-gradient-to-r from-white to-yellow-50 dark:from-gray-800 dark:to-yellow-900/5 rounded-xl p-3 border border-yellow-200 dark:border-yellow-800/20 shadow-sm hover:shadow transition-all duration-200">
+        <div class="flex items-center">
+          <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center mr-2.5">
+            <svg class="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-bold text-gray-800 dark:text-white text-xs mb-0.5">{{ 'Top Partenaire' | translate }}</h4>
+            <p class="text-gray-600 dark:text-gray-400 text-xs truncate">{{getTopPartnerDisplay()}}</p>
+          </div>
+        </div>
+      </div>
 
       <!-- Performance Card -->
       <div *ngIf="quickStats.conventionsToday > 0" 
@@ -167,71 +164,68 @@
             </svg>
           </div>
           <div class="flex-1">
-            <h4 class="font-bold text-gray-800 dark:text-white text-xs mb-0.5">Bonne Performance</h4>
-            <p class="text-gray-600 dark:text-gray-400 text-xs">{{quickStats.conventionsToday}} nouvelles conventions</p>
+            <h4 class="font-bold text-gray-800 dark:text-white text-xs mb-0.5">{{ 'Bonne Performance' | translate }}</h4>
+            <p class="text-gray-600 dark:text-gray-400 text-xs">{{quickStats.conventionsToday}} {{ 'nouvelles conventions' | translate }}</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Charts Grid - Compact -->
-   
-<!-- Charts Grid - Ultra Compact -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
-  <!-- Convention Status Chart -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-2.5 border border-gray-100 dark:border-gray-700/20 shadow-xs">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="font-bold text-gray-800 dark:text-white text-xs">Statut des Conventions</h3>
-      <span class="text-[10px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700/30 rounded">
-        {{quickStats.totalConventions}}
-      </span>
-    </div>
-    <div class="h-32">
-      <canvas #conventionStatusChart class="small-chart"></canvas>
-    </div>
-  </div>
+    <!-- Charts Grid - Ultra Compact -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+      <!-- Convention Status Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-2.5 border border-gray-100 dark:border-gray-700/20 shadow-xs">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-bold text-gray-800 dark:text-white text-xs">{{ 'Statut des Conventions' | translate }}</h3>
+          <span class="text-[10px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700/30 rounded">
+            {{quickStats.totalConventions}}
+          </span>
+        </div>
+        <div class="h-32">
+          <canvas #conventionStatusChart class="small-chart"></canvas>
+        </div>
+      </div>
 
-  <!-- Payment Status Chart -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-2.5 border border-gray-100 dark:border-gray-700/20 shadow-xs">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="font-bold text-gray-800 dark:text-white text-xs">Statut des Paiements</h3>
-      <span class="text-[10px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700/30 rounded">
-        {{quickStats.totalFactures}}
-      </span>
-    </div>
-    <div class="h-32">
-      <canvas #paymentStatusChart class="small-chart"></canvas>
-    </div>
-  </div>
+      <!-- Payment Status Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-2.5 border border-gray-100 dark:border-gray-700/20 shadow-xs">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-bold text-gray-800 dark:text-white text-xs">{{ 'Statut des Paiements' | translate }}</h3>
+          <span class="text-[10px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700/30 rounded">
+            {{quickStats.totalFactures}}
+          </span>
+        </div>
+        <div class="h-32">
+          <canvas #paymentStatusChart class="small-chart"></canvas>
+        </div>
+      </div>
 
-  <!-- Monthly Conventions Chart -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-2.5 border border-gray-100 dark:border-gray-700/20 shadow-xs">
-    <div class="flex items-center justify-between mb-2">
-     <h3 class="font-bold text-gray-800 dark:text-white text-xs">Conventions par Mois</h3>
-      <span class="text-[10px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700/30 rounded">
-        6 mois
-      </span>
-    </div>
-    <div class="h-32">
-      <canvas #monthlyConventionsChart class="small-chart"></canvas>
-    </div>
-  </div>
+      <!-- Monthly Conventions Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-2.5 border border-gray-100 dark:border-gray-700/20 shadow-xs">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-bold text-gray-800 dark:text-white text-xs">{{ 'Conventions par Mois' | translate }}</h3>
+          <span class="text-[10px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700/30 rounded">
+            {{ '6 mois' | translate }}
+          </span>
+        </div>
+        <div class="h-32">
+          <canvas #monthlyConventionsChart class="small-chart"></canvas>
+        </div>
+      </div>
 
-  <!-- Revenue by Month Chart -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-2.5 border border-gray-100 dark:border-gray-700/20 shadow-xs">
-    <div class="flex items-center justify-between mb-2">
-     <h3 class="font-bold text-gray-800 dark:text-white text-xs">Revenus par Mois</h3>
-      <span class="text-[10px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700/30 rounded">
-        {{formatCurrency(quickStats.totalRevenue)}}
-      </span>
+      <!-- Revenue by Month Chart -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-2.5 border border-gray-100 dark:border-gray-700/20 shadow-xs">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-bold text-gray-800 dark:text-white text-xs">{{ 'Revenus par Mois' | translate }}</h3>
+          <span class="text-[10px] text-gray-500 dark:text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700/30 rounded">
+            {{formatCurrency(quickStats.totalRevenue)}}
+          </span>
+        </div>
+        <div class="h-32">
+          <canvas #revenueByMonthChart class="small-chart"></canvas>
+        </div>
+      </div>
     </div>
-    <div class="h-32">
-      <canvas #revenueByMonthChart class="small-chart"></canvas>
-    </div>
-  </div>
-</div>
-   
-  
+
     <!-- Detailed Tables - Compact -->
     <div class="space-y-4 mb-6">
       <!-- Convention Details Table -->
@@ -244,32 +238,32 @@
               </svg>
             </div>
             <div>
-              <h3 class="font-bold text-gray-800 dark:text-white text-xs">Détails des Conventions</h3>
-              <p class="text-gray-500 dark:text-gray-400 text-2xs">Répartition par statut</p>
+              <h3 class="font-bold text-gray-800 dark:text-white text-xs">{{ 'Détails des Conventions' | translate }}</h3>
+              <p class="text-gray-500 dark:text-gray-400 text-2xs">{{ 'Répartition par statut' | translate }}</p>
             </div>
           </div>
           <span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full">
-            {{conventionStats.statusDistribution.length}} statuts
+            {{conventionStats.statusDistribution.length}} {{ 'statuts' | translate }}
           </span>
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full text-xs">
             <thead class="bg-gray-50 dark:bg-gray-700/30">
-  <tr>
-    <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Statut</th>
-    <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
-    <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Montant</th>
-    <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">%</th>
-  </tr>
-</thead>
+              <tr>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Statut' | translate }}</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Nombre' | translate }}</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Montant' | translate }}</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ '%' | translate }}</th>
+              </tr>
+            </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700/30">
               <tr *ngFor="let status of conventionStats.statusDistribution" 
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-colors duration-150">
-               <td class="px-3 py-2">
-  <span class="px-1.5 py-0.5 text-2xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200">
-    {{ getConventionEtatLabel(status.name) }}
-  </span>
-</td>
+                <td class="px-3 py-2">
+                  <span class="px-1.5 py-0.5 text-2xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200">
+                    {{ getConventionEtatLabel(status.name) | translate }}
+                  </span>
+                </td>
                 <td class="px-3 py-2 font-medium text-gray-800 dark:text-white">
                   <div class="flex items-center gap-1.5">
                     {{ status.count }}
@@ -280,9 +274,9 @@
                   </div>
                 </td>
                 <td class="px-3 py-2 text-gray-600 dark:text-gray-400 text-xs">{{ formatCurrency(conventionStats.amountByStatus?.[status.name] || 0) }}</td>
-<td class="px-3 py-2 text-gray-600 dark:text-gray-400 font-medium text-xs">
-  {{ getProgressWidth(status.count, quickStats.totalConventions).toFixed(0) }}%
-</td>
+                <td class="px-3 py-2 text-gray-600 dark:text-gray-400 font-medium text-xs">
+                  {{ getProgressWidth(status.count, quickStats.totalConventions).toFixed(0) }}%
+                </td>
               </tr>
             </tbody>
           </table>
@@ -299,35 +293,35 @@
               </svg>
             </div>
             <div>
-              <h3 class="font-bold text-gray-800 dark:text-white text-xs">Détails des Factures</h3>
-              <p class="text-gray-500 dark:text-gray-400 text-2xs">Répartition par statut de paiement</p>
+              <h3 class="font-bold text-gray-800 dark:text-white text-xs">{{ 'Détails des Factures' | translate }}</h3>
+              <p class="text-gray-500 dark:text-gray-400 text-2xs">{{ 'Répartition par statut de paiement' | translate }}</p>
             </div>
           </div>
           <span class="px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-xs font-medium rounded-full">
-            {{factureStats.paymentStatus.length}} statuts
+            {{factureStats.paymentStatus.length}} {{ 'statuts' | translate }}
           </span>
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full text-xs">
             <thead class="bg-gray-50 dark:bg-gray-700/30">
               <tr>
-                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Statut</th>
-                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
-                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Montant</th>
-                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">%</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Statut' | translate }}</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Nombre' | translate }}</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Montant' | translate }}</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ '%' | translate }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700/30">
               <tr *ngFor="let payment of factureStats.paymentStatus" 
                   class="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-colors duration-150">
                 <td class="px-3 py-2">
-  <span class="px-1.5 py-0.5 text-2xs font-medium rounded-full" 
-        [class]="payment.status === 'PAYE' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-200' : 
-                 payment.status === 'NON_PAYE' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-200' :
-                 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-200'">
-    {{ getFactureStatutLabel(payment.status) }}
-  </span>
-</td>
+                  <span class="px-1.5 py-0.5 text-2xs font-medium rounded-full" 
+                        [class]="payment.status === 'PAYE' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-200' : 
+                                 payment.status === 'NON_PAYE' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-200' :
+                                 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-200'">
+                    {{ getFactureStatutLabel(payment.status) | translate }}
+                  </span>
+                </td>
                 <td class="px-3 py-2 font-medium text-gray-800 dark:text-white">
                   <div class="flex items-center gap-1.5">
                     {{ payment.count }}
@@ -350,226 +344,221 @@
         </div>
       </div>
 
-      <!-- Overdue Invoices Table - Updated with Filters and Pagination -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700/30" 
-     *ngIf="getOverdueInvoices().length > 0">
-  <div class="p-3 border-b border-gray-100 dark:border-gray-700/30 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <div class="w-7 h-7 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
-        <svg class="w-3.5 h-3.5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
-      <div>
-        <h3 class="font-bold text-gray-800 dark:text-white text-xs">Factures en Retard</h3>
-        <p class="text-gray-500 dark:text-gray-400 text-2xs">Nécessitent un suivi immédiat</p>
-      </div>
-    </div>
-    <span class="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs font-medium rounded-full">
-      {{totalItems}} factures
-    </span>
-  </div>
-
-  <!-- Filters Bar -->
-  <div class="p-3 border-b border-gray-100 dark:border-gray-700/30 bg-gray-50 dark:bg-gray-700/20">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <div class="flex flex-col sm:flex-row gap-2">
-        <!-- Priority Filter -->
-        <div class="flex items-center gap-1.5">
-          <span class="text-xs text-gray-600 dark:text-gray-400">Priorité:</span>
-          <select 
-            [(ngModel)]="priorityFilter" 
-            (change)="updateFilteredData(); currentPage = 1"
-            class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-          >
-            <option value="ALL">Toutes</option>
-            <option value="CRITIQUE">Critique</option>
-            <option value="ÉLEVÉE">Élevée</option>
-            <option value="MOYEN">Moyen</option>
-          </select>
-        </div>
-
-        <!-- Sort Options -->
-        <div class="flex items-center gap-1.5">
-          <span class="text-xs text-gray-600 dark:text-gray-400">Trier par:</span>
-          <select 
-            [(ngModel)]="sortBy" 
-            (change)="updateFilteredData()"
-            class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-          >
-            <option value="joursRetard">Jours retard</option>
-            <option value="montant">Montant</option>
-            <option value="dateEcheance">Date échéance</option>
-          </select>
-          <button 
-            (click)="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; updateFilteredData()"
-            class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path *ngIf="sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
-              <path *ngIf="sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-            </svg>
-          </button>
-        </div>
-
-        <!-- Items per page -->
-        <div class="flex items-center gap-1.5">
-          <span class="text-xs text-gray-600 dark:text-gray-400">Afficher:</span>
-          <select 
-            [(ngModel)]="itemsPerPage" 
-            (change)="changeItemsPerPage(itemsPerPage)"
-            class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-          >
-            <option [value]="5">5</option>
-            <option [value]="10">10</option>
-            <option [value]="25">25</option>
-            <option [value]="50">50</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Reset Filters -->
-      <button 
-        (click)="resetFilters()"
-        class="px-2 py-1 text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex items-center gap-1"
-      >
-        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-        Réinitialiser
-      </button>
-    </div>
-  </div>
-
-  <div class="overflow-x-auto">
-    <table class="min-w-full text-xs">
-      <thead class="bg-gray-50 dark:bg-gray-700/30">
-        <tr>
-          <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Numéro</th>
-          <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Convention</th>
-          <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Montant</th>
-          <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Retard</th>
-          <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Priorité</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100 dark:divide-gray-700/30">
-        <!-- Use filteredOverdueInvoices instead of getOverdueInvoices() -->
-        <tr *ngFor="let invoice of filteredOverdueInvoices" 
-            class="hover:bg-red-50/30 dark:hover:bg-red-900/10 transition-colors duration-150">
-          <td class="px-3 py-2 font-medium text-gray-800 dark:text-white">
-            <div class="flex items-center gap-1.5">
-              <div class="w-5 h-5 bg-red-100 dark:bg-red-900/30 rounded flex items-center justify-center">
-                <svg class="w-2.5 h-2.5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <span class="text-xs">{{invoice.numero}}</span>
+      <!-- Overdue Invoices Table -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700/30" 
+           *ngIf="getOverdueInvoices().length > 0">
+        <div class="p-3 border-b border-gray-100 dark:border-gray-700/30 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
-          </td>
-          <td class="px-3 py-2 text-gray-600 dark:text-gray-400 text-xs truncate max-w-[120px]">{{invoice.convention}}</td>
-          <td class="px-3 py-2 font-medium text-gray-800 dark:text-white text-xs">{{formatCurrency(invoice.montant)}}</td>
-          <td class="px-3 py-2">
-            <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-2xs rounded-full font-medium">
-              {{getDaysAgo(invoice.dateEcheance)}}j
-            </span>
-          </td>
-          <td class="px-3 py-2">
-            <span class="px-1.5 py-0.5 text-2xs font-medium rounded-full" 
-                  [class]="getPriorityClass(getDaysAgo(invoice.dateEcheance))">
-              {{getPriorityLabel(getDaysAgo(invoice.dateEcheance))}}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <div>
+              <h3 class="font-bold text-gray-800 dark:text-white text-xs">{{ 'Factures en Retard' | translate }}</h3>
+              <p class="text-gray-500 dark:text-gray-400 text-2xs">{{ 'Nécessitent un suivi immédiat' | translate }}</p>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs font-medium rounded-full">
+            {{totalItems}} {{ 'factures' | translate }}
+          </span>
+        </div>
 
-    <!-- No results message -->
-    <div *ngIf="filteredOverdueInvoices.length === 0" class="text-center py-6">
-      <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-2">
-        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
+        <!-- Filters Bar -->
+        <div class="p-3 border-b border-gray-100 dark:border-gray-700/30 bg-gray-50 dark:bg-gray-700/20">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex flex-col sm:flex-row gap-2">
+              <!-- Priority Filter -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs text-gray-600 dark:text-gray-400">{{ 'Priorité:' | translate }}</span>
+                <select 
+                  [(ngModel)]="priorityFilter" 
+                  (change)="updateFilteredData(); currentPage = 1"
+                  class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                >
+                  <option value="ALL">{{ 'Toutes' | translate }}</option>
+                  <option value="CRITIQUE">{{ 'Critique' | translate }}</option>
+                  <option value="ÉLEVÉE">{{ 'Élevée' | translate }}</option>
+                  <option value="MOYEN">{{ 'Moyen' | translate }}</option>
+                </select>
+              </div>
+
+              <!-- Sort Options -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs text-gray-600 dark:text-gray-400">{{ 'Trier par:' | translate }}</span>
+                <select 
+                  [(ngModel)]="sortBy" 
+                  (change)="updateFilteredData()"
+                  class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                >
+                  <option value="joursRetard">{{ 'Jours retard' | translate }}</option>
+                  <option value="montant">{{ 'Montant' | translate }}</option>
+                  <option value="dateEcheance">{{ 'Date échéance' | translate }}</option>
+                </select>
+                <button 
+                  (click)="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; updateFilteredData()"
+                  class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path *ngIf="sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+                    <path *ngIf="sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Items per page -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs text-gray-600 dark:text-gray-400">{{ 'Afficher:' | translate }}</span>
+                <select 
+                  [(ngModel)]="itemsPerPage" 
+                  (change)="changeItemsPerPage(itemsPerPage)"
+                  class="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                >
+                  <option [value]="5">5</option>
+                  <option [value]="10">10</option>
+                  <option [value]="25">25</option>
+                  <option [value]="50">50</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Reset Filters -->
+            <button 
+              (click)="resetFilters()"
+              class="px-2 py-1 text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex items-center gap-1"
+            >
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              {{ 'Réinitialiser' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-xs">
+            <thead class="bg-gray-50 dark:bg-gray-700/30">
+              <tr>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Numéro' | translate }}</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Convention' | translate }}</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Montant' | translate }}</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Retard' | translate }}</th>
+                <th class="px-3 py-2 text-left text-2xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ 'Priorité' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700/30">
+              <tr *ngFor="let invoice of filteredOverdueInvoices" 
+                  class="hover:bg-red-50/30 dark:hover:bg-red-900/10 transition-colors duration-150">
+                <td class="px-3 py-2 font-medium text-gray-800 dark:text-white">
+                  <div class="flex items-center gap-1.5">
+                    <div class="w-5 h-5 bg-red-100 dark:bg-red-900/30 rounded flex items-center justify-center">
+                      <svg class="w-2.5 h-2.5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <span class="text-xs">{{invoice.numero}}</span>
+                  </div>
+                </td>
+                <td class="px-3 py-2 text-gray-600 dark:text-gray-400 text-xs truncate max-w-[120px]">{{invoice.convention}}</td>
+                <td class="px-3 py-2 font-medium text-gray-800 dark:text-white text-xs">{{formatCurrency(invoice.montant)}}</td>
+                <td class="px-3 py-2">
+                  <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-2xs rounded-full font-medium">
+                    {{getDaysAgo(invoice.dateEcheance)}}j
+                  </span>
+                </td>
+                <td class="px-3 py-2">
+                  <span class="px-1.5 py-0.5 text-2xs font-medium rounded-full" 
+                        [class]="getPriorityClass(getDaysAgo(invoice.dateEcheance))">
+  {{ getPriorityLabel(getDaysAgo(invoice.dateEcheance)) | translate }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- No results message -->
+          <div *ngIf="filteredOverdueInvoices.length === 0" class="text-center py-6">
+            <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-2">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400 text-xs">{{ 'Aucune facture trouvée avec ces filtres' | translate }}</p>
+          </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div *ngIf="totalItems > 0" class="p-3 border-t border-gray-100 dark:border-gray-700/30">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <!-- Showing X of Y -->
+            <div class="text-xs text-gray-600 dark:text-gray-400">
+              {{ 'Affichage' | translate }} {{getCurrentPageStart()}} - {{getCurrentPageEnd()}} {{ 'sur' | translate }} {{totalItems}} {{ 'factures' | translate }}
+            </div>
+
+            <!-- Page Numbers -->
+            <div class="flex items-center gap-1">
+              <!-- First Page -->
+              <button 
+                (click)="changePage(1)"
+                [disabled]="currentPage === 1"
+                class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                «
+              </button>
+
+              <!-- Previous Page -->
+              <button 
+                (click)="changePage(currentPage - 1)"
+                [disabled]="currentPage === 1"
+                class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                ‹
+              </button>
+
+              <div class="flex items-center gap-1">
+                <ng-container *ngFor="let page of getPageNumbers()">
+                  <button 
+                    *ngIf="page === -1"
+                    class="w-7 h-7 flex items-center justify-center text-xs text-gray-400 cursor-default"
+                    disabled
+                  >
+                    ...
+                  </button>
+                  
+                  <!-- Page number button -->
+                  <button 
+                    *ngIf="page !== -1"
+                    (click)="changePage(page)"
+                    [class]="page === currentPage ? 
+                      'w-7 h-7 flex items-center justify-center text-xs rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-medium' :
+                      'w-7 h-7 flex items-center justify-center text-xs rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                  >
+                    {{page}}
+                  </button>
+                </ng-container>
+              </div>
+
+              <!-- Next Page -->
+              <button 
+                (click)="changePage(currentPage + 1)"
+                [disabled]="currentPage === getTotalPages()"
+                class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                ›
+              </button>
+
+              <!-- Last Page -->
+              <button 
+                (click)="changePage(getTotalPages())"
+                [disabled]="currentPage === getTotalPages()"
+                class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                »
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      <p class="text-gray-500 dark:text-gray-400 text-xs">Aucune facture trouvée avec ces filtres</p>
     </div>
-  </div>
-
-  <!-- Pagination Controls -->
-  <div *ngIf="totalItems > 0" class="p-3 border-t border-gray-100 dark:border-gray-700/30">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <!-- Showing X of Y -->
-      <div class="text-xs text-gray-600 dark:text-gray-400">
-       Affichage {{getCurrentPageStart()}} - 
-{{getCurrentPageEnd()}} 
-sur {{totalItems}} factures
-      </div>
-
-      <!-- Page Numbers -->
-      <div class="flex items-center gap-1">
-        <!-- First Page -->
-        <button 
-          (click)="changePage(1)"
-          [disabled]="currentPage === 1"
-          class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          «
-        </button>
-
-        <!-- Previous Page -->
-        <button 
-          (click)="changePage(currentPage - 1)"
-          [disabled]="currentPage === 1"
-          class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          ‹
-        </button>
-
-<div class="flex items-center gap-1">
-  <ng-container *ngFor="let page of getPageNumbers()">
-    <button 
-      *ngIf="page === -1"
-      class="w-7 h-7 flex items-center justify-center text-xs text-gray-400 cursor-default"
-      disabled
-    >
-      ...
-    </button>
-    
-    <!-- Page number button -->
-    <button 
-      *ngIf="page !== -1"
-      (click)="changePage(page)"
-      [class]="page === currentPage ? 
-        'w-7 h-7 flex items-center justify-center text-xs rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 font-medium' :
-        'w-7 h-7 flex items-center justify-center text-xs rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'"
-    >
-      {{page}}
-    </button>
-  </ng-container>
-</div>
-
-        <!-- Next Page -->
-        <button 
-          (click)="changePage(currentPage + 1)"
-          [disabled]="currentPage === getTotalPages()"
-          class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          ›
-        </button>
-
-        <!-- Last Page -->
-        <button 
-          (click)="changePage(getTotalPages())"
-          [disabled]="currentPage === getTotalPages()"
-          class="w-7 h-7 flex items-center justify-center text-xs rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          »
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-    </div>
-
-   
   </div>
 </div>

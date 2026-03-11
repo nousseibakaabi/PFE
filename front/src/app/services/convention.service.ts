@@ -97,6 +97,7 @@ export interface RenewalRequest {
   montantTTC: number;
   nbUsers: number;
   periodicite: string;
+  structureResponsableId?: number;
 }
 
 

@@ -1,6 +1,7 @@
 // RequestRepository.java
 package com.example.back.repository;
 
+import com.example.back.entity.Application;
 import com.example.back.entity.Request;
 import com.example.back.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("SELECT r FROM Request r WHERE r.convention.id = :conventionId ORDER BY r.createdAt DESC")
     List<Request> findByConventionId(@Param("conventionId") Long conventionId);
+
+    List<Request> findByApplicationAndStatus(Application application, String status);
 }

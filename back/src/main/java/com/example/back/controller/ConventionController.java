@@ -838,7 +838,8 @@ public class ConventionController {
             Convention convention = conventionRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Convention not found"));
 
-            // Get all old versions for this convention
+
+
             List<OldConvention> oldVersions = oldConventionRepository
                     .findByCurrentConventionOrderByRenewalVersionDesc(convention);
 

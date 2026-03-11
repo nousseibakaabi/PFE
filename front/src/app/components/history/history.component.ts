@@ -49,7 +49,10 @@ export class HistoryComponent implements OnInit {
     { value: 'STATUS_CHANGE', label: 'Changement de statut' },
     { value: 'ARCHIVE', label: 'Archivage' },
     { value: 'RESTORE', label: 'Restauration' },
-    { value: 'PAYMENT', label: 'Paiement' }
+    { value: 'PAYMENT', label: 'Paiement' },
+    { value: 'RENEW' , label :'Renouvellement'},
+    { value: 'REQUEST_PROCESSED' , label :'Traitement de demande'},
+    { value: 'REASSIGN_CHEF' , label :'Réassignation chef de projet'}
   ];
 
   constructor(
@@ -161,6 +164,9 @@ export class HistoryComponent implements OnInit {
       case 'RESTORE': return 'bg-green-100 text-green-800';
       case 'PAYMENT': return 'bg-emerald-100 text-emerald-800';
       case 'OVERDUE': return 'bg-red-100 text-red-800';
+      case 'RENEW': return 'bg-cyan-100 text-cyan-800';
+      case 'REASSIGN_CHEF': return 'bg-indigo-100 text-indigo-800';
+      case 'REQUEST_PROCESSED': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   }

@@ -129,3 +129,63 @@
   background-color: #f3f4f6;
   transform: translateX(2px);
 }
+
+
+/* Update menu item hover states for lighter dark mode */
+.dark .menu-item-inactive:hover {
+  background-color: rgba(255, 255, 255, 0.05); /* Slightly more visible */
+}
+
+.dark .menu-item-active {
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.15));
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+
+.min-text {
+  font-size: 13px;
+  font-weight: 600;
+
+}
+
+
+/* RTL Support */
+.rtl {
+  direction: rtl;
+}
+
+.ltr {
+  direction: ltr;
+}
+
+/* Adjust menu item for RTL */
+.rtl .menu-item {
+  text-align: right;
+}
+
+.rtl .menu-item svg {
+  margin-left: 0.75rem;
+  margin-right: 0;
+}
+
+/* Fix for hover effects in RTL */
+.rtl .lg:group-hover\:inline {
+  margin-right: 0.5rem;
+  margin-left: 0;
+}
+
+
+
+
+
+/* Adjust icon spacing in RTL */
+.rtl .menu-item svg {
+  margin-right: 0;
+  margin-left: 0.75rem;
+}
+
+/* Fix for the three dots menu button in RTL */
+.rtl .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}

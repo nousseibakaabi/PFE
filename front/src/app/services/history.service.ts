@@ -152,6 +152,8 @@ export class HistoryService {
       case 'FINANCIAL_UPDATE': return 'fas fa-chart-line text-emerald-500';
       case 'PAYMENT': return 'fas fa-credit-card text-emerald-500';
       case 'OVERDUE': return 'fas fa-exclamation-triangle text-red-500';
+case 'RENEW': return 'fas fa-sync-alt text-cyan-500';   case 'REASSIGN_CHEF': return 'fas fa-user-friends text-indigo-500';
+      case 'REQUEST_PROCESSED': return 'fas fa-check-double text-green-500';
       default: return 'fas fa-history text-gray-500';
     }
   }

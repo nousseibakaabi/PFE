@@ -17,26 +17,34 @@ export class SidebarComponent implements OnInit {
   @Input() isSidebarOpen: boolean = false; 
   selected: string = 'Dashboard';
   currentPage: string = 'ecommerce'; 
-    user: any = null;
+  user: any = null;
   baseUrl = environment.baseUrl || 'http://localhost:8084';
- isDesktop: boolean = false;
+  isDesktop: boolean = false;
   showUserDropdown: boolean = false;
+  isDarkMode = false;
+  isHovering = false;
 
   constructor(
     private router: Router,
     public layoutService: LayoutService,
     private authService: AuthService,
-    private translationService: TranslationService // Inject TranslationService
+    private translationService: TranslationService
   ) {}
 
 
+  isRtl: boolean = false;
 
+// Add this method
+checkRtlState(): void {
+  this.isRtl = document.documentElement.dir === 'rtl';
+}
 
 
   ngOnInit(): void {
     // Check screen size initially
     this.checkScreenSize();
-    
+      this.checkRtlState();
+
     // Get current page from URL
     this.layoutService.sidebarOpen$.subscribe((isOpen) => {
       this.isSidebarOpen = isOpen;
@@ -58,85 +66,112 @@ export class SidebarComponent implements OnInit {
 
     // Load the current user
     this.loadCurrentUser();
+
+    // Add dark mode check
+    this.checkDarkMode();
+    
+    // Listen for dark mode changes
+    this.listenForDarkModeChanges();
+
+    
   }
 
-  // Add this decorator
+  checkDarkMode(): void {
+    this.isDarkMode = document.documentElement.classList.contains('dark');
+  }
+
+
+navigateWithLang(route: string): void {
+  const currentLang = localStorage.getItem('appLanguage') || 'fr';
+  this.router.navigate([`/${currentLang}${route}`]);
+}
+
+  listenForDarkModeChanges(): void {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          this.checkDarkMode();
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+
+  onSidebarHover(event: MouseEvent): void {
+    if (!this.isSidebarOpen) {
+      this.isHovering = event.type === 'mouseenter';
+    }
+  }
+
   @HostListener('window:resize', ['$event'])
   onResize(event: any): void {
     this.checkScreenSize();
   }
 
   checkScreenSize(): void {
-    this.isDesktop = window.innerWidth >= 1024; // lg breakpoint
+    this.isDesktop = window.innerWidth >= 1024;
   }
 
-// ADD THIS METHOD: Load current user
-loadCurrentUser(): void {
-  // Get user from auth service
-  this.user = this.authService.currentUserValue;
-  
-  
-}
-
-
-navigateAndClose(route: string, pageName: string): void {
-  this.toggleSelected(pageName);
-  
-  // Navigate
-  this.router.navigate([route]);
-  
-  // Close sidebar on mobile (when not desktop)
-  if (!this.isDesktop) {
-    this.layoutService.setSidebarOpen(false);
+  loadCurrentUser(): void {
+    this.user = this.authService.currentUserValue;
+    console.log('Current user loaded:', this.user);
   }
-}
 
-updateCurrentPage(): void {
-  const url = this.router.url;
-  
-  const routeMapping = [
-    { path: 'admin/nomenclatures', page: 'Nomenclatures' },
-    { path: 'admin/users', page: 'Users' },
-    { path: 'admin/calendar', page: 'admin/calendar' },
-    { path: 'admin', page: 'admin' },
-    { path: 'conventions/archives', page: 'conventions/archives' }, 
-    { path: 'conventions', page: 'conventions' },
-    { path: 'factures', page: 'factures' },
-    { path: 'commercial/calendar', page: 'commercial/calendar' },
-    { path: 'commercial', page: 'commercial' },
-    { path: 'decideur', page: 'decideur' },
-    {path :'archives/applications', page:'archives/applications'},
-    { path: 'applications', page: 'applications'},
-    { path: 'chef/calendar', page: 'chef/calendar' },
-    { path: 'chef', page: 'chef' },
-    { path: 'requests', page: 'requests' },
-    { path: 'profile', page: 'profile' },
-  ];
-  
-  // Cherche le premier match (exact or partial)
-  const matchedRoute = routeMapping.find(route => url.includes(route.path));
-  this.currentPage = matchedRoute ? matchedRoute.page : 'ecommerce';
-  
-  console.log('Current URL:', url, 'Current Page:', this.currentPage); // Debug log
-}
+  navigateAndClose(route: string, pageName: string): void {
+    this.toggleSelected(pageName);
+    this.router.navigate([route]);
+    
+    if (!this.isDesktop) {
+      this.layoutService.setSidebarOpen(false);
+    }
+  }
 
-isAdminUser(): boolean {
-  return this.authService.isAdmin();
-}
+  updateCurrentPage(): void {
+    const url = this.router.url;
+    
+    const routeMapping = [
+      { path: 'admin/nomenclatures', page: 'Nomenclatures' },
+      { path: 'admin/users', page: 'Users' },
+      { path: 'admin/calendar', page: 'admin/calendar' },
+      { path: 'admin', page: 'admin' },
+      { path: 'conventions/archives', page: 'conventions/archives' }, 
+      { path: 'conventions', page: 'conventions' },
+      { path: 'factures', page: 'factures' },
+      { path: 'commercial/calendar', page: 'commercial/calendar' },
+      { path: 'commercial', page: 'commercial' },
+      { path: 'decideur', page: 'decideur' },
+      {path :'archives/applications', page:'archives/applications'},
+      { path: 'applications', page: 'applications'},
+      { path: 'chef/calendar', page: 'chef/calendar' },
+      { path: 'chef', page: 'chef' },
+      { path: 'requests', page: 'requests' },
+      { path: 'profile', page: 'profile' },
+    ];
+    
+    const matchedRoute = routeMapping.find(route => url.includes(route.path));
+    this.currentPage = matchedRoute ? matchedRoute.page : 'ecommerce';
+  }
 
-isCommercialUser(): boolean {
-  return this.authService.isCommercial() ;
-}
+  isAdminUser(): boolean {
+    return this.authService.isAdmin();
+  }
 
-isDecideurUser(): boolean {
-  return this.authService.isDecideur() ;
-}
+  isCommercialUser(): boolean {
+    return this.authService.isCommercial() ;
+  }
 
-isChefProjetUser(): boolean {
-  return this.authService.isChefProjet() ;
-}
+  isDecideurUser(): boolean {
+    return this.authService.isDecideur() ;
+  }
 
-  // Add logout method
+  isChefProjetUser(): boolean {
+    return this.authService.isChefProjet() ;
+  }
+
   logout(): void {
     this.authService.logout().subscribe({
       next: () => {
@@ -159,152 +194,107 @@ isChefProjetUser(): boolean {
     localStorage.setItem('sidebarSelected', this.selected);
   }
 
-
-isAdminOrChefProjet(): boolean {
-  return this.isAdminUser() || this.isChefProjetUser();
-}
-
-
-getCurrentUser(): User | null {
-  // Return this.user directly
-  return this.user || this.authService.currentUserValue;
-}
-
-getUserFullName(): string {
-  const user = this.getCurrentUser();
-  if (!user) return 'User';
-  
-  if (user.firstName && user.lastName) {
-    return `${user.firstName} ${user.lastName}`;
-  } else if (user.firstName) {
-    return user.firstName;
-  } else {
-    return user.username || 'User';
+  isAdminOrChefProjet(): boolean {
+    return this.isAdminUser() || this.isChefProjetUser();
   }
-}
 
-getUserEmail(): string {
-  const user = this.getCurrentUser();
-  return user?.email || 'No email';
-}
+  getCurrentUser(): User | null {
+    return this.user || this.authService.currentUserValue;
+  }
 
-// Add this method to sidebar.component.ts
-handleImageError(event: any): void {
-  console.error('Image failed to load:', this.user?.profileImage);
-  // Set to default avatar
-  event.target.src = this.generateDefaultAvatar();
-  event.target.onerror = null; // Prevent infinite loop
-}
+  getUserFullName(): string {
+    const user = this.getCurrentUser();
+    if (!user) return 'User';
+    
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    } else if (user.firstName) {
+      return user.firstName;
+    } else {
+      return user.username || 'User';
+    }
+  }
 
-getAvatarUrl(): string {
-  // Check if user exists
-  if (!this.user || !this.user.profileImage) {
-    return this.generateDefaultAvatar();
+  getUserEmail(): string {
+    const user = this.getCurrentUser();
+    return user?.email || 'No email';
   }
-  
-  const profileImage = this.user.profileImage;
-  
-  // If it's already a full URL, use it
-  if (profileImage.startsWith('http')) {
-    return profileImage;
-  }
-  
-  // If it's a relative path starting with /uploads/, prepend base URL
-  if (profileImage.startsWith('/uploads/')) {
-    const baseUrl = environment.baseUrl || 'http://localhost:8084';
-    return baseUrl + profileImage;
-  }
-  
-  // If it's base64, use it directly
-  if (profileImage.startsWith('data:image')) {
-    return profileImage;
-  }
-  
-  // Default fallback
-  return this.generateDefaultAvatar();
-}
 
-   generateAvatarUrl(): string {
-    if (!this.user) {
-      return 'assets/images/user/owner.jpg'; // Default image
+  // FIXED: Properly handle avatar URL from backend
+  getAvatarUrl(): string {
+    // If no user or no profile image, return empty string
+    if (!this.user || !this.user.profileImage) {
+      console.log('No profile image for user');
+      return '';
     }
     
-    // Generate initials for fallback avatar
-    let initials = 'U';
-    if (this.user?.firstName && this.user?.lastName) {
-      initials = this.user.firstName.charAt(0).toUpperCase() + this.user.lastName.charAt(0).toUpperCase();
-    } else if (this.user?.firstName) {
-      initials = this.user.firstName.charAt(0).toUpperCase();
-    } else if (this.user?.lastName) {
-      initials = this.user.lastName.charAt(0).toUpperCase();
-    } else if (this.user?.username) {
-      initials = this.user.username.charAt(0).toUpperCase();
+    const profileImage = this.user.profileImage;
+    console.log('Profile image from user:', profileImage);
+    
+    // If it's already a full URL, use it
+    if (profileImage.startsWith('http')) {
+      return profileImage;
     }
     
-    // Simple SVG with initials as fallback
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#e9d709
-      <text x="50" y="58" text-anchor="middle" font-family="Arial" font-size="38" fill="white">${initials}</text>
-    </svg>`;
+    // If it's a relative path starting with /uploads/, prepend base URL
+    if (profileImage.startsWith('/uploads/')) {
+      const fullUrl = this.baseUrl + profileImage;
+      console.log('Constructed full URL:', fullUrl);
+      return fullUrl;
+    }
     
-    return 'data:image/svg+xml;base64,' + btoa(svg);
+    // If it's base64, use it directly
+    if (profileImage.startsWith('data:image')) {
+      return profileImage;
+    }
+    
+    console.log('Unknown image format:', profileImage);
+    return '';
   }
 
-generateDefaultAvatar(): string {
-  const user = this.getCurrentUser();
-  if (!user) {
-    return 'assets/images/user/owner.jpg';
+  // ADD THIS: Handle image loading errors
+  handleImageError(event: any): void {
+    console.error('Failed to load image:', event.target.src);
+    // Hide the image and show initials instead
+    event.target.style.display = 'none';
+    event.target.parentElement.classList.add('show-initials');
   }
-  
-  // Generate initials
-  let initials = 'U';
-  if (user?.firstName && user?.lastName) {
-    initials = user.firstName.charAt(0).toUpperCase() + 
-               user.lastName.charAt(0).toUpperCase();
-  } else if (user?.firstName) {
-    initials = user.firstName.charAt(0).toUpperCase();
-  } else if (user?.lastName) {
-    initials = user.lastName.charAt(0).toUpperCase();
-  } else if (user?.username) {
-    initials = user.username.charAt(0).toUpperCase();
+
+  closeUserDropdown(): void {
+    this.showUserDropdown = false;
   }
-  
-  // Colors for different initials
-  const colors = [
-    '#e9d709'
+
+  toggleUserDropdown(event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showUserDropdown = !this.showUserDropdown;
+  }
+
+  getUserInitials(): string {
+    const user = this.getCurrentUser();
+    if (!user) return 'U';
     
-  ];
-  
-  // Pick a color based on the first letter
-  const colorIndex = initials.charCodeAt(0) % colors.length;
-  const color = colors[colorIndex];
-  
-  // CREATE A RECTANGLE WITH ROUNDED CORNERS instead of circle
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-    <!-- Rectangle with rounded corners (rx=15 for rounded effect) -->
-    <rect width="100" height="100" rx="15" fill="${color}"/>
+    if (user.firstName && user.lastName) {
+      return (user.firstName.charAt(0) + user.lastName.charAt(0)).toUpperCase();
+    } else if (user.firstName) {
+      return user.firstName.charAt(0).toUpperCase();
+    } else if (user.lastName) {
+      return user.lastName.charAt(0).toUpperCase();
+    } else if (user.username) {
+      return user.username.charAt(0).toUpperCase();
+    }
+    return 'U';
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
     
-    <!-- Center the text -->
-    <text x="50" y="58" 
-          text-anchor="middle" 
-          font-family="Arial, Helvetica, sans-serif" 
-          font-size="38" 
-          font-weight="bold" 
-          fill="white"
-          dominant-baseline="middle">
-      ${initials}
-    </text>
-  </svg>`;
-  
-  return 'data:image/svg+xml;base64,' + btoa(svg);
-}
-
-
-
-// Add this method
-toggleUserDropdown(): void {
-  this.showUserDropdown = !this.showUserDropdown;
-}
-
-
+    if (this.showUserDropdown && 
+        !target.closest('.user-dropdown-container') && 
+        !target.closest('.user-menu-button')) {
+      this.showUserDropdown = false;
+    }
+  }
 }

@@ -861,26 +861,113 @@ public class HistoryService {
 
     // In HistoryService.java - Add this method
 
-    public void logConventionRenewal(Convention convention, User renewedBy) {
+    // Add to HistoryService:
+    public void logConventionRenewal(Convention oldConvention, Convention newConvention, User renewedBy) {
+        String description = String.format("Renouvellement de la convention %s - Version %d → %d",
+                newConvention.getReferenceConvention(),
+                oldConvention.getRenewalVersion(),
+                newConvention.getRenewalVersion());
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("oldVersion", oldConvention.getRenewalVersion());
+        data.put("newVersion", newConvention.getRenewalVersion());
+        data.put("oldMontantTTC", oldConvention.getMontantTTC());
+        data.put("newMontantTTC", newConvention.getMontantTTC());
+
+        createHistory("RENEW", "CONVENTION", newConvention.getId(),
+                newConvention.getReferenceConvention(),
+                newConvention.getLibelle(), description, null, data, renewedBy);
+
+
+    }
+
+
+    /**
+     * Log chef de projet reassignment (when approved by admin)
+     */
+    public void logChefReassignment(Application application, User oldChef, User newChef, User approvedBy, String reason) {
         try {
-            String description = String.format("Renouvellement de la convention %s par %s %s - Version %d",
-                    convention.getReferenceConvention(),
-                    renewedBy.getFirstName(), renewedBy.getLastName(),
-                    convention.getRenewalVersion() != null ? convention.getRenewalVersion() : 1);
+            String oldChefName = oldChef != null ?
+                    oldChef.getFirstName() + " " + oldChef.getLastName() + " (" + oldChef.getUsername() + ")" :
+                    "Non assigné";
+            String newChefName = newChef != null ?
+                    newChef.getFirstName() + " " + newChef.getLastName() + " (" + newChef.getUsername() + ")" :
+                    "Non assigné";
 
-            Map<String, Object> data = new HashMap<>();
-            data.put("renewalVersion", convention.getRenewalVersion());
-            data.put("newDateDebut", convention.getDateDebut());
-            data.put("newDateFin", convention.getDateFin());
-            data.put("newMontantTTC", convention.getMontantTTC());
+            String description = String.format("Réassignation du chef de projet pour %s: %s → %s par %s %s",
+                    application.getName(),
+                    oldChefName,
+                    newChefName,
+                    approvedBy.getFirstName(),
+                    approvedBy.getLastName());
 
-            createHistory("RENEW", "CONVENTION", convention.getId(),
-                    convention.getReferenceConvention(), convention.getLibelle(),
-                    description, null, data, renewedBy);
+            if (reason != null && !reason.isEmpty()) {
+                description += " - Raison: " + reason;
+            }
 
-            log.info("Convention renewal history logged for {}", convention.getReferenceConvention());
+            Map<String, Object> oldData = new HashMap<>();
+            oldData.put("chefDeProjet", oldChef != null ? oldChef.getId() : null);
+            oldData.put("chefDeProjetName", oldChefName);
+
+            Map<String, Object> newData = new HashMap<>();
+            newData.put("chefDeProjet", newChef != null ? newChef.getId() : null);
+            newData.put("chefDeProjetName", newChefName);
+            newData.put("approvedBy", approvedBy.getId());
+            newData.put("approvedByName", approvedBy.getFirstName() + " " + approvedBy.getLastName());
+            newData.put("reason", reason);
+
+            createHistory("REASSIGN_CHEF", "APPLICATION", application.getId(),
+                    application.getCode(), application.getName(),
+                    description, oldData, newData, approvedBy);
+
+            log.info("Chef reassignment history logged for application {}: {} → {}",
+                    application.getCode(), oldChefName, newChefName);
+
         } catch (Exception e) {
-            log.error("Failed to log convention renewal: {}", e.getMessage());
+            log.error("Failed to log chef reassignment: {}", e.getMessage(), e);
         }
     }
+
+    /**
+     * Log chef reassignment request processed (approved/denied)
+     */
+    public void logReassignmentRequestProcessed(Request request, User processor, String action, String reason) {
+        try {
+            String actionLabel = "APPROVE".equals(action) ? "APPROUVÉE" : "REFUSÉE";
+
+            String description = String.format("Demande de réassignation %s par %s %s - Application: %s",
+                    actionLabel,
+                    processor.getFirstName(),
+                    processor.getLastName(),
+                    request.getApplication().getName());
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("requestId", request.getId());
+            data.put("requestType", request.getRequestType());
+            data.put("action", action);
+            data.put("processor", processor.getId());
+            data.put("processorName", processor.getFirstName() + " " + processor.getLastName());
+            data.put("requester", request.getRequester() != null ? request.getRequester().getId() : null);
+            data.put("requesterName", request.getRequester() != null ?
+                    request.getRequester().getFirstName() + " " + request.getRequester().getLastName() : null);
+            data.put("recommendedChef", request.getRecommendedChef() != null ? request.getRecommendedChef().getId() : null);
+            data.put("recommendedChefName", request.getRecommendedChef() != null ?
+                    request.getRecommendedChef().getFirstName() + " " + request.getRecommendedChef().getLastName() : null);
+
+            if (reason != null && !reason.isEmpty()) {
+                data.put("reason", reason);
+            }
+
+            createHistory("REQUEST_PROCESSED", "REQUEST", request.getId(),
+                    "REQ-" + request.getId(), "Demande de réassignation",
+                    description, null, data, processor);
+
+            log.info("Reassignment request {} processed: {}", request.getId(), actionLabel);
+
+        } catch (Exception e) {
+            log.error("Failed to log request processing: {}", e.getMessage(), e);
+        }
+    }
+
+
 }

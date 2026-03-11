@@ -141,12 +141,7 @@ sortInvoices(invoices: any[], sortBy: string, direction: string): any[] {
   });
 }
 
-// Get priority label from days
-getPriorityLabel(days: number): string {
-  if (days > 30) return 'CRITIQUE';
-  if (days > 15) return 'ÉLEVÉE';
-  return 'MOYEN';
-}
+
 
 // Change page
 changePage(page: number): void {
@@ -278,12 +273,6 @@ getPageNumbers(): number[] {
   return pages;
 }
 
-// Add priority class helper
-getPriorityClass(days: number): string {
-  if (days > 30) return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
-  if (days > 15) return 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300';
-  return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
-}
 
 renderCharts(): void {
   // 1. Convention Status Chart (Pie) - SMALLER
@@ -684,6 +673,20 @@ getTopPartnerDisplay(): string {
   
   return 'Aucun partenaire';
 }
+
+
+getPriorityLabel(days: number): string {
+  if (days > 30) return 'Critique';
+  if (days > 15) return 'Élevée';
+  return 'Moyen';
+}
+
+getPriorityClass(days: number): string {
+  if (days > 30) return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-200';
+  if (days > 15) return 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-200';
+  return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-200';
+}
+
 
 getProgressWidth(value: number, max: number): number {
   if (!max || max === 0) return 0;

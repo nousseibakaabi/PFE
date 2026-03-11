@@ -1,5 +1,4 @@
-<!-- requests.component.html -->
-<div class="container mx-auto p-4">
+<div class="container mx-auto p-4 max-w-7xl">
   
   <!-- Header -->
   <div class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
@@ -108,7 +107,7 @@
       <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="text-xl">{{ request.statusIcon }}</span>
-          <span class="text-sm font-medium text-gray-800">{{ request.typeLabel }}</span>
+          <span class="text-sm font-medium text-gray-800">{{ getRequestTypeLabel(request.requestType) }}</span>
         </div>
         <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + request.statusColor">
           {{ request.status === 'PENDING' ? 'En attente' : 
@@ -132,6 +131,12 @@
           <div class="text-sm text-gray-800">{{ request.conventionReference }}</div>
         </div>
         
+        <!-- Old Convention info (for renewals) -->
+        <div *ngIf="request.oldConventionReference" class="mb-3">
+          <div class="text-xs text-gray-500 mb-1">Ancienne convention</div>
+          <div class="text-sm text-gray-600">{{ request.oldConventionReference }}</div>
+        </div>
+        
         <!-- Reason (for pending) -->
         <div *ngIf="request.reason && request.status === 'PENDING'" class="mb-3">
           <div class="text-xs text-gray-500 mb-1">Message</div>
@@ -153,6 +158,14 @@
           <div class="text-xs text-gray-500 mb-1">Chef recommandé</div>
           <div class="text-sm font-medium text-blue-600">
             {{ request.recommendedChefName }}
+          </div>
+        </div>
+        
+        <!-- Recommendations -->
+        <div *ngIf="request.recommendations" class="mb-3">
+          <div class="text-xs text-gray-500 mb-1">Recommandations</div>
+          <div class="text-sm text-gray-600 bg-blue-50 p-2 rounded">
+            {{ request.recommendations }}
           </div>
         </div>
         
@@ -184,15 +197,21 @@
           </ng-container>
           
           <!-- For admin: reassignment suggestions -->
-          <ng-container *ngIf="isAdmin && request.requestType === 'REASSIGNMENT_SUGGESTION'">
-            <button (click)="openResponseModal(request, 'APPROVE')" 
-                    class="px-3 py-1.5 text-xs font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg">
-              Approuver
-            </button>
-            <button (click)="openResponseModal(request, 'DENY')" 
-                    class="px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg">
-              Refuser
-            </button>
+          <!-- For admin: reassignment suggestions (both types) -->
+<ng-container *ngIf="isAdmin && (request.requestType === 'REASSIGNMENT_SUGGESTION' || request.requestType === 'REASSIGNMENT_REQUEST_FROM_CHEF')">
+  <button (click)="openResponseModal(request, 'APPROVE')" 
+          class="px-3 py-1.5 text-xs font-medium bg-green-500 hover:bg-green-600 text-white rounded-lg">
+    Approuver
+  </button>
+  <button (click)="openResponseModal(request, 'DENY')" 
+          class="px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg">
+    Refuser
+  </button>
+</ng-container>
+          
+          <!-- For chef de projet: they can also create reassignment suggestions from their own apps -->
+          <ng-container *ngIf="isChefProjet && request.requestType === 'RENEWAL_ACCEPTANCE' && request.targetUserId !== currentUser?.id">
+            <!-- This is a placeholder - chefs can't respond to others' requests -->
           </ng-container>
         </ng-container>
       </div>
@@ -214,7 +233,7 @@
               {{ responseAction === 'APPROVE' ? 'Approuver la demande' : 'Refuser la demande' }}
             </h3>
             <p class="text-xs text-gray-500 mt-1">
-              {{ selectedRequest.typeLabel }}
+              {{ getRequestTypeLabel(selectedRequest.requestType) }}
             </p>
           </div>
         </div>
@@ -260,14 +279,19 @@
           ></textarea>
         </div>
         
-        <!-- Chef recommendation (for renewal denial by chef) -->
+        <!-- Chef recommendation (for denial by chef) -->
         <div *ngIf="responseAction === 'DENY' && selectedRequest.requestType === 'RENEWAL_ACCEPTANCE' && isChefProjet" class="mb-4">
           <label class="block text-xs font-medium text-gray-700 mb-2">
             Recommander un autre chef de projet
           </label>
           
           <!-- Chef selection -->
-          <div class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-2">
+          <div *ngIf="workloadLoading" class="text-center py-4">
+            <div class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
+            <p class="text-xs text-gray-500 mt-1">Chargement des chefs...</p>
+          </div>
+          
+          <div *ngIf="!workloadLoading" class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-2">
             <div *ngFor="let chef of availableChefs" 
                  (click)="selectedChefId = chef.id"
                  class="flex items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
@@ -290,6 +314,26 @@
                 <p class="text-xs text-gray-500">{{ chef.email }}</p>
               </div>
             </div>
+            <div *ngIf="availableChefs.length === 0" class="text-center py-2 text-gray-500 text-xs">
+              Aucun autre chef disponible
+            </div>
+          </div>
+        </div>
+        
+        <!-- Chef recommendation (for admin approving reassignment) -->
+        <div *ngIf="responseAction === 'APPROVE' && selectedRequest.requestType === 'REASSIGNMENT_SUGGESTION' && isAdmin" class="mb-4">
+          <label class="block text-xs font-medium text-gray-700 mb-2">
+            Confirmer le chef recommandé
+          </label>
+          
+          <div *ngIf="selectedRequest.recommendedChefName" class="p-3 bg-blue-50 rounded-lg">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span class="text-sm font-medium text-gray-800">{{ selectedRequest.recommendedChefName }}</span>
+            </div>
+            <p class="text-xs text-gray-600 mt-1">{{ selectedRequest.recommendations }}</p>
           </div>
         </div>
       </div>
@@ -347,7 +391,7 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <p class="text-xs text-gray-500 mb-1">Type</p>
-            <p class="text-sm font-medium text-gray-800">{{ selectedRequest.typeLabel }}</p>
+            <p class="text-sm font-medium text-gray-800">{{ getRequestTypeLabel(selectedRequest.requestType) }}</p>
           </div>
           <div>
             <p class="text-xs text-gray-500 mb-1">Créée le</p>
@@ -380,7 +424,7 @@
         
         <!-- Convention -->
         <div>
-          <p class="text-xs text-gray-500 mb-1">Nouvelle convention</p>
+          <p class="text-xs text-gray-500 mb-1">Convention</p>
           <p class="text-sm font-medium text-blue-600 cursor-pointer hover:underline" (click)="viewConvention(selectedRequest.conventionId!)">
             {{ selectedRequest.conventionReference }}
           </p>

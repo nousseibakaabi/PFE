@@ -53,6 +53,10 @@ public class ApplicationResponse {
     private boolean terminatedOnTime;
     private boolean terminatedLate;
 
+    private Long createdById;
+    private String createdByUsername;
+    private String createdByFullName;
+
     // Getters and setters for new fields
     public LocalDateTime getTerminatedAt() { return terminatedAt; }
     public void setTerminatedAt(LocalDateTime terminatedAt) { this.terminatedAt = terminatedAt; }

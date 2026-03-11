@@ -1278,4 +1278,50 @@ public class ApplicationService {
             return null;
         }
     }
-}
+
+
+// Add these methods to your ApplicationService class
+
+    /**
+     * Check if current user is admin
+     */
+    private boolean isAdmin() {
+        User currentUser = getCurrentUser();
+        if (currentUser == null) return false;
+
+        return currentUser.getRoles().stream()
+                .anyMatch(role -> role.getName().name().equals("ROLE_ADMIN"));
+    }
+
+    /**
+     * Get archived applications for current user (with role-based filtering)
+     */
+    public List<ApplicationResponse> getArchivedApplicationsForCurrentUser() {
+        try {
+            User currentUser = getCurrentUser();
+            if (currentUser == null) {
+                throw new RuntimeException("User not authenticated");
+            }
+
+            List<Application> archivedApps;
+
+            if (isAdmin()) {
+                // Admin sees all archived applications
+                archivedApps = applicationRepository.findByArchivedTrue();
+                log.info("Admin fetching all archived applications: found {}", archivedApps.size());
+            } else {
+                // Chef de projet sees only their own archived applications
+                archivedApps = applicationRepository.findByChefDeProjetAndArchivedTrue(currentUser);
+                log.info("Chef de projet {} fetching their archived applications: found {}",
+                        currentUser.getUsername(), archivedApps.size());
+            }
+
+            return archivedApps.stream()
+                    .map(applicationMapper::toResponse)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Error fetching archived applications: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch archived applications: " + e.getMessage());
+        }
+    }}

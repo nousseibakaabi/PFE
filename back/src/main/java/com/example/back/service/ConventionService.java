@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -61,6 +62,9 @@ public class ConventionService {
     @Autowired
     private OldFactureRepository oldFactureRepository;
 
+    @Autowired
+    private WorkloadService workloadService;
+
 
 
     // ============= FINANCIAL CALCULATION METHODS =============
@@ -82,17 +86,14 @@ public class ConventionService {
     /**
      * Calculate HT from TTC and TVA
      */
-    public BigDecimal calculateHT(BigDecimal montantTTC, BigDecimal tva) {
-        if (montantTTC == null) {
+
+    private BigDecimal calculateHT(BigDecimal montantTTC, BigDecimal tva) {
+        if (montantTTC == null || tva == null) {
             return BigDecimal.ZERO;
-        }
-        if (tva == null) {
-            tva = BigDecimal.valueOf(19.00);
         }
         BigDecimal divisor = BigDecimal.ONE.add(tva.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
         return montantTTC.divide(divisor, 2, RoundingMode.HALF_UP);
     }
-
     /**
      * Determine number of users based on application min/max and user selection
      */
@@ -220,26 +221,29 @@ public class ConventionService {
         log.info("Date Fin: {}", convention.getDateFin());
         log.info("Montant TTC: {}", convention.getMontantTTC());
 
-        if (convention.getFactures() == null) {
-            convention.setFactures(new ArrayList<>());
-        }
+        // Check if any invoices already exist (they shouldn't after renewal)
+        List<Facture> existingInvoices = factureRepository.findByConventionId(convention.getId());
 
-        // Get existing invoices sorted
-        List<Facture> existingInvoices = factureRepository.findByConventionIdOrderByNumeroFactureAsc(convention.getId());
-        log.info("Existing invoices found: {}", existingInvoices.size());
+        if (!existingInvoices.isEmpty()) {
+            log.warn("Found {} existing invoices for convention. This shouldn't happen after renewal.",
+                    existingInvoices.size());
 
-        // Separate paid and unpaid invoices
-        List<Facture> paidInvoices = new ArrayList<>();
-        List<Facture> unpaidInvoices = new ArrayList<>();
+            // Delete any unpaid invoices (should be none)
+            for (Facture invoice : existingInvoices) {
+                if (!"PAYE".equals(invoice.getStatutPaiement())) {
+                    factureRepository.delete(invoice);
+                    log.info("Deleted unpaid invoice: {}", invoice.getNumeroFacture());
+                }
+            }
 
-        for (Facture invoice : existingInvoices) {
-            if ("PAYE".equals(invoice.getStatutPaiement())) {
-                paidInvoices.add(invoice);
-            } else {
-                unpaidInvoices.add(invoice);
+            // Refresh the list
+            existingInvoices = factureRepository.findByConventionId(convention.getId());
+            if (!existingInvoices.isEmpty()) {
+                log.error("Still have {} paid invoices after cleanup. These should have been archived.",
+                        existingInvoices.size());
+                return;
             }
         }
-        log.info("Paid invoices: {}, Unpaid invoices: {}", paidInvoices.size(), unpaidInvoices.size());
 
         // Validate required fields
         if (convention.getDateDebut() == null || convention.getDateFin() == null ||
@@ -248,106 +252,65 @@ public class ConventionService {
             return;
         }
 
-        // Calculate total duration based on periodicity
+        // Calculate total periods
         int totalPeriods = calculateTotalPeriods(convention);
         log.info("Total periods calculated: {} for periodicity: {}", totalPeriods, convention.getPeriodicite());
 
-        int paidPeriods = paidInvoices.size();
-        int remainingPeriods = totalPeriods - paidPeriods;
-        log.info("Paid periods: {}, Remaining periods: {}", paidPeriods, remainingPeriods);
+        // Calculate amount per period
+        BigDecimal amountPerPeriod = convention.getMontantTTC()
+                .divide(BigDecimal.valueOf(totalPeriods), 2, RoundingMode.HALF_UP);
+        log.info("Amount per period: {} TND", amountPerPeriod);
 
-        // Calculate amounts
-        BigDecimal totalAmount = convention.getMontantTTC();
-        BigDecimal paidAmount = calculateTotalPaidAmount(paidInvoices);
-        BigDecimal remainingAmount = totalAmount.subtract(paidAmount);
+        // Generate all invoices from scratch
+        for (int i = 0; i < totalPeriods; i++) {
+            int sequenceNumber = i + 1;
 
-        log.info("Total amount: {} TND, Paid amount: {} TND, Remaining amount: {} TND",
-                totalAmount, paidAmount, remainingAmount);
+            // Generate a unique invoice number
+            String invoiceNumber = generateUniqueInvoiceNumber(convention, sequenceNumber);
 
-        // Calculate new amount per remaining period
-        BigDecimal newAmountPerRemainingPeriod = remainingAmount
-                .divide(BigDecimal.valueOf(remainingPeriods), 2, RoundingMode.HALF_UP);
-        log.info("New amount per remaining period: {} TND", newAmountPerRemainingPeriod);
+            LocalDate invoiceDate = calculateInvoiceDate(convention.getDateDebut(), i, convention.getPeriodicite());
 
-        // STEP 1: UPDATE existing unpaid invoices
-        for (int i = 0; i < unpaidInvoices.size(); i++) {
-            Facture invoice = unpaidInvoices.get(i);
-            BigDecimal oldAmount = invoice.getMontantTTC();
-            invoice.setMontantHT(calculateHT(newAmountPerRemainingPeriod, convention.getTva()));
-            invoice.setTva(convention.getTva());
-            invoice.setMontantTTC(newAmountPerRemainingPeriod);
-            invoice.setNotes(String.format("Facture pour la convention %s - TVA: %.2f%% - MISE À JOUR (était: %s TND)",
-                    convention.getReferenceConvention(), convention.getTva(), oldAmount));
+            Facture facture = new Facture();
+            facture.setNumeroFacture(invoiceNumber);
+            facture.setConvention(convention);
+            facture.setDateFacturation(invoiceDate);
+            facture.setDateEcheance(calculateDueDate(invoiceDate, convention.getPeriodicite()));
+            facture.setMontantHT(calculateHT(amountPerPeriod, convention.getTva()));
+            facture.setTva(convention.getTva());
+            facture.setMontantTTC(amountPerPeriod);
+            facture.setStatutPaiement("NON_PAYE");
+            facture.setNotes(String.format("Facture %d/%d pour la convention %s (renouvelée)",
+                    sequenceNumber, totalPeriods, convention.getReferenceConvention()));
 
-            factureRepository.save(invoice);
-            log.info("UPDATED unpaid invoice {}: {} TND → {} TND",
-                    invoice.getNumeroFacture(), oldAmount, newAmountPerRemainingPeriod);
-        }
-
-        // STEP 2: ADD new invoices if needed
-        if (remainingPeriods > unpaidInvoices.size()) {
-            int invoicesToAdd = remainingPeriods - unpaidInvoices.size();
-            int startIndex = paidInvoices.size() + unpaidInvoices.size();
-            log.info("Adding {} new invoices starting at index {}", invoicesToAdd, startIndex);
-
-            for (int i = 0; i < invoicesToAdd; i++) {
-                int sequenceNumber = startIndex + i + 1;
-                String invoiceNumber = generateSequentialInvoiceNumber(convention, sequenceNumber);
-
-                LocalDate invoiceDate = calculateInvoiceDate(convention.getDateDebut(), startIndex + i, convention.getPeriodicite());
-                log.info("Creating invoice {} with date: {}", invoiceNumber, invoiceDate);
-
-                Facture facture = new Facture();
-                facture.setNumeroFacture(invoiceNumber);
-                facture.setConvention(convention);
-                facture.setDateFacturation(invoiceDate);
-                facture.setDateEcheance(calculateDueDate(invoiceDate, convention.getPeriodicite()));
-                facture.setMontantHT(calculateHT(newAmountPerRemainingPeriod, convention.getTva()));
-                facture.setTva(convention.getTva());
-                facture.setMontantTTC(newAmountPerRemainingPeriod);
-                facture.setStatutPaiement("NON_PAYE");
-                facture.setNotes(String.format("Facture %d/%d pour la convention %s",
-                        sequenceNumber, totalPeriods, convention.getReferenceConvention()));
-
-                // Save with flush to ensure entity is managed
-                Facture savedFacture = factureRepository.saveAndFlush(facture);
-                convention.getFactures().add(savedFacture);
-                log.info("ADDED new invoice {} at {} TND", savedFacture.getNumeroFacture(), newAmountPerRemainingPeriod);
-            }
-        }
-
-        // STEP 3: REMOVE excess unpaid invoices
-        if (remainingPeriods < unpaidInvoices.size()) {
-            int invoicesToRemove = unpaidInvoices.size() - remainingPeriods;
-            log.info("Removing {} excess invoices", invoicesToRemove);
-
-            for (int i = 0; i < invoicesToRemove; i++) {
-                Facture invoiceToRemove = unpaidInvoices.get(remainingPeriods + i);
-                convention.getFactures().remove(invoiceToRemove);
-                factureRepository.delete(invoiceToRemove);
-                log.info("REMOVED excess invoice {}", invoiceToRemove.getNumeroFacture());
-            }
-        }
-
-        // Ensure paid invoices are in the collection
-        for (Facture paidInvoice : paidInvoices) {
-            if (!convention.getFactures().contains(paidInvoice)) {
-                convention.getFactures().add(paidInvoice);
-            }
+            Facture savedFacture = factureRepository.save(facture);
+            log.info("ADDED new invoice {} at {} TND", savedFacture.getNumeroFacture(), amountPerPeriod);
         }
 
         log.info("========== INVOICE GENERATION COMPLETE ==========");
+    }
 
-        // Flush to ensure all changes are persisted
-        factureRepository.flush();
+    /**
+     * Generate a unique invoice number
+     */
+    private String generateUniqueInvoiceNumber(Convention convention, int sequence) {
+        String baseNumber = String.format("FACT-%d-%s-%03d",
+                LocalDate.now().getYear(),
+                convention.getReferenceConvention(),
+                sequence);
 
-        // Call notification check after everything is persisted
-        try {
-            checkNotificationsForAllInvoices(convention);
-        } catch (Exception e) {
-            log.error("Failed to check notifications: {}", e.getMessage());
-            // Don't throw - we don't want notification failure to rollback the transaction
+        // Check if this number already exists
+        boolean exists = factureRepository.existsByNumeroFacture(baseNumber);
+        if (!exists) {
+            return baseNumber;
         }
+
+        // If it exists, add a timestamp to make it unique
+        String timestamp = String.valueOf(System.currentTimeMillis()).substring(7);
+        return String.format("FACT-%d-%s-%03d-%s",
+                LocalDate.now().getYear(),
+                convention.getReferenceConvention(),
+                sequence,
+                timestamp);
     }
 
     private void checkNotificationsForAllInvoices(Convention convention) {
@@ -738,36 +701,6 @@ public class ConventionService {
         return updatedConvention;
     }
 
-    /**
-     * Clone convention for history
-     */
-    private Convention cloneConvention(Convention conv) {
-        Convention clone = new Convention();
-        clone.setId(conv.getId());
-        clone.setReferenceConvention(conv.getReferenceConvention());
-        clone.setReferenceERP(conv.getReferenceERP());
-        clone.setLibelle(conv.getLibelle());
-        clone.setDateDebut(conv.getDateDebut());
-        clone.setDateFin(conv.getDateFin());
-        clone.setDateSignature(conv.getDateSignature());
-        clone.setStructureResponsable(conv.getStructureResponsable());
-        clone.setStructureBeneficiel(conv.getStructureBeneficiel());
-        clone.setApplication(conv.getApplication());
-        clone.setMontantHT(conv.getMontantHT());
-        clone.setMontantTTC(conv.getMontantTTC());
-        clone.setTva(conv.getTva());
-        clone.setNbUsers(conv.getNbUsers());
-        clone.setPeriodicite(conv.getPeriodicite());
-        clone.setEtat(conv.getEtat());
-        clone.setArchived(conv.getArchived());
-        clone.setArchivedAt(conv.getArchivedAt());
-        clone.setArchivedBy(conv.getArchivedBy());
-        clone.setArchivedReason(conv.getArchivedReason());
-        clone.setCreatedAt(conv.getCreatedAt());
-        clone.setUpdatedAt(conv.getUpdatedAt());
-        clone.setCreatedBy(conv.getCreatedBy());
-        return clone;
-    }
 
     /**
      * Get current user
@@ -996,80 +929,312 @@ public class ConventionService {
     }
 
 
-    /**
-     * Renew a convention
-     */
-
-
-    /**
-     * Renew a convention (keeps reference, structure beneficiel, application)
-     */
-
-    private Convention refreshConvention(Convention convention) {
-        if (convention != null && convention.getId() != null) {
-            return conventionRepository.findById(convention.getId()).orElse(convention);
-        }
-        return convention;
-    }
 
 
     @Transactional
     public Convention renewConvention(Long conventionId, RenewalRequestDTO renewalData, User currentUser) {
-        log.info("========== RENEWING CONVENTION (UPDATE SAME CONVENTION) ==========");
-        log.info("Renewing convention with ID: {}", conventionId);
-        log.info("Current user: {}", currentUser.getUsername());
+        log.info("========== RENEWING CONVENTION ==========");
 
         Convention convention = conventionRepository.findById(conventionId)
-                .orElseThrow(() -> {
-                    log.error("Convention not found with ID: {}", conventionId);
-                    return new RuntimeException("Convention not found");
-                });
+                .orElseThrow(() -> new RuntimeException("Convention not found"));
 
-        log.info("Convention found: {}", convention.getReferenceConvention());
-        log.info("Current status: {}", convention.getEtat());
-
-        // Check if convention is terminated
         if (!"TERMINE".equals(convention.getEtat())) {
-            log.error("Convention is not terminated. Current status: {}", convention.getEtat());
             throw new RuntimeException("Only terminated conventions can be renewed");
         }
 
-        // Check if already archived
         if (convention.getArchived()) {
-            log.error("Convention is already archived");
             throw new RuntimeException("Archived conventions cannot be renewed");
         }
 
-        // STEP 1: Archive the current version to old_conventions
-        archiveCurrentVersion(convention, currentUser, "Renouvellement - Nouvelle version créée");
+        // 1. CREATE DEEP COPY of OLD state BEFORE any changes
+        Convention oldState = cloneConvention(convention);
 
-        // STEP 2: Archive all current factures to old_factures
-        archiveCurrentFactures(convention, currentUser);
+        // 2. Get and archive OLD invoices BEFORE updating
+        List<Facture> oldFactures = factureRepository.findByConventionId(convention.getId());
+        log.info("Found {} old factures to archive", oldFactures.size());
 
-        // STEP 3: Update the convention with new data (KEEP SAME REFERENCE)
+        // 3. UPDATE the current convention with new data
         updateConventionWithRenewalData(convention, renewalData, currentUser);
 
-        convention = refreshConvention(convention);
+        // 4. SAVE the updated convention
+        Convention updatedConvention = conventionRepository.save(convention);
+        log.info("Updated convention saved with new data. New version: {}", updatedConvention.getRenewalVersion());
 
-        // STEP 4: Generate NEW invoices for the renewed convention
-        generateInvoicesForConvention(convention);
+        // 5. FLUSH to ensure everything is saved
+        conventionRepository.flush();
 
-        // STEP 5: Handle chef de projet reassignment
-        handleRenewalAssignment(convention.getApplication(), convention, currentUser);
+        // 6. Archive the OLD state (linking to NEW convention)
+        archiveCurrentVersion(oldState, currentUser, updatedConvention, "Renouvellement - Ancienne version");
 
-        // LOG HISTORY
+        // 7. Archive old factures and DELETE them from main table
+        if (!oldFactures.isEmpty()) {
+            archiveCurrentFactures(oldState, currentUser, updatedConvention, oldFactures);
+
+            // FORCE DELETE from main factures table
+            factureRepository.deleteByConventionId(conventionId);
+            factureRepository.flush();
+            log.info("Force deleted {} factures from main table", oldFactures.size());
+        }
+
+        // 8. Generate NEW invoices
+        generateInvoicesForConvention(updatedConvention);
+
+        convention.setEtat(determineNewStatus(convention));
+        conventionRepository.save(convention);
+
+        // 9. Update application dates
         try {
-            historyService.logConventionRenewal(convention, currentUser);
+            applicationService.updateApplicationDatesFromConvention(
+                    updatedConvention.getApplication().getId(),
+                    updatedConvention.getDateDebut(),
+                    updatedConvention.getDateFin()
+            );
+            log.info("Application dates updated successfully");
+        } catch (Exception e) {
+            log.error("Failed to update application dates: {}", e.getMessage());
+        }
+
+        // 10. Handle chef de projet reassignment with EMAIL FIX
+        try {
+            handleRenewalAssignment(updatedConvention.getApplication(), updatedConvention, currentUser);
+        } catch (Exception e) {
+            log.error("Failed to handle renewal assignment: {}", e.getMessage());
+        }
+
+        // 11. Log history
+        try {
+            historyService.logConventionRenewal(oldState, updatedConvention, currentUser);
         } catch (Exception e) {
             log.error("Failed to log renewal history: {}", e.getMessage());
         }
 
         log.info("========== RENEWAL COMPLETED ==========");
-        return convention;
+        return updatedConvention;
+    }
+    /**
+     * Archive factures with explicit list (to avoid querying again)
+     */
+
+
+    private String determineNewStatus(Convention convention) {
+        LocalDate today = LocalDate.now();
+
+        if (convention.getDateDebut() == null) {
+            return "PLANIFIE";
+        }
+
+        if (today.isBefore(convention.getDateDebut())) {
+            return "PLANIFIE";
+        }
+
+        if (convention.getDateFin() != null && today.isAfter(convention.getDateFin())) {
+            return "TERMINE";
+        }
+
+        return "EN COURS";
+    }
+
+    @Transactional
+    public void archiveCurrentFactures(Convention oldConvention, User currentUser,
+                                       Convention newConvention, List<Facture> oldFactures) {
+        log.info("Archiving {} factures for old convention {}", oldFactures.size(),
+                oldConvention.getReferenceConvention());
+
+        // Get the old convention record we just created
+        List<OldConvention> oldVersions = oldConventionRepository
+                .findByCurrentConventionOrderByRenewalVersionDesc(newConvention);
+
+        if (oldVersions.isEmpty()) {
+            log.error("No old convention version found to link factures");
+            return;
+        }
+
+        OldConvention latestOldConv = oldVersions.get(0);
+
+        List<OldFacture> oldFacturesToSave = new ArrayList<>();
+
+        for (Facture facture : oldFactures) {
+            OldFacture oldFacture = new OldFacture();
+            oldFacture.setOldConvention(latestOldConv);
+            oldFacture.setNumeroFacture(facture.getNumeroFacture());
+            oldFacture.setDateFacturation(facture.getDateFacturation());
+            oldFacture.setDateEcheance(facture.getDateEcheance());
+            oldFacture.setMontantHT(facture.getMontantHT());
+            oldFacture.setTva(facture.getTva());
+            oldFacture.setMontantTTC(facture.getMontantTTC());
+            oldFacture.setStatutPaiement(facture.getStatutPaiement());
+            oldFacture.setDatePaiement(facture.getDatePaiement());
+            oldFacture.setReferencePaiement(facture.getReferencePaiement());
+            oldFacture.setNotes(facture.getNotes());
+            oldFacture.setArchivedAt(LocalDateTime.now());
+
+            oldFacturesToSave.add(oldFacture);
+        }
+
+        // Save all old factures
+        oldFactureRepository.saveAll(oldFacturesToSave);
+        oldFactureRepository.flush();
+
+        // CRITICAL: Delete the original factures from the main table
+        factureRepository.deleteAll(oldFactures);
+        factureRepository.flush();
+
+        log.info("Archived and deleted {} factures successfully", oldFactures.size());
+    }
+
+ /**
+     * Clone convention for history (deep copy)
+     */
+    private Convention cloneConvention(Convention conv) {
+        Convention clone = new Convention();
+        clone.setId(conv.getId());
+        clone.setReferenceConvention(conv.getReferenceConvention());
+        clone.setReferenceERP(conv.getReferenceERP());
+        clone.setLibelle(conv.getLibelle());
+        clone.setDateDebut(conv.getDateDebut());
+        clone.setDateFin(conv.getDateFin());
+        clone.setDateSignature(conv.getDateSignature());
+        clone.setStructureResponsable(conv.getStructureResponsable());
+        clone.setStructureBeneficiel(conv.getStructureBeneficiel());
+        clone.setApplication(conv.getApplication());
+        clone.setMontantHT(conv.getMontantHT());
+        clone.setMontantTTC(conv.getMontantTTC());
+        clone.setTva(conv.getTva());
+        clone.setNbUsers(conv.getNbUsers());
+        clone.setPeriodicite(conv.getPeriodicite());
+        clone.setEtat(conv.getEtat());
+        clone.setArchived(conv.getArchived());
+        clone.setArchivedAt(conv.getArchivedAt());
+        clone.setArchivedBy(conv.getArchivedBy());
+        clone.setArchivedReason(conv.getArchivedReason());
+        clone.setCreatedAt(conv.getCreatedAt());
+        clone.setUpdatedAt(conv.getUpdatedAt());
+        clone.setCreatedBy(conv.getCreatedBy());
+        clone.setRenewalVersion(conv.getRenewalVersion());
+        return clone;
+    }
+
+    /**
+     * Update convention with renewal data
+     */
+    @Transactional
+    public void updateConventionWithRenewalData(Convention convention, RenewalRequestDTO data, User currentUser) {
+        log.info("Updating convention {} with new renewal data", convention.getReferenceConvention());
+
+        // Increment renewal version
+        convention.setRenewalVersion(convention.getRenewalVersion() != null ?
+                convention.getRenewalVersion() + 1 : 1);
+
+        // Update with new data (KEEP REFERENCE, APPLICATION, STRUCTURE BENEFICIEL)
+        if (data.getReferenceERP() != null) {
+            convention.setReferenceERP(data.getReferenceERP());
+        }
+
+
+
+        if (data.getLibelle() != null) {
+            convention.setLibelle(data.getLibelle());
+        }
+
+        if (data.getDateDebut() != null) {
+            convention.setDateDebut(data.getDateDebut());
+        }
+
+        if (data.getDateFin() != null) {
+            convention.setDateFin(data.getDateFin());
+        }
+
+        if (data.getDateSignature() != null) {
+            convention.setDateSignature(data.getDateSignature());
+        }
+
+        if (data.getPeriodicite() != null) {
+            convention.setPeriodicite(data.getPeriodicite());
+        }
+
+        if (data.getMontantHT() != null) {
+            convention.setMontantHT(data.getMontantHT());
+        }
+
+        if (data.getTva() != null) {
+            convention.setTva(data.getTva());
+        }
+
+        if (data.getMontantTTC() != null) {
+            convention.setMontantTTC(data.getMontantTTC());
+        }
+
+        if (data.getNbUsers() != null) {
+            convention.setNbUsers(data.getNbUsers());
+        }
+
+        if (data.getStructureResponsableId() != null) {
+            Structure newStructureResponsable = structureRepository.findById(data.getStructureResponsableId())
+                    .orElseThrow(() -> new RuntimeException("Structure responsable not found with ID: " + data.getStructureResponsableId()));
+            convention.setStructureResponsable(newStructureResponsable);
+            log.info("Updated structure responsable from {} to {}",
+                    convention.getStructureResponsable() != null ? convention.getStructureResponsable().getId() : "null",
+                    data.getStructureResponsableId());
+        }
+
+        // Reset status based on dates
+        if (convention.getDateDebut() != null && convention.getDateDebut().isAfter(LocalDate.now())) {
+            convention.setEtat("PLANIFIE");
+        } else {
+            convention.setEtat("EN COURS");
+        }
+
+        log.info("Convention updated successfully. New version: {}", convention.getRenewalVersion());
+    }
+
+    /**
+     * Archive current version to old_conventions
+     */
+    @Transactional
+    public void archiveCurrentVersion(Convention oldConvention, User currentUser,
+                                      Convention newConvention, String reason) {
+        log.info("Archiving old version of convention {} to old_conventions",
+                oldConvention.getReferenceConvention());
+
+        // Get next version number
+        Integer nextVersion = 1;
+        Integer maxVersion = oldConventionRepository.findMaxRenewalVersion(newConvention);
+        if (maxVersion != null) {
+            nextVersion = maxVersion + 1;
+        }
+
+        // Create old convention record from the OLD convention data
+        OldConvention oldConv = new OldConvention();
+        oldConv.setCurrentConvention(newConvention); // Link to NEW convention
+        oldConv.setReferenceConvention(oldConvention.getReferenceConvention());
+        oldConv.setReferenceERP(oldConvention.getReferenceERP());
+        oldConv.setLibelle(oldConvention.getLibelle());
+        oldConv.setDateDebut(oldConvention.getDateDebut());
+        oldConv.setDateFin(oldConvention.getDateFin());
+        oldConv.setDateSignature(oldConvention.getDateSignature());
+        oldConv.setStructureResponsable(oldConvention.getStructureResponsable());
+        oldConv.setStructureBeneficiel(oldConvention.getStructureBeneficiel());
+        oldConv.setApplication(oldConvention.getApplication());
+        oldConv.setMontantHT(oldConvention.getMontantHT());
+        oldConv.setTva(oldConvention.getTva());
+        oldConv.setMontantTTC(oldConvention.getMontantTTC());
+        oldConv.setNbUsers(oldConvention.getNbUsers());
+        oldConv.setPeriodicite(oldConvention.getPeriodicite());
+        oldConv.setEtat(oldConvention.getEtat());
+        oldConv.setArchivedAt(LocalDateTime.now());
+        oldConv.setArchivedBy(currentUser.getUsername());
+        oldConv.setArchivedReason(reason);
+        oldConv.setRenewalVersion(nextVersion);
+        oldConv.setCreatedAt(oldConvention.getCreatedAt());
+
+        oldConventionRepository.save(oldConv);
+        log.info("Old convention version {} saved with ID: {}", nextVersion, oldConv.getId());
     }
 
 
-    // In ConventionService.java, modify the handleRenewalAssignment method
+    /**
+     * Handle chef de projet assignment during renewal
+     */
 
     @Transactional
     public void handleRenewalAssignment(Application application, Convention convention, User currentUser) {
@@ -1090,271 +1255,130 @@ public class ConventionService {
         if (application.getCreatedBy() != null) {
             isAppCreatedByAdmin = application.getCreatedBy().getRoles().stream()
                     .anyMatch(r -> r.getName().name().equals("ROLE_ADMIN"));
+            log.info("Application created by: {} (isAdmin: {})",
+                    application.getCreatedBy().getUsername(), isAppCreatedByAdmin);
         }
 
-        log.info("Is app created by admin: {}", isAppCreatedByAdmin);
+        // Get admin
+        User admin = userRepository.findAll().stream()
+                .filter(u -> u.getRoles().stream()
+                        .anyMatch(r -> r.getName().name().equals("ROLE_ADMIN")))
+                .findFirst()
+                .orElse(null);
 
-        if (isAppCreatedByAdmin) {
-            // App created by admin - send request to chef asking if they want to continue
-            try {
-                // Call this in a separate transaction
-                createRenewalRequestInNewTransaction(convention, currentChef, currentUser);
-                log.info("Renewal acceptance request sent to chef {}", currentChef.getUsername());
-            } catch (Exception e) {
-                // Log the error but DON'T throw - we don't want to rollback the renewal
-                log.error("Failed to create renewal request (but renewal was successful): {}", e.getMessage());
-            }
-        } else {
-            // App created by chef - send notification that app is renewed
-            try {
-                sendRenewalNotificationToChef(currentChef, application, convention);
-                log.info("Renewal notification sent to chef {}", currentChef.getUsername());
-            } catch (Exception e) {
-                log.error("Failed to send renewal notification: {}", e.getMessage());
-            }
-        }
-    }
-
-    // New method to create request in a separate transaction
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void createRenewalRequestInNewTransaction(Convention convention, User chef, User admin) {
-        try {
-            requestService.createRenewalAcceptanceRequest(convention, convention, chef, admin);
-            log.info("Renewal request created successfully in new transaction");
-        } catch (Exception e) {
-            log.error("Failed to create renewal request in new transaction: {}", e.getMessage());
-            // Don't throw - this is in a new transaction so it won't affect the main transaction
-        }
-    }
-    @Transactional
-    public void updateConventionWithRenewalData(Convention convention, RenewalRequestDTO data, User currentUser) {
-        log.info("Updating convention {} with new renewal data", convention.getReferenceConvention());
-
-        // Increment renewal version
-        convention.setRenewalVersion(convention.getRenewalVersion() != null ?
-                convention.getRenewalVersion() + 1 : 1);
-
-        // Update with new data (KEEP REFERENCE, APPLICATION, STRUCTURE BENEFICIEL)
-        convention.setReferenceERP(data.getReferenceERP() != null ?
-                data.getReferenceERP() : convention.getReferenceERP());
-        convention.setLibelle(data.getLibelle() != null ?
-                data.getLibelle() : convention.getLibelle());
-        convention.setDateDebut(data.getDateDebut() != null ?
-                data.getDateDebut() : LocalDate.now());
-        convention.setDateFin(data.getDateFin() != null ?
-                data.getDateFin() : LocalDate.now().plusYears(1));
-        convention.setDateSignature(data.getDateSignature() != null ?
-                data.getDateSignature() : LocalDate.now());
-        convention.setPeriodicite(data.getPeriodicite() != null ?
-                data.getPeriodicite() : convention.getPeriodicite());
-        convention.setMontantHT(data.getMontantHT() != null ?
-                data.getMontantHT() : convention.getMontantHT());
-        convention.setTva(data.getTva() != null ?
-                data.getTva() : convention.getTva());
-        convention.setMontantTTC(data.getMontantTTC() != null ?
-                data.getMontantTTC() : convention.getMontantTTC());
-        convention.setNbUsers(data.getNbUsers() != null ?
-                data.getNbUsers() : convention.getNbUsers());
-
-        // Reset status to EN_COURS or PLANIFIE based on dates
-        if (data.getDateDebut() != null && data.getDateDebut().isAfter(LocalDate.now())) {
-            convention.setEtat("PLANIFIE");
-        } else {
-            convention.setEtat("EN COURS");
-        }
-
-        conventionRepository.save(convention);
-        log.info("Convention updated successfully. New version: {}", convention.getRenewalVersion());
-    }
-
-
-    @Transactional
-    public void archiveCurrentVersion(Convention convention, User currentUser, String reason) {
-        log.info("Archiving current version of convention {} to old_conventions", convention.getReferenceConvention());
-
-        // Get next version number
-        Integer nextVersion = 1;
-        Integer maxVersion = oldConventionRepository.findMaxRenewalVersion(convention);
-        if (maxVersion != null) {
-            nextVersion = maxVersion + 1;
-        }
-
-        // Create old convention record
-        OldConvention oldConv = new OldConvention();
-        oldConv.setCurrentConvention(convention);
-        oldConv.setReferenceConvention(convention.getReferenceConvention());
-        oldConv.setReferenceERP(convention.getReferenceERP());
-        oldConv.setLibelle(convention.getLibelle());
-        oldConv.setDateDebut(convention.getDateDebut());
-        oldConv.setDateFin(convention.getDateFin());
-        oldConv.setDateSignature(convention.getDateSignature());
-        oldConv.setStructureResponsable(convention.getStructureResponsable());
-        oldConv.setStructureBeneficiel(convention.getStructureBeneficiel());
-        oldConv.setApplication(convention.getApplication());
-        oldConv.setMontantHT(convention.getMontantHT());
-        oldConv.setTva(convention.getTva());
-        oldConv.setMontantTTC(convention.getMontantTTC());
-        oldConv.setNbUsers(convention.getNbUsers());
-        oldConv.setPeriodicite(convention.getPeriodicite());
-        oldConv.setEtat(convention.getEtat());
-        oldConv.setArchivedAt(LocalDateTime.now());
-        oldConv.setArchivedBy(currentUser.getUsername());
-        oldConv.setArchivedReason(reason);
-        oldConv.setRenewalVersion(nextVersion);
-        oldConv.setCreatedAt(convention.getCreatedAt());
-
-        oldConventionRepository.save(oldConv);
-        log.info("Old convention version {} saved with ID: {}", nextVersion, oldConv.getId());
-    }
-
-    /**
-     * Archive all current factures to old_factures
-     */
-    @Transactional
-    public void archiveCurrentFactures(Convention convention, User currentUser) {
-        log.info("Archiving factures for convention {} to old_factures", convention.getReferenceConvention());
-
-        // Get the most recent old convention version
-        List<OldConvention> oldVersions = oldConventionRepository.findByCurrentConventionOrderByRenewalVersionDesc(convention);
-        if (oldVersions.isEmpty()) {
-            log.error("No old convention version found to link factures");
+        if (admin == null) {
+            log.error("No admin user found");
             return;
         }
-        OldConvention latestOldConv = oldVersions.get(0);
 
-        // Get current factures
-        List<Facture> currentFactures = factureRepository.findByConventionId(convention.getId());
-        log.info("Found {} factures to archive", currentFactures.size());
+        if (isAppCreatedByAdmin) {
+            // SCENARIO 1: APP CREATED BY ADMIN
+            log.info("SCENARIO 1: App created by admin");
 
-        List<OldFacture> oldFacturesToSave = new ArrayList<>();
+            // First, notify admin that app is renewed
+            requestService.sendRenewalNotificationToAdmin(application, convention, admin);
 
-        for (Facture facture : currentFactures) {
-            // Create old facture record
-            OldFacture oldFacture = new OldFacture();
-            oldFacture.setOldConvention(latestOldConv);
-            oldFacture.setNumeroFacture(facture.getNumeroFacture());
-            oldFacture.setDateFacturation(facture.getDateFacturation());
-            oldFacture.setDateEcheance(facture.getDateEcheance());
-            oldFacture.setMontantHT(facture.getMontantHT());
-            oldFacture.setTva(facture.getTva());
-            oldFacture.setMontantTTC(facture.getMontantTTC());
-            oldFacture.setStatutPaiement(facture.getStatutPaiement());
-            oldFacture.setDatePaiement(facture.getDatePaiement());
-            oldFacture.setReferencePaiement(facture.getReferencePaiement());
-            oldFacture.setNotes(facture.getNotes());
-            oldFacture.setArchivedAt(LocalDateTime.now());
+            // Check chef's workload
+            boolean chefHasWorkload = checkChefWorkload(currentChef, application);
 
-            oldFacturesToSave.add(oldFacture);
-            log.debug("Prepared old facture: {}", facture.getNumeroFacture());
+            if (chefHasWorkload) {
+                // SCENARIO 1.1: Chef has workload - admin sends request
+                log.info("SCENARIO 1.1: Chef has workload - creating request");
+                requestService.createRenewalAcceptanceRequest(convention, currentChef, admin);
+            } else {
+                // SCENARIO 1.2: Chef is free - just reassign
+                log.info("SCENARIO 1.2: Chef is free - sending reassignment notification");
+                requestService.sendReassignmentNotificationToChef(currentChef, application, convention, admin);
+            }
+
+        } else {
+            // SCENARIO 2: APP CREATED BY CHEF
+            log.info("SCENARIO 2: App created by chef");
+
+            // Send notification to chef
+            requestService.sendRenewalNotificationToChef(currentChef, application, convention);
+
+            // The chef will decide whether to accept or request reassignment via the requests tab
+            // No automatic action here - chef will create request if needed
         }
-
-        // Save all old factures first
-        oldFactureRepository.saveAll(oldFacturesToSave);
-        oldFactureRepository.flush();
-
-        // Then delete current factures
-        factureRepository.deleteAll(currentFactures);
-        factureRepository.flush();
-
-        log.info("Archived {} factures successfully", currentFactures.size());
     }
 
-    /**
-     * Archive convention for renewal (with all its invoices)
-     */
-    @Transactional
-    public void archiveConventionForRenewal(Convention convention, User currentUser, String reason) {
-        log.info("Archiving convention {} for renewal", convention.getReferenceConvention());
-
-        // Archive all invoices
-        List<Facture> invoices = factureRepository.findByConventionId(convention.getId());
-        log.info("Found {} invoices to archive", invoices.size());
-
-        for (Facture facture : invoices) {
-            facture.setArchived(true);
-            facture.setArchivedAt(LocalDateTime.now());
-            factureRepository.save(facture);
-            log.debug("Archived invoice: {}", facture.getNumeroFacture());
-        }
-
-        // Archive the convention
-        convention.setArchived(true);
-        convention.setArchivedAt(LocalDateTime.now());
-        convention.setArchivedBy(currentUser.getUsername());
-        convention.setArchivedReason(reason);
-        convention.setEtat("ARCHIVE");
-        conventionRepository.save(convention);
-
-        // LOG HISTORY: Convention archive for renewal
+    // Helper method to check workload
+    private boolean checkChefWorkload(User chef, Application application) {
+        // Implement your workload check logic
+        // Return true if chef has high workload, false if free
+        // This could use the WorkloadService
         try {
-            historyService.logConventionArchive(convention, currentUser, reason);
+            WorkloadService.AssignmentCheck check = workloadService.checkAssignment(chef.getId(), application.getId());
+            // If workload > 75%, consider as "has workload"
+            return check.getAnalysis() != null && check.getAnalysis().getProjectedWorkload() > 75.0;
         } catch (Exception e) {
-            log.error("Failed to log archive history: {}", e.getMessage());
+            log.error("Error checking workload: {}", e.getMessage());
+            // Default to false if can't check
+            return false;
         }
     }
 
     /**
-     * Handle chef de projet assignment during renewal
+     * Send renewal notification to chef
      */
+
 
     private void sendRenewalNotificationToChef(User chef, Application application, Convention newConvention) {
-        String subject = "🔄 Application renouvelée - " + application.getCode();
-
-        String content = String.format(
-                "<!DOCTYPE html>" +
-                        "<html>" +
-                        "<head><meta charset='UTF-8'></head>" +
-                        "<body style='font-family: Arial, sans-serif;'>" +
-                        "<div style='max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;'>" +
-                        "<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0;'>" +
-                        "<h2 style='margin: 0;'>🔄 Application renouvelée</h2>" +
-                        "</div>" +
-                        "<div style='background: white; padding: 20px; border-radius: 0 0 10px 10px;'>" +
-                        "<p>Bonjour <strong>%s %s</strong>,</p>" +
-                        "<p>L'application <strong>%s - %s</strong> a été renouvelée.</p>" +
-                        "<div style='background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;'>" +
-                        "<p><strong>Nouvelle convention :</strong> %s</p>" +
-                        "</div>" +
-                        "<p>Vous restez assigné à cette application. Si vous ne pouvez pas continuer à travailler dessus, veuillez soumettre une demande de réassignation.</p>" +
-                        "<div style='text-align: center; margin: 30px 0;'>" +
-                        "<a href='http://localhost:4200/applications/%d' style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;'>Voir l'application</a>" +
-                        "</div>" +
-                        "<p style='color: #666; font-size: 12px; margin-top: 20px;'>Cet email a été envoyé automatiquement.</p>" +
-                        "</div>" +
-                        "</div>" +
-                        "</body>" +
-                        "</html>",
-                chef.getFirstName(), chef.getLastName(),
-                application.getCode(), application.getName(),
-                newConvention.getReferenceConvention(),
-                application.getId()
-        );
-
         try {
-            User systemSender = userRepository.findByUsername("system")
-                    .orElseGet(() -> {
-                        return userRepository.findAll().stream()
-                                .filter(u -> u.getRoles().stream()
-                                        .anyMatch(r -> r.getName().name().equals("ROLE_ADMIN")))
-                                .findFirst()
-                                .orElse(null);
-                    });
+            log.info("Attempting to send renewal notification to chef: {}", chef.getEmail());
 
-            if (systemSender != null) {
+            String subject = "🔄 Application renouvelée - " + application.getCode();
+
+            // FIXED: Don't use String.format with HTML containing % signs
+            // Build the content using concatenation instead
+            String content =
+                    "<!DOCTYPE html>" +
+                            "<html>" +
+                            "<head><meta charset='UTF-8'></head>" +
+                            "<body style='font-family: Arial, sans-serif;'>" +
+                            "<div style='max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;'>" +
+                            "<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0;'>" +
+                            "<h2 style='margin: 0;'>🔄 Application renouvelée</h2>" +
+                            "</div>" +
+                            "<div style='background: white; padding: 20px; border-radius: 0 0 10px 10px;'>" +
+                            "<p>Bonjour <strong>" + chef.getFirstName() + " " + chef.getLastName() + "</strong>,</p>" +
+                            "<p>L'application <strong>" + application.getCode() + " - " + application.getName() + "</strong> a été renouvelée.</p>" +
+                            "<div style='background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;'>" +
+                            "<p><strong>Nouvelle convention :</strong> " + newConvention.getReferenceConvention() + "</p>" +
+                            "</div>" +
+                            "<p>Vous restez assigné à cette application. Si vous ne pouvez pas continuer à travailler dessus, veuillez soumettre une demande de réassignation.</p>" +
+                            "<div style='text-align: center; margin: 30px 0;'>" +
+                            "<a href='http://localhost:4200/applications/" + application.getId() + "' style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;'>Voir l'application</a>" +
+                            "</div>" +
+                            "<p style='color: #666; font-size: 12px; margin-top: 20px;'>Cet email a été envoyé automatiquement.</p>" +
+                            "</div>" +
+                            "</div>" +
+                            "</body>" +
+                            "</html>";
+
+            // Get admin user as sender
+            User admin = userRepository.findAll().stream()
+                    .filter(u -> u.getRoles().stream()
+                            .anyMatch(r -> r.getName().name().equals("ROLE_ADMIN")))
+                    .findFirst()
+                    .orElse(null);
+
+            if (admin != null) {
                 com.example.back.payload.request.MailRequest request = new com.example.back.payload.request.MailRequest();
                 request.setSubject(subject);
                 request.setContent(content);
                 request.setTo(List.of(chef.getEmail()));
                 request.setImportance("NORMAL");
 
-                mailService.sendMail(request, systemSender, null);
-                log.info("Renewal notification sent to chef {}", chef.getEmail());
+                mailService.sendMail(request, admin, null);
+                log.info("✅ Renewal notification sent to chef {}", chef.getEmail());
+            } else {
+                log.error("No admin user found to send email");
             }
+
         } catch (Exception e) {
-            log.error("Failed to send renewal notification: {}", e.getMessage());
+            log.error("Failed to send renewal notification: {}", e.getMessage(), e);
         }
     }
-
-
-
 }

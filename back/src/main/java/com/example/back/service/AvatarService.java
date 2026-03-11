@@ -1,89 +1,3 @@
-/*package com.example.backend.service;
-
-import com.example.backend.entity.User;
-import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-@Service
-public class AvatarService {
-
-    private final String AVATAR_DIR = "avatars/";
-
-
-    public String generateAvatarUrl(User user) {
-        if (user.getProfileImage() != null && !user.getProfileImage().isEmpty()) {
-            return user.getProfileImage();
-        }
-
-        String initials = generateInitials(user.getFirstName(), user.getLastName());
-        return generateShortSvgUrl(initials);
-    }
-
-
-    public String generateAvatarUrlForSignup(String firstName, String lastName, String username) {
-        String initials = generateInitials(firstName, lastName);
-        String filename = username + "_avatar.svg";
-        Path filePath = Paths.get(AVATAR_DIR, filename);
-
-        try {
-            Files.createDirectories(filePath.getParent());
-            String svg = String.format(
-                    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>" +
-                            "<circle cx='50' cy='50' r='48' fill='#4F46E5'/>" +
-                            "<text x='50' y='58' text-anchor='middle' font-family='Arial' font-size='38' fill='white'>%s</text>" +
-                            "</svg>",
-                    initials
-            );
-            Files.write(filePath, svg.getBytes());
-            return "/avatars/" + filename;  // Return the path instead of Base64
-        } catch (IOException e) {
-            // Fallback to initials
-            return generateShortSvgUrl(initials);
-        }
-    }
-
-    private String generateShortSvgUrl(String initials) {
-        // Use a simpler, more compact SVG
-        String svg = String.format(
-                "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>" +
-                        "<circle cx='50' cy='50' r='48' fill='#4F46E5'/>" +
-                        "<text x='50' y='58' text-anchor='middle' font-family='Arial,sans-serif' font-size='38' fill='white' font-weight='bold'>%s</text>" +
-                        "</svg>",
-                initials
-        );
-
-        // Base64 encode
-        String base64 = java.util.Base64.getEncoder().encodeToString(svg.getBytes());
-        return "data:image/svg+xml;base64," + base64;
-    }
-
-    public String generateInitials(String firstName, String lastName) {
-        String firstInitial = "";
-        String lastInitial = "";
-
-        if (firstName != null && !firstName.isEmpty()) {
-            firstInitial = firstName.substring(0, 1).toUpperCase();
-        }
-
-        if (lastName != null && !lastName.isEmpty()) {
-            lastInitial = lastName.substring(0, 1).toUpperCase();
-        }
-
-        if (firstInitial.isEmpty() && lastInitial.isEmpty()) {
-            return "U";
-        }
-
-        return firstInitial + lastInitial;
-    }
-}
-
- */
-
-
 package com.example.back.service;
 
 import com.example.back.entity.User;
@@ -101,20 +15,21 @@ import java.util.UUID;
 @Service
 public class AvatarService {
 
-
-    @Value("${file.upload-dir:uploads}")
-    private String uploadDir;
-
     @Value("${server.url:http://localhost:8084}")
     private String serverUrl;
 
     @PostConstruct
     public void init() {
         try {
-            // Create uploads directory if it doesn't exist
-            Path uploadPath = Paths.get(uploadDir, "avatars");
+            // Get current working directory
+            String currentDir = System.getProperty("user.dir");
+            Path uploadPath = Paths.get(currentDir, "uploads", "avatars");
+
             Files.createDirectories(uploadPath);
-            System.out.println("Created upload directory: " + uploadPath.toAbsolutePath());
+            System.out.println("==========================================");
+            System.out.println("Avatar upload directory initialized at: " + uploadPath.toAbsolutePath());
+            System.out.println("Directory exists: " + Files.exists(uploadPath));
+            System.out.println("==========================================");
         } catch (IOException e) {
             System.err.println("Could not create upload directory: " + e.getMessage());
         }
@@ -124,43 +39,52 @@ public class AvatarService {
         String initials = generateInitials(firstName, lastName);
 
         try {
-            String filename = username + "_avatar.svg";
-            Path avatarPath = Paths.get(uploadDir, "avatars");
+            // Get current working directory
+            String currentDir = System.getProperty("user.dir");
+            Path avatarPath = Paths.get(currentDir, "uploads", "avatars");
 
             // Ensure directory exists
             if (!Files.exists(avatarPath)) {
                 Files.createDirectories(avatarPath);
+                System.out.println("Created directory: " + avatarPath.toAbsolutePath());
             }
 
-            // Create SVG content
+            String filename = username + "_avatar.svg";
+            Path filePath = avatarPath.resolve(filename);
+
+            System.out.println("Attempting to save avatar to: " + filePath.toAbsolutePath());
+
+            // Create SVG content with thin border, small font, perfect centering
             String svg = String.format(
                     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>" +
-                            "<circle cx='50' cy='50' r='48' fill='#e9d709'/>" +
-                            "<text x='50' y='58' text-anchor='middle' font-family='Arial' font-size='38' fill='white'>%s</text>" +
+                            "<circle cx='50' cy='50' r='46' fill='none' stroke='#2B72DF' stroke-width='2'/>" +
+                            "<text x='50' y='50' text-anchor='middle' font-family='Arial, sans-serif' font-size='36' fill='#2B72DF' font-weight='500' dy='0.35em'>%s</text>" +
                             "</svg>",
                     initials
             );
 
             // Save SVG file
-            Path filePath = avatarPath.resolve(filename);
             Files.write(filePath, svg.getBytes());
+            System.out.println("Successfully saved avatar to: " + filePath.toAbsolutePath());
+            System.out.println("File exists after save: " + Files.exists(filePath));
 
-            // Return FULL ABSOLUTE URL
-            String fileUrl = serverUrl + "/uploads/avatars/" + filename;
-            System.out.println("Generated avatar URL: " + fileUrl);
+            // Return the URL path that will be handled by WebConfig
+            String fileUrl = "/uploads/avatars/" + filename;
+            System.out.println("Avatar URL to store in DB: " + fileUrl);
 
             return fileUrl;
 
         } catch (IOException e) {
+            System.err.println("Failed to save avatar: " + e.getMessage());
+            e.printStackTrace();
             // Fallback to Base64
             return generateShortSvgUrl(initials);
         }
     }
 
-    // Update the upload method too
-    private String saveAvatarFile(MultipartFile file, String username) throws IOException {
-        String uploadDir = "uploads/avatars";
-        Path uploadPath = Paths.get(uploadDir);
+    public String saveAvatarFile(MultipartFile file, String username) throws IOException {
+        String currentDir = System.getProperty("user.dir");
+        Path uploadPath = Paths.get(currentDir, "uploads", "avatars");
 
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
@@ -173,16 +97,15 @@ public class AvatarService {
         Path filePath = uploadPath.resolve(newFilename);
         Files.copy(file.getInputStream(), filePath);
 
-        // Return FULL ABSOLUTE URL
-        return serverUrl + "/uploads/avatars/" + newFilename;
+        return "/uploads/avatars/" + newFilename;
     }
 
     private String generateShortSvgUrl(String initials) {
-        // Fallback: Generate Base64 encoded SVG
+        // Fallback: Generate Base64 encoded SVG with thin border, small font, perfect centering
         String svg = String.format(
                 "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>" +
-                        "<circle cx='50' cy='50' r='48' fill='#e9d709'/>" +
-                        "<text x='50' y='58' text-anchor='middle' font-family='Arial,sans-serif' font-size='38' fill='white' font-weight='bold'>%s</text>" +
+                        "<circle cx='50' cy='50' r='46' fill='none' stroke='#2B72DF' stroke-width='2'/>" +
+                        "<text x='50' y='50' text-anchor='middle' font-family='Arial, sans-serif' font-size='36' fill='#2B72DF' font-weight='500' dy='0.35em'>%s</text>" +
                         "</svg>",
                 initials
         );

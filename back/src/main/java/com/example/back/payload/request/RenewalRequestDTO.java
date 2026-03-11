@@ -17,4 +17,7 @@ public class RenewalRequestDTO {
     private BigDecimal montantTTC;
     private Long nbUsers;
     private String periodicite;
+    private Long structureResponsableId;
+
+
 }

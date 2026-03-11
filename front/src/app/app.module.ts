@@ -20,7 +20,6 @@ import { LoginComponent } from './components/login/login.component';
 import { HttpClientModule ,HTTP_INTERCEPTORS} from '@angular/common/http';
 import { AdminUsersComponent } from './components/admin-users/admin-users.component';
 import { TranslatePipe } from './components/partials/traduction/translate.pipe';
-import { AsyncTranslatePipe } from './components/partials/traduction/async-translate.pipe';
 import { TranslationService } from './components/partials/traduction/translation.service';
 import { AdminNomenclaturesComponent } from './components/admin-nomenclatures/admin-nomenclatures.component';
 import { AdminComponent } from './components/admin/admin.component';
@@ -51,9 +50,10 @@ import { DatePickerComponent } from './components/date-picker/date-picker.compon
 import { ConventionFacturesComponent } from './components/convention-factures/convention-factures.component';
 import { ConventionHistoryComponent } from './components/convention-history/convention-history.component';
 import { RequestsComponent } from './components/requests/requests.component';
-import { RenewalFormModalComponent } from './components/renewal-form-modal/renewal-form-modal.component';
 import { ApplicationArchiveComponent } from './components/application-archive/application-archive.component';
 import { RecaptchaModule, RecaptchaFormsModule } from 'ng-recaptcha';
+import { TranslateComponent } from './components/translate/translate.component';
+import { CreateReassignmentRequestComponent } from './components/create-reassignment-request/create-reassignment-request.component';
 
 @NgModule({
   declarations: [
@@ -71,7 +71,6 @@ import { RecaptchaModule, RecaptchaFormsModule } from 'ng-recaptcha';
     NotFoundComponent,
     AdminUsersComponent,
     TranslatePipe,
-    AsyncTranslatePipe,
     AdminNomenclaturesComponent,
     AdminComponent,
     FactureComponent,
@@ -96,8 +95,9 @@ import { RecaptchaModule, RecaptchaFormsModule } from 'ng-recaptcha';
     ConventionFacturesComponent,
     ConventionHistoryComponent,
     RequestsComponent,
-    RenewalFormModalComponent,
-    ApplicationArchiveComponent
+    ApplicationArchiveComponent,
+    TranslateComponent,
+    CreateReassignmentRequestComponent,
     ],
   imports: [
     BrowserModule,
@@ -110,9 +110,11 @@ import { RecaptchaModule, RecaptchaFormsModule } from 'ng-recaptcha';
     InfiniteScrollModule,
     CommonModule,
     RecaptchaModule,       
-    RecaptchaFormsModule 
-
+    RecaptchaFormsModule
     
+  ],
+  exports: [
+    TranslatePipe 
   ],
   providers: [
     LayoutService,

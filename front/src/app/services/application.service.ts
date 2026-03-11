@@ -51,6 +51,10 @@ export interface Application {
   terminatedEarly?: boolean;
   terminatedOnTime?: boolean;
   terminatedLate?: boolean;
+
+   createdById?: number;
+  createdByUsername?: string;
+  createdByFullName?: string;
 }
 
 export interface ApplicationRequest {

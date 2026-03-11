@@ -164,6 +164,45 @@ getNotificationModeDescription(): string {
   }
 }
 
+
+getNotificationModeTextKey(): string {
+  const mode = this.user?.notifMode;
+  switch(mode) {
+    case 'email': return 'Email';
+    case 'sms': return 'SMS';
+    case 'both': return 'Les deux';
+    default: return 'Email';
+  }
+}
+
+getNotificationModeDescriptionKey(): string {
+  const mode = this.user?.notifMode;
+  switch(mode) {
+    case 'email': return 'Recevoir les notifications uniquement par email';
+    case 'sms': return 'Recevoir les notifications uniquement par SMS';
+    case 'both': return 'Recevoir les notifications par email et SMS';
+    default: return 'Notifications par email uniquement';
+  }
+}
+
+
+getAccountStatusKey(): string {
+  if (!this.user) return 'Loading...';
+  
+  if (this.user.lockedByAdmin) {
+    return 'Locked by Administrator';
+  } else if (this.user.accountLockedUntil) {
+    const lockDate = new Date(this.user.accountLockedUntil);
+    if (lockDate > new Date()) {
+      return 'Temporarily Locked';
+    }
+  } else if (this.user.failedLoginAttempts && this.user.failedLoginAttempts > 0) {
+    return 'Failed attempts';
+  }
+  
+  return this.user.enabled ? 'Active' : 'Disabled';
+}
+
   // ADD THIS METHOD - Gets the correct avatar URL
   getAvatarUrl(): string {
     if (!this.user?.profileImage) {

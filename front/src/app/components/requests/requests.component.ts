@@ -1,10 +1,11 @@
-// requests.component.ts
 import { Component, OnInit } from '@angular/core';
-import { RequestService, Request, RequestAction } from '../../services/request.service';
+import { RequestService, Request, RequestAction, AvailableChef } from '../../services/request.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { WorkloadService } from '../../services/workload.service';
 import { Router } from '@angular/router';
+import { ApplicationService } from '../../services/application.service';
+import { ConventionService } from '../../services/convention.service';
 
 @Component({
   selector: 'app-requests',
@@ -32,7 +33,7 @@ export class RequestsComponent implements OnInit {
   recommendations = '';
   
   // For chef recommendation (when declining)
-  availableChefs: any[] = [];
+  availableChefs: AvailableChef[] = [];
   selectedChefId: number | null = null;
   chefsWorkload: Map<number, any> = new Map();
   workloadLoading = false;
@@ -40,11 +41,19 @@ export class RequestsComponent implements OnInit {
   // For detailed view
   showDetailModal = false;
 
+  // Track request types for UI
+  requestTypes = {
+    RENEWAL_ACCEPTANCE: 'Acceptation de renouvellement',
+    REASSIGNMENT_SUGGESTION: 'Suggestion de réassignation'
+  };
+
   constructor(
     private requestService: RequestService,
     private userService: UserService,
     private authService: AuthService,
     private workloadService: WorkloadService,
+    private applicationService: ApplicationService,
+    private conventionService: ConventionService,
     private router: Router
   ) {}
 
@@ -57,12 +66,17 @@ export class RequestsComponent implements OnInit {
     this.currentUser = this.authService.getCurrentUser();
     this.isAdmin = this.authService.isAdmin();
     this.isChefProjet = this.authService.isChefProjet();
+    
+    console.log('Current user:', this.currentUser);
+    console.log('Is admin:', this.isAdmin);
+    console.log('Is chef projet:', this.isChefProjet);
   }
 
   loadRequests(): void {
     this.loading = true;
     this.requestService.getUserRequests().subscribe({
       next: (response) => {
+        console.log('Requests response:', response);
         if (response.success) {
           this.requests = response.data;
           this.applyFilter();
@@ -85,18 +99,20 @@ export class RequestsComponent implements OnInit {
     } else {
       this.filteredRequests = this.requests.filter(r => r.status === this.filterStatus);
     }
+    console.log('Filtered requests:', this.filteredRequests);
   }
 
   openResponseModal(request: Request, action: 'APPROVE' | 'DENY'): void {
+    console.log('Opening response modal:', request, action);
     this.selectedRequest = request;
     this.responseAction = action;
     this.responseReason = '';
     this.recommendations = '';
     this.selectedChefId = null;
     
-    if (action === 'DENY' && request.requestType === 'RENEWAL_ACCEPTANCE' && this.isChefProjet) {
-      // For renewal denial by chef, load available chefs for recommendation
-      this.loadAvailableChefs();
+    if (action === 'DENY') {
+      // For denial, load available chefs based on request type
+      this.loadAvailableChefs(request);
     }
     
     this.showResponseModal = true;
@@ -120,26 +136,37 @@ export class RequestsComponent implements OnInit {
     this.selectedRequest = null;
   }
 
-  loadAvailableChefs(): void {
+  loadAvailableChefs(request: Request): void {
+    this.workloadLoading = true;
+    
+    // Get all chefs with ROLE_CHEF_PROJET
     this.userService.getChefsProjet().subscribe({
       next: (response) => {
         if (response.success) {
           this.availableChefs = response.data;
-          // Filter out current chef
+          // Filter out current user if they are a chef
           if (this.currentUser) {
             this.availableChefs = this.availableChefs.filter(c => c.id !== this.currentUser.id);
           }
-          this.loadChefsWorkload();
+          
+          // If there's an application, check workloads
+          if (request.applicationId) {
+            this.loadChefsWorkload(request.applicationId);
+          } else {
+            this.workloadLoading = false;
+          }
+        } else {
+          this.workloadLoading = false;
         }
       },
       error: (error) => {
         console.error('Error loading chefs:', error);
+        this.workloadLoading = false;
       }
     });
   }
 
-  loadChefsWorkload(): void {
-    this.workloadLoading = true;
+  loadChefsWorkload(applicationId: number): void {
     this.workloadService.getWorkloadDashboard().subscribe({
       next: (response) => {
         if (response.success && response.data?.workloads) {
@@ -180,20 +207,26 @@ export class RequestsComponent implements OnInit {
         return;
       }
       action.reason = this.responseReason;
-      action.recommendations = this.recommendations;
+      
+      if (this.recommendations.trim()) {
+        action.recommendations = this.recommendations;
+      }
       
       if (this.selectedChefId) {
         action.recommendedChefId = this.selectedChefId;
       }
     }
     
+    console.log('Submitting action:', action);
+    
     this.loading = true;
     this.requestService.processRequest(action).subscribe({
       next: (response) => {
+        console.log('Process response:', response);
         if (response.success) {
           this.successMessage = this.responseAction === 'APPROVE' 
             ? 'Demande approuvée avec succès' 
-            : 'Demande refusée';
+            : 'Demande refusée avec succès';
           this.loadRequests();
           this.closeResponseModal();
         } else {
@@ -228,6 +261,24 @@ export class RequestsComponent implements OnInit {
     }
   }
 
+  getRequestTypeLabel(type: string): string {
+    switch (type) {
+      case 'RENEWAL_ACCEPTANCE': return 'Acceptation de renouvellement';
+      case 'REASSIGNMENT_SUGGESTION': return 'Suggestion de réassignation';
+      case 'REASSIGNMENT_REQUEST_FROM_CHEF': return 'Demande de réassignation';
+      default: return type;
+    }
+  }
+
+  getStatusIcon(status: string): string {
+    switch (status) {
+      case 'PENDING': return '⏳';
+      case 'APPROVED': return '✅';
+      case 'DENIED': return '❌';
+      default: return '📋';
+    }
+  }
+  
   formatDate(dateString: string): string {
     if (!dateString) return '-';
     const date = new Date(dateString);

@@ -8,6 +8,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HistoryService, HistoryEntry } from '../../services/history.service';
 import { Location } from '@angular/common';
+import { NomenclatureService } from 'src/app/services/nomenclature.service';
 
 @Component({
   selector: 'app-convention-detail',
@@ -22,6 +23,9 @@ export class ConventionDetailComponent implements OnInit {
   loading = true;
   errorMessage = '';
   successMessage = '';
+
+  structures: any[] = [];
+  loadingStructures = false;
   
   // For payment modal
   showPaymentModal = false;
@@ -90,7 +94,8 @@ export class ConventionDetailComponent implements OnInit {
     tva: 19,
     montantTTC: 0,
     nbUsers: 0,
-    periodicite: 'MENSUEL'
+    periodicite: 'MENSUEL',
+    structureResponsableId: 0 
   };
 
 
@@ -112,7 +117,9 @@ export class ConventionDetailComponent implements OnInit {
     private authService: AuthService,
     public timeFormatService: TimeFormatService,
     public historyService: HistoryService,
-    private location: Location
+    private location: Location,
+    private nomenclatureService: NomenclatureService
+  
   ) {}
 
   ngOnInit(): void {
@@ -206,6 +213,9 @@ getConventionHistoryActionClass(actionType: string): string {
     case 'RESTORE': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
     case 'STATUS_CHANGE': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
     case 'FINANCIAL_UPDATE': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300';
+    case 'RENEW': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300';
+case 'REASSIGN_CHEF': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300';
+case 'REQUEST_PROCESSED': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
   }
 }
@@ -748,6 +758,8 @@ viewAllHistory(): void {
 
 openRenewModal(): void {
   // Pre-fill with current convention data
+    this.loadResponsableStructures();
+
   if (this.convention) {
     this.renewalFormData = {
       referenceERP: this.convention.referenceERP || '',
@@ -759,7 +771,9 @@ openRenewModal(): void {
       tva: this.convention.tva || 19,
       montantTTC: this.convention.montantTTC || 0,
       nbUsers: this.convention.nbUsers || 0,
-      periodicite: this.convention.periodicite || 'MENSUEL'
+      periodicite: this.convention.periodicite || 'MENSUEL',
+      structureResponsableId: this.convention.structureResponsableId || 0
+
     };
   }
   this.showRenewModal = true;
@@ -794,6 +808,11 @@ renewConvention(): void {
   
   if (this.renewalFormData.nbUsers <= 0) {
     this.errorMessage = 'Le nombre d\'utilisateurs doit être supérieur à 0';
+    return;
+  }
+
+    if (!this.renewalFormData.structureResponsableId || this.renewalFormData.structureResponsableId === 0) {
+    this.errorMessage = 'Veuillez sélectionner une structure responsable';
     return;
   }
 
@@ -842,15 +861,21 @@ calculateTTC(): void {
 
 
 
+
 viewPreviousVersions(): void {
   if (!this.convention?.id) return;
   
   this.loadingVersions = true;
   this.conventionService.getPreviousVersions(this.convention.id).subscribe({
     next: (response) => {
+      console.log('Previous versions response:', response); // Add logging
       if (response.success && response.data) {
         this.previousVersions = response.data;
         this.showPreviousVersionsModal = true;
+        
+        if (this.previousVersions.length === 0) {
+          this.errorMessage = 'Aucune ancienne version trouvée';
+        }
       } else {
         this.errorMessage = response.message || 'Aucune ancienne version trouvée';
       }
@@ -897,4 +922,25 @@ formatDateTime(dateString: string): string {
     minute: '2-digit'
   });
 }
+
+loadResponsableStructures(): void {
+  console.log('Loading responsable structures...');
+  this.loadingStructures = true;
+
+  this.nomenclatureService.getResponsableStructures().subscribe({
+    next: (data) => {
+      console.log('Structures loaded:', data);
+      this.structures = data.map((structure: any) => ({
+        ...structure,
+        zoneName: structure.zoneGeographique?.name || 'Sans zone'
+      }));
+      this.loadingStructures = false;
+    },
+    error: (error) => {
+      console.error('Error loading structures:', error);
+      this.loadingStructures = false;
+    }
+  });
+}
+
 }

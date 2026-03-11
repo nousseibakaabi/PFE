@@ -19,6 +19,9 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     boolean existsByName(String name);
     Optional<Application> findByCode(String code);
 
+    List<Application> findByChefDeProjetAndArchivedTrue(@Param("chef") User chef);
+
+
 
 
     // Find by name
@@ -110,6 +113,4 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findByArchivedTrue();
 
-    @Query("SELECT a FROM Application a WHERE a.chefDeProjet = :chef AND a.archived = true")
-    List<Application> findByChefDeProjetAndArchivedTrue(@Param("chef") User chef);
 }

@@ -495,33 +495,19 @@ public class ApplicationController {
     }
 
 
+    // In ApplicationController.java - Add:
+// In ApplicationController.java - Add this endpoint
     @GetMapping("/archived")
     @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")
     public ResponseEntity<?> getArchivedApplications() {
         try {
             log.info("Fetching archived applications");
-            User currentUser = getCurrentUser();
-            List<Application> archivedApps;
-
-            if (isAdmin()) {
-                // Admin sees all archived applications
-                archivedApps = applicationRepository.findByArchivedTrue();
-                log.info("Admin fetching all archived applications: found {}", archivedApps.size());
-            } else {
-                // Chef de projet sees only their own archived applications
-                archivedApps = applicationRepository.findByChefDeProjetAndArchivedTrue(currentUser);
-                log.info("Chef de projet {} fetching their archived applications: found {}",
-                        currentUser.getUsername(), archivedApps.size());
-            }
-
-            List<ApplicationResponse> responses = archivedApps.stream()
-                    .map(applicationMapper::toResponse)
-                    .collect(Collectors.toList());
+            List<ApplicationResponse> archivedApps = applicationService.getArchivedApplicationsForCurrentUser();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", responses);
-            response.put("count", responses.size());
+            response.put("data", archivedApps);
+            response.put("count", archivedApps.size());
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {

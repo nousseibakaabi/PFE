@@ -138,6 +138,10 @@ public class HistoryMapper {
             case "FINANCIAL_UPDATE": return "Mise à jour financière";
             case "PAYMENT": return "Paiement";
             case "OVERDUE": return "Retard de paiement";
+            case "RENEW" : return "Renouvellement";
+            case "REASSIGN_CHEF": return "Réassignation chef de projet";
+            case "REQUEST_PROCESSED": return "Traitement de demande";
+            
             default: return actionType;
         }
     }

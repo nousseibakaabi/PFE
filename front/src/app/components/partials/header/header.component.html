@@ -1,5 +1,5 @@
 <header
-  class="sticky top-0 mt-2 z-99999 flex w-full border-gray-100 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm lg:border-b dark:border-gray-800"
+  class="sticky top-0 z-99999 flex w-full border-gray-100 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm lg:border-b dark:border-gray-700"
 >
   <div
     class="flex grow flex-col items-center justify-between lg:flex-row lg:px-4"
@@ -9,7 +9,7 @@
     >
 <!-- Hamburger Toggle BTN -->
 <button
-  class="z-99999 flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 lg:h-9 lg:w-9 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors"
+  class="z-99999 mt-3 flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 lg:h-9 lg:w-9 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white transition-colors"
   (click)="toggleSidebar()"
 >
   <!-- Hamburger icon for mobile when sidebar is CLOSED -->
@@ -72,29 +72,29 @@
 <a routerLink="/" class="lg:hidden">
   <img 
     *ngIf="!isSidebarOpen"
-    class="dark:hidden h-7" 
-    src="assets/logo-logo.png" 
+    class="dark:hidden h-12 " 
+    src="assets/logo-ligh.png" 
     alt="Logo" 
   />
   <img
     *ngIf="!isSidebarOpen"
-    class="hidden dark:block h-7"
-    src="assets/logo-logo.png" 
+    class="hidden dark:block h-12"
+    src="assets/logo-dark.png" 
     alt="Logo"
   />
   
   <!-- When sidebar is open, don't show any logo in header -->
   <img 
     *ngIf="isSidebarOpen"
-    class="invisible h-7" 
-    src="assets/logo.png" 
+    class="invisible h-12" 
+    src="assets/logo-ligh.png" 
     alt="" 
   />
 </a>
 
       <!-- Application nav menu button -->
       <button
-        class="z-99999 flex h-8 w-8 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
+        class="z-99999 flex mt-3 h-8 w-8 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
         [class]="isMenuOpen ? 'bg-gray-100 dark:bg-gray-800' : ''"
         (click)="toggleMenu()"
       >
@@ -116,44 +116,7 @@
       </button>
       <!-- Application nav menu button -->
 
-      <div class="hidden lg:block">
-        <form (submit)="onSearch($event)">
-          <div class="relative">
-            <span class="absolute top-1/2 left-3 -translate-y-1/2">
-              <svg
-                class="fill-gray-500 dark:fill-gray-400"
-                width="16"
-                height="16"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M3.04175 9.37363C3.04175 5.87693 5.87711 3.04199 9.37508 3.04199C12.8731 3.04199 15.7084 5.87693 15.7084 9.37363C15.7084 12.8703 12.8731 15.7053 9.37508 15.7053C5.87711 15.7053 3.04175 12.8703 3.04175 9.37363ZM9.37508 1.54199C5.04902 1.54199 1.54175 5.04817 1.54175 9.37363C1.54175 13.6991 5.04902 17.2053 9.37508 17.2053C11.2674 17.2053 13.003 16.5344 14.357 15.4176L17.177 18.238C17.4699 18.5309 17.9448 18.5309 18.2377 18.238C18.5306 17.9451 18.5306 17.4703 18.2377 17.1774L15.418 14.3573C16.5365 13.0033 17.2084 11.2669 17.2084 9.37363C17.2084 5.04817 13.7011 1.54199 9.37508 1.54199Z"
-                  fill=""
-                />
-              </svg>
-            </span>
-            <input
-              type="text"
-              placeholder="Search or type command..."
-              [(ngModel)]="searchQuery"
-              name="searchQuery"
-              class="dark:bg-dark-900 focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-9 w-full rounded-xl border border-gray-200 bg-transparent py-2 pr-14 pl-10 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-2 focus:outline-hidden xl:w-[360px] dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 transition-all"
-            />
-
-            <button
-              type="button"
-              class="absolute top-1/2 right-2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[6px] py-[3px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
-            >
-              <span> ⌘ </span>
-              <span> K </span>
-            </button>
-          </div>
-        </form>
-      </div>
+      
     </div>
 
     <div
@@ -163,7 +126,7 @@
       <div class="flex items-center gap-1.5">
         <!-- Dark Mode Toggler -->
         <button
-          class="hover:text-dark-900 relative flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+          class="hover:text-dark-900 mt-3 relative flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
           (click)="toggleDarkMode()"
         >
           <svg
@@ -198,56 +161,14 @@
           </svg>
         </button>
 
-        <!-- Language Selector -->
-        <div class="relative" *ngIf="translationActive">
-          <button
-            class="hover:text-dark-900 relative flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-            (click)="toggleLanguageDropdown()"
-            [title]="'Current language: ' + getCurrentLanguageName()"
-          >
-            <span class="text-base">{{ getCurrentLanguageFlag() }}</span>
-            <span *ngIf="translationActive" class="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-green-500"></span>
-          </button>
+      
 
-          <!-- Language Dropdown -->
-          <div *ngIf="isLanguageDropdownOpen" class="shadow-sm dark:bg-gray-dark absolute right-0 mt-[17px] flex w-48 flex-col rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 z-50">
-            <div class="mb-2 border-b border-gray-100 pb-2 dark:border-gray-800">
-              <h5 class="text-sm font-semibold text-gray-800 dark:text-white/90">{{ 'Select Language' | translate }}</h5>
-            </div>
-            
-            <ul class="space-y-1">
-              <li *ngFor="let lang of languages">
-                <button
-  (click)="changeLanguage(lang.code)"
-  class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
-  [ngClass]="{'bg-gray-100 dark:bg-gray-800': currentLanguage === lang.code}"
->
-  <span class="text-base">{{ lang.flag }}</span>
-  <span>{{ lang.name }}</span>
-  <span *ngIf="currentLanguage === lang.code" class="ml-auto text-blue-500">
-    <i class="fas fa-check text-xs"></i>
-  </span>
-</button>
-              </li>
-            </ul>
-            
-            <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ 'Powered by LibreTranslate' | translate }}</p>
-            </div>
-          </div>
-        </div>
+     
 
-        <!-- Warning if translation server not running -->
-        <div *ngIf="!translationActive" class="mr-2">
-          <button class="relative flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-yellow-50 text-yellow-600 dark:border-gray-800 dark:bg-yellow-900/20 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
-                  title="Translation server not running"
-                  (click)="openTranslationHelp()">
-            <i class="fas fa-language text-sm"></i>
-          </button>
-        </div>
+        <app-translate></app-translate>
 
 <!-- Notification Menu Area -->
-<div class="relative">
+<div class="relative mt-3">
   <button
     class="hover:text-dark-900 relative flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
     (click)="toggleNotifications()"
@@ -287,7 +208,7 @@
     (clickOutside)="isNotificationsOpen = false"
   >
     <div
-      class="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800"
+      class=" flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800"
     >
       <h5 class="text-sm font-semibold text-gray-800 dark:text-white/90">
         {{ 'Notifications' | translate }}
@@ -442,7 +363,7 @@
 
                 <!-- Email Menu Area -->
 
-          <div class="relative">
+          <div class="relative mt-3">
           <button
           (click)="navigateToMailBox()"
             class="hover:text-dark-900 relative flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
@@ -516,6 +437,10 @@
           </div>
           <!-- Dropdown End -->
         </div>
+
+
+    
+
       </div>
 
     

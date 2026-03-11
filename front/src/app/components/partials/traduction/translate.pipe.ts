@@ -1,35 +1,38 @@
-import { Pipe, PipeTransform } from '@angular/core';
+// src/app/pipes/translate.pipe.ts
+import { Pipe, PipeTransform, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { TranslationService } from './translation.service';
-import { Observable, of } from 'rxjs';
 
 @Pipe({
   name: 'translate',
-  pure: false
+  pure: false // This makes the pipe update when language changes
 })
-export class TranslatePipe implements PipeTransform {
-  private lastValue: string = '';
-  private lastResult: string = '';
-  
-  constructor(private translationService: TranslationService) {}
+export class TranslatePipe implements PipeTransform, OnDestroy {
+  private value: string = '';
+  private subscription: Subscription;
 
-  transform(value: string): string {
-    if (!value || value === this.lastValue) {
-      return this.lastResult;
+  constructor(
+    private translationService: TranslationService,
+    private cd: ChangeDetectorRef
+  ) {
+    this.subscription = this.translationService.currentLang$.subscribe(() => {
+      this.value = ''; // Trigger update
+      this.cd.markForCheck();
+    });
+  }
+
+  transform(key: string): string {
+    if (!key) return '';
+    
+    // Only update if value has changed
+    const translated = this.translationService.translate(key);
+    if (translated !== this.value) {
+      this.value = translated;
     }
-    
-    this.lastValue = value;
-    this.lastResult = ''; // Clear while loading
-    
-    this.translationService.translate(value).subscribe(
-      (translated) => {
-        this.lastResult = translated;
-      },
-      (error) => {
-        console.error('Translation error in pipe:', error);
-        this.lastResult = value; // Fallback to original
-      }
-    );
-    
-    return this.lastResult || value;
+    return this.value;
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 }
