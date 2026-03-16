@@ -101,6 +101,17 @@ public class Application {
     private String terminationReason;
 
 
+    // Add this field to Application.java
+    @Column(name = "renewed")
+    private Boolean renewed = false;
+
+    @Column(name = "renewed_at")
+    private LocalDateTime renewedAt;
+
+    @Column(name = "renewed_by")
+    private String renewedBy;
+
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -325,4 +336,14 @@ public class Application {
 
     public User getCreatedBy() { return createdBy; }
     public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
+    public Boolean getRenewed() { return renewed; }
+    public void setRenewed(Boolean renewed) { this.renewed = renewed; }
+
+    public LocalDateTime getRenewedAt() { return renewedAt; }
+    public void setRenewedAt(LocalDateTime renewedAt) { this.renewedAt = renewedAt; }
+
+    public String getRenewedBy() { return renewedBy; }
+    public void setRenewedBy(String renewedBy) { this.renewedBy = renewedBy; }
+
+
 }

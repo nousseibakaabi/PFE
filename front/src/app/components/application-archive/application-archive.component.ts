@@ -63,37 +63,36 @@ export class ApplicationArchiveComponent implements OnInit {
     this.isChefProjet = this.authService.isChefProjet();
   }
 
-  loadArchivedApplications(): void {
-    this.loading = true;
-    
-    // You need to add this method to your ApplicationService
-    this.applicationService.getArchivedApplications().subscribe({
-      next: (response: ApiResponse) => {
-        if (response.success) {
-          let allArchived = response.data || [];
-          
-          // For chef de projet, filter only their own archived applications
-          if (this.isChefProjet && !this.isAdmin && this.currentUser) {
-            this.archivedApplications = allArchived.filter((app: Application) => 
-              app.chefDeProjetId === this.currentUser.id
-            );
-          } else {
-            this.archivedApplications = allArchived;
-          }
-          
-          this.filteredApplications = [...this.archivedApplications];
+loadArchivedApplications(): void {
+  this.loading = true;
+  
+  this.applicationService.getArchivedApplications().subscribe({
+    next: (response: ApiResponse) => {
+      if (response.success) {
+        let allArchived = response.data || [];
+        
+        // For chef de projet, filter only their own archived applications
+        if (this.isChefProjet && !this.isAdmin && this.currentUser) {
+          this.archivedApplications = allArchived.filter((app: Application) => 
+            app.chefDeProjetId === this.currentUser.id
+          );
         } else {
-          this.errorMessage = response.message || 'Erreur lors du chargement';
+          this.archivedApplications = allArchived;
         }
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading archived applications:', error);
-        this.errorMessage = 'Erreur de connexion au serveur';
-        this.loading = false;
+        
+        this.filteredApplications = [...this.archivedApplications];
+      } else {
+        this.errorMessage = response.message || 'Erreur lors du chargement';
       }
-    });
-  }
+      this.loading = false;
+    },
+    error: (error) => {
+      console.error('Error loading archived applications:', error);
+      this.errorMessage = 'Erreur de connexion au serveur';
+      this.loading = false;
+    }
+  });
+}
 
   searchApplications(): void {
     if (!this.searchTerm.trim()) {

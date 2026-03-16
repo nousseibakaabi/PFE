@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpHeaders, HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -119,4 +119,6 @@ export class FactureService {
   deleteFacture(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/api/factures/${id}`);
   }
+
+
 }

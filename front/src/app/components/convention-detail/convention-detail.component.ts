@@ -824,9 +824,9 @@ renewConvention(): void {
       if (response.success) {
         this.successMessage = 'Convention renouvelée avec succès';
         this.closeRenewModal();
-        setTimeout(() => {
-          this.router.navigate(['/conventions', response.data.id]);
-        }, 1500);
+       this.loadConventionDetails();     // Reload convention data
+this.loadFactures();               // Reload invoices
+this.loadConventionHistory();       // Reload history
       } else {
         this.errorMessage = response.message || 'Erreur lors du renouvellement';
         this.renewLoading = false;

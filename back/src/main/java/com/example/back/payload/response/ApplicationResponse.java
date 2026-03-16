@@ -57,6 +57,21 @@ public class ApplicationResponse {
     private String createdByUsername;
     private String createdByFullName;
 
+    // Add these fields to ApplicationResponse
+    private Boolean renewed;
+    private LocalDateTime renewedAt;
+    private String renewedBy;
+
+    // Add getters and setters
+    public Boolean getRenewed() { return renewed; }
+    public void setRenewed(Boolean renewed) { this.renewed = renewed; }
+
+    public LocalDateTime getRenewedAt() { return renewedAt; }
+    public void setRenewedAt(LocalDateTime renewedAt) { this.renewedAt = renewedAt; }
+
+    public String getRenewedBy() { return renewedBy; }
+    public void setRenewedBy(String renewedBy) { this.renewedBy = renewedBy; }
+
     // Getters and setters for new fields
     public LocalDateTime getTerminatedAt() { return terminatedAt; }
     public void setTerminatedAt(LocalDateTime terminatedAt) { this.terminatedAt = terminatedAt; }

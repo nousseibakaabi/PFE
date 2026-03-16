@@ -33,6 +33,8 @@
     "dropzone": "^6.0.0-beta.2",
     "flatpickr": "^4.6.13",
     "gsap": "^3.14.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.0",
     "jsvectormap": "^1.7.0",
     "ng-recaptcha": "^12.0.0",
     "ngx-infinite-scroll": "^16.0.0",

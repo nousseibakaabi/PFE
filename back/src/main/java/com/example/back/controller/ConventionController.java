@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -221,63 +222,29 @@ public class ConventionController {
             User currentUser = userRepository.findByUsername(currentUsername)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Check if convention exists
             Convention convention = conventionRepository.findById(id)
-                    .orElseThrow(() -> {
-                        log.warn("Convention not found with ID: {}", id);
-                        return new RuntimeException("Convention not found");
-                    });
+                    .orElseThrow(() -> new RuntimeException("Convention not found"));
 
-            // Check if already archived
             if (convention.getArchived()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "Cette convention est déjà archivée");
-                response.put("conventionId", id);
-                return ResponseEntity.badRequest().body(response);
+                return ResponseEntity.badRequest().body(createErrorResponse("Cette convention est déjà archivée"));
             }
 
             // Get all invoices for this convention
             List<Facture> invoices = factureRepository.findByConventionId(id);
 
             if (!invoices.isEmpty()) {
-                // Check if any invoice is unpaid
                 boolean hasUnpaidInvoices = invoices.stream()
                         .anyMatch(f -> !"PAYE".equals(f.getStatutPaiement()));
 
                 if (hasUnpaidInvoices) {
-                    // Count unpaid invoices
-                    List<Facture> unpaidInvoices = invoices.stream()
-                            .filter(f -> !"PAYE".equals(f.getStatutPaiement()))
-                            .toList();
-
-                    log.warn("Cannot archive convention {}: has {} unpaid invoices",
-                            id, unpaidInvoices.size());
-
-                    Map<String, Object> errorResponse = new HashMap<>();
-                    errorResponse.put("success", false);
-                    errorResponse.put("message", "Impossible d'archiver la convention car elle a des factures impayées");
-                    errorResponse.put("details", String.format(
-                            "Cette convention a %d facture(s) impayée(s). " +
-                                    "Toutes les factures doivent être marquées comme 'PAYE' avant d'archiver la convention.",
-                            unpaidInvoices.size()
-                    ));
-                    errorResponse.put("unpaidInvoices", unpaidInvoices.size());
-                    errorResponse.put("unpaidInvoiceNumbers", unpaidInvoices.stream()
-                            .map(Facture::getNumeroFacture)
-                            .toList());
-                    errorResponse.put("conventionId", id);
-                    errorResponse.put("errorType", "UNPAID_INVOICES");
-
-                    return ResponseEntity.badRequest().body(errorResponse);
+                    return ResponseEntity.badRequest().body(createErrorResponse(
+                            "Impossible d'archiver la convention car elle a des factures impayées"));
                 }
 
-                // All invoices are paid - archive them
+                // Archive all invoices
                 for (Facture facture : invoices) {
                     facture.archive();
                     factureRepository.save(facture);
-                    log.info("Archived invoice {} for convention {}",
-                            facture.getNumeroFacture(), id);
                 }
             }
 
@@ -285,11 +252,32 @@ public class ConventionController {
             convention.archive(currentUsername, request.getReason());
             Convention archivedConvention = conventionRepository.save(convention);
 
+            // ===== NEW: Check if ALL conventions of the application are archived =====
+            Application application = convention.getApplication();
+            if (application != null) {
+                List<Convention> allAppConventions = conventionRepository.findByApplication(application);
+                boolean allConventionsArchived = allAppConventions.stream()
+                        .allMatch(Conv -> Conv.getArchived());
+
+                if (allConventionsArchived) {
+                    // Archive the application
+                    application.setArchived(true);
+                    application.setArchivedAt(LocalDateTime.now());
+                    application.setArchivedBy(currentUsername);
+                    application.setArchivedReason("Toutes les conventions sont archivées");
+                    applicationRepository.save(application);
+
+                    log.info("Application {} automatically archived because all its conventions are archived",
+                            application.getCode());
+
+                    // LOG HISTORY: Application archive
+                    historyService.logApplicationArchive(application, currentUser,
+                            "Toutes les conventions sont archivées");
+                }
+            }
+
             // LOG HISTORY: Convention archive
             historyService.logConventionArchive(archivedConvention, currentUser, request.getReason());
-
-            log.info("Convention archived successfully: ID={}, by={}, reason={}",
-                    id, currentUsername, request.getReason());
 
             ConventionResponse response = conventionMapper.toResponse(archivedConvention);
 
@@ -299,20 +287,12 @@ public class ConventionController {
             apiResponse.put("data", response);
             return ResponseEntity.ok(apiResponse);
 
-        } catch (RuntimeException e) {
-            if (e.getMessage().equals("Convention not found")) {
-                return ResponseEntity.notFound().build();
-            }
-            log.error("Error archiving convention: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest()
-                    .body(createErrorResponse("Erreur lors de l'archivage: " + e.getMessage()));
-
         } catch (Exception e) {
-            log.error("Unexpected error archiving convention {}: {}", id, e.getMessage(), e);
-            return ResponseEntity.internalServerError()
-                    .body(createErrorResponse("Erreur serveur: " + e.getMessage()));
+            log.error("Error archiving convention: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
+
 
     @PostMapping("/{id}/restore")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
@@ -325,20 +305,19 @@ public class ConventionController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             Convention convention = conventionRepository.findById(id)
-                    .orElseThrow(() -> {
-                        log.warn("Convention not found with ID: {}", id);
-                        return new RuntimeException("Convention not found");
-                    });
+                    .orElseThrow(() -> new RuntimeException("Convention not found"));
 
             if (!convention.getArchived()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "Cette convention n'est pas archivée");
-                return ResponseEntity.badRequest().body(response);
+                return ResponseEntity.badRequest().body(createErrorResponse("Cette convention n'est pas archivée"));
             }
+
+            // Get application BEFORE restoring
+            Application application = convention.getApplication();
+            boolean wasAppArchived = application != null && application.getArchived();
 
             // Restore convention
             convention.restore();
+            Convention restoredConvention = conventionRepository.save(convention);
 
             // Restore related invoices
             List<Facture> invoices = factureRepository.findByConventionId(id);
@@ -348,8 +327,20 @@ public class ConventionController {
                 factureRepository.save(facture);
             }
 
-            Convention restoredConvention = conventionRepository.save(convention);
-            log.info("Convention restored successfully: ID={}, by={}", id, currentUsername);
+            // FIX: ALWAYS restore the application when a convention is restored
+            if (application != null && wasAppArchived) {
+                application.setArchived(false);
+                application.setArchivedAt(null);
+                application.setArchivedBy(null);
+                application.setArchivedReason(null);
+                applicationRepository.save(application);
+
+                log.info("Application {} restored because convention {} was restored",
+                        application.getCode(), convention.getReferenceConvention());
+
+                // LOG HISTORY: Application restore
+                historyService.logApplicationRestore(application, currentUser);
+            }
 
             // LOG HISTORY: Convention restore
             historyService.logConventionRestore(restoredConvention, currentUser);
@@ -367,8 +358,7 @@ public class ConventionController {
 
         } catch (Exception e) {
             log.error("Error restoring convention: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest()
-                    .body(createErrorResponse("Erreur lors de la restauration: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
     }
 
@@ -628,14 +618,14 @@ public class ConventionController {
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
     public ResponseEntity<?> getConventionsByApplication(@PathVariable Long applicationId) {
         try {
-            List<Convention> conventions = conventionRepository.findByArchivedFalse();
+            // FIX: Get ALL conventions for this application, not just non-archived ones
+            // Remove the archived filter to show all conventions
+            List<Convention> conventions = conventionRepository.findByApplicationId(applicationId);
 
-            List<Convention> filteredConventions = conventions.stream()
-                    .filter(c -> c.getApplication() != null &&
-                            c.getApplication().getId().equals(applicationId))
-                    .collect(Collectors.toList());
+            // If you want to show archived ones with a visual indicator, that's fine
+            // But they should still appear in the list
 
-            List<ConventionResponse> conventionResponses = filteredConventions.stream()
+            List<ConventionResponse> conventionResponses = conventions.stream()
                     .map(conventionMapper::toResponse)
                     .collect(Collectors.toList());
 
@@ -650,6 +640,7 @@ public class ConventionController {
             return ResponseEntity.badRequest().body(createErrorResponse("Failed to fetch conventions"));
         }
     }
+
 
     @GetMapping("/by-zone/{zoneId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")

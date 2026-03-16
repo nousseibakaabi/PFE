@@ -52,9 +52,13 @@ export interface Application {
   terminatedOnTime?: boolean;
   terminatedLate?: boolean;
 
-   createdById?: number;
+  createdById?: number;
   createdByUsername?: string;
   createdByFullName?: string;
+
+  renewed?: boolean;
+  renewedAt?: string;
+  renewedBy?: string;
 }
 
 export interface ApplicationRequest {

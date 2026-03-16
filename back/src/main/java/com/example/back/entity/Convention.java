@@ -136,34 +136,33 @@ public class Convention {
      * 4. If has overdue unpaid invoices OR end date passed with unpaid invoices → EN_RETARD
      * 5. If today >= start date → EN_COURS (default)
      */
+
+    /**
+     * Check if all invoices are paid
+     */
     public void updateStatus() {
         LocalDate today = LocalDate.now();
 
-        // 1. If archived → ARCHIVE (cannot change from ARCHIVE)
+        // 1. If archived → ARCHIVE
         if (Boolean.TRUE.equals(archived)) {
             this.etat = "ARCHIVE";
             return;
         }
 
-        // 2. Check if all invoices are paid → TERMINE (overrides date logic)
+        // 2. Check if all invoices are paid → TERMINE
         boolean allInvoicesPaid = areAllInvoicesPaid();
         if (allInvoicesPaid) {
             this.etat = "TERMINE";
             return;
         }
 
-        // 3. Check if convention hasn't started yet → EN_ATTENTE
-        if (today.isBefore(dateDebut)) {
+        // 3. If today is before start date → PLANIFIE
+        if (dateDebut != null && today.isBefore(dateDebut)) {
             this.etat = "PLANIFIE";
             return;
         }
 
-
-
-
-
-        // 7. Default: convention is in progress → EN_COURS
-        // (today is on or after start date, no overdue invoices, end date not passed or passed but invoices paid)
+        // 4. Default: EN COURS
         this.etat = "EN COURS";
     }
 
@@ -171,47 +170,23 @@ public class Convention {
      * Check if all invoices are paid
      */
     public boolean areAllInvoicesPaid() {
-        if (factures == null || factures.isEmpty()) {
-            return false; // No invoices yet, can't be TERMINE
-        }
-
-        // All invoices must be paid (status = "PAYE")
-        boolean allPaid = factures.stream()
-                .allMatch(facture -> "PAYE".equals(facture.getStatutPaiement()));
-
-        return allPaid;
-    }
-
-    /**
-     * Check if convention has any overdue unpaid invoices
-     */
-    public boolean hasOverdueUnpaidInvoices() {
+        // If no invoices, can't be TERMINE
         if (factures == null || factures.isEmpty()) {
             return false;
         }
 
+        // All invoices must be paid (status = "PAYE")
         return factures.stream()
-                .anyMatch(facture ->
-                        facture.isEnRetard() && // Invoice is overdue
-                                !"PAYE".equals(facture.getStatutPaiement()) // And not paid
-                );
+                .allMatch(facture -> "PAYE".equals(facture.getStatutPaiement()));
     }
+    /**
+     * Check if convention has any overdue unpaid invoices
+     */
 
     /**
      * Check if convention should transition from EN_ATTENTE to EN_COURS
      * Called by scheduled tasks
      */
-    public boolean shouldTransitionToEnCours() {
-        LocalDate today = LocalDate.now();
-
-        // Should transition if:
-        // 1. Not archived
-        // 2. Currently EN_ATTENTE
-        // 3. Today is on or after start date
-        return !Boolean.TRUE.equals(archived) &&
-                "EN_ATTENTE".equals(etat) &&
-                !today.isBefore(dateDebut);
-    }
 
     /**
      * Check if convention should transition from EN_COURS to EN_RETARD
@@ -230,43 +205,14 @@ public class Convention {
     /**
      * Get count of unpaid invoices
      */
-    public long getUnpaidInvoicesCount() {
-        if (factures == null) {
-            return 0;
-        }
-
-        return factures.stream()
-                .filter(facture -> !"PAYE".equals(facture.getStatutPaiement()))
-                .count();
-    }
 
     /**
      * Get count of overdue invoices
      */
-    public long getOverdueInvoicesCount() {
-        if (factures == null) {
-            return 0;
-        }
-
-        return factures.stream()
-                .filter(Facture::isEnRetard)
-                .count();
-    }
 
     /**
      * Get total amount of paid invoices
      */
-    public java.math.BigDecimal getTotalPaidAmount() {
-        if (factures == null) {
-            return java.math.BigDecimal.ZERO;
-        }
-
-        return factures.stream()
-                .filter(facture -> "PAYE".equals(facture.getStatutPaiement()))
-                .map(Facture::getMontantTTC)
-                .filter(amount -> amount != null)
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-    }
 
     /**
      * Get total amount of unpaid invoices

@@ -279,7 +279,7 @@ public class ConventionService {
             facture.setTva(convention.getTva());
             facture.setMontantTTC(amountPerPeriod);
             facture.setStatutPaiement("NON_PAYE");
-            facture.setNotes(String.format("Facture %d/%d pour la convention %s (renouvelée)",
+            facture.setNotes(String.format("Facture %d/%d pour la convention %s ",
                     sequenceNumber, totalPeriods, convention.getReferenceConvention()));
 
             Facture savedFacture = factureRepository.save(facture);
@@ -930,7 +930,6 @@ public class ConventionService {
 
 
 
-
     @Transactional
     public Convention renewConvention(Long conventionId, RenewalRequestDTO renewalData, User currentUser) {
         log.info("========== RENEWING CONVENTION ==========");
@@ -969,8 +968,6 @@ public class ConventionService {
         // 7. Archive old factures and DELETE them from main table
         if (!oldFactures.isEmpty()) {
             archiveCurrentFactures(oldState, currentUser, updatedConvention, oldFactures);
-
-            // FORCE DELETE from main factures table
             factureRepository.deleteByConventionId(conventionId);
             factureRepository.flush();
             log.info("Force deleted {} factures from main table", oldFactures.size());
@@ -979,10 +976,15 @@ public class ConventionService {
         // 8. Generate NEW invoices
         generateInvoicesForConvention(updatedConvention);
 
-        convention.setEtat(determineNewStatus(convention));
-        conventionRepository.save(convention);
+        // 9. FORCE status recalculation based on new data
+        String newStatus = determineNewStatus(updatedConvention);
+        updatedConvention.setEtat(newStatus);
 
-        // 9. Update application dates
+        // 10. Save again with correct status
+        updatedConvention = conventionRepository.save(updatedConvention);
+        log.info("Convention renewed with status: {}", newStatus);
+
+        // 11. Update application dates
         try {
             applicationService.updateApplicationDatesFromConvention(
                     updatedConvention.getApplication().getId(),
@@ -994,14 +996,29 @@ public class ConventionService {
             log.error("Failed to update application dates: {}", e.getMessage());
         }
 
-        // 10. Handle chef de projet reassignment with EMAIL FIX
+        // 12. Handle application renewal
+        Application application = updatedConvention.getApplication();
+        if ("TERMINE".equals(application.getStatus())) {
+            application.setStatus("EN_COURS");
+            application.setTerminatedAt(null);
+            application.setTerminatedBy(null);
+            application.setTerminationReason(null);
+            application.setRenewed(true);
+            application.setRenewedAt(LocalDateTime.now());
+            application.setRenewedBy(currentUser.getUsername());
+            applicationRepository.save(application);
+            log.info("Application {} renewed from TERMINE to EN_COURS", application.getCode());
+            historyService.logApplicationRenewal(application, currentUser);
+        }
+
+        // 13. Handle chef de projet reassignment
         try {
-            handleRenewalAssignment(updatedConvention.getApplication(), updatedConvention, currentUser);
+            handleRenewalAssignment(application, updatedConvention, currentUser);
         } catch (Exception e) {
             log.error("Failed to handle renewal assignment: {}", e.getMessage());
         }
 
-        // 11. Log history
+        // 14. Log history
         try {
             historyService.logConventionRenewal(oldState, updatedConvention, currentUser);
         } catch (Exception e) {
@@ -1011,28 +1028,41 @@ public class ConventionService {
         log.info("========== RENEWAL COMPLETED ==========");
         return updatedConvention;
     }
-    /**
-     * Archive factures with explicit list (to avoid querying again)
-     */
+
+
+
 
 
     private String determineNewStatus(Convention convention) {
         LocalDate today = LocalDate.now();
 
-        if (convention.getDateDebut() == null) {
-            return "PLANIFIE";
+        // 1. If archived → ARCHIVE
+        if (Boolean.TRUE.equals(convention.getArchived())) {
+            return "ARCHIVE";
         }
 
-        if (today.isBefore(convention.getDateDebut())) {
-            return "PLANIFIE";
-        }
+        // 2. Check if all invoices are paid → TERMINE
+        List<Facture> factures = factureRepository.findByConventionId(convention.getId());
+        boolean allInvoicesPaid = !factures.isEmpty() && factures.stream()
+                .allMatch(f -> "PAYE".equals(f.getStatutPaiement()));
 
-        if (convention.getDateFin() != null && today.isAfter(convention.getDateFin())) {
+        if (allInvoicesPaid) {
             return "TERMINE";
         }
 
+        // 3. If today is before start date → PLANIFIE
+        if (convention.getDateDebut() != null && today.isBefore(convention.getDateDebut())) {
+            return "PLANIFIE";
+        }
+
+        // 4. Default: EN COURS
         return "EN COURS";
     }
+
+
+
+
+
 
     @Transactional
     public void archiveCurrentFactures(Convention oldConvention, User currentUser,
@@ -1125,12 +1155,10 @@ public class ConventionService {
         convention.setRenewalVersion(convention.getRenewalVersion() != null ?
                 convention.getRenewalVersion() + 1 : 1);
 
-        // Update with new data (KEEP REFERENCE, APPLICATION, STRUCTURE BENEFICIEL)
+        // Update with new data
         if (data.getReferenceERP() != null) {
             convention.setReferenceERP(data.getReferenceERP());
         }
-
-
 
         if (data.getLibelle() != null) {
             convention.setLibelle(data.getLibelle());
@@ -1177,16 +1205,10 @@ public class ConventionService {
                     data.getStructureResponsableId());
         }
 
-        // Reset status based on dates
-        if (convention.getDateDebut() != null && convention.getDateDebut().isAfter(LocalDate.now())) {
-            convention.setEtat("PLANIFIE");
-        } else {
-            convention.setEtat("EN COURS");
-        }
-
+        // DO NOT set status here! Let determineNewStatus handle it after invoices are generated
         log.info("Convention updated successfully. New version: {}", convention.getRenewalVersion());
     }
-
+    
     /**
      * Archive current version to old_conventions
      */

@@ -39,7 +39,8 @@
           </button>
 
           <!-- In application-detail.component.html - Add this button next to other action buttons -->
-<button *ngIf="isChefProjet && isAppCreator()"
+
+<button *ngIf="isChefProjet && isAppCreator() && application?.renewed"
         (click)="openReassignmentRequestModal()"
         class="px-2.5 py-1.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow flex items-center gap-1">
   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

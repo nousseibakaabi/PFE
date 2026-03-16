@@ -6,20 +6,18 @@ import com.example.back.payload.request.FactureRequest;
 import com.example.back.payload.request.PaiementRequest;
 import com.example.back.payload.response.FactureResponse;
 import com.example.back.repository.*;
-import com.example.back.service.ConventionService;
-import com.example.back.service.HistoryService;
-import com.example.back.service.NotificationService;
-import com.example.back.service.UserContextService;
+import com.example.back.service.*;
 import com.example.back.service.mapper.FactureMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -57,6 +55,7 @@ public class FactureController {
 
     @Autowired
     private NotificationService notificationService;
+
 
 
     // Helper method to check if user can access invoice
@@ -756,4 +755,8 @@ public class FactureController {
         response.put("message", message);
         return response;
     }
+
+
+
+
 }

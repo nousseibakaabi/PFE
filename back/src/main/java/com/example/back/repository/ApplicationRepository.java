@@ -22,6 +22,9 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findByChefDeProjetAndArchivedTrue(@Param("chef") User chef);
 
 
+    @Query("SELECT a FROM Application a WHERE a.archived = true")
+    List<Application> findByArchivedTrue();
+
 
 
     // Find by name
@@ -111,6 +114,11 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Query("SELECT a FROM Application a WHERE NOT EXISTS (SELECT c FROM Convention c WHERE c.application = a AND c.archived = false)")
     List<Application> findApplicationsWithoutConventions();
 
-    List<Application> findByArchivedTrue();
+    @Query("SELECT a FROM Application a WHERE a.archived = false")
+    List<Application> findByArchivedFalse();
+
+    @Query("SELECT a FROM Application a WHERE a.chefDeProjet = :chef AND a.archived = false")
+    List<Application> findByChefDeProjetAndArchivedFalse(@Param("chef") User chef);
+
 
 }

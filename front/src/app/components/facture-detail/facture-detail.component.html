@@ -20,13 +20,17 @@
 
         <div class="flex gap-2">
           <!-- Print Button -->
-          <button (click)="printInvoice()"
-                  class="px-3 py-2 bg-blue dark:bg-blue-800 border border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-300 rounded-lg text-xs font-medium hover:bg-blue-50 dark:hover:bg-blue-700 flex items-center gap-1.5 shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            <span>Imprimer</span>
-          </button>
+          
+
+          <!-- In the header actions div, add this button after the print button -->
+<!-- PDF Button -->
+<button (click)="generatePDF()"
+        class="px-3 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow flex items-center gap-1.5">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+  </svg>
+  <span>PDF</span>
+</button>
 
           <!-- Convention Button -->
           <button (click)="viewConventionDetails(conventionDetails?.id || facture.conventionId)"
@@ -211,31 +215,91 @@
             </div>
           </div>
 
-          <!-- Payment Information -->
-          <div *ngIf="facture.statutPaiement === 'PAYE'" class="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border border-green-200 dark:border-green-800 rounded-lg">
-            <div class="flex items-start gap-3">
-              <div class="w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                <span class="text-green-600 text-xs">💰</span>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between">
-                  <p class="text-xs font-medium text-green-700 dark:text-green-300">Paiement reçu</p>
-                  <span class="text-[8px] bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-0.5 rounded-full">✓ confirmé</span>
-                </div>
-                <div class="grid grid-cols-2 gap-3 mt-2">
-                  <div>
-                    <p class="text-[8px] text-green-600">Réf:</p>
-                    <p class="text-xs font-medium text-gray-800 dark:text-white">{{ facture.referencePaiement || '-' }}</p>
-                  </div>
-                  <div>
-                    <p class="text-[8px] text-green-600">Date:</p>
-                    <p class="text-xs font-medium text-gray-800 dark:text-white">{{ facture.datePaiement | date:'dd/MM/yy' }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <!-- Payment Information with detailed status -->
+<!-- Payment Information - Cute & Compact -->
+<div *ngIf="facture" class="mb-3">
+  <!-- PAYÉ - Cute Green Card -->
+  <div *ngIf="facture.statutPaiement === 'PAYE'" 
+       class="p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border border-green-200 dark:border-green-800 rounded-xl">
+    <div class="flex items-center gap-2">
+      <div class="w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+        <span class="text-green-600 text-xs">✓</span>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-green-700 dark:text-green-300">Paiement reçu</span>
+          <span class="text-[9px] px-1.5 py-0.5 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full">
+            confirmé
+          </span>
+        </div>
+        <div class="flex items-center gap-3 mt-1 text-[10px]">
+          <span class="text-gray-500">Réf:</span>
+          <span class="font-medium text-gray-800 dark:text-white">{{ facture.referencePaiement || '-' }}</span>
+          <span class="text-gray-400">•</span>
+          <span class="text-gray-500">{{ facture.datePaiement | date:'dd/MM/yy' }}</span>
+        </div>
+        <div class="mt-1 text-[9px] text-green-600 dark:text-green-400">
+          <ng-container [ngSwitch]="getPaymentStatusDetails(facture).type">
+            <ng-container *ngSwitchCase="'early'">✨ {{ getPaymentStatusDetails(facture).days }}j avant</ng-container>
+            <ng-container *ngSwitchCase="'late_paid'">⚠️ {{ getPaymentStatusDetails(facture).days }}j de retard</ng-container>
+            <ng-container *ngSwitchCase="'ontime'">✓ à temps</ng-container>
+            <ng-container *ngSwitchDefault>✓ payée</ng-container>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- NON PAYÉ - Cute Status Cards -->
+  <div *ngIf="facture.statutPaiement !== 'PAYE'" 
+       [class]="'p-3 rounded-xl border ' + 
+         (getPaymentStatusDetails(facture).type === 'overdue' ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800' : 
+          getPaymentStatusDetails(facture).type === 'due_today' ? 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800' : 
+          getPaymentStatusDetails(facture).days <= 3 ? 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800' : 
+          'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800')">
+    
+    <div class="flex items-center gap-2">
+      <div [class]="'w-6 h-6 rounded-lg flex items-center justify-center ' +
+        (getPaymentStatusDetails(facture).type === 'overdue' ? 'bg-red-100 dark:bg-red-900/30' : 
+         getPaymentStatusDetails(facture).type === 'due_today' ? 'bg-orange-100 dark:bg-orange-900/30' : 
+         getPaymentStatusDetails(facture).days <= 3 ? 'bg-orange-100 dark:bg-orange-900/30' : 
+         'bg-yellow-100 dark:bg-yellow-900/30')">
+        <span class="text-xs">
+          {{ getPaymentStatusDetails(facture).type === 'overdue' ? '⚠️' : 
+             getPaymentStatusDetails(facture).type === 'due_today' ? '⏰' : '⏳' }}
+        </span>
+      </div>
+      
+      <div class="flex-1">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+            <ng-container [ngSwitch]="getPaymentStatusDetails(facture).type">
+              <ng-container *ngSwitchCase="'overdue'">En retard</ng-container>
+              <ng-container *ngSwitchCase="'due_today'">Échéance aujourd'hui</ng-container>
+              <ng-container *ngSwitchDefault>En attente</ng-container>
+            </ng-container>
+          </span>
+          <span [class]="'text-[9px] px-1.5 py-0.5 rounded-full ' +
+            (getPaymentStatusDetails(facture).type === 'overdue' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' : 
+             getPaymentStatusDetails(facture).type === 'due_today' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' : 
+             getPaymentStatusDetails(facture).days <= 3 ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' : 
+             'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300')">
+            {{ getPaymentStatusDetails(facture).message }}
+          </span>
+        </div>
+        
+        <div class="flex items-center gap-2 mt-1 text-[10px]">
+          <span class="text-gray-500">Échéance:</span>
+          <span class="font-medium text-gray-800 dark:text-white">{{ facture.dateEcheance | date:'dd/MM/yy' }}</span>
+          <span class="text-gray-400">•</span>
+          <span [class]="getStatutClass(facture.statutPaiement) + ' text-[9px] px-1.5 py-0.5'">
+            {{ getStatutLabel(facture.statutPaiement) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
           <!-- Footer -->
           <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 text-center text-[9px] text-gray-400">
             <p>Générée automatiquement • Merci de votre confiance</p>

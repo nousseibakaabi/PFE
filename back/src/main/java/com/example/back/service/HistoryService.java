@@ -970,4 +970,56 @@ public class HistoryService {
     }
 
 
+    // Add to HistoryService.java
+
+    public void logApplicationArchive(Application application, User archivedBy, String reason) {
+        try {
+            ApplicationHistoryData data = convertToHistoryData(application);
+            String description = String.format("Archivage automatique de l'application %s - Toutes ses conventions sont archivées",
+                    application.getCode());
+            createHistory("ARCHIVE", "APPLICATION", application.getId(), application.getCode(),
+                    application.getName(), description, data, null, archivedBy);
+        } catch (Exception e) {
+            log.error("Failed to log application archive: {}", e.getMessage());
+        }
+    }
+
+    public void logApplicationRestore(Application application, User restoredBy) {
+        try {
+            ApplicationHistoryData data = convertToHistoryData(application);
+            String description = String.format("Restauration de l'application %s - Convention restaurée",
+                    application.getCode());
+
+            // Create history entry with old values (archived state) and new values (restored state)
+            Map<String, Object> oldData = new HashMap<>();
+            oldData.put("archived", true);
+            oldData.put("status", application.getStatus());
+
+            Map<String, Object> newData = new HashMap<>();
+            newData.put("archived", false);
+            newData.put("status", application.getStatus());
+
+            createHistory("RESTORE", "APPLICATION", application.getId(), application.getCode(),
+                    application.getName(), description, oldData, newData, restoredBy);
+
+            log.info("Application restore history logged for {}", application.getCode());
+        } catch (Exception e) {
+            log.error("Failed to log application restore: {}", e.getMessage(), e);
+        }
+    }
+
+
+    public void logApplicationRenewal(Application application, User renewedBy) {
+        try {
+            ApplicationHistoryData data = convertToHistoryData(application);
+            String description = String.format("Renouvellement de l'application %s - Convention renouvelée",
+                    application.getCode());
+            createHistory("RENEW", "APPLICATION", application.getId(), application.getCode(),
+                    application.getName(), description, null, data, renewedBy);
+        } catch (Exception e) {
+            log.error("Failed to log application renewal: {}", e.getMessage());
+        }
+    }
+
+
 }

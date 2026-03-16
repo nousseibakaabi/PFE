@@ -176,8 +176,7 @@ public class ApplicationService {
             if ("ROLE_ADMIN".equals(currentRole)) {
                 // Admin can update all applications
                 log.info("Admin updating application: {}", application.getCode());
-            }
-            else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
+            } else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
                 // Chef de projet can only update their own applications
                 User currentUser = userRepository.findByUsername(currentUsername)
                         .orElseThrow(() -> new RuntimeException("User not found"));
@@ -191,8 +190,7 @@ public class ApplicationService {
                 if (chefChanged) {
                     throw new RuntimeException("Access denied: You cannot change the chef de projet assignment");
                 }
-            }
-            else {
+            } else {
                 // Other roles cannot update applications
                 throw new RuntimeException("Access denied: You don't have permission to update applications");
             }
@@ -287,6 +285,7 @@ public class ApplicationService {
             throw new RuntimeException("Failed to update application: " + e.getMessage());
         }
     }
+
     /**
      * Delete application with access control
      */
@@ -303,8 +302,7 @@ public class ApplicationService {
             if ("ROLE_ADMIN".equals(currentRole)) {
                 // Admin can delete all applications
                 log.info("Admin deleting application: {}", application.getCode());
-            }
-            else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
+            } else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
                 // Chef de projet can only delete their own applications
                 User currentUser = userRepository.findByUsername(currentUsername)
                         .orElseThrow(() -> new RuntimeException("User not found"));
@@ -313,8 +311,7 @@ public class ApplicationService {
                         !application.getChefDeProjet().getId().equals(currentUser.getId())) {
                     throw new RuntimeException("Access denied: You can only delete your own applications");
                 }
-            }
-            else {
+            } else {
                 // Other roles cannot delete applications
                 throw new RuntimeException("Access denied: You don't have permission to delete applications");
             }
@@ -407,6 +404,7 @@ public class ApplicationService {
         }
         return sb.toString();
     }
+
     /**
      * Send assignment notification based on user's notification mode
      */
@@ -491,6 +489,7 @@ public class ApplicationService {
             log.error("❌ Failed to send SMS notification: {}", e.getMessage());
         }
     }
+
     /**
      * Send email notification
      */
@@ -521,6 +520,7 @@ public class ApplicationService {
             return false;
         }
     }
+
     /**
      * Send SMS notification
      */
@@ -764,8 +764,7 @@ public class ApplicationService {
             if ("ROLE_ADMIN".equals(currentRole)) {
                 // Admin sees all
                 return applicationMapper.toResponse(application);
-            }
-            else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
+            } else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
                 // Chef de projet only sees their own applications
                 User currentUser = userRepository.findByUsername(currentUsername)
                         .orElseThrow(() -> new RuntimeException("User not found"));
@@ -775,8 +774,7 @@ public class ApplicationService {
                     throw new RuntimeException("Access denied: You can only view your own applications");
                 }
                 return applicationMapper.toResponse(application);
-            }
-            else {
+            } else {
                 // DECIDEUR and COMMERCIAL_METIER can view all applications
                 return applicationMapper.toResponse(application);
             }
@@ -789,8 +787,6 @@ public class ApplicationService {
             throw new RuntimeException("Failed to fetch application: " + e.getMessage());
         }
     }
-
-
 
 
     // In ApplicationService.java - Add this method
@@ -840,7 +836,6 @@ public class ApplicationService {
     }
 
 
-
     /**
      * Get all applications with access control
      */
@@ -853,22 +848,22 @@ public class ApplicationService {
 
             List<Application> applications;
 
-            // ADMIN sees all applications
+            // ADMIN sees all NON-ARCHIVED applications
             if ("ROLE_ADMIN".equals(currentRole)) {
-                applications = applicationRepository.findAll();
+                applications = applicationRepository.findByArchivedFalse();
             }
-            // CHEF_PROJET sees only their own applications
+            // CHEF_PROJET sees only their own NON-ARCHIVED applications
             else if ("ROLE_CHEF_PROJET".equals(currentRole)) {
                 User currentUser = userRepository.findByUsername(currentUsername)
                         .orElseThrow(() -> new RuntimeException("User not found"));
-                applications = applicationRepository.findByChefDeProjetId(currentUser.getId());
+                applications = applicationRepository.findByChefDeProjetAndArchivedFalse(currentUser);
             }
-            // DECIDEUR and COMMERCIAL_METIER see all applications (for viewing and convention purposes)
+            // DECIDEUR and COMMERCIAL_METIER see all NON-ARCHIVED applications
             else {
-                applications = applicationRepository.findAll();
+                applications = applicationRepository.findByArchivedFalse();
             }
 
-            log.info("Returning {} applications to user {}", applications.size(), currentUsername);
+            log.info("Returning {} non-archived applications to user {}", applications.size(), currentUsername);
 
             return applications.stream()
                     .map(applicationMapper::toResponse)
@@ -879,6 +874,7 @@ public class ApplicationService {
             throw new RuntimeException("Failed to fetch applications: " + e.getMessage());
         }
     }
+
 
     /**
      * Get applications by Chef de Projet
@@ -977,7 +973,6 @@ public class ApplicationService {
             stats.put("completedApplications", applications.stream().filter(a -> "TERMINE".equals(a.getStatus())).count());
 
 
-
             // Convention statistics
             int totalConventions = applications.stream()
                     .mapToInt(Application::getConventionsCount)
@@ -1051,9 +1046,6 @@ public class ApplicationService {
     }
 
 
-
-
-
     public List<ApplicationResponse> getUnassignedApplications() {
         try {
             List<Application> applications = applicationRepository.findByChefDeProjetIsNull();
@@ -1122,17 +1114,13 @@ public class ApplicationService {
     }
 
 
-
-
-
-
     /**
      * Sync all application dates based on its conventions
      * For multiple conventions, we need to decide which convention's dates to follow
      * Since an app can have multiple conventions, we need to define the logic:
      * - Should it follow the most recent convention?
      * - Should it take the earliest start and latest end?
-     *
+     * <p>
      * Based on your statement "the app will always follow the convention",
      * I'll assume you want it to follow the most recently created/updated convention
      */
@@ -1296,6 +1284,9 @@ public class ApplicationService {
     /**
      * Get archived applications for current user (with role-based filtering)
      */
+    /**
+     * Get archived applications for current user (with role-based filtering)
+     */
     public List<ApplicationResponse> getArchivedApplicationsForCurrentUser() {
         try {
             User currentUser = getCurrentUser();
@@ -1324,4 +1315,5 @@ public class ApplicationService {
             log.error("Error fetching archived applications: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to fetch archived applications: " + e.getMessage());
         }
-    }}
+    }
+}
