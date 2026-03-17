@@ -54,6 +54,7 @@ import { ApplicationArchiveComponent } from './components/application-archive/ap
 import { RecaptchaModule, RecaptchaFormsModule } from 'ng-recaptcha';
 import { TranslateComponent } from './components/translate/translate.component';
 import { CreateReassignmentRequestComponent } from './components/create-reassignment-request/create-reassignment-request.component';
+import { ConventionVersionsComponent } from './components/convention-versions/convention-versions.component';
 
 @NgModule({
   declarations: [
@@ -98,6 +99,7 @@ import { CreateReassignmentRequestComponent } from './components/create-reassign
     ApplicationArchiveComponent,
     TranslateComponent,
     CreateReassignmentRequestComponent,
+    ConventionVersionsComponent,
     ],
   imports: [
     BrowserModule,

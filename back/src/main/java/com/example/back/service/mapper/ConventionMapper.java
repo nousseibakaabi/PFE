@@ -38,6 +38,9 @@ public class ConventionMapper {
         response.setCreatedAt(convention.getCreatedAt());
         response.setUpdatedAt(convention.getUpdatedAt());
 
+        response.setRenewalVersion(convention.getRenewalVersion());
+
+
         // Structure Responsable
         if (convention.getStructureResponsable() != null) {
             response.setStructureResponsableId(convention.getStructureResponsable().getId());
@@ -111,6 +114,9 @@ public class ConventionMapper {
             response.setCreatedByFullName(convention.getCreatedBy().getFirstName() + " " +
                     convention.getCreatedBy().getLastName());
         }
+
+
+
 
         return response;
     }

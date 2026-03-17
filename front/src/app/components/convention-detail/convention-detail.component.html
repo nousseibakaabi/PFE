@@ -35,16 +35,19 @@
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
   </svg>
   <span>Archiver</span>
-<button *ngIf="convention && convention.renewalVersion !== undefined && convention.renewalVersion > 0"
-        (click)="viewPreviousVersions()"
-        class="px-2.5 py-1.5 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow flex items-center gap-1">
-  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-  <span>Anciennes versions <span *ngIf="convention.renewalVersion">({{ convention.renewalVersion }})</span></span>
 </button>
 
-  
+
+<button *ngIf="convention && convention.renewalVersion !== undefined && convention.renewalVersion > 0"
+        [routerLink]="['/conventions', convention.id, 'versions']"
+        class="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg text-xs font-medium shadow-sm hover:shadow flex items-center gap-1.5 transition-all group">
+  <svg class="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  <span>Historique des versions</span>
+  <span class="bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1">
+    {{ convention.renewalVersion }}
+  </span>
 </button>
 
 <!-- In convention-detail.component.html, add renew button next to archive button -->

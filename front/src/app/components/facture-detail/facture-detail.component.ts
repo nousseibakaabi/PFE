@@ -545,7 +545,7 @@ private addInvoiceContent(pdf: jsPDF, primaryColor: number[], secondaryColor: nu
   pdf.setFontSize(10);
   pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
   pdf.setFont('helvetica', 'bold');
-  pdf.text('Company', Z, y + 13);
+  pdf.text('Société', Z, y + 13);
 
   // Company details (normal size, normal font)
   pdf.setFontSize(8);
@@ -554,13 +554,13 @@ private addInvoiceContent(pdf: jsPDF, primaryColor: number[], secondaryColor: nu
   pdf.text('Centre national de l\'informatique', Z, y + 19);
   pdf.text('17, 1005 Av. Belhassen Ben Chaabane ,Tunis', Z, y + 25);
   pdf.text('webcni@cni.tn', Z, y + 31);
-  pdf.text('Tél: +216 71 781 862', Z, y + 37);
+  pdf.text('+216 71 781 862', Z, y + 37);
 
   let W =130;
   pdf.setFontSize(10);
   pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
   pdf.setFont('helvetica', 'bold');
-  pdf.text('BILL TO ', W,  y + 13);
+  pdf.text('Facturer à ', W,  y + 13);
 
   // Company details (normal size, normal font)
   pdf.setFontSize(8);
@@ -569,8 +569,9 @@ private addInvoiceContent(pdf: jsPDF, primaryColor: number[], secondaryColor: nu
   pdf.text(this.facture?.structureBeneficielName || 'N/A', W, y + 19);
   pdf.text(this.structureBeneficiel?.zoneGeographique?.name || 'N/A', W, y + 25);
   pdf.text(this.structureBeneficiel?.email || 'N/A', W, y + 31);
-  // pdf.text('+216 ',this.structureBeneficiel?.phone? || 'N/A', W, yPos + 37);
 
+  const formattedPhone = this.formatPhoneNumber(this.structureBeneficiel?.phone || 'N/A');
+  pdf.text(formattedPhone, W , y + 37);
   
   // ===== DATES SECTION =====
   yPos = 90;
@@ -798,6 +799,32 @@ pdf.line(20, yPos, 190, yPos);
   this.loading = false;
   this.successMessage = 'PDF généré avec succès';
   setTimeout(() => this.successMessage = '', 3000);
+}
+
+
+formatPhoneNumber(phone: string): string {
+  if (!phone) return '-';
+  
+  // Remove any existing spaces or special characters
+  const cleaned = phone.replace(/\s+/g, '');
+  
+  // Check if it starts with +216 (Tunisia)
+  if (cleaned.startsWith('+216')) {
+    const number = cleaned.substring(4); // Remove +216
+    // Format as: +216 12 121 212
+    const groups = number.match(/(\d{2})(\d{3})(\d{3})/);
+    if (groups) {
+      return `+216 ${groups[1]} ${groups[2]} ${groups[3]}`;
+    }
+  }
+  
+  // Fallback: format as XX XXX XXX for 8-digit numbers
+  const groups = cleaned.match(/(\d{2})(\d{3})(\d{3})/);
+  if (groups) {
+    return `${groups[1]} ${groups[2]} ${groups[3]}`;
+  }
+  
+  return phone;
 }
 
 // Helper method to add logo

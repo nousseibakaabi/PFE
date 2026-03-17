@@ -122,13 +122,19 @@ export class ConventionDetailComponent implements OnInit {
   
   ) {}
 
-  ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.conventionId = +params['id'];
-      this.loadConventionDetails();
-    });
+ngOnInit(): void {
+  this.route.params.subscribe(params => {
+    this.conventionId = +params['id'];
+    this.loadConventionDetails();
+  });
+  
+  // Add this to check the interface
+  console.log('Convention interface check:', {
+    hasRenewalVersion: 'renewalVersion' in ({} as Convention),
+    sampleConvention: this.convention
+  });
+}
 
-  }
 
 
 
@@ -243,6 +249,9 @@ getHistoryIcon(actionType: string): string {
       next: (response) => {
         if (response.success) {
           this.convention = response.data;
+           console.log('Loaded convention:', this.convention);
+        console.log('renewalVersion value:', this.convention?.renewalVersion);
+        console.log('renewalVersion type:', typeof this.convention?.renewalVersion);
           this.loadFactures();
           this.loadConventionHistory();
           

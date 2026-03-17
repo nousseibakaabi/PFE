@@ -68,4 +68,6 @@ public class ConventionResponse {
     private Long createdById;
     private String createdByUsername;
     private String createdByFullName;
+
+    private int renewalVersion; 
 }

@@ -1,0 +1,95 @@
+/* convention-versions.component.css */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom scrollbar for the versions sidebar */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-track {
+  background: #2d3748;
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #4a5568;
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+/* Version card hover effect */
+.version-card {
+  transition: all 0.2s ease;
+}
+
+.version-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Pulse animation for selected indicator */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
+
+/* convention-versions.component.css */
+.equal-height-container {
+  display: flex;
+  min-height: 600px; /* Minimum height */
+}
+
+.left-sidebar {
+  height: fit-content;
+  min-height: 100%;
+}
+
+.right-content {
+  min-height: 100%;
+}
+
+/* Make the cards container take full height */
+.sidebar-cards-container {
+  max-height: none !important;
+  height: auto;
+  min-height: 500px;
+}

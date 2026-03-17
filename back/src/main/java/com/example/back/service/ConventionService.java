@@ -205,89 +205,92 @@ public class ConventionService {
                 sequence);
     }
 
-    /**
-     * Generate or update invoices based on TTC amount
-     * - PRESERVES paid invoices with their original amounts
-     * - Only redistributes the REMAINING unpaid amount across remaining periods
-     */
+/**
+ * Generate invoices for a NEW convention
+ * - Creates ALL invoices from scratch
+ * - Used ONLY for new conventions (creation)
+ */
+@Transactional
+public void generateInvoicesForConvention(Convention convention) {
+    log.info("========== GENERATING INVOICES FOR NEW CONVENTION ==========");
+    log.info("Convention ID: {}", convention.getId());
+    log.info("Reference: {}", convention.getReferenceConvention());
+    log.info("Periodicite: '{}'", convention.getPeriodicite());
+    log.info("Date Debut: {}", convention.getDateDebut());
+    log.info("Date Fin: {}", convention.getDateFin());
+    log.info("Montant TTC: {}", convention.getMontantTTC());
 
-    @Transactional
-    public void generateInvoicesForConvention(Convention convention) {
-        log.info("========== GENERATING INVOICES FOR CONVENTION ==========");
-        log.info("Convention ID: {}", convention.getId());
-        log.info("Reference: {}", convention.getReferenceConvention());
-        log.info("Periodicite: '{}'", convention.getPeriodicite());
-        log.info("Date Debut: {}", convention.getDateDebut());
-        log.info("Date Fin: {}", convention.getDateFin());
-        log.info("Montant TTC: {}", convention.getMontantTTC());
-
-        // Check if any invoices already exist (they shouldn't after renewal)
-        List<Facture> existingInvoices = factureRepository.findByConventionId(convention.getId());
-
-        if (!existingInvoices.isEmpty()) {
-            log.warn("Found {} existing invoices for convention. This shouldn't happen after renewal.",
-                    existingInvoices.size());
-
-            // Delete any unpaid invoices (should be none)
-            for (Facture invoice : existingInvoices) {
-                if (!"PAYE".equals(invoice.getStatutPaiement())) {
-                    factureRepository.delete(invoice);
-                    log.info("Deleted unpaid invoice: {}", invoice.getNumeroFacture());
-                }
-            }
-
-            // Refresh the list
-            existingInvoices = factureRepository.findByConventionId(convention.getId());
-            if (!existingInvoices.isEmpty()) {
-                log.error("Still have {} paid invoices after cleanup. These should have been archived.",
-                        existingInvoices.size());
-                return;
-            }
+    // Check if any invoices already exist (they shouldn't for new convention)
+    List<Facture> existingInvoices = factureRepository.findByConventionId(convention.getId());
+    if (!existingInvoices.isEmpty()) {
+        log.warn("Found {} existing invoices for new convention. This shouldn't happen.", existingInvoices.size());
+        // Delete all existing invoices to start fresh
+        for (Facture invoice : existingInvoices) {
+            factureRepository.delete(invoice);
+            log.info("Deleted existing invoice: {}", invoice.getNumeroFacture());
         }
-
-        // Validate required fields
-        if (convention.getDateDebut() == null || convention.getDateFin() == null ||
-                convention.getMontantTTC() == null || convention.getPeriodicite() == null) {
-            log.error("Missing required fields for invoice generation");
-            return;
-        }
-
-        // Calculate total periods
-        int totalPeriods = calculateTotalPeriods(convention);
-        log.info("Total periods calculated: {} for periodicity: {}", totalPeriods, convention.getPeriodicite());
-
-        // Calculate amount per period
-        BigDecimal amountPerPeriod = convention.getMontantTTC()
-                .divide(BigDecimal.valueOf(totalPeriods), 2, RoundingMode.HALF_UP);
-        log.info("Amount per period: {} TND", amountPerPeriod);
-
-        // Generate all invoices from scratch
-        for (int i = 0; i < totalPeriods; i++) {
-            int sequenceNumber = i + 1;
-
-            // Generate a unique invoice number
-            String invoiceNumber = generateUniqueInvoiceNumber(convention, sequenceNumber);
-
-            LocalDate invoiceDate = calculateInvoiceDate(convention.getDateDebut(), i, convention.getPeriodicite());
-
-            Facture facture = new Facture();
-            facture.setNumeroFacture(invoiceNumber);
-            facture.setConvention(convention);
-            facture.setDateFacturation(invoiceDate);
-            facture.setDateEcheance(calculateDueDate(invoiceDate, convention.getPeriodicite()));
-            facture.setMontantHT(calculateHT(amountPerPeriod, convention.getTva()));
-            facture.setTva(convention.getTva());
-            facture.setMontantTTC(amountPerPeriod);
-            facture.setStatutPaiement("NON_PAYE");
-            facture.setNotes(String.format("Facture %d/%d pour la convention %s ",
-                    sequenceNumber, totalPeriods, convention.getReferenceConvention()));
-
-            Facture savedFacture = factureRepository.save(facture);
-            log.info("ADDED new invoice {} at {} TND", savedFacture.getNumeroFacture(), amountPerPeriod);
-        }
-
-        log.info("========== INVOICE GENERATION COMPLETE ==========");
+        factureRepository.flush();
     }
+
+    // Validate required fields
+    if (convention.getDateDebut() == null || convention.getDateFin() == null ||
+            convention.getMontantTTC() == null || convention.getPeriodicite() == null) {
+        log.error("Missing required fields for invoice generation");
+        return;
+    }
+
+    // Calculate total periods
+    int totalPeriods = calculateTotalPeriods(convention);
+    log.info("Total periods calculated: {} for periodicity: {}", totalPeriods, convention.getPeriodicite());
+
+    // Calculate amount per period
+    BigDecimal amountPerPeriod = convention.getMontantTTC()
+            .divide(BigDecimal.valueOf(totalPeriods), 2, RoundingMode.HALF_UP);
+    log.info("Amount per period: {} TND", amountPerPeriod);
+
+    BigDecimal sum = BigDecimal.ZERO;
+    
+    // Generate all invoices from scratch
+    for (int i = 0; i < totalPeriods; i++) {
+        int sequenceNumber = i + 1;
+
+        // Generate invoice number
+        String invoiceNumber = generateFormattedInvoiceNumber(convention, sequenceNumber);
+
+        LocalDate invoiceDate = calculateInvoiceDate(convention.getDateDebut(), i, convention.getPeriodicite());
+
+        // Calculate amount (last invoice takes remainder to avoid rounding issues)
+        BigDecimal amount;
+        if (i == totalPeriods - 1) {
+            amount = convention.getMontantTTC().subtract(sum);
+            log.info("  Last invoice takes remainder: {} = {} - {}", amount, convention.getMontantTTC(), sum);
+        } else {
+            amount = amountPerPeriod;
+            sum = sum.add(amount);
+        }
+
+        Facture facture = new Facture();
+        facture.setNumeroFacture(invoiceNumber);
+        facture.setConvention(convention);
+        facture.setDateFacturation(invoiceDate);
+        facture.setDateEcheance(calculateDueDate(invoiceDate, convention.getPeriodicite()));
+        facture.setMontantHT(calculateHT(amount, convention.getTva()));
+        facture.setTva(convention.getTva());
+        facture.setMontantTTC(amount);
+        facture.setStatutPaiement("NON_PAYE");
+        facture.setNotes(String.format("Facture %d/%d pour la convention %s",
+                sequenceNumber, totalPeriods, convention.getReferenceConvention()));
+
+        Facture savedFacture = factureRepository.save(facture);
+        log.info("ADDED new invoice {}: {} TND, date {}", 
+                savedFacture.getNumeroFacture(), amount, invoiceDate);
+    }
+
+    log.info("========== INVOICE GENERATION COMPLETE ==========");
+    checkNotificationsForAllInvoices(convention);
+}
+
+
 
     /**
      * Generate a unique invoice number
@@ -405,39 +408,274 @@ public class ConventionService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    /**
-     * Regenerate invoices when convention financial data changes
-     */
-    @Transactional
-    public void regenerateInvoicesForConvention(Long conventionId) {
-        Optional<Convention> conventionOpt = conventionRepository.findById(conventionId);
-        if (conventionOpt.isEmpty()) {
-            log.warn("Convention not found for invoice regeneration: {}", conventionId);
-            return;
-        }
 
-        Convention convention = conventionOpt.get();
-
-        // Only regenerate if convention is not terminated or archived
-        if ("TERMINE".equals(convention.getEtat()) || "ARCHIVE".equals(convention.getEtat())) {
-            log.info("Convention {} is {} - skipping invoice regeneration",
-                    convention.getReferenceConvention(), convention.getEtat());
-            return;
-        }
-
-        log.info("Regenerating invoices for convention {} due to financial data change",
-                convention.getReferenceConvention());
-
-        // Force a fresh fetch of the convention
-        convention = conventionRepository.findById(conventionId).get();
-
-        generateInvoicesForConvention(convention);
-
-        checkNotificationsForAllInvoices(convention);
-
-        // Update convention status after invoice changes
-        updateConventionStatusRealTime(conventionId);
+/**
+ * Regenerate invoices when convention is UPDATED
+ * - PRESERVES paid invoices (never modify them)
+ * - UPDATES existing unpaid invoices with new amounts/dates
+ * - ADDS new invoices if more periods needed
+ * - DELETES excess unpaid invoices if fewer periods needed - **GUARANTEED TO DELETE FROM THE END**
+ */
+@Transactional
+public void regenerateInvoicesForConvention(Long conventionId) {
+    Optional<Convention> conventionOpt = conventionRepository.findById(conventionId);
+    if (conventionOpt.isEmpty()) {
+        log.warn("Convention not found for invoice regeneration: {}", conventionId);
+        return;
     }
+
+    Convention convention = conventionOpt.get();
+
+    // Only regenerate if convention is not terminated or archived
+    if ("TERMINE".equals(convention.getEtat()) || "ARCHIVE".equals(convention.getEtat())) {
+        log.info("Convention {} is {} - skipping invoice regeneration",
+                convention.getReferenceConvention(), convention.getEtat());
+        return;
+    }
+
+    log.info("========== REGENERATING INVOICES FOR CONVENTION UPDATE ==========");
+    log.info("Convention ID: {}", convention.getId());
+    log.info("Reference: {}", convention.getReferenceConvention());
+    log.info("Periodicite: '{}'", convention.getPeriodicite());
+    log.info("Date Debut: {}", convention.getDateDebut());
+    log.info("Date Fin: {}", convention.getDateFin());
+    log.info("Montant TTC: {}", convention.getMontantTTC());
+
+    // Get all existing invoices sorted by date (OLDEST FIRST)
+    List<Facture> allInvoices = factureRepository.findByConventionIdOrderByDateFacturationAsc(convention.getId());
+    
+    log.info("Current invoices before regeneration:");
+    for (int i = 0; i < allInvoices.size(); i++) {
+        Facture f = allInvoices.get(i);
+        log.info("  [{}] ID: {}, {} - {} TND - {} - {}", 
+                i, f.getId(), f.getNumeroFacture(), f.getMontantTTC(), 
+                f.getStatutPaiement(), f.getDateFacturation());
+    }
+    
+    // Separate paid and unpaid invoices (preserving order)
+    List<Facture> paidInvoices = new ArrayList<>();
+    List<Facture> unpaidInvoices = new ArrayList<>();
+    
+    for (Facture invoice : allInvoices) {
+        if ("PAYE".equals(invoice.getStatutPaiement())) {
+            paidInvoices.add(invoice);
+        } else {
+            unpaidInvoices.add(invoice);
+        }
+    }
+
+    log.info("Found {} total invoices - {} paid, {} unpaid", 
+            allInvoices.size(), paidInvoices.size(), unpaidInvoices.size());
+
+    // Calculate total paid amount
+    BigDecimal totalPaidAmount = paidInvoices.stream()
+            .map(Facture::getMontantTTC)
+            .filter(Objects::nonNull)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    
+    log.info("Total paid amount: {} TND", totalPaidAmount);
+
+    // Calculate new total periods needed
+    int newTotalPeriods = calculateTotalPeriods(convention);
+    log.info("New total periods needed: {}", newTotalPeriods);
+
+    // Calculate remaining amount to distribute
+    BigDecimal newTotalTTC = convention.getMontantTTC();
+    BigDecimal remainingAmount = newTotalTTC.subtract(totalPaidAmount);
+    log.info("Remaining amount to distribute: {} TND", remainingAmount);
+
+    // Calculate how many unpaid invoices we need
+    int unpaidNeeded = newTotalPeriods - paidInvoices.size();
+    log.info("Paid invoices: {}, Unpaid invoices needed: {}", paidInvoices.size(), unpaidNeeded);
+
+    if (unpaidNeeded < 0) {
+        log.error("More paid invoices ({}) than total periods ({}) - cannot regenerate", 
+                paidInvoices.size(), newTotalPeriods);
+        return;
+    }
+
+    // ============= STEP 1: DELETE EXCESS UNPAID INVOICES (FROM THE END) =============
+    if (unpaidInvoices.size() > unpaidNeeded) {
+        int excessCount = unpaidInvoices.size() - unpaidNeeded;
+        log.info("!!! HAVE {} UNPAID INVOICES, NEED {}, DELETING {} FROM THE END !!!", 
+                unpaidInvoices.size(), unpaidNeeded, excessCount);
+        
+        // Delete from the END (most recent invoices)
+        for (int i = unpaidInvoices.size() - 1; i >= unpaidNeeded; i--) {
+            Facture toDelete = unpaidInvoices.get(i);
+            log.info("  DELETING excess invoice [{}]: {} - {} TND - {}", 
+                    i, toDelete.getNumeroFacture(), toDelete.getMontantTTC(), toDelete.getDateFacturation());
+            
+            // Remove from convention's collection if needed
+            if (convention.getFactures() != null) {
+                convention.getFactures().remove(toDelete);
+            }
+            
+            // Delete from database
+            factureRepository.delete(toDelete);
+        }
+        
+        // Force flush to ensure deletions are committed
+        factureRepository.flush();
+        
+        // Refresh the list of unpaid invoices (keep only the first 'unpaidNeeded' ones)
+        List<Facture> newUnpaidList = new ArrayList<>();
+        for (int i = 0; i < unpaidNeeded; i++) {
+            newUnpaidList.add(unpaidInvoices.get(i));
+        }
+        unpaidInvoices = newUnpaidList;
+        
+        log.info("After deletion, remaining unpaid invoices: {}", unpaidInvoices.size());
+        for (int i = 0; i < unpaidInvoices.size(); i++) {
+            log.info("  KEPT [{}]: {}", i, unpaidInvoices.get(i).getNumeroFacture());
+        }
+    }
+
+    // ============= STEP 2: CREATE NEW UNPAID INVOICES IF NEEDED =============
+    if (unpaidInvoices.size() < unpaidNeeded) {
+        int missingCount = unpaidNeeded - unpaidInvoices.size();
+        log.info("Need to create {} new unpaid invoices", missingCount);
+        
+        for (int i = 0; i < missingCount; i++) {
+            int globalIndex = paidInvoices.size() + unpaidInvoices.size() + i;
+            int sequenceNumber = globalIndex + 1;
+            
+            String invoiceNumber = generateFormattedInvoiceNumber(convention, sequenceNumber);
+            LocalDate invoiceDate = calculateInvoiceDate(convention.getDateDebut(), globalIndex, convention.getPeriodicite());
+            
+            Facture newFacture = new Facture();
+            newFacture.setNumeroFacture(invoiceNumber);
+            newFacture.setConvention(convention);
+            newFacture.setDateFacturation(invoiceDate);
+            newFacture.setDateEcheance(calculateDueDate(invoiceDate, convention.getPeriodicite()));
+            newFacture.setMontantTTC(BigDecimal.ZERO); // Will be set later
+            newFacture.setMontantHT(BigDecimal.ZERO);
+            newFacture.setTva(convention.getTva());
+            newFacture.setStatutPaiement("NON_PAYE");
+            newFacture.setNotes(String.format("Facture %d/%d pour la convention %s",
+                    sequenceNumber, newTotalPeriods, convention.getReferenceConvention()));
+            
+            Facture saved = factureRepository.save(newFacture);
+            unpaidInvoices.add(saved);
+            log.info("  CREATED new invoice: {} at position {}", saved.getNumeroFacture(), globalIndex);
+        }
+    }
+
+    // ============= STEP 3: CALCULATE AMOUNTS =============
+    BigDecimal amountPerUnpaid = BigDecimal.ZERO;
+    if (unpaidNeeded > 0 && remainingAmount.compareTo(BigDecimal.ZERO) > 0) {
+        amountPerUnpaid = remainingAmount.divide(BigDecimal.valueOf(unpaidNeeded), 2, RoundingMode.HALF_UP);
+    }
+    
+    BigDecimal sum = BigDecimal.ZERO;
+    
+    // ============= STEP 4: UPDATE ALL UNPAID INVOICES =============
+    for (int i = 0; i < unpaidInvoices.size(); i++) {
+        Facture invoice = unpaidInvoices.get(i);
+        int globalIndex = paidInvoices.size() + i;
+        int sequenceNumber = globalIndex + 1;
+        
+        // Calculate new dates
+        LocalDate newInvoiceDate = calculateInvoiceDate(convention.getDateDebut(), globalIndex, convention.getPeriodicite());
+        LocalDate newDueDate = calculateDueDate(newInvoiceDate, convention.getPeriodicite());
+        
+        // Calculate amount
+        BigDecimal amount;
+        if (i == unpaidInvoices.size() - 1) {
+            amount = remainingAmount.subtract(sum);
+            log.info("  Last invoice takes remainder: {} = {} - {}", amount, remainingAmount, sum);
+        } else {
+            amount = amountPerUnpaid;
+            sum = sum.add(amount);
+        }
+        
+        // Generate new invoice number
+        String newInvoiceNumber = generateFormattedInvoiceNumber(convention, sequenceNumber);
+        
+        // Update invoice
+        invoice.setNumeroFacture(newInvoiceNumber);
+        invoice.setDateFacturation(newInvoiceDate);
+        invoice.setDateEcheance(newDueDate);
+        invoice.setMontantTTC(amount);
+        invoice.setMontantHT(calculateHT(amount, convention.getTva()));
+        invoice.setTva(convention.getTva());
+        invoice.setNotes(String.format("Facture %d/%d pour la convention %s",
+                sequenceNumber, newTotalPeriods, convention.getReferenceConvention()));
+        
+        factureRepository.save(invoice);
+        log.info("  UPDATED invoice {}: position {}, amount {} TND, date {}", 
+                invoice.getNumeroFacture(), globalIndex+1, amount, newInvoiceDate);
+    }
+
+    // ============= STEP 5: FINAL VERIFICATION =============
+    List<Facture> finalInvoices = factureRepository.findByConventionIdOrderByDateFacturationAsc(convention.getId());
+    
+    log.info("========== INVOICE REGENERATION COMPLETE ==========");
+    log.info("Final invoice count: {} (should be {})", finalInvoices.size(), newTotalPeriods);
+    
+    // Verify that we have the correct count
+    if (finalInvoices.size() != newTotalPeriods) {
+        log.error("❌❌❌ CRITICAL ERROR: Final invoice count {} does not match required {}! ❌❌❌",
+                finalInvoices.size(), newTotalPeriods);
+        
+        // Force delete any remaining extra invoices
+        if (finalInvoices.size() > newTotalPeriods) {
+            log.info("Forcing deletion of extra invoices...");
+            for (int i = finalInvoices.size() - 1; i >= newTotalPeriods; i--) {
+                Facture extra = finalInvoices.get(i);
+                if (!"PAYE".equals(extra.getStatutPaiement())) {
+                    factureRepository.delete(extra);
+                    log.info("  Force deleted extra invoice: {}", extra.getNumeroFacture());
+                }
+            }
+            factureRepository.flush();
+            
+            // Check again
+            finalInvoices = factureRepository.findByConventionIdOrderByDateFacturationAsc(convention.getId());
+            log.info("After force delete, final count: {}", finalInvoices.size());
+        }
+    }
+    
+    BigDecimal totalCheck = BigDecimal.ZERO;
+    for (int i = 0; i < finalInvoices.size(); i++) {
+        Facture f = finalInvoices.get(i);
+        totalCheck = totalCheck.add(f.getMontantTTC());
+        log.info("  [{}] {} - {} TND - {} - {}", 
+                i+1, f.getNumeroFacture(), f.getMontantTTC(), 
+                f.getStatutPaiement(), f.getDateFacturation());
+    }
+    
+    log.info("Total from invoices: {} TND, Convention TTC: {} TND", totalCheck, convention.getMontantTTC());
+
+    checkNotificationsForAllInvoices(convention);
+    updateConventionStatusRealTime(conventionId);
+}
+
+
+/**
+ * Generate formatted invoice number like: FACT-2026-CONV-2026-005-001
+ */
+private String generateFormattedInvoiceNumber(Convention convention, int sequence) {
+    String year = String.valueOf(LocalDate.now().getYear());
+    String convRef = convention.getReferenceConvention(); // e.g., "CONV-2026-005"
+    
+    // Format sequence with leading zeros (001, 002, etc.)
+    String seqFormatted = String.format("%03d", sequence);
+    
+    String invoiceNumber = String.format("FACT-%s-%s-%s", year, convRef, seqFormatted);
+    
+    // Check if this number already exists
+    boolean exists = factureRepository.existsByNumeroFacture(invoiceNumber);
+    if (exists) {
+        // If it exists, add a timestamp to make it unique
+        String timestamp = String.valueOf(System.currentTimeMillis()).substring(7);
+        invoiceNumber = String.format("FACT-%s-%s-%s-%s", year, convRef, seqFormatted, timestamp);
+        log.warn("Invoice number collision! Using: {}", invoiceNumber);
+    }
+    
+    return invoiceNumber;
+}
+
 
     private int calculateNumberOfInvoices(Convention convention) {
         LocalDate start = convention.getDateDebut();

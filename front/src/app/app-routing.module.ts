@@ -30,6 +30,7 @@ import { ConventionFacturesComponent } from './components/convention-factures/co
 import { ConventionHistoryComponent } from './components/convention-history/convention-history.component';
 import { RequestsComponent } from './components/requests/requests.component';
 import { ApplicationArchiveComponent } from './components/application-archive/application-archive.component';
+import { ConventionVersionsComponent } from './components/convention-versions/convention-versions.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -190,6 +191,12 @@ data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHE
   component: ApplicationArchiveComponent, 
   canActivate: [AuthGuard],
   data: { roles: ['ROLE_ADMIN', 'ROLE_CHEF_PROJET'] } 
+},
+
+{
+  path: 'conventions/:id/versions',
+  component: ConventionVersionsComponent, 
+  canActivate: [AuthGuard]
 },
 
   { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },

@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api/conventions")
@@ -818,56 +821,118 @@ public class ConventionController {
         }
     }
 
-// In ConventionController.java - Add this endpoint
 
-    @GetMapping("/{id}/previous-versions")
-    @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'CHEF_PROJET', 'DECIDEUR')")
-    public ResponseEntity<?> getPreviousVersions(@PathVariable Long id) {
-        try {
-            log.info("Fetching previous versions for convention ID: {}", id);
+@GetMapping("/{id}/previous-versions")
+@PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'CHEF_PROJET', 'DECIDEUR')")
+public ResponseEntity<?> getPreviousVersions(@PathVariable Long id,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "10") int size) {
+    try {
+        log.info("Fetching previous versions for convention ID: {}", id);
+        
+        Convention convention = conventionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Convention not found"));
 
-            Convention convention = conventionRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Convention not found"));
+        // Use pagination if you have many versions
+        Pageable pageable = PageRequest.of(page, size);
+        Page<OldConvention> oldVersionsPage = oldConventionRepository
+                .findByCurrentConventionOrderByRenewalVersionDesc(convention, pageable);
+        
+        List<OldConvention> oldVersions = oldVersionsPage.getContent();
 
-
-
-            List<OldConvention> oldVersions = oldConventionRepository
-                    .findByCurrentConventionOrderByRenewalVersionDesc(convention);
-
-            if (oldVersions.isEmpty()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("data", null);
-                response.put("message", "Aucune ancienne version trouvée");
-                return ResponseEntity.ok(response);
-            }
-
-            // For each old version, get its old factures
-            List<Map<String, Object>> result = new ArrayList<>();
-
-            for (OldConvention oldConv : oldVersions) {
-                Map<String, Object> versionData = new HashMap<>();
-                versionData.put("oldConvention", oldConv);
-
-                List<OldFacture> oldFactures = oldFactureRepository.findByOldConvention(oldConv);
-                versionData.put("oldFactures", oldFactures);
-
-                result.add(versionData);
-            }
-
+        if (oldVersions.isEmpty()) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", result);
-            response.put("count", result.size());
-            response.put("currentVersion", convention.getRenewalVersion());
-
+            response.put("data", Collections.emptyList());
+            response.put("message", "Aucune ancienne version trouvée");
             return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("Error fetching previous versions: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (OldConvention oldConv : oldVersions) {
+            Map<String, Object> versionData = new HashMap<>();
+            
+            // Create a simplified DTO instead of returning the full entity
+            Map<String, Object> simplifiedConv = new HashMap<>();
+            simplifiedConv.put("id", oldConv.getId());
+            simplifiedConv.put("referenceConvention", oldConv.getReferenceConvention());
+            simplifiedConv.put("referenceERP", oldConv.getReferenceERP());
+            simplifiedConv.put("libelle", oldConv.getLibelle());
+            simplifiedConv.put("dateDebut", oldConv.getDateDebut());
+            simplifiedConv.put("dateFin", oldConv.getDateFin());
+            simplifiedConv.put("dateSignature", oldConv.getDateSignature());
+            simplifiedConv.put("montantHT", oldConv.getMontantHT());
+            simplifiedConv.put("tva", oldConv.getTva());
+            simplifiedConv.put("montantTTC", oldConv.getMontantTTC());
+            simplifiedConv.put("nbUsers", oldConv.getNbUsers());
+            simplifiedConv.put("periodicite", oldConv.getPeriodicite());
+            simplifiedConv.put("etat", oldConv.getEtat());
+            simplifiedConv.put("archivedAt", oldConv.getArchivedAt());
+            simplifiedConv.put("archivedBy", oldConv.getArchivedBy());
+            simplifiedConv.put("archivedReason", oldConv.getArchivedReason());
+            simplifiedConv.put("renewalVersion", oldConv.getRenewalVersion());
+            
+            // Only include IDs for related entities, not full objects
+            if (oldConv.getStructureResponsable() != null) {
+                simplifiedConv.put("structureResponsableId", oldConv.getStructureResponsable().getId());
+                simplifiedConv.put("structureResponsableName", oldConv.getStructureResponsable().getName());
+            }
+            
+            if (oldConv.getStructureBeneficiel() != null) {
+                simplifiedConv.put("structureBeneficielId", oldConv.getStructureBeneficiel().getId());
+                simplifiedConv.put("structureBeneficielName", oldConv.getStructureBeneficiel().getName());
+            }
+            
+            if (oldConv.getApplication() != null) {
+                simplifiedConv.put("applicationId", oldConv.getApplication().getId());
+                simplifiedConv.put("applicationName", oldConv.getApplication().getName());
+                simplifiedConv.put("applicationCode", oldConv.getApplication().getCode());
+            }
+            
+            versionData.put("oldConvention", simplifiedConv);
+            
+            // Simplify factures too
+            List<Map<String, Object>> simplifiedFactures = new ArrayList<>();
+            List<OldFacture> oldFactures = oldFactureRepository.findByOldConvention(oldConv);
+            
+            for (OldFacture facture : oldFactures) {
+                Map<String, Object> simplifiedFacture = new HashMap<>();
+                simplifiedFacture.put("id", facture.getId());
+                simplifiedFacture.put("numeroFacture", facture.getNumeroFacture());
+                simplifiedFacture.put("dateFacturation", facture.getDateFacturation());
+                simplifiedFacture.put("dateEcheance", facture.getDateEcheance());
+                simplifiedFacture.put("montantHT", facture.getMontantHT());
+                simplifiedFacture.put("tva", facture.getTva());
+                simplifiedFacture.put("montantTTC", facture.getMontantTTC());
+                simplifiedFacture.put("statutPaiement", facture.getStatutPaiement());
+                simplifiedFacture.put("datePaiement", facture.getDatePaiement());
+                simplifiedFacture.put("referencePaiement", facture.getReferencePaiement());
+                simplifiedFacture.put("notes", facture.getNotes());
+                simplifiedFactures.add(simplifiedFacture);
+            }
+            
+            versionData.put("oldFactures", simplifiedFactures);
+            result.add(versionData);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("data", result);
+        response.put("count", result.size());
+        response.put("totalPages", oldVersionsPage.getTotalPages());
+        response.put("currentVersion", convention.getRenewalVersion());
+
+        return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+        log.error("Error fetching previous versions: {}", e.getMessage(), e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("success", false);
+        errorResponse.put("message", e.getMessage());
+        return ResponseEntity.badRequest().body(errorResponse);
     }
+}
+
 
     // Optional: Get a specific old version by its ID
     @GetMapping("/old/{oldId}")

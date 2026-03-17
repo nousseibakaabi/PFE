@@ -1,0 +1,630 @@
+<!-- convention-versions.component.html -->
+<div class="min-h-screen bg-gradient-to-br from-transparent-50 to-indigo-50 dark:from-transparent-900 dark:to-transparent-800 p-4 md:p-6 font-sans">
+  
+  <!-- Header with cute decoration - Inspired by the example -->
+  <div class="max-w-7xl mx-auto mb-6 relative">
+    <!-- Decorative header stars -->
+    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 flex gap-1 text-blue-300 text-xs">
+      <span>✧</span> <span>✦</span> <span>✧</span> <span>✦</span> <span>✧</span>
+    </div>
+    
+    <div class="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-3 border-2 border-blue-200 dark:border-blue-800">
+      <button (click)="goBack()" 
+              class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200 hover:bg-white dark:hover:bg-blue-900/40 rounded-full transition-all border border-blue-200 dark:border-blue-700 shadow-sm">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </button>
+      
+      <div class="flex items-center gap-3">
+        <h1 class="text-[17px] font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          {{ currentConvention?.referenceConvention }}
+        </h1>
+      </div>
+      
+      <div class="flex gap-2">
+      
+        
+        <!-- View Toggle Button with blue theme -->
+        <button (click)="toggleViewMode()"
+                class="w-9 h-9 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center hover:shadow-md transition-all border-2 border-blue-200 dark:border-blue-700 group"
+                [title]="isGridView ? 'Voir en mode split' : 'Voir en mode grille'">
+          <svg *ngIf="!isGridView" class="w-5 h-5 text-blue-500 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+          <svg *ngIf="isGridView" class="w-5 h-5 text-blue-500 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Summary with blue theme -->
+  <div class="max-w-7xl mx-auto mb-6">
+    <div class="grid grid-cols-4 gap-3">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-3 border-2 border-blue-200 dark:border-blue-700 relative overflow-hidden">
+        <div class="absolute -top-1 -right-1 text-blue-200 text-xs">✦</div>
+        <p class="text-xs text-blue-500 dark:text-blue-400 flex items-center gap-1">
+          <span>📚</span> Total versions
+        </p>
+        <p class="text-xl font-bold text-gray-800 dark:text-white">{{ previousVersions.length + 1 }}</p>
+      </div>
+      
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-3 border-2 border-blue-200 dark:border-blue-700 relative overflow-hidden">
+        <div class="absolute -top-1 -right-1 text-blue-200 text-xs">✧</div>
+        <p class="text-xs text-blue-500 dark:text-blue-400 flex items-center gap-1">
+          <span>🌱</span> Première version
+        </p>
+        <p class="text-sm font-semibold text-gray-800 dark:text-white">
+          {{ previousVersions.length > 0 ? formatDate(previousVersions[previousVersions.length-1].oldConvention.dateDebut) : formatDate(currentConvention?.dateDebut) }}
+        </p>
+      </div>
+      
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-3 border-2 border-blue-200 dark:border-blue-700 relative overflow-hidden">
+        <div class="absolute -top-1 -right-1 text-blue-200 text-xs">✧</div>
+        <p class="text-xs text-blue-500 dark:text-blue-400 flex items-center gap-1">
+          <span>🕊️</span> Dernière archivée
+        </p>
+        <p class="text-sm font-semibold text-gray-800 dark:text-white">
+          {{ previousVersions.length > 0 ? formatDate(previousVersions[0].oldConvention.archivedAt) : '-' }}
+        </p>
+      </div>
+      
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-3 border-2 border-blue-200 dark:border-blue-700 relative overflow-hidden">
+        <div class="absolute -top-1 -right-1 text-blue-200 text-xs">✦</div>
+        <p class="text-xs text-blue-500 dark:text-blue-400 flex items-center gap-1">
+          <span>👑</span> Version actuelle
+        </p>
+        <p class="text-xl font-bold text-blue-600 dark:text-blue-400">v{{ currentConvention?.renewalVersion || 1 }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State with cute animation -->
+  <div *ngIf="loading" class="max-w-7xl mx-auto text-center py-16">
+    <div class="relative inline-block">
+      <div class="animate-spin rounded-full h-8 w-8 border-2 border-blue-200 border-t-blue-600"></div>
+      <div class="absolute -top-1 -right-1 text-blue-400 animate-ping">✨</div>
+      <div class="absolute -bottom-1 -left-1 text-blue-400 animate-ping delay-300">🌟</div>
+    </div>
+    <p class="mt-3 text-blue-500 dark:text-blue-300 text-xs flex items-center justify-center gap-1">
+      <span>voyage dans le temps</span>
+      <span class="animate-bounce">.</span>
+      <span class="animate-bounce delay-100">.</span>
+      <span class="animate-bounce delay-200">.</span>
+    </p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && errorMessage" class="max-w-7xl mx-auto">
+    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
+      <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <p class="text-red-700 dark:text-red-300">{{ errorMessage }}</p>
+      <button (click)="loadPreviousVersions()" 
+              class="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">
+        Réessayer
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && previousVersions.length > 0" class="max-w-7xl mx-auto">
+    
+    <!-- SPLIT VIEW MODE (Default) -->
+    <div *ngIf="!isGridView" class="flex flex-col lg:flex-row gap-4">
+      
+      <!-- Left Sidebar - Version Cards with blue theme -->
+   <div class="lg:w-1/3 flex flex-col">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border-2 border-blue-200 dark:border-blue-700 overflow-hidden flex flex-col h-full">
+          <!-- Sidebar Header with blue gradient -->
+          <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-3">
+            <h3 class="text-white font-medium flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Versions archivées</span>
+              <span class="ml-auto bg-white/20 text-white text-xs px-2 py-0.5 rounded-full">
+                {{ previousVersions.length }}
+              </span>
+            </h3>
+          </div>
+          
+          <!-- Cards Container -->
+<div class="p-3 space-y-2 overflow-y-auto flex-1" style="max-height: 600px;">
+            
+            <!-- Current Version Card with blue theme -->
+            <div *ngIf="currentConvention" 
+                 class="relative p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-300 dark:border-blue-700 rounded-xl cursor-pointer hover:shadow-md transition-all"
+                 (click)="viewCurrentVersion()">
+              
+              <!-- Crown Icon -->
+              <div class="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 2h10v7h-2l-1 2H8l-1-2H5V5z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              
+              <div class="flex items-start gap-2">
+                <div class="w-8 h-8 bg-blue-200 dark:bg-blue-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span class="text-blue-700 dark:text-blue-200 font-bold text-sm">v{{ currentConvention.renewalVersion || 1 }}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-medium text-gray-800 dark:text-white truncate">Version actuelle</p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                    {{ formatDate(currentConvention.dateDebut) }} - {{ formatDate(currentConvention.dateFin) }}
+                  </p>
+                  <div class="flex items-center gap-1 mt-1">
+                    <span [class]="'px-1.5 py-0.5 text-[8px] font-medium rounded-full ' + getEtatClass(currentConvention.etat)">
+                      {{ getEtatLabel(currentConvention.etat) }}
+                    </span>
+                    <span class="text-[8px] text-gray-400">{{ currentConvention.periodicite }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Separator with blue theme -->
+            <div class="relative py-1">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-blue-200 dark:border-blue-700"></div>
+              </div>
+              <div class="relative flex justify-center">
+                <span class="px-2 bg-white dark:bg-gray-800 text-[10px] text-blue-400">Anciennes versions</span>
+              </div>
+            </div>
+            
+            <!-- Version Cards with blue theme -->
+            <div *ngFor="let version of previousVersions" 
+                 (click)="selectVersion(version)"
+                 class="relative p-3 border border-blue-200 dark:border-blue-700 rounded-xl cursor-pointer transition-all hover:shadow-md"
+                 [class]="selectedVersion?.id === version.oldConvention.id ? 
+                   'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md' : 
+                   'hover:border-blue-300 dark:hover:border-blue-600'">
+              
+              <div class="flex items-start gap-2">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold"
+                     [class]="getVersionBadgeClass(version.oldConvention.renewalVersion)">
+                  v{{ version.oldConvention.renewalVersion }}
+                </div>
+                
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-medium text-gray-800 dark:text-white truncate">
+                    {{ version.oldConvention.libelle }}
+                  </p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                    {{ formatDate(version.oldConvention.dateDebut) }} - {{ formatDate(version.oldConvention.dateFin) }}
+                  </p>
+                  
+                  <div class="flex items-center gap-1 mt-1">
+                    <span class="text-[8px] text-gray-400 bg-blue-50 dark:bg-blue-900/30 px-1 py-0.5 rounded">
+                      {{ getPeriodiciteIcon(version.oldConvention.periodicite) }} {{ version.oldConvention.periodicite }}
+                    </span>
+                    <span class="text-[8px] text-gray-400">
+                      📄 {{ version.oldFactures?.length || 0 }}
+                    </span>
+                  </div>
+                  
+                  <p class="text-[8px] text-gray-400 mt-1 flex items-center gap-0.5">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                    {{ formatDateTime(version.oldConvention.archivedAt) }}
+                  </p>
+                </div>
+                
+                <div *ngIf="selectedVersion?.id === version.oldConvention.id" 
+                     class="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side - Selected Version Details with blue theme -->
+  <div class="lg:w-2/3 flex flex-col" *ngIf="selectedVersion">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border-2 border-blue-200 dark:border-blue-700 overflow-hidden flex flex-col h-full">
+          <!-- Version Header with blue gradient -->
+          <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-5 py-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                  <span class="text-white font-bold text-lg">v{{ selectedVersion.renewalVersion }}</span>
+                </div>
+                <div>
+                  <h2 class="text-white font-semibold">{{ selectedVersion.referenceConvention }}</h2>
+                  <p class="text-blue-100 text-xs mt-0.5">{{ selectedVersion.libelle }}</p>
+                </div>
+              </div>
+              <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getEtatClass(selectedVersion.etat)">
+                {{ getEtatLabel(selectedVersion.etat) }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Archive Info Banner with blue theme -->
+          <div class="mx-4 mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+            <div class="flex items-start gap-2">
+              <div class="w-6 h-6 bg-blue-200 dark:bg-blue-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-blue-700 dark:text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs text-white-700 dark:text-blue-300">
+                  <span class="font-medium">Archivée le</span> {{ formatDateTime(selectedVersion.archivedAt) }}
+                </p>
+                <p class="text-xs text-white-600 dark:text-blue-400 mt-1">
+                  <span class="font-medium">Raison:</span> {{ selectedVersion.archivedReason }}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Details Grid (keep the same content but add blue accents) -->
+          <div class="p-5">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-1">
+              <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Informations générales
+            </h3>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <!-- Left Column -->
+              <div class="space-y-3">
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l5 5a2 2 0 01.586 1.414V19a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Référence ERP</p>
+                    <p class="text-sm font-medium text-gray-800 dark:text-white">{{ selectedVersion.referenceERP || '-' }}</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Structures</p>
+                    <p class="text-xs font-medium text-gray-800 dark:text-white">
+                      <span class="text-blue-600">R:</span> {{ selectedVersion.structureResponsableName || '-' }}
+                    </p>
+                    <p class="text-xs font-medium text-gray-800 dark:text-white mt-0.5">
+                      <span class="text-green-600">B:</span> {{ selectedVersion.structureBeneficielName || '-' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Right Column -->
+              <div class="space-y-3">
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Période</p>
+                    <p class="text-sm font-medium text-gray-800 dark:text-white">
+                      {{ formatDate(selectedVersion.dateDebut) }} → {{ formatDate(selectedVersion.dateFin) }}
+                    </p>
+                    <p class="text-xs text-gray-500 mt-0.5">
+                      Signature: {{ formatDate(selectedVersion.dateSignature) || '-' }}
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Application</p>
+                    <p class="text-sm font-medium text-gray-800 dark:text-white">{{ selectedVersion.applicationName || '-' }}</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Code: {{ selectedVersion.applicationCode }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Financial Cards -->
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-1">
+              <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Détails financiers
+            </h3>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              <div class="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-3 rounded-xl">
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase">Montant HT</p>
+                <p class="text-sm font-bold text-gray-800 dark:text-white">{{ formatMontant(selectedVersion.montantHT) }} TND</p>
+              </div>
+              <div class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 p-3 rounded-xl">
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase">TVA</p>
+                <p class="text-sm font-bold text-gray-800 dark:text-white">{{ selectedVersion.tva }}%</p>
+              </div>
+              <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-3 rounded-xl">
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase">Montant TTC</p>
+                <p class="text-sm font-bold text-green-600 dark:text-green-400">{{ formatMontant(selectedVersion.montantTTC) }} TND</p>
+              </div>
+              <div class="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-3 rounded-xl">
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase">Utilisateurs</p>
+                <p class="text-sm font-bold text-gray-800 dark:text-white">{{ selectedVersion.nbUsers }}</p>
+              </div>
+            </div>
+            
+            <!-- Factures Section -->
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-1">
+              <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Factures archivées
+              <span class="ml-auto text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                {{ selectedVersionFactures.length }}
+              </span>
+            </h3>
+            
+            <!-- Factures List -->
+            <div *ngIf="selectedVersionFactures.length === 0" class="text-center py-6 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+              <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p class="text-gray-500 dark:text-gray-400 text-sm">Aucune facture pour cette version</p>
+            </div>
+            
+            <div *ngIf="selectedVersionFactures.length > 0" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+              <div *ngFor="let facture of selectedVersionFactures" 
+                   class="border border-gray-200 dark:border-gray-700 rounded-xl p-3 hover:shadow-sm transition-all">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                      <span class="text-xs font-medium text-gray-800 dark:text-white">{{ facture.numeroFacture }}</span>
+                      <span [class]="'px-1.5 py-0.5 text-[10px] font-medium rounded-full ' + getInvoiceStatusClass(facture.statutPaiement)">
+                        {{ getInvoiceStatusLabel(facture.statutPaiement) }}
+                      </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
+                      <div>
+                        <span class="text-gray-400">Facturation:</span>
+                        <span class="ml-1 text-gray-600 dark:text-gray-400">{{ formatDate(facture.dateFacturation) }}</span>
+                      </div>
+                      <div>
+                        <span class="text-gray-400">Échéance:</span>
+                        <span class="ml-1 text-gray-600 dark:text-gray-400">{{ formatDate(facture.dateEcheance) }}</span>
+                      </div>
+                      <div>
+                        <span class="text-gray-400">Montant TTC:</span>
+                        <span class="ml-1 font-medium text-blue-500 dark:text-blue-400">{{ formatMontant(facture.montantTTC) }} TND</span>
+                      </div>
+                    </div>
+                    
+                    <p *ngIf="facture.datePaiement" class="text-[10px] text-gray-500 mt-1">
+                      Payée le {{ formatDate(facture.datePaiement) }} • Ref: {{ facture.referencePaiement }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+      </div>
+      
+      <!-- Empty State - No Version Selected with blue theme -->
+      <div *ngIf="!selectedVersion" class="lg:w-2/3">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border-2 border-blue-200 dark:border-blue-700 p-12 text-center">
+          <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Sélectionnez une version</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+            Cliquez sur une version dans la liste de gauche pour voir ses détails complets
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID VIEW MODE - All cards displayed in a grid with blue theme -->
+    <div *ngIf="isGridView" class="space-y-6">
+      
+      <!-- Current Version Card with blue theme -->
+
+
+      <!-- Grid of Archived Version Cards with blue theme -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+
+              <div *ngIf="currentConvention" 
+           class="relative p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-300 dark:border-blue-700 rounded-xl cursor-pointer hover:shadow-lg transition-all transform hover:-translate-y-1"
+           (click)="viewCurrentVersion()">
+        
+        <!-- Decorative elements -->
+        <div class="absolute -top-2 -left-2 text-blue-300 text-xs">✧</div>
+        <div class="absolute -bottom-2 -right-2 text-blue-300 text-xs">✦</div>
+        
+        <!-- Crown Icon -->
+        <div class="absolute -top-3 -left-3 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+          <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H5zm0 2h10v7h-2l-1 2H8l-1-2H5V5z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-blue-200 dark:bg-blue-700 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <span class="text-blue-700 dark:text-blue-200 font-bold text-xl">v{{ currentConvention.renewalVersion || 1 }}</span>
+          </div>
+          
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded-full">Version actuelle</span>
+              <span [class]="'px-2 py-0.5 text-[10px] font-medium rounded-full ' + getEtatClass(currentConvention.etat)">
+                {{ getEtatLabel(currentConvention.etat) }}
+              </span>
+            </div>
+            
+            <p class="text-sm font-bold text-gray-800 dark:text-white">{{ currentConvention.referenceConvention }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mb-1">{{ currentConvention.libelle }}</p>
+            
+            <div class="flex flex-wrap gap-3 text-[10px] text-gray-500">
+              <span>📅 {{ formatDate(currentConvention.dateDebut) }} - {{ formatDate(currentConvention.dateFin) }}</span>
+              <span>{{ getPeriodiciteIcon(currentConvention.periodicite) }} {{ currentConvention.periodicite }}</span>
+              <span>👥 {{ currentConvention.nbUsers || 0 }}</span>
+              <span>💰 {{ formatMontant(currentConvention.montantTTC) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <div *ngFor="let version of previousVersions" 
+             class="relative p-4 bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-700 rounded-xl cursor-pointer hover:shadow-lg transition-all transform hover:-translate-y-1"
+             [class]="selectedVersion?.id === version.oldConvention.id ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800' : ''"
+             (click)="selectVersion(version)">
+          
+          <!-- Decorative elements -->
+          <div class="absolute -top-2 -right-2 text-blue-200 text-xs">✧</div>
+          
+          <!-- Selected Indicator -->
+          <div *ngIf="selectedVersion?.id === version.oldConvention.id" 
+               class="absolute -top-2 -left-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          
+          <div class="flex flex-col">
+            <!-- Top Row: Version Badge -->
+            <div class="flex items-center justify-between mb-2">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
+                   [class]="getVersionBadgeClass(version.oldConvention.renewalVersion)">
+                v{{ version.oldConvention.renewalVersion }}
+              </div>
+              <span class="text-[9px] text-blue-500 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
+                {{ getPeriodiciteIcon(version.oldConvention.periodicite) }} {{ version.oldConvention.periodicite }}
+              </span>
+            </div>
+            
+            <!-- Content -->
+            <p class="text-xs font-semibold text-gray-800 dark:text-white mb-1 line-clamp-1">
+              {{ version.oldConvention.referenceConvention }}
+            </p>
+            <p class="text-[10px] text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">
+              {{ version.oldConvention.libelle }}
+            </p>
+            
+            <!-- Dates -->
+            <p class="text-[9px] text-gray-500 dark:text-gray-400 mb-2">
+              {{ formatDate(version.oldConvention.dateDebut) }} → {{ formatDate(version.oldConvention.dateFin) }}
+            </p>
+            
+            <!-- Stats Row - smaller and cuter -->
+            <div class="flex items-center justify-between text-[9px] text-gray-500 mb-2">
+              <span>💰 {{ formatMontant(version.oldConvention.montantTTC) }}</span>
+              <span>📄 {{ version.oldFactures?.length || 0 }}</span>
+              <span>👥 {{ version.oldConvention.nbUsers || 0 }}</span>
+            </div>
+            
+            <!-- Archive Info with blue accent -->
+            <div class="mt-1 pt-1 border-t border-blue-100 dark:border-blue-800">
+              <p class="text-[8px] text-blue-400 flex items-center gap-1">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+                {{ formatDate(version.oldConvention.archivedAt) }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selected Version Preview in Grid View with blue theme -->
+    <div *ngIf="isGridView && selectedVersion" class="mt-6">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-2 border-blue-300 dark:border-blue-700 overflow-hidden">
+        
+        <!-- Header with blue gradient -->
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-5 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+              <span class="text-white font-bold">v{{ selectedVersion.renewalVersion }}</span>
+            </div>
+            <h3 class="text-white font-medium text-sm">{{ selectedVersion.referenceConvention }}</h3>
+          </div>
+          <button (click)="selectedVersion = null" 
+                  class="text-white/80 hover:text-white p-1 hover:bg-white/10 rounded-lg">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Quick details preview with blue accents -->
+        <div class="p-4">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <p class="text-[9px] text-blue-400">Période</p>
+              <p class="text-xs font-medium">{{ formatDate(selectedVersion.dateDebut) }} - {{ formatDate(selectedVersion.dateFin) }}</p>
+            </div>
+            <div>
+              <p class="text-[9px] text-blue-400">Montant TTC</p>
+              <p class="text-xs font-medium text-blue-600">{{ formatMontant(selectedVersion.montantTTC) }} TND</p>
+            </div>
+            <div>
+              <p class="text-[9px] text-blue-400">Utilisateurs</p>
+              <p class="text-xs font-medium">{{ selectedVersion.nbUsers }}</p>
+            </div>
+            <div>
+              <p class="text-[9px] text-blue-400">Factures</p>
+              <p class="text-xs font-medium">{{ selectedVersionFactures.length }}</p>
+            </div>
+          </div>
+          
+          <!-- View Full Details Button with blue theme -->
+          <div class="mt-3 text-right">
+            <button (click)="showFullDetails(selectedVersion)" 
+                    class="px-3 py-1.5 text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+              Voir tous les détails ✨
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State - No Versions with blue theme -->
+  <div *ngIf="!loading && previousVersions.length === 0 && !errorMessage" class="max-w-7xl mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border-2 border-blue-200 dark:border-blue-700 p-12 text-center relative">
+      <!-- Decorative elements -->
+      <div class="absolute -top-4 -left-4 text-blue-300 text-2xl opacity-30">✧</div>
+      <div class="absolute -bottom-4 -right-4 text-blue-300 text-2xl opacity-30">✦</div>
+      
+      <div class="w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-3xl flex items-center justify-center mx-auto mb-4">
+        <span class="text-4xl">📭</span>
+      </div>
+      <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Aucune version archivée</h3>
+      <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto text-sm">
+        Cette convention n'a pas encore été renouvelée. Lorsque vous effectuerez un renouvellement, les versions précédentes apparaîtront ici.
+      </p>
+      <button (click)="goBack()" 
+              class="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-full text-sm font-medium shadow-sm hover:shadow-md transition-all">
+        Retour à la convention ✨
+      </button>
+    </div>
+  </div>
+</div>

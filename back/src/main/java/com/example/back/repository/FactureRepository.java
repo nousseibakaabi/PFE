@@ -24,6 +24,8 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
 
     List<Facture> findByStatutPaiement(String statutPaiement);
 
+    List<Facture> findByConventionIdOrderByDateFacturationAsc(Long conventionId);
+
 
     List<Facture> findByStatutPaiementIn(List<String> statuts);
 
