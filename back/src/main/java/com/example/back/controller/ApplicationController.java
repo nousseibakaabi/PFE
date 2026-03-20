@@ -2,7 +2,6 @@ package com.example.back.controller;
 
 import com.example.back.entity.Application;
 import com.example.back.entity.Convention;
-import com.example.back.entity.Facture;
 import com.example.back.entity.User;
 import com.example.back.payload.request.ApplicationRequest;
 import com.example.back.payload.response.ApplicationResponse;
@@ -12,7 +11,6 @@ import com.example.back.repository.ConventionRepository;
 import com.example.back.repository.UserRepository;
 import com.example.back.service.ApplicationService;
 import com.example.back.service.WorkloadService;
-import com.example.back.service.mapper.ApplicationMapper;
 import com.example.back.service.mapper.ConventionMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -51,8 +49,7 @@ public class ApplicationController {
     @Autowired
     private WorkloadService workloadService;
 
-    @Autowired
-    private ApplicationMapper applicationMapper;
+
 
 
     @GetMapping
@@ -516,27 +513,12 @@ public class ApplicationController {
         }
     }
 
-    private String getCurrentUsername() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
-    }
 
-    private User getCurrentUser() {
-        String username = getCurrentUsername();
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
 
-    private boolean isAdmin() {
-        User currentUser = getCurrentUser();
-        return currentUser.getRoles().stream()
-                .anyMatch(role -> role.getName().name().equals("ROLE_ADMIN"));
-    }
 
-    private boolean isChefProjet() {
-        User currentUser = getCurrentUser();
-        return currentUser.getRoles().stream()
-                .anyMatch(role -> role.getName().name().equals("ROLE_CHEF_PROJET"));
-    }
+
+
+
 
 
 

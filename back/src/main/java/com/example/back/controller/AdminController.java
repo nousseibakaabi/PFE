@@ -8,7 +8,6 @@ import com.example.back.payload.response.MessageResponse;
 import com.example.back.repository.RoleRepository;
 import com.example.back.repository.UserRepository;
 import com.example.back.service.AvatarService;
-import com.example.back.service.EmailService;
 import com.example.back.service.HistoryService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +33,6 @@ public class AdminController {
 
     @Autowired
     private RoleRepository roleRepository;
-
-    @Autowired
-    private EmailService emailService;
 
     @Autowired
     private PasswordEncoder encoder;
@@ -72,7 +68,6 @@ public class AdminController {
 
             targetUser.setLockedByAdmin(true);
             targetUser.setAccountNonLocked(false);
-            User updatedUser = userRepository.save(targetUser);
 
             // LOG HISTORY: User lock
             historyService.logUserLock(targetUser, currentUser);
@@ -96,7 +91,6 @@ public class AdminController {
             targetUser.setAccountNonLocked(true);
             targetUser.setFailedLoginAttempts(0);
             targetUser.setAccountLockedUntil(null);
-            User updatedUser = userRepository.save(targetUser);
 
             // LOG HISTORY: User unlock
             historyService.logUserUnlock(targetUser, currentUser);
@@ -234,7 +228,6 @@ public class AdminController {
             String newDepartment = request.get("department");
 
             targetUser.setDepartment(newDepartment);
-            User updatedUser = userRepository.save(targetUser);
 
             // LOG HISTORY: Department change
             historyService.logUserDepartmentChange(targetUser, currentUser, oldDepartment, newDepartment);
@@ -271,7 +264,6 @@ public class AdminController {
             }
 
             targetUser.setRoles(newRoles);
-            User updatedUser = userRepository.save(targetUser);
 
             // LOG HISTORY: Role change
             historyService.logUserRoleChange(targetUser, currentUser, oldRoles,

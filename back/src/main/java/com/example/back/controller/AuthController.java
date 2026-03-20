@@ -1,17 +1,13 @@
 package com.example.back.controller;
 
-import com.example.back.entity.ERole;
-import com.example.back.entity.Role;
+
 import com.example.back.entity.User;
 import com.example.back.payload.request.LoginRequest;
-import com.example.back.payload.request.SignupRequest;
 import com.example.back.payload.response.JwtResponse;
 import com.example.back.payload.response.MessageResponse;
-import com.example.back.repository.RoleRepository;
 import com.example.back.repository.UserRepository;
 import com.example.back.security.jwt.JwtUtils;
 import com.example.back.security.services.UserDetailsImpl;
-import com.example.back.service.AvatarService;
 import com.example.back.service.EmailService;
 import com.example.back.service.HistoryService;
 import com.example.back.service.LoginAttemptService;
@@ -29,19 +25,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.back.service.RecaptchaService;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -55,16 +46,7 @@ public class AuthController {
     private UserRepository userRepository;
 
     @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private PasswordEncoder encoder;
-
-    @Autowired
     private JwtUtils jwtUtils;
-
-    @Autowired
-    private AvatarService avatarService;
 
     @Autowired
     private LoginAttemptService loginAttemptService;
@@ -75,8 +57,7 @@ public class AuthController {
     @Autowired
     private HistoryService historyService;
 
-    @Autowired
-    private RecaptchaService recaptchaService;
+
 
 
     private static final int MAX_FAILED_ATTEMPTS = 3;
@@ -84,30 +65,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
-      /*  String recaptchaToken = loginRequest.getRecaptchaToken();
 
-        // Check if token exists
-        if (recaptchaToken == null || recaptchaToken.isEmpty()) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "reCAPTCHA token is required");
-            response.put("error", "RecaptchaRequired");
-            return ResponseEntity.status(400).body(response);
-        }
-
-        // Verify token with Google
-        boolean isRecaptchaValid = recaptchaService.verifyRecaptcha(recaptchaToken);
-
-        if (!isRecaptchaValid) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "reCAPTCHA verification failed");
-            response.put("error", "RecaptchaFailed");
-            return ResponseEntity.status(400).body(response);
-        }
-
-
-       */
 
         try {
             // Check if account is already locked
@@ -198,7 +156,7 @@ public class AuthController {
                 response.put("error", "AccountTemporarilyLocked");
                 response.put("remainingAttempts", 0);
                 response.put("lockType", "TEMPORARY");
-                if (user != null && user.getAccountLockedUntil() != null) {
+                if (user.getAccountLockedUntil() != null) {
                     response.put("lockUntil", user.getAccountLockedUntil());
                 }
             } else if (failedAttempts == MAX_FAILED_ATTEMPTS - 1) {
