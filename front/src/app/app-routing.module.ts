@@ -199,6 +199,8 @@ data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHE
   canActivate: [AuthGuard]
 },
 
+
+
   { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },
   { path: 'mailBox', component: MailBoxComponent, canActivate: [AuthGuard] },
   { path: '**', component: NotFoundComponent } 

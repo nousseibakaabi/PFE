@@ -36,12 +36,6 @@ public class ConventionController {
     private ConventionRepository conventionRepository;
 
     @Autowired
-    private StructureRepository structureRepository;
-
-    @Autowired
-    private ZoneGeographiqueRepository zoneGeographiqueRepository;
-
-    @Autowired
     private ApplicationRepository applicationRepository;
 
     @Autowired
@@ -552,7 +546,6 @@ public class ConventionController {
             @RequestParam(required = false) String reference,
             @RequestParam(required = false) String libelle,
             @RequestParam(required = false) Long structureId,
-            @RequestParam(required = false) Long zoneId,
             @RequestParam(required = false) Long applicationId,
             @RequestParam(required = false) String etat) {
         try {

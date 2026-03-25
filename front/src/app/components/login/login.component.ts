@@ -2,30 +2,16 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { gsap } from 'gsap';
-
-
-
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, inject, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 
-class MockAuthService {
-  currentUserValue = null;
-  login() {
-    return { pipe: () => ({ subscribe: (callbacks: { next: (val: boolean) => void }) => callbacks.next(true) }) };
-  }
-  isAdmin() { return false; }
-  isCommercial() { return false; }
-  isChefProjet() { return false; }
-  isDecideur() { return false; }
-}
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
-
 })
 export class LoginComponent implements OnInit, AfterViewInit {
   loginForm!: FormGroup;
@@ -36,6 +22,38 @@ export class LoginComponent implements OnInit, AfterViewInit {
   passwordVisible = false;
   isEyeActive = false;
   successMessage = '';
+
+  // 2FA properties
+  showTwoFactorModal = false;
+  
+
+twoFactorLoading = false;
+tempToken: string = '';
+
+
+ @ViewChildren('codeInput') inputs!: QueryList<ElementRef>;
+  
+  verifyForm!: FormGroup;
+  disableForm!: FormGroup;
+  
+  verifying = false;
+  disabling = false;
+  
+  success = '';
+  
+  isTwoFactorEnabled = false;
+  qrCodeUrl = '';
+  secret = '';
+  backupCodes: string[] = [];
+  
+  showSetup = false;
+  showVerify = false;
+  showBackupCodes = false;
+  showDisable = false;
+  
+  // Pour les 6 cartes de code
+  codeDigits: string[] = ['', '', '', '', '', ''];
+    twoFactorError = ''; 
 
 
 
@@ -112,32 +130,47 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private hairX = 0;
   private hairS = 0;
 
-
-  
   returnUrl: string = '/';
 
-
   // Properly inject dependencies
-  private authService = inject(AuthService); // Use real AuthService, not mock
+  private authService = inject(AuthService);
   private formBuilder = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  // Add getter for form controls
   get f() { return this.loginForm.controls; }
 
-  ngOnInit(): void {
-    this.loginForm = this.formBuilder.group({
-      usernameOrEmail: ['', Validators.required],
-      password: ['', Validators.required]
-        });
-    
-    // Get return url from route parameters or default to '/'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-    
-    this.checkDarkMode();
-  }
+ ngOnInit(): void {
+  console.log('SessionStorage contents:');
+  console.log('  2fa_code:', sessionStorage.getItem('2fa_code'));
+  console.log('  2fa_backup_code:', sessionStorage.getItem('2fa_backup_code'));
+  console.log('  2fa_temp_token:', sessionStorage.getItem('2fa_temp_token'));
+  console.log('  2fa_required:', sessionStorage.getItem('2fa_required'));
+  
+  sessionStorage.removeItem('2fa_code');
+  sessionStorage.removeItem('2fa_backup_code');
+  sessionStorage.removeItem('2fa_temp_token');
+  sessionStorage.removeItem('2fa_required');
+
+  this.loginForm = this.formBuilder.group({
+    usernameOrEmail: ['', Validators.required],
+    password: ['', Validators.required]
+  });
+  
+  // Initialize verifyForm for 2FA
+  this.verifyForm = this.formBuilder.group({
+    code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
+  });
+  
+  // Initialize disableForm if you need it (optional)
+  this.disableForm = this.formBuilder.group({
+    code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
+  });
+  
+  this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+  this.checkDarkMode();
+}
 
   ngAfterViewInit(): void {
     setTimeout(() => {
@@ -168,6 +201,29 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.isDarkMode = !this.isDarkMode;
     this.applyDarkMode();
     localStorage.setItem('darkMode', this.isDarkMode.toString());
+  }
+
+  
+
+
+
+
+
+
+
+
+  private redirectAfterLogin(): void {
+    if (this.authService.isAdmin()) {
+      this.router.navigate(['/admin']);
+    } else if (this.authService.isCommercial()) {
+      this.router.navigate(['/commercial']);
+    } else if (this.authService.isChefProjet()) {
+      this.router.navigate(['/chef']);
+    } else if (this.authService.isDecideur()) {
+      this.router.navigate(['/decideur']);
+    } else {
+      this.router.navigate([this.returnUrl]);
+    }
   }
 
   // ===================== PASSWORD TOGGLE =====================
@@ -321,7 +377,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private calculateFaceMove(): void {
     const email = this.loginEmail.nativeElement;
     const caretPos = email.selectionEnd || email.value.length;
-    const caretX = (caretPos / 20) * 100; // Simplified caret position estimation
+    const caretX = (caretPos / 20) * 100;
     
     this.dFromC = this.screenCenter - (this.emailCoords.x + caretX);
     this.eyeLAngle = this.getAngle(this.eyeLCoords.x, this.eyeLCoords.y, this.emailCoords.x + caretX, this.emailCoords.y + 25);
@@ -447,11 +503,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     this.emailScrollMax = this.loginEmail.nativeElement.scrollWidth;
   }
 
-onSubmit(): void {
+  onSubmit(): void {
     this.submitted = true;
-    this.error = ''; // Clear previous errors
+    this.error = '';
 
-    // Stop if form is invalid
     if (this.loginForm.invalid) {
       return;
     }
@@ -462,27 +517,29 @@ onSubmit(): void {
     this.authService.login({
       usernameOrEmail: this.f['usernameOrEmail'].value,
       password: this.f['password'].value
-        })
-    .pipe(first())
-    .subscribe({
+    }).subscribe({
       next: (response) => {
-        this.celebrateLogin();
+        console.log('📥 Login response in component:', response);
         
-        // Navigate based on user role
-        if (this.authService.isAdmin()) {
-          this.router.navigate(['/admin']);
-        } else if (this.authService.isCommercial()) {
-          this.router.navigate(['/commercial']);
-        } else if (this.authService.isChefProjet()) {
-          this.router.navigate(['/chef']);
-        } else if (this.authService.isDecideur()) {
-          this.router.navigate(['/decideur']);
+        if (response.requiresTwoFactor) {
+          console.log('🔐 2FA required - showing modal');
+          this.tempToken = response.tempToken || '';
+          this.showTwoFactorModal = true;
+          this.loading = false;
+          // Reset 2FA inputs
+          this.resetCodeInputs();
+          setTimeout(() => {
+            const firstInput = document.querySelector('input[name="code-0"]') as HTMLInputElement;
+            if (firstInput) {
+              firstInput.focus();
+            }
+          }, 100);
+          this.cdr.detectChanges();
         } else {
-          this.router.navigate([this.returnUrl]);
+          console.log('✅ Login successful - redirecting');
+          this.celebrateLogin();
+          this.redirectAfterLogin();
         }
-        
-        this.loading = false;
-        this.cdr.markForCheck();
       },
       error: (error: any) => {
         console.log('Login error details:', error);
@@ -491,16 +548,13 @@ onSubmit(): void {
         const remainingAttempts = backendError.remainingAttempts;
         const errorType = backendError.error;
         
-        // Clear any previous error
         this.error = '';
         
-        // 1. Account temporarily locked
         if (errorType === 'AccountTemporarilyLocked') {
           if (backendError.lockUntil) {
             const lockUntilDate = new Date(backendError.lockUntil);
             const now = new Date();
             const minutesRemaining = Math.ceil((lockUntilDate.getTime() - now.getTime()) / (1000 * 60));
-            
             if (minutesRemaining > 0) {
               this.error = `Account locked for ${minutesRemaining} minute(s) due to too many failed attempts`;
             } else {
@@ -509,32 +563,21 @@ onSubmit(): void {
           } else {
             this.error = 'Account locked for 15 minutes due to too many failed attempts';
           }
-        }
-        // 2. Last attempt warning
-        else if (errorType === 'LastAttemptWarning' || backendError.isLastAttempt === true) {
+        } else if (errorType === 'LastAttemptWarning' || backendError.isLastAttempt === true) {
           this.error = 'WARNING: One more failed attempt will lock your account for 15 minutes!';
-        }
-        // 3. Normal failed attempts
-        else if (errorType === 'BadCredentials' || errorType === 'InvalidCredentials') {
+        } else if (errorType === 'BadCredentials' || errorType === 'InvalidCredentials') {
           if (remainingAttempts === 2) {
             this.error = 'Invalid credentials. 2 attempts remaining';
           } else if (remainingAttempts === 1) {
-            // Should show warning instead
             this.error = 'Invalid credentials. 1 attempt remaining';
           } else {
             this.error = 'Invalid credentials';
           }
-        }
-        // 4. Account locked by admin
-        else if (errorType === 'AccountLocked' && backendError.lockType === 'ADMIN') {
+        } else if (errorType === 'AccountLocked' && backendError.lockType === 'ADMIN') {
           this.error = 'Account locked by administrator. Contact admin to unlock.';
-        }
-        // 5. Use userMessage if available
-        else if (backendError.userMessage) {
+        } else if (backendError.userMessage) {
           this.error = backendError.userMessage;
-        }
-        // 6. Any other error
-        else {
+        } else {
           this.error = backendError.message || 'Login failed. Please try again.';
         }
         
@@ -544,13 +587,158 @@ onSubmit(): void {
     });
   }
 
-
-
-
   private celebrateLogin(): void {
     gsap.to(this.mouth.nativeElement, { duration: 0.2, y: -10, ease: "power2.out" });
     gsap.to([this.eyeL.nativeElement, this.eyeR.nativeElement], { duration: 0.2, scaleY: 0.7, ease: "power2.out" });
     gsap.to(this.armL.nativeElement, { duration: 0.15, rotation: 130, yoyo: true, repeat: 3, ease: "power2.inOut" });
     gsap.to(this.armR.nativeElement, { duration: 0.15, rotation: -130, yoyo: true, repeat: 3, delay: 0.05, ease: "power2.inOut" });
   }
+  
+  
+  
+  
+  
+  
+  
+verifyTwoFactor(): void {
+  const code = this.codeDigits.join('');
+  console.log('Verifying 2FA with code:', code);
+  
+  if (code.length !== 6) {
+    this.twoFactorError = 'Veuillez entrer les 6 chiffres';
+    this.cdr.detectChanges();
+    return;
+  }
+
+  this.twoFactorLoading = true;
+  this.twoFactorError = '';
+  this.cdr.detectChanges();
+
+  this.authService.verifyTwoFactor(code, this.tempToken).subscribe({
+    next: (response) => {
+      console.log('2FA verification successful:', response);
+      this.showTwoFactorModal = false;
+      this.twoFactorLoading = false;
+      this.redirectAfterLogin();
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.log('ERROR OBJECT FULL:', err);
+      
+      let errorMessage = 'Code invalide';
+      
+      if (err && err.message) {
+        errorMessage = err.message;
+        console.log('Found in err.message:', errorMessage);
+      } else if (err && err.error && err.error.message) {
+        errorMessage = err.error.message;
+      } else if (err && err.error && typeof err.error === 'string') {
+        errorMessage = err.error;
+      }
+      
+      this.twoFactorError = errorMessage;
+      console.log('twoFactorError set to:', this.twoFactorError);
+      
+      this.twoFactorLoading = false;
+      this.cdr.detectChanges();
+      
+      // REMOVED: this.resetCodeInputs(); // Don't reset here!
+      
+      // Clear only the input values, not the error
+      this.codeDigits = ['', '', '', '', '', ''];
+      if (this.inputs) {
+        this.inputs.forEach(input => {
+          if (input && input.nativeElement) {
+            input.nativeElement.value = '';
+          }
+        });
+      }
+      
+      setTimeout(() => {
+        if (this.inputs && this.inputs.first) {
+          this.inputs.first.nativeElement.focus();
+        }
+      }, 50);
+    }
+  });
+}
+
+
+
+
+
+
+resetCodeInputs(): void {
+  this.codeDigits = ['', '', '', '', '', ''];
+  // Don't clear twoFactorError here if you want to keep it
+  // this.twoFactorError = ''; // COMMENT THIS OUT
+  
+  if (this.verifyForm) {
+    this.verifyForm.patchValue({ code: '' });
+  }
+
+  if (this.inputs) {
+    this.inputs.forEach(input => {
+      if (input && input.nativeElement) {
+        input.nativeElement.value = '';
+      }
+    });
+  }
+  
+  this.cdr.detectChanges();
+}
+
+
+trackByIndex(index: number): number {
+  return index;
+}
+
+
+
+onKeyDown(index: number, event: KeyboardEvent): void {
+  const inputs = this.inputs.toArray();
+  const currentInput = inputs[index].nativeElement;
+
+  if (['Tab', 'Shift', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+    return;
+  }
+
+  event.preventDefault();
+
+  // ✅ numbers
+  if (/^\d$/.test(event.key)) {
+    this.codeDigits[index] = event.key;
+    this.codeDigits = [...this.codeDigits]; // ✅ HERE
+
+    currentInput.value = event.key;
+
+    if (index < 5) {
+      inputs[index + 1].nativeElement.focus();
+    }
+
+    this.verifyForm.patchValue({ code: this.codeDigits.join('') });
+    return;
+  }
+
+  // ✅ backspace
+  if (event.key === 'Backspace') {
+    if (this.codeDigits[index]) {
+      this.codeDigits[index] = '';
+      currentInput.value = '';
+    } else if (index > 0) {
+      const prevInput = inputs[index - 1].nativeElement;
+      this.codeDigits[index - 1] = '';
+      prevInput.value = '';
+      prevInput.focus();
+    }
+
+    this.codeDigits = [...this.codeDigits]; // ✅ ALSO HERE
+    this.verifyForm.patchValue({ code: this.codeDigits.join('') });
+  }
+}
+
+  
+
+  
+
 }

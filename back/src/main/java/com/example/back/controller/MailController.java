@@ -9,7 +9,6 @@ import com.example.back.payload.request.MailDraftRequest;
 import com.example.back.payload.request.MailRequest;
 import com.example.back.payload.response.*;
 import com.example.back.repository.MailAttachmentRepository;
-import com.example.back.repository.MailDraftRepository;
 import com.example.back.repository.MailFolderRepository;
 import com.example.back.repository.UserRepository;
 import com.example.back.service.MailFolderService;
@@ -44,9 +43,6 @@ public class MailController {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private MailDraftRepository draftRepository;
 
     @Autowired
     private MailAttachmentRepository attachmentRepository;

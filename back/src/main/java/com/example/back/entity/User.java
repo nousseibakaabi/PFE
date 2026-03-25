@@ -104,6 +104,20 @@ public class User {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
+
+    @Setter
+    @Column(name = "two_factor_enabled")
+    private Boolean twoFactorEnabled = false;
+
+    @Setter
+    @Column(name = "two_factor_secret", length = 255)
+    private String twoFactorSecret;
+
+    @Setter
+    @Column(name = "two_factor_backup_codes", columnDefinition = "TEXT")
+    private String twoFactorBackupCodes; // Stocker comme JSON
+
+
     @Setter
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
@@ -311,5 +325,28 @@ public class User {
     public String getNotifMode() {
         return notifMode != null ? notifMode : "email";
     }
+
+
+    // Getters et setters pour les nouveaux champs
+    public Boolean getTwoFactorEnabled() {
+        return twoFactorEnabled != null ? twoFactorEnabled : false;
+    }
+
+    public String getTwoFactorSecret() {
+        return twoFactorSecret;
+    }
+
+    public void setTwoFactorSecret(String twoFactorSecret) {
+        this.twoFactorSecret = twoFactorSecret;
+    }
+
+    public String getTwoFactorBackupCodes() {
+        return twoFactorBackupCodes;
+    }
+
+    public void setTwoFactorBackupCodes(String twoFactorBackupCodes) {
+        this.twoFactorBackupCodes = twoFactorBackupCodes;
+    }
+
 
 }

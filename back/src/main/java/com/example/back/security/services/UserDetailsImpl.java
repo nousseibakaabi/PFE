@@ -31,13 +31,15 @@ public class UserDetailsImpl implements UserDetails {
     private boolean accountNonExpired;
     private boolean credentialsNonExpired;
 
+    private Boolean twoFactorEnabled;
+
     public UserDetailsImpl(Long id, String username, String email, String password,
                            String firstName, String lastName,
                            Collection<? extends GrantedAuthority> authorities,
                            boolean accountNonLocked,
                            boolean enabled,
                            boolean accountNonExpired,
-                           boolean credentialsNonExpired) {
+                           boolean credentialsNonExpired, Boolean twoFactorEnabled) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -49,6 +51,7 @@ public class UserDetailsImpl implements UserDetails {
         this.enabled = enabled;
         this.accountNonExpired = accountNonExpired;
         this.credentialsNonExpired = credentialsNonExpired;
+        this.twoFactorEnabled=twoFactorEnabled;
     }
 
 
@@ -72,6 +75,18 @@ public class UserDetailsImpl implements UserDetails {
             isAccountNonLocked = false;
         }
 
+        // Get enabled value
+        boolean isEnabled = user.getEnabled() != null ? user.getEnabled().booleanValue() : true;
+
+        // Get account non expired
+        boolean isAccountNonExpired = user.getAccountNonExpired() != null ? user.getAccountNonExpired().booleanValue() : true;
+
+        // Get credentials non expired
+        boolean isCredentialsNonExpired = user.getCredentialsNonExpired() != null ? user.getCredentialsNonExpired().booleanValue() : true;
+
+        // Get two factor enabled
+        Boolean isTwoFactorEnabled = user.getTwoFactorEnabled() != null ? user.getTwoFactorEnabled() : false;
+
         return new UserDetailsImpl(
                 user.getId(),
                 user.getUsername(),
@@ -80,11 +95,11 @@ public class UserDetailsImpl implements UserDetails {
                 user.getFirstName(),
                 user.getLastName(),
                 authorities,
-                isAccountNonLocked,
-                // Handle all null values with defaults
-                user.getEnabled() != null ? user.getEnabled().booleanValue() : true,
-                user.getAccountNonExpired() != null ? user.getAccountNonExpired().booleanValue() : true,
-                user.getCredentialsNonExpired() != null ? user.getCredentialsNonExpired().booleanValue() : true
+                isAccountNonLocked,        // 8ème paramètre
+                isEnabled,                 // 9ème paramètre - enabled
+                isAccountNonExpired,       // 10ème paramètre
+                isCredentialsNonExpired,   // 11ème paramètre
+                isTwoFactorEnabled         // 12ème paramètre - twoFactorEnabled
         );
     }
 
@@ -134,8 +149,6 @@ public class UserDetailsImpl implements UserDetails {
 
 
 
-
-
     @Override
     public boolean isAccountNonExpired() {
         return accountNonExpired;
@@ -154,5 +167,10 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+
+    public Boolean getTwoFactorEnabled() {
+        return twoFactorEnabled;
     }
 }

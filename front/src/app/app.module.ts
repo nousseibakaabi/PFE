@@ -55,6 +55,7 @@ import { RecaptchaModule, RecaptchaFormsModule } from 'ng-recaptcha';
 import { TranslateComponent } from './components/translate/translate.component';
 import { CreateReassignmentRequestComponent } from './components/create-reassignment-request/create-reassignment-request.component';
 import { ConventionVersionsComponent } from './components/convention-versions/convention-versions.component';
+import { TwoFactorSetupComponent } from './components/two-factor-setup/two-factor-setup.component';
 
 @NgModule({
   declarations: [
@@ -100,6 +101,7 @@ import { ConventionVersionsComponent } from './components/convention-versions/co
     TranslateComponent,
     CreateReassignmentRequestComponent,
     ConventionVersionsComponent,
+    TwoFactorSetupComponent
     ],
   imports: [
     BrowserModule,
@@ -116,7 +118,8 @@ import { ConventionVersionsComponent } from './components/convention-versions/co
     
   ],
   exports: [
-    TranslatePipe 
+    TranslatePipe,
+    TwoFactorSetupComponent
   ],
   providers: [
     LayoutService,

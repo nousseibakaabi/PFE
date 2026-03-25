@@ -2,7 +2,6 @@ package com.example.back.controller;
 
 import com.example.back.entity.*;
 import com.example.back.payload.response.CalendarEventDTO;
-import com.example.back.repository.ApplicationRepository;
 import com.example.back.repository.FactureRepository;
 import com.example.back.service.UserContextService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +29,6 @@ public class CalendarController {
     @Autowired
     private FactureRepository factureRepository;
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
 
     @Autowired
     private UserContextService userContextService;
@@ -262,11 +259,7 @@ public class CalendarController {
                     currentUser.getRoles().stream().anyMatch(r ->
                             r.getName() == ERole.ROLE_DECIDEUR)) {
 
-          /*      List<Application> accessibleApplications = getAccessibleApplications(currentUser);
-                List<CalendarEventDTO> projectEvents = convertProjectsToEvents(accessibleProjects);
-                allEvents.addAll(projectEvents);
 
-           */
             }
 
             Map<String, Object> response = new HashMap<>();
@@ -281,118 +274,7 @@ public class CalendarController {
         }
     }
 
-    // Helper method to get accessible projects
-    /*
-    private List<Project> getAccessibleApplications(User currentUser) {
-        List<Application> allApplications = applicationRepository.findAll();
-        List<Application> accessibleApplications = new ArrayList<>();
 
-        // Admins and DECIDEUR see all projects
-        if (currentUser.getRoles().stream().anyMatch(r ->
-                r.getName() == ERole.ROLE_ADMIN) ||
-                currentUser.getRoles().stream().anyMatch(r ->
-                        r.getName() == ERole.ROLE_DECIDEUR)) {
-            return allApplications;
-        }
-
-        // CHEF_PROJET sees only projects they manage
-        if (currentUser.getRoles().stream().anyMatch(r ->
-                r.getName() == ERole.ROLE_CHEF_PROJET)) {
-            accessibleApplications = allApplications.stream()
-                    .filter(project -> project.getChefDeProjet() != null &&
-                            project.getChefDeProjet().getId().equals(currentUser.getId()))
-                    .collect(Collectors.toList());
-        }
-
-        // COMMERCIAL_METIER sees projects that have conventions they created
-        if (currentUser.getRoles().stream().anyMatch(r ->
-                r.getName() == ERole.ROLE_COMMERCIAL_METIER)) {
-            accessibleApplications = allApplications.stream()
-                    .filter(project -> {
-                        if (project.getConventions() == null) return false;
-                        return project.getConventions().stream()
-                                .anyMatch(convention -> convention.getCreatedBy() != null &&
-                                        convention.getCreatedBy().getId().equals(currentUser.getId()));
-                    })
-                    .distinct()
-                    .collect(Collectors.toList());
-        }
-
-        return accessibleApplications;
-    }
-
-
-
-    // Convert projects to calendar events
-    private List<CalendarEventDTO> convertProjectsToEvents(List<Project> projects) {
-        return projects.stream()
-                .map(this::convertProjectToEvent)
-                .collect(Collectors.toList());
-    }
- */
-
-    /*
-    private CalendarEventDTO convertProjectToEvent(Project project) {
-        CalendarEventDTO event = new CalendarEventDTO();
-        event.setId(project.getId());
-        event.setTitle("Projet: " + project.getName());
-        event.setType("PROJECT");
-
-        // Set start date (project start)
-        if (project.getDateDebut() != null) {
-            event.setStart(LocalDateTime.of(project.getDateDebut(), LocalTime.of(9, 0)));
-        } else {
-            event.setStart(LocalDateTime.now());
-        }
-
-        // Set end date (project end or same as start for one-day events)
-        if (project.getDateFin() != null) {
-            event.setEnd(LocalDateTime.of(project.getDateFin(), LocalTime.of(17, 0)));
-            event.setAllDay(false);
-        } else {
-            event.setEnd(event.getStart().plusHours(8));
-            event.setAllDay(false);
-        }
-
-        // Set color based on project status
-        event.setColor(getProjectColor(project));
-
-        // Set extended properties
-        Map<String, Object> extendedProps = new HashMap<>();
-        extendedProps.put("status", project.getStatus());
-        extendedProps.put("progress", project.getProgress());
-        extendedProps.put("clientName", project.getClientName());
-        extendedProps.put("chefDeProjet", project.getChefProjetName());
-        extendedProps.put("application", project.getApplicationName());
-
-        if (project.getDateDebut() != null && project.getDateFin() != null) {
-            extendedProps.put("duration", project.getTotalDays() + " jours");
-        }
-
-        event.setExtendedProps(extendedProps);
-
-        return event;
-    }
-
-    private String getProjectColor(Project project) {
-        switch (project.getStatus()) {
-            case "PLANIFIE":
-                return "#3B82F6"; // Blue
-            case "EN_COURS":
-                return "#10B981"; // Green
-            case "TERMINE":
-                return "#6B7280"; // Gray
-            case "SUSPENDU":
-                return "#F59E0B"; // Orange
-            case "ANNULE":
-                return "#EF4444"; // Red
-            default:
-                return "#6B7280"; // Gray default
-        }
-    }
-
-
-     */
     // Helper method to get user's highest role for UI display
     private String getHighestRole(User user) {
         if (user.getRoles().stream().anyMatch(r -> r.getName() == ERole.ROLE_ADMIN)) {

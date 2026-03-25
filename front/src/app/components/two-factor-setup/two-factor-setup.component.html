@@ -1,0 +1,213 @@
+<!-- Status Card -->
+<div class="p-4 bg-gradient-to-br from-gray-50 to-gray-100/30 dark:from-gray-700/20 dark:to-gray-700/10 rounded-xl border border-gray-200/50 dark:border-gray-700/30">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Statut 2FA</p>
+        <span class="inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full mt-0.5" 
+              [class]="isTwoFactorEnabled ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'">
+          {{ isTwoFactorEnabled ? 'Activé' : 'Désactivé' }}
+        </span>
+      </div>
+    </div>
+    <button *ngIf="!isTwoFactorEnabled" 
+            (click)="startSetup()"
+            [disabled]="loading"
+            class="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+      Activer 2FA
+    </button>
+    <button *ngIf="isTwoFactorEnabled" 
+            (click)="showDisable = true"
+            class="text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
+      Désactiver
+    </button>
+  </div>
+</div>
+
+<!-- Setup Modal - Version plus petite -->
+<div *ngIf="showSetup" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-5 max-h-[85vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white">Configurer la 2FA</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">Scannez le QR code avec votre application</p>
+      </div>
+      <button (click)="closeSetup()" 
+              class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- QR Code - Plus petit -->
+    <div class="flex justify-center mb-4">
+      <div class="bg-white p-2 rounded-xl shadow-sm">
+        <img [src]="qrCodeUrl" alt="QR Code" class="w-36 h-36">
+      </div>
+    </div>
+
+    <!-- Verification Form avec 6 cartes -->
+<div *ngIf="showVerify" class="mb-4">
+  <p class="text-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+    Entrez le code à 6 chiffres
+  </p>
+  <!-- 6 Cards for digits - SANS ngModel -->
+  <div class="flex justify-center gap-2 mb-4" (paste)="onPaste($event)">
+    <div *ngFor="let digit of codeDigits; let i = index; trackBy: trackByIndex" class="flex flex-col items-center">
+        <input
+        #codeInput
+        type="text"
+        [id]="'code-input-' + i"
+        name="code-{{i}}"
+        (keydown)="onKeyDown(i, $event)"
+        maxlength="1"
+        class="w-12 h-14 text-center text-2xl font-bold bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none text-gray-900 dark:text-white transition-all"
+        autocomplete="off"
+        inputmode="numeric">
+    </div>
+  </div>
+
+   <div *ngIf="error" class="p-2">
+        <p class="text-xs text-red-500 font-medium dark:text-red-400 text-center">{{ error }}</p>
+      </div>
+
+  <div class="flex space-x-2">
+    <button type="button" (click)="closeSetup()"
+            class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+      Annuler
+    </button>
+    <button type="button" 
+            (click)="verifyAndEnable()"
+            [disabled]="verifying || codeDigits.join('').length !== 6"
+            class="flex-1 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+      <span *ngIf="verifying" class="flex items-center justify-center gap-1">
+        <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        Vérification...
+      </span>
+      <span *ngIf="!verifying">Vérifier</span>
+    </button>
+  </div>
+</div>
+
+    <!-- Backup Codes -->
+    <div *ngIf="showBackupCodes" class="mt-3">
+      <div class="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-3">
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <p class="text-xs font-semibold text-blue-800 dark:text-blue-300">Sauvegardez vos codes de secours !</p>
+            <p class="text-xs text-blue-700 dark:text-blue-400 mt-0.5">Ces codes vous permettent d'accéder à votre compte si vous perdez votre téléphone.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-1 mb-3">
+        <div *ngFor="let code of backupCodes" 
+             class="p-1.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center font-mono text-xs">
+          {{ code }}
+        </div>
+      </div>
+
+      <div class="flex space-x-2">
+        <button (click)="copyBackupCodes()"
+                class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          Copier
+        </button>
+        <button (click)="downloadBackupCodes()"
+                class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Télécharger
+        </button>
+        <button (click)="closeSetup()"
+                class="flex-1 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-xs font-medium transition-all">
+          Terminer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Disable Modal - Version plus petite -->
+<div *ngIf="showDisable" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-5">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white">Désactiver la 2FA</h3>
+        <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">Entrez votre code pour désactiver</p>
+      </div>
+      <button (click)="closeDisable()" 
+              class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="disableForm" (ngSubmit)="disableTwoFactor()" class="space-y-3">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Code de vérification 
+        </label>
+        <div class="flex justify-center gap-2 mb-4">
+          <div *ngFor="let digit of disableCodeDigits; let i = index; trackBy: trackByIndex" class="flex flex-col items-center">
+            <input
+              #disableCodeInput
+              type="text"
+              [id]="'disable-code-input-' + i"
+              name="disable-code-{{i}}"
+              (keydown)="onDisableKeyDown(i, $event)"
+              maxlength="1"
+              class="w-12 h-14 text-center text-2xl font-bold bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none text-gray-900 dark:text-white transition-all"
+              autocomplete="off"
+              inputmode="numeric">
+          </div>
+        </div>
+        
+        <div *ngIf="disableForm.get('code')?.invalid && disableForm.get('code')?.touched" 
+             class="mt-1 text-xs text-red-500">
+          <div *ngIf="disableForm.get('code')?.errors?.['required']">Code requis</div>
+          <div *ngIf="disableForm.get('code')?.errors?.['pattern']">Doit contenir 6 chiffres</div>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="p-2">
+        <p class="text-xs text-red-500 font-medium dark:text-red-400 text-center">{{ error }}</p>
+      </div>
+
+      <div class="flex space-x-2 pt-2">
+        <button type="button" (click)="closeDisable()"
+                class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          Annuler
+        </button>
+        <button type="submit" 
+                [disabled]="disabling || disableForm.invalid"
+                class="flex-1 px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span *ngIf="disabling" class="flex items-center justify-center gap-1">
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Désactivation...
+          </span>
+          <span *ngIf="!disabling">Désactiver</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

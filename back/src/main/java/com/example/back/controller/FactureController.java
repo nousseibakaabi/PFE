@@ -11,13 +11,11 @@ import com.example.back.service.mapper.FactureMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -43,9 +41,6 @@ public class FactureController {
 
     @Autowired
     private FactureMapper factureMapper;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private UserContextService userContextService;

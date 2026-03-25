@@ -1,15 +1,17 @@
-
-
 export interface AuthResponse {
-  token: string;
-  type: string;
-  id: number;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  roles: string[];
+  token?: string;
+  type?: string;
+  id?: number;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  roles?: string[];
+  requiresTwoFactor?: boolean;
+  tempToken?: string;
+  message?: string;
 }
+
 
 export interface User {
   id: number;
@@ -28,6 +30,8 @@ export interface User {
   failedLoginAttempts?: number;
   accountLockedUntil?: string;
   lockedByAdmin?: boolean;
+
+  twoFactorEnabled?: boolean; 
 }
 
 export interface LoginUser {

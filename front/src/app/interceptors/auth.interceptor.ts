@@ -8,7 +8,10 @@ import { AuthService } from '../services/auth.service';
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService, 
+    private router: Router
+  ) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // DEBUG: Afficher toutes les informations
@@ -44,6 +47,34 @@ export class AuthInterceptor implements HttpInterceptor {
       console.warn('⚠️ No token found, sending request without Authorization header');
     }
 
+    // 2FA: Ajouter les headers 2FA UNIQUEMENT s'ils existent et sont valides
+    const twoFactorCode = sessionStorage.getItem('2fa_code');
+    const backupCode = sessionStorage.getItem('2fa_backup_code');
+    
+    // Vérifier que les valeurs existent et ne sont pas null/undefined/vide
+    const isValidCode = twoFactorCode && twoFactorCode !== 'null' && twoFactorCode !== 'undefined' && twoFactorCode.trim() !== '';
+    const isValidBackup = backupCode && backupCode !== 'null' && backupCode !== 'undefined' && backupCode.trim() !== '';
+    
+    if (isValidCode) {
+      console.log('🔐 Adding 2FA code header:', twoFactorCode);
+      authRequest = authRequest.clone({
+        setHeaders: {
+          ...authRequest.headers,
+          'X-2FA-Code': twoFactorCode
+        }
+      });
+    } else if (isValidBackup) {
+      console.log('🔐 Adding 2FA backup code header:', backupCode);
+      authRequest = authRequest.clone({
+        setHeaders: {
+          ...authRequest.headers,
+          'X-2FA-Backup-Code': backupCode
+        }
+      });
+    } else {
+      console.log('🔓 No valid 2FA code found, proceeding without 2FA headers');
+    }
+
     // Envoyer la requête
     return next.handle(authRequest).pipe(
       tap(event => {
@@ -66,6 +97,14 @@ export class AuthInterceptor implements HttpInterceptor {
           console.error('  Authorization header value:', authHeader?.substring(0, 50) + '...');
         }
         
+        // CORRECTION: 2FA Required - On ne redirige plus, on laisse le composant gérer
+        // Le modal sera affiché par le LoginComponent
+        if (error.status === 401 && error.error?.error === 'TwoFactorRequired') {
+          console.log('🔐 2FA Required - This should be handled by LoginComponent modal');
+          // NE PAS REDIRIGER - laisser l'erreur passer pour que LoginComponent puisse afficher le modal
+          return throwError(() => error);
+        }
+        
         // If 401 Unauthorized, logout and redirect to login
         if (error.status === 401) {
           console.log('🔒 401 Unauthorized detected');
@@ -76,6 +115,13 @@ export class AuthInterceptor implements HttpInterceptor {
           
           // Afficher l'heure actuelle pour vérifier l'expiration
           console.log('🕐 Current time:', new Date().toISOString());
+          
+          // Clear all 2FA session data
+          sessionStorage.removeItem('2fa_code');
+          sessionStorage.removeItem('2fa_backup_code');
+          sessionStorage.removeItem('2fa_return_url');
+          sessionStorage.removeItem('2fa_temp_token');
+          sessionStorage.removeItem('2fa_required');
           
           this.authService.clearLocalStorage();
           this.router.navigate(['/']);

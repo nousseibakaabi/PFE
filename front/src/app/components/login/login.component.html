@@ -324,8 +324,69 @@
           </button>
         </form>
 
-       
+
+
+      </div>
+
+<!-- Modal 2FA -->
+<div *ngIf="showTwoFactorModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-[#0F1629] rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn">
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-[#64ACC8] dark:bg-[#3C728A] rounded-full mb-4">
+        <svg class="w-8 h-8 text-white dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-gray-800 dark:text-white">Authentification à deux facteurs</h3>
+      <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">
+        Entrez le code à 6 chiffres généré par votre application d'authentification
+      </p>
+    </div>
+
+    <div class="flex justify-center gap-2 mb-4">
+      <div *ngFor="let digit of codeDigits; let i = index; trackBy: trackByIndex" class="flex flex-col items-center">
+        <input
+          #codeInput
+          type="text"
+          [id]="'code-input-' + i"
+          name="code-{{i}}"
+          (keydown)="onKeyDown(i, $event)"
+          maxlength="1"
+          class="w-12 h-14 text-center text-2xl font-bold bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-[#64ACC8] focus:ring-2 focus:ring-[#64ACC8]/20 focus:outline-none text-gray-900 dark:text-white transition-all"
+          autocomplete="off"
+          inputmode="numeric">
       </div>
     </div>
+
+<div *ngIf="twoFactorError" class="text-center mt-2 mb-2">
+  <p class="text-xs text-red-500 dark:text-red-400 font-medium">{{ twoFactorError }}</p>
+</div>
+
+
+    <div class="flex space-x-3 mt-4">
+    <button type="button" 
+        (click)="showTwoFactorModal = false; twoFactorError = ''; twoFactorLoading = false; resetCodeInputs();"
+        class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+  Annuler
+</button>
+      <button type="button" 
+              (click)="verifyTwoFactor()"
+              [disabled]="twoFactorLoading || codeDigits.join('').length !== 6"
+              class="flex-1 px-4 py-3 bg-gradient-to-r from-[#64ACC8] to-[#64ACC8] dark:bg-[#3C728A] text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+        <span *ngIf="twoFactorLoading" class="flex items-center justify-center gap-2">
+          <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          Vérification...
+        </span>
+        <span *ngIf="!twoFactorLoading">Vérifier</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+         </div>
   </div>
 </div>

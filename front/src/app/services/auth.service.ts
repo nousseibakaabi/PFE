@@ -37,76 +37,146 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
- 
+private handleError(error: HttpErrorResponse): Observable<never> {
+  console.log('🔴 HANDLE ERROR called with:', error);
+  
+  let errorMessage = 'An error occurred';
+  let remainingAttempts: number | undefined;
+  let lockType: string | undefined;
+  let lockUntil: string | undefined;
+  let isLastAttempt: boolean = false;
+  
+  if (error.error) {
+    console.log('error.error:', error.error);
+    const backendError = error.error;
+    
+    // Try to get the error message from different places
+    if (backendError.message) {
+      errorMessage = backendError.message;
+      console.log('Found message in backendError.message:', errorMessage);
+    } else if (backendError.error && typeof backendError.error === 'string') {
+      errorMessage = backendError.error;
+      console.log('Found message in backendError.error (string):', errorMessage);
+    } else if (typeof backendError === 'string') {
+      errorMessage = backendError;
+      console.log('Backend error is string:', errorMessage);
+    }
+    
+    // Get other properties
+    if (backendError.remainingAttempts !== undefined) {
+      remainingAttempts = backendError.remainingAttempts;
+    }
+    if (backendError.lockType) {
+      lockType = backendError.lockType;
+    }
+    if (backendError.lockUntil) {
+      lockUntil = backendError.lockUntil;
+    }
+    if (backendError.isLastAttempt !== undefined || backendError.error === 'LastAttemptWarning') {
+      isLastAttempt = true;
+    }
+  } else if (error.message) {
+    errorMessage = error.message;
+    console.log('Found message in error.message:', errorMessage);
+  }
+  
+  console.log('Final error message:', errorMessage);
+  
+  // Create a custom error object with all the information
+  const customError = new Error(errorMessage);
+  (customError as any).remainingAttempts = remainingAttempts;
+  (customError as any).lockType = lockType;
+  (customError as any).lockUntil = lockUntil;
+  (customError as any).isLastAttempt = isLastAttempt;
+  (customError as any).errorCode = error.error?.error;
+  (customError as any).status = error.status;
+  (customError as any).statusText = error.statusText;
+  
+  console.log('Throwing custom error:', customError);
+  return throwError(() => customError);
+}
+
+
+
 login(loginRequest: LoginRequest): Observable<AuthResponse> {
+  console.log('🚀 AuthService.login called');
   return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, loginRequest)
     .pipe(
       map(response => {
-        // Store user details and jwt token in local storage
-        localStorage.setItem('token', response.token);
+        console.log('📦 Login response:', response);
+        
+        // Vérifier si la 2FA est requise
+        if (response.requiresTwoFactor) {
+          console.log('🔐 2FA required, tempToken:', response.tempToken);
+          // Stocker le token temporaire et attendre la vérification 2FA
+          if (response.tempToken) {
+            sessionStorage.setItem('2fa_temp_token', response.tempToken);
+          }
+          sessionStorage.setItem('2fa_required', 'true');
+          return response;
+        }
+        
+        // Sinon, procéder normalement
+        if (response.token) {
+          localStorage.setItem('token', response.token);
+        }
         const user: User = {
-          id: response.id,
-          username: response.username,
-          email: response.email,
-          firstName: response.firstName,
-          lastName: response.lastName,
-          roles: response.roles
+          id: response.id!,
+          username: response.username!,
+          email: response.email!,
+          firstName: response.firstName!,
+          lastName: response.lastName!,
+          roles: response.roles!
         };
         localStorage.setItem('currentUser', JSON.stringify(user));
         this.currentUserSubject.next(user);
         return response;
       }),
       catchError((error: HttpErrorResponse) => {
-        console.log('Login error details:', error);
-        
-        // Extract error message from backend response
-        let errorMessage = 'Login failed';
-        let remainingAttempts: number | undefined;
-        let lockType: string | undefined;
-        let lockUntil: string | undefined;
-        let isLastAttempt: boolean = false;
-        
-        if (error.error) {
-          const backendError = error.error;
-          
-          if (backendError.message) {
-            errorMessage = backendError.message;
-          }
-          
-          if (backendError.remainingAttempts !== undefined) {
-            remainingAttempts = backendError.remainingAttempts;
-          }
-          
-          if (backendError.lockType) {
-            lockType = backendError.lockType;
-          }
-          
-          if (backendError.lockUntil) {
-            lockUntil = backendError.lockUntil;
-          }
-          
-          if (backendError.isLastAttempt !== undefined) {
-            isLastAttempt = backendError.isLastAttempt;
-          }
-          
-          if (backendError.error === 'LastAttemptWarning') {
-            isLastAttempt = true;
-          }
-        }
-        
-        // Create a custom error with all info
-        const customError = new Error(errorMessage);
-        (customError as any).remainingAttempts = remainingAttempts;
-        (customError as any).lockType = lockType;
-        (customError as any).lockUntil = lockUntil;
-        (customError as any).isLastAttempt = isLastAttempt;
-        (customError as any).errorCode = error.error?.error;
-        
-        return throwError(() => customError);
+        console.error('❌ Login error:', error);
+        return this.handleError(error);
       })
     );
 }
 
+
+verifyTwoFactor(code: string, tempToken: string): Observable<AuthResponse> {
+  console.log('🔐 verifyTwoFactor called with code:', code, 'tempToken:', tempToken);
+  
+  return this.http.post<AuthResponse>(`${this.apiUrl}/auth/verify-2fa`, {
+    tempToken: tempToken,
+    code: code
+  }).pipe(
+    map(response => {
+      console.log('✅ verifyTwoFactor response:', response);
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+      }
+      const user: User = {
+        id: response.id!,
+        username: response.username!,
+        email: response.email!,
+        firstName: response.firstName!,
+        lastName: response.lastName!,
+        roles: response.roles!
+      };
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      this.currentUserSubject.next(user);
+      
+      // Clean up temporary data
+      sessionStorage.removeItem('2fa_temp_token');
+      sessionStorage.removeItem('2fa_required');
+      sessionStorage.removeItem('2fa_code');
+      sessionStorage.removeItem('2fa_backup_code');
+      
+      return response;
+    }),
+    catchError((error: HttpErrorResponse) => {
+      console.log('❌ verifyTwoFactor error caught:', error);
+      return this.handleError(error);
+    })
+  );
+}
 
 
   updateCurrentUser(updates: Partial<User>): void {
@@ -122,21 +192,21 @@ login(loginRequest: LoginRequest): Observable<AuthResponse> {
     return this.currentUserValue;
   }
 
-
-refreshUser(): Observable<User> {
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${this.token}`
-  });
-  
-  return this.http.get<User>(`${this.apiUrl}/profile/me`, { headers }).pipe(
-    tap(user => {
-      // Update current user with full profile data including profileImage and notifMode
-      const updatedUser = { ...user };
-      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-      this.currentUserSubject.next(updatedUser);
-    })
-  );
-}
+  refreshUser(): Observable<User> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.token}`
+    });
+    
+    return this.http.get<User>(`${this.apiUrl}/profile/me`, { headers }).pipe(
+      tap(user => {
+        // Update current user with full profile data including profileImage and notifMode
+        const updatedUser = { ...user };
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        this.currentUserSubject.next(updatedUser);
+      }),
+      catchError(this.handleError.bind(this))
+    );
+  }
 
   getProfile(): Observable<User> {
     const headers = new HttpHeaders({
@@ -149,7 +219,8 @@ refreshUser(): Observable<User> {
         const updatedUser = { ...user };
         localStorage.setItem('currentUser', JSON.stringify(updatedUser));
         this.currentUserSubject.next(updatedUser);
-      })
+      }),
+      catchError(this.handleError.bind(this))
     );
   }
 
@@ -167,7 +238,8 @@ refreshUser(): Observable<User> {
       tap(() => {
         // Optionally refresh user data after password change
         this.refreshUser().subscribe();
-      })
+      }),
+      catchError(this.handleError.bind(this))
     );
   }
 
@@ -206,7 +278,6 @@ refreshUser(): Observable<User> {
     return user.roles.includes(role);
   }
 
-
   isAdmin(): boolean {
     return this.hasRole('ROLE_ADMIN');
   }
@@ -229,7 +300,8 @@ refreshUser(): Observable<User> {
     }).pipe(
       map(() => {
         this.clearLocalStorage();
-      })
+      }),
+      catchError(this.handleError.bind(this))
     );
   }
 

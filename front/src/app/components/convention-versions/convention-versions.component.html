@@ -205,7 +205,7 @@
                       {{ getPeriodiciteIcon(version.oldConvention.periodicite) }} {{ version.oldConvention.periodicite }}
                     </span>
                     <span class="text-[8px] text-gray-400">
-                      📄 {{ version.oldFactures?.length || 0 }}
+                      📄 {{ version.oldFactures.length || 0 }}
                     </span>
                   </div>
                   
@@ -536,7 +536,7 @@
             <!-- Stats Row - smaller and cuter -->
             <div class="flex items-center justify-between text-[9px] text-gray-500 mb-2">
               <span>💰 {{ formatMontant(version.oldConvention.montantTTC) }}</span>
-              <span>📄 {{ version.oldFactures?.length || 0 }}</span>
+              <span>📄 {{ version.oldFactures.length || 0 }}</span>
               <span>👥 {{ version.oldConvention.nbUsers || 0 }}</span>
             </div>
             

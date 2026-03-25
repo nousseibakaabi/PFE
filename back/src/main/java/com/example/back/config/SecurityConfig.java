@@ -63,6 +63,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/auth/**", "/api/2fa/**").permitAll()
 
                         // Public endpoints - no authentication required
                         .requestMatchers("/auth/**").permitAll()
@@ -114,4 +115,6 @@ public class SecurityConfig {
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         return new CorsConfig().corsConfigurationSource();
     }
+
+
 }
