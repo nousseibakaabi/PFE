@@ -1,103 +1,433 @@
-/* admin.component.css & commercial.component.css */
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+/* Modern Dashboard Styles */
+
+:host {
+  --primary-color: #3b82f6;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --light-bg: #f9fafb;
+  --card-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --card-shadow-hover: 0 2px 6px 0 rgba(0, 0, 0, 0.1);
 }
 
-.dashboard-header h1 {
-  margin: 0;
-  color: #2c3e50;
-  font-size: 1.8rem;
+/* Smooth transitions for all interactive elements */
+* {
+  transition: all 0.2s ease;
 }
 
-.dashboard-header i {
-  margin-right: 10px;
-  color: #3498db;
+/* Cards - Enhanced styling */
+.bg-white.rounded-2xl,
+.bg-white\/70.rounded-2xl {
+  box-shadow: var(--card-shadow);
+  border-radius: 1rem;
 }
 
-.stats-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+.bg-white.rounded-2xl:hover,
+.bg-white\/70.rounded-2xl:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-1px);
 }
 
-.summary-card {
-  background: white;
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  display: flex;
-  align-items: center;
+/* Cute progress cards animation */
+.bg-gradient-to-br {
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* stat cards hover effect */
+.bg-gradient-to-br.from-blue-400,
+.bg-gradient-to-br.from-green-400,
+.bg-gradient-to-br.from-purple-400 {
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-gradient-to-br.from-blue-400:hover,
+.bg-gradient-to-br.from-green-400:hover,
+.bg-gradient-to-br.from-purple-400:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Nomenclature cards backdrop blur effect */
+.bg-white\/70 {
+  backdrop-filter: blur(10px);
+}
+
+.bg-white\/70:hover {
+  background-color: rgba(255, 255, 255, 0.85);
+}
+
+/* Table styling */
+table {
+  border-collapse: collapse;
+}
+
+table th {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(168, 85, 247, 0.05));
+}
+
+.dark table th {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+}
+
+table tr:hover {
+  background-color: rgba(249, 250, 251, 0.5);
+}
+
+.dark table tr:hover {
+  background-color: rgba(31, 41, 55, 0.1);
+}
+
+/* Metric Cards styling */
+.grid > .bg-white.rounded-xl {
+  position: relative;
+  overflow: hidden;
+}
+
+.grid > .bg-white.rounded-xl::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+  transform: scaleX(0);
+  transform-origin: left;
   transition: transform 0.3s ease;
 }
 
-.summary-card:hover {
-  transform: translateY(-5px);
+.grid > .bg-white.rounded-xl:hover::before {
+  transform: scaleX(1);
 }
 
-.card-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 1rem;
-  font-size: 1.5rem;
-  color: white;
+/* Text styling for metrics */
+.text-2xl.font-bold {
+  color: #1f2937;
 }
 
-.card-icon.bg-primary { background: #3498db; }
-.card-icon.bg-success { background: #2ecc71; }
-.card-icon.bg-info { background: #1abc9c; }
-.card-icon.bg-warning { background: #f39c12; }
-.card-icon.bg-danger { background: #e74c3c; }
-
-.card-content h3 {
-  margin: 0;
-  font-size: 2rem;
-  color: #2c3e50;
+.dark .text-2xl.font-bold {
+  color: #f3f4f6;
 }
 
-.card-content p {
-  margin: 5px 0 0;
-  color: #7f8c8d;
-  font-size: 0.9rem;
+/* Icon containers */
+.p-3.bg-green-100,
+.p-3.bg-blue-100,
+.p-3.bg-orange-100,
+.p-3.bg-purple-100,
+.p-3.bg-pink-100,
+.p-3.bg-indigo-100,
+.p-3.bg-yellow-100 {
+  transition: all 0.3s ease;
 }
 
-.card {
-  background: white;
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  height: 100%;
+.bg-white.rounded-xl:hover .p-3 {
+  transform: scale(1.05);
 }
 
-.card-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #ecf0f1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* Button styling */
+button.px-4.py-2,
+button.px-6.py-3 {
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.card-header h3 {
-  margin: 0;
-  color: #2c3e50;
-  font-size: 1.2rem;
+button.px-4.py-2:hover,
+button.px-6.py-3:hover {
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
-.card-header h3 i {
-  margin-right: 10px;
-  color: #3498db;
+button.px-4.py-2:active,
+button.px-6.py-3:active {
+  transform: translateY(0);
 }
+
+/* Chart area styling */
+canvas {
+  max-height: 280px;
+}
+
+/* Grid layout optimization */
+.grid.grid-cols-1 {
+  gap: 0.75rem;
+}
+
+/* Loading state styling */
+.fixed.inset-0.bg-gray-900\/80 {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Text contrast improvement */
+.text-sm.font-medium {
+  letter-spacing: 0.2px;
+}
+
+/* SVG icon styling */
+svg {
+  transition: all 0.2s ease;
+}
+
+button:hover svg {
+  transform: scale(1.05) rotate(5deg);
+}
+
+/* Dark mode adjustments */
+.dark {
+  color-scheme: dark;
+}
+
+.dark .bg-white\/70 {
+  background-color: rgba(31, 41, 55, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .grid {
+    gap: 0.75rem;
+  }
+  
+  .text-2xl {
+    font-size: 1.25rem;
+  }
+  
+  .text-lg {
+    font-size: 1rem;
+  }
+}
+
+/* Focus states for accessibility */
+button:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Animation for stat numbers */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header Banner Animations */
+@keyframes bannerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatingIcon {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.05);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3), inset 0 0 10px rgba(59, 130, 246, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 20px rgba(59, 130, 246, 0.2);
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0), 0 0 20px rgba(59, 130, 246, 0);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.4), 0 0 30px rgba(168, 85, 247, 0.2);
+  }
+}
+
+@keyframes bannerLift {
+  from {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  to {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* ============================================ */
+/* NEW CUTE & COMPACT HEADER BANNER ANIMATIONS */
+/* ============================================ */
+
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes softGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.2), inset 0 0 8px rgba(59, 130, 246, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(59, 130, 246, 0.4), inset 0 0 16px rgba(59, 130, 246, 0.1);
+  }
+}
+
+@keyframes subtleGradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes waveEmoji {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+}
+
+@keyframes subtleTextGlow {
+  0%, 100% {
+    text-shadow: 0 0 0px rgba(59, 130, 246, 0);
+  }
+  50% {
+    text-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(180deg);
+  }
+}
+
+/* Apply banner animations */
+.bg-gradient-to-r.from-blue-100 {
+  animation: bannerSlideIn 0.5s ease-out, subtleGradientShift 6s ease-in-out infinite;
+  background-size: 200% 200%;
+}
+
+.bg-gradient-to-r.from-blue-100:hover {
+  animation: gentleFloat 2s ease-in-out infinite, subtleGradientShift 6s ease-in-out infinite;
+}
+
+/* Icon glow and float */
+.w-12.h-12.bg-gradient-to-br {
+  animation: gentleFloat 2.5s ease-in-out infinite, softGlow 2.5s ease-in-out infinite;
+}
+
+/* Emoji wave */
+.w-12.h-12.bg-gradient-to-br span {
+  display: inline-block;
+  animation: waveEmoji 3s ease-in-out infinite;
+  transform-origin: 70% 70%;
+}
+
+/* Heading subtle glow */
+h1.text-sm.font-semibold {
+  animation: subtleTextGlow 3s ease-in-out infinite;
+}
+
+/* Button refinements */
+button.px-4.py-2 {
+  position: relative;
+  overflow: hidden;
+}
+
+button.px-4.py-2:hover {
+  background-color: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+button.px-4.py-2:active {
+  transform: translateY(0);
+}
+
+/* Rotate animation for refresh button SVG */
+button:hover svg {
+  animation: rotate 0.6s ease-in-out;
+}
+
+.text-2xl.font-bold {
+  animation: slideUp 0.5s ease;
+}
+
 
 .card-body {
   padding: 1.5rem;
