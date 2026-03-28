@@ -4,6 +4,7 @@ import { UserService } from '../../services/user.service';
 import { WorkloadService } from '../../services/workload.service';
 import { AuthService } from '../../services/auth.service';
 import { ApplicationService } from '../../services/application.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-create-reassignment-request',
@@ -23,6 +24,8 @@ export class CreateReassignmentRequestComponent implements OnInit {
   successMessage = '';
   chefsWorkload: Map<number, any> = new Map();
   workloadLoading = false;
+
+  baseUrl=environment.apiUrl;
   
   constructor(
     private requestService: RequestService,
@@ -149,4 +152,60 @@ export class CreateReassignmentRequestComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
   }
+
+
+  // Add to your create-reassignment-request component
+
+getChefAvatarUrl(chef: any): string {
+  if (!chef || !chef.profileImage) {
+    let initials = '?';
+    if (chef?.firstName && chef?.lastName) {
+      initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
+    } else if (chef?.firstName) {
+      initials = chef.firstName[0].toUpperCase();
+    } else if (chef?.username) {
+      initials = chef.username[0].toUpperCase();
+    }
+    return this.generateDefaultAvatar(initials);
+  }
+  
+  const profileImage = chef.profileImage;
+  if (profileImage.startsWith('http')) {
+    return profileImage;
+  }
+  if (profileImage.startsWith('/uploads/')) {
+    return this.baseUrl + profileImage;
+  }
+  if (profileImage.startsWith('data:image')) {
+    return profileImage;
+  }
+  return this.baseUrl + '/uploads/avatars/' + profileImage;
+}
+
+generateDefaultAvatar(initials: string): string {
+  // Blue color for the ring and text
+  const blueColor = '#3b82f6'; // Tailwind blue-500
+  
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+    <!-- Circle with blue ring and no fill -->
+    <circle cx="50" cy="50" r="48" fill="none" stroke="${blueColor}" stroke-width="2"/>
+    <!-- Text in blue -->
+    <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="500" fill="${blueColor}" dominant-baseline="middle">${initials}</text>
+  </svg>`;
+  
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+}
+
+handleChefImageError(event: any, chef: any): void {
+  let initials = '?';
+  if (chef?.firstName && chef?.lastName) {
+    initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
+  } else if (chef?.firstName) {
+    initials = chef.firstName[0].toUpperCase();
+  } else if (chef?.username) {
+    initials = chef.username[0].toUpperCase();
+  }
+  event.target.src = this.generateDefaultAvatar(initials);
+  event.target.onerror = null;
+}
 }

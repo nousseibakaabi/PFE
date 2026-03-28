@@ -24,6 +24,11 @@ export class ApplicationComponent implements OnInit {
   successMessage = '';
   searchTerm = '';
   filterStatus = '';
+  filterCategory = '';
+  filterClient = '';
+
+  categoryOptions: string[] = ['All', 'UI Designer', 'UX Designer', 'Developer', 'QA'];
+  customerOptions: string[] = [];
 
   // Current user info
   currentUser: any = null;
@@ -57,6 +62,19 @@ export class ApplicationComponent implements OnInit {
     { value: 'EN_COURS', label: 'En Cours' },
     { value: 'TERMINE', label: 'Terminé' },
   ];
+
+  // Pagination controls
+  itemsPerPage = 6;
+  currentPage = 1;
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredApplications.length / this.itemsPerPage));
+  }
+
+  get pagedApplications(): Application[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return this.filteredApplications.slice(start, start + this.itemsPerPage);
+  }
 
   constructor(
     private applicationService: ApplicationService,
@@ -98,7 +116,9 @@ export class ApplicationComponent implements OnInit {
             this.applications = allApps;
           }
           
+          this.customerOptions = [...new Set(this.applications.map(app => app.clientName || 'Unknown'))].filter(name => !!name);
           this.filteredApplications = [...this.applications];
+          this.currentPage = 1;
         } else {
           this.errorMessage = response.message || 'Erreur lors du chargement';
         }
@@ -128,6 +148,115 @@ export class ApplicationComponent implements OnInit {
       }
     });
   }
+
+
+
+  // Add this method to calculate progress based on status and dates
+calculateProgress(app: Application): number {
+  // If status is TERMINE, return 100%
+  if (app.status === 'TERMINE') {
+    return 100;
+  }
+  
+  // If status is PLANIFIE, return 0%
+  if (app.status === 'PLANIFIE') {
+    return 0;
+  }
+  
+  // For EN_COURS, calculate based on dates
+  if (app.status === 'EN_COURS' && app.dateDebut && app.dateFin) {
+    const start = new Date(app.dateDebut);
+    const end = new Date(app.dateFin);
+    const now = new Date();
+    
+    // If end date is in the past, return 100%
+    if (now > end) {
+      return 100;
+    }
+    
+    // If start date is in the future, return 0%
+    if (now < start) {
+      return 0;
+    }
+    
+    const totalDuration = end.getTime() - start.getTime();
+    const elapsedDuration = now.getTime() - start.getTime();
+    const progress = (elapsedDuration / totalDuration) * 100;
+    
+    return Math.min(100, Math.max(0, Math.round(progress)));
+  }
+  
+  return 0;
+}
+
+// Get progress color
+getProgressColor(progress: number): string {
+  if (progress >= 90) return '#10B981';
+  if (progress >= 70) return '#3B82F6';
+  if (progress >= 40) return '#F59E0B';
+  if (progress >= 20) return '#F97316';
+  return '#EF4444';
+}
+
+// Simplified version with only essential fields - Each attribute in its own column
+exportToCSV(): void {
+  const csvData = this.filteredApplications.map(app => ({
+    'Code': app.code,
+    'Nom': app.name || '',
+    'Statut': this.getStatusLabel(app.status),
+    'Client': app.clientName || '',
+    'Chef de Projet': app.chefDeProjetFullName || 'Non assigné',
+    'Progression': `${this.calculateProgress(app)}%`,
+    'Date Début': this.formatDate(app.dateDebut),
+    'Date Fin': this.formatDate(app.dateFin),
+    'Conventions': app.conventionsCount || 0
+  }));
+
+  if (csvData.length === 0) {
+    this.errorMessage = 'Aucune donnée à exporter';
+    setTimeout(() => this.clearMessages(), 3000);
+    return;
+  }
+
+  // Get headers
+  const headers = Object.keys(csvData[0]);
+  
+  // Escape function for CSV values
+  const escapeCSV = (value: any): string => {
+    if (value === null || value === undefined) return '';
+    const stringValue = String(value);
+    // Wrap in quotes if contains comma, quote, or newline
+    if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    }
+    return stringValue;
+  };
+
+  // Create CSV rows with proper column separation
+  const csvRows = [
+    headers.join(','), // Header row
+    ...csvData.map(row => 
+      headers.map(header => escapeCSV(row[header as keyof typeof row])).join(',')
+    )
+  ];
+  
+  const csvString = csvRows.join('\n');
+  
+  // Create blob with UTF-8 BOM for proper Excel encoding
+  const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  
+  link.setAttribute('href', url);
+  link.setAttribute('download', `applications_${new Date().toISOString().split('T')[0]}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  
+  this.successMessage = `${csvData.length} application(s) exportée(s)`;
+  setTimeout(() => this.clearMessages(), 3000);
+}
 
   // NEW: Load workload for all chefs
   loadChefsWorkload(): void {
@@ -179,31 +308,80 @@ export class ApplicationComponent implements OnInit {
   }
 
   searchApplications(): void {
+    const baseList = this.filterByStatus(this.applications);
+
     if (!this.searchTerm.trim()) {
-      this.filteredApplications = this.filterByStatus(this.applications);
+      this.filteredApplications = baseList;
+      this.ensureValidPage();
       return;
     }
 
     const term = this.searchTerm.toLowerCase();
-    this.filteredApplications = this.filterByStatus(this.applications).filter((app: Application) =>
-      app.code?.toLowerCase().includes(term) ||
-      app.name?.toLowerCase().includes(term) ||
-      app.clientName?.toLowerCase().includes(term) ||
-      app.description?.toLowerCase().includes(term)
+    this.filteredApplications = baseList.filter((app: Application) =>
+      (app.code || '').toLowerCase().includes(term) ||
+      (app.name || '').toLowerCase().includes(term) ||
+      (app.clientName || '').toLowerCase().includes(term) ||
+      (app.description || '').toLowerCase().includes(term)
     );
+    this.ensureValidPage();
   }
 
   filterByStatus(applications: Application[]): Application[] {
-    if (!this.filterStatus) {
-      return applications;
+    let result = [...applications];
+
+    if (this.filterStatus) {
+      result = result.filter((app: Application) => app.status === this.filterStatus);
     }
-    return applications.filter((app: Application) => app.status === this.filterStatus);
+
+    if (this.filterCategory && this.filterCategory !== 'All') {
+      result = result.filter((app: Application) => {
+        const category = (app as any).category || '';
+        return category.toLowerCase().includes(this.filterCategory.toLowerCase());
+      });
+    }
+
+    if (this.filterClient) {
+      result = result.filter((app: Application) => (app.clientName || '').toLowerCase().includes(this.filterClient.toLowerCase()));
+    }
+
+    return result;
   }
 
   applyFilters(): void {
     this.filteredApplications = this.filterByStatus(this.applications);
     if (this.searchTerm.trim()) {
       this.searchApplications();
+      return;
+    }
+    this.ensureValidPage();
+  }
+
+  onItemsPerPageChange(): void {
+    this.currentPage = 1;
+  }
+
+  goToPage(page: number): void {
+    this.currentPage = Math.min(this.totalPages, Math.max(1, page));
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  ensureValidPage(): void {
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
     }
   }
 
@@ -223,6 +401,11 @@ export class ApplicationComponent implements OnInit {
       return;
     }
     this.router.navigate(['/applications/edit', application.id]);
+  }
+
+  downloadApplication(application: Application): void {
+    console.log('Download app', application);
+    // TODO: implement actual download (PDF/CSV) logic
   }
 
   // Utility methods

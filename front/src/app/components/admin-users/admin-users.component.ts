@@ -130,16 +130,19 @@ unassignedProjects: any[] = [];
 
   ) {
     // Initialize forms
-    this.addUserForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      firstName: [''],
-      lastName: [''],
-      phone: [''],
-      department: [''],
-      roles: [[], Validators.required]
-    });
+this.addUserForm = this.fb.group({
+  username: ['', [Validators.required, Validators.minLength(3)]],
+  email: ['', [
+    Validators.required, 
+    Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
+  ]],
+  password: ['', [Validators.required, Validators.minLength(8)]],
+firstName: ['', [Validators.pattern(/^[a-zA-ZÀ-ÿ\s]+$/)]],
+lastName: ['', [Validators.pattern(/^[a-zA-ZÀ-ÿ\s]+$/)]],
+department: ['', [Validators.pattern(/^[a-zA-ZÀ-ÿ0-9\s]+$/)]],
+  phone: ['', [Validators.pattern(/^[0-9]{8,}$/), Validators.minLength(8)]],
+  roles: [[], Validators.required]
+});
     
     this.editDepartmentForm = this.fb.group({
       department: ['', Validators.required]

@@ -1,29 +1,28 @@
-<div class="p-4 mx-auto max-w-screen-2xl md:p-6">
+<div class="p-4 mx-auto max-w-screen-2xl md:p-7"> 
 
-  <!-- Header -->
-  <div class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-    <div class="flex items-center justify-between">
+<div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <button (click)="goBack()" 
+          <button *ngIf="isAdmin" (click)="goBack()" 
                 class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-          <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </button>
-        <div class="w-10 h-10 bg-gradient-to-br from-gray-500 to-gray-600 rounded-lg flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-9 h-9 bg-gradient-to-br from-gray-500 to-gray-600 rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" />
           </svg>
         </div>
         <div>
-          <h2 class="text-lg font-bold text-gray-800 dark:text-white">
-            {{ isAdmin ? 'Applications Archivées' : 'Mes Applications Archivées' }}
-          </h2>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            {{ filteredApplications.length }} application(s) dans les archives
-          </p>
+          <h2 class="text-[17px] font-bold text-gray-800 dark:text-white">                                {{ isAdmin ? 'Applications Archivées' : 'Mes Applications Archivées' }}
+
+</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-[11px] mt-0.5">               {{ filteredApplications.length }} application(s) dans les archives
+</p>
         </div>
       </div>
+   
     </div>
   </div>
 
@@ -60,128 +59,143 @@
     </div>
   </div>
 
-  <!-- Search Bar -->
-  <div class="mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 border border-gray-200 dark:border-gray-700">
-    <div class="relative">
-      <input
-        type="text"
-        [(ngModel)]="searchTerm"
-        (ngModelChange)="searchApplications()"
-        placeholder="Rechercher par code, nom, client..."
-        class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-      />
-      <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+ <!-- Search Bar - Compact & Modern -->
+<div class="mb-5">
+  <div class="relative">
+    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+      <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
     </div>
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="searchApplications()"
+      placeholder="Rechercher par code, nom, client..."
+      class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
+    />
   </div>
+</div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="text-center py-12">
-    <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
-    <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">Chargement des archives...</p>
-  </div>
-
-  <!-- Empty State -->
-  <div *ngIf="!loading && filteredApplications.length === 0" class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-    <div class="relative inline-block">
-      <div class="w-24 h-24 bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <svg class="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" />
-        </svg>
-      </div>
-      <div class="absolute -top-2 -right-2 text-gray-400">📦</div>
+<!-- Loading State -->
+<div *ngIf="loading" class="flex flex-col items-center justify-center py-12">
+  <div class="relative">
+    <div class="animate-spin rounded-full h-10 w-10 border-2 border-blue-200 border-t-blue-600"></div>
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="h-2 w-2 bg-blue-600 rounded-full animate-pulse"></div>
     </div>
-    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Aucune application archivée</h3>
-    <p class="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
-      Les applications apparaîtront ici après avoir été archivées.
-    </p>
   </div>
+  <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Chargement des archives...</p>
+</div>
 
-  <!-- Applications Grid -->
-  <div *ngIf="!loading && filteredApplications.length > 0" class="space-y-4">
-    <div *ngFor="let app of paginatedApplications" 
-         class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all cursor-pointer"
-         (click)="viewApplicationDetails(app.id)">
-      
-      <!-- Application Header -->
-      <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg flex items-center justify-center">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white">{{ app.code }}</h3>
-            <p class="text-xs text-gray-600 dark:text-gray-400">{{ app.name }}</p>
-          </div>
+<!-- Empty State -->
+<div *ngIf="!loading && filteredApplications.length === 0" class="text-center py-16">
+  <div class="relative inline-block">
+    <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+      <svg class="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" />
+      </svg>
+    </div>
+    <div class="absolute -top-2 -right-2 text-xl">📦</div>
+  </div>
+  <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Aucune application archivée</h3>
+  <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+    Les applications apparaîtront ici après avoir été archivées.
+  </p>
+</div>
+
+<!-- Applications Grid -->
+<div *ngIf="!loading && filteredApplications.length > 0" class="space-y-3">
+  <div *ngFor="let app of paginatedApplications" 
+       class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 cursor-pointer"
+       (click)="viewApplicationDetails(app.id)">
+    
+    <!-- Application Header - Compact -->
+    <div class="px-4 py-2.5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center shadow-sm">
+          <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
         </div>
-        <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-white">{{ app.code }}</h3>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ app.name }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
           Archivée
         </span>
       </div>
-
-      <!-- Application Details -->
-      <div class="p-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Client</p>
-            <p class="text-sm font-medium text-gray-800 dark:text-white">{{ app.clientName }}</p>
-          </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Chef de Projet</p>
-            <p class="text-sm text-gray-800 dark:text-white">{{ app.chefDeProjetFullName || 'Non assigné' }}</p>
-          </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Conventions archivées</p>
-            <p class="text-sm font-medium text-gray-800 dark:text-white">{{ app.conventionsCount || 0 }}</p>
-          </div>
-        </div>
-
-        <!-- Dates -->
-        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-3">
-          <span>📅 {{ formatDate(app.dateDebut) }} - {{ formatDate(app.dateFin) }}</span>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
-          
-          <button (click)="viewArchivedConventions(app, $event)"
-                  class="flex-1 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span>Voir conventions</span>
-          </button>
-        </div>
-      </div>
     </div>
 
-    <!-- Pagination -->
-    <div *ngIf="filteredApplications.length > itemsPerPage" 
-         class="flex items-center justify-between pt-4 pb-2 border-t border-gray-200 dark:border-gray-700 mt-4">
-      <div class="text-xs text-gray-500 dark:text-gray-400">
-        Affichage {{ startIndex }}-{{ endIndex }} sur {{ filteredApplications.length }}
+    <!-- Application Details - Compact Grid -->
+    <div class="p-3">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <div>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">Client</p>
+          <p class="text-xs font-medium text-gray-800 dark:text-white truncate">{{ app.clientName || '-' }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">Chef de Projet</p>
+          <div class="flex items-center gap-1.5">
+            <div class="w-5 h-5 rounded-full overflow-hidden bg-purple-100 flex-shrink-0">
+              <img [src]="getChefAvatarUrlForApp(app)" 
+                   [alt]="app.chefDeProjetFullName"
+                   class="w-full h-full object-cover"
+                   (error)="handleChefImageErrorForApp($event, app)">
+            </div>
+            <p class="text-xs text-gray-700 dark:text-gray-300 truncate">{{ app.chefDeProjetFullName || 'Non assigné' }}</p>
+          </div>
+        </div>
+        <div>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">Conventions</p>
+          <p class="text-xs font-medium text-gray-800 dark:text-white">{{ app.conventionsCount || 0 }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">Période</p>
+          <p class="text-xs text-gray-600 dark:text-gray-400">{{ formatDate(app.dateDebut) }} → {{ formatDate(app.dateFin) }}</p>
+        </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button 
-          (click)="previousPage()"
-          [disabled]="currentPage === 1"
-          class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-          Précédent
-        </button>
-        <span class="text-xs text-gray-600 dark:text-gray-400">
-          Page {{ currentPage }} / {{ totalPages }}
-        </span>
-        <button 
-          (click)="nextPage()"
-          [disabled]="currentPage === totalPages"
-          class="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-          Suivant
-        </button>
-      </div>
+
+      
     </div>
   </div>
 
- 
+  <!-- Pagination - Modern & Compact -->
+  <div *ngIf="filteredApplications.length > itemsPerPage" 
+       class="flex items-center justify-between pt-4 pb-1 border-t border-gray-200 dark:border-gray-700 mt-4">
+    <div class="text-xs text-gray-500 dark:text-gray-400">
+      <span class="font-medium text-gray-700 dark:text-gray-300">{{ startIndex }}</span>
+      -
+      <span class="font-medium text-gray-700 dark:text-gray-300">{{ endIndex }}</span>
+      sur <span class="font-medium text-gray-700 dark:text-gray-300">{{ filteredApplications.length }}</span>
+    </div>
+    <div class="flex gap-1.5">
+      <button 
+        (click)="previousPage()"
+        [disabled]="currentPage === 1"
+        class="px-3 py-1 text-xs font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Préc
+      </button>
+      <div class="flex items-center gap-1.5 px-2">
+        <span class="text-xs font-medium text-gray-700 dark:text-gray-300">{{ currentPage }}</span>
+        <span class="text-xs text-gray-400">/</span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">{{ totalPages }}</span>
+      </div>
+      <button 
+        (click)="nextPage()"
+        [disabled]="currentPage === totalPages"
+        class="px-3 py-1 text-xs font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1">
+        Suiv
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,131 +1,157 @@
 <!-- create-reassignment-request.component.html -->
-<div *ngIf="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" (click)="close()">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+<div *ngIf="show" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in" (click)="close()">
+  <div class="bg-white dark:bg-slate-800 rounded-xl w-full max-w-2xl mx-auto shadow-2xl" (click)="$event.stopPropagation()">
     
     <!-- Header -->
-    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-          <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+          <svg class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
-        <div>
-          <h3 class="text-lg font-bold text-gray-800 dark:text-white">Demande de réassignation</h3>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+        <div class="flex-1">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Demande de réassignation</h3>
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
             {{ application?.name }} ({{ application?.code }})
           </p>
         </div>
+        <button (click)="close()" class="text-slate-400 hover:text-slate-500 w-6 h-6 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-times text-xs"></i>
+        </button>
       </div>
     </div>
 
     <!-- Success Message -->
-    <div *ngIf="successMessage" class="mx-6 mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-      <p class="text-green-700 dark:text-green-300 text-sm">{{ successMessage }}</p>
+    <div *ngIf="successMessage" class="mx-4 mt-3 p-2.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+      <p class="text-emerald-700 dark:text-emerald-300 text-xs">{{ successMessage }}</p>
     </div>
 
     <!-- Error Message -->
-    <div *ngIf="errorMessage" class="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-      <p class="text-red-700 dark:text-red-300 text-sm">{{ errorMessage }}</p>
+    <div *ngIf="errorMessage" class="mx-4 mt-3 p-2.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+      <p class="text-red-700 dark:text-red-300 text-xs">{{ errorMessage }}</p>
     </div>
 
     <!-- Form -->
-    <div *ngIf="!successMessage" class="p-6">
+    <div *ngIf="!successMessage" class="p-4 space-y-3">
       
       <!-- Info Box -->
-      <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <p class="text-xs text-blue-700 dark:text-blue-300">
-          <strong>Note:</strong> Vous êtes le créateur de cette application. Si vous ne pouvez pas continuer à travailler dessus en raison de votre charge de travail, vous pouvez demander une réassignation.
+      <div class="p-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+        <p class="text-[11px] text-amber-700 dark:text-amber-300">
+          <i class="fas fa-info-circle mr-1 text-[10px]"></i>
+          <strong>Note:</strong> Vous êtes le créateur de cette application. Si vous ne pouvez pas continuer à travailler dessus, vous pouvez demander une réassignation.
         </p>
       </div>
 
       <!-- Reason Field -->
-      <div class="mb-4">
-        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
           Raison de la demande <span class="text-red-500">*</span>
         </label>
         <textarea
           [(ngModel)]="reason"
-          rows="3"
-          class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          placeholder="Expliquez pourquoi vous ne pouvez pas continuer à travailler sur cette application..."
-        ></textarea>
+          rows="2"
+          class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white resize-none"
+          placeholder="Expliquez pourquoi vous ne pouvez pas continuer à travailler sur cette application..."></textarea>
       </div>
 
-      <!-- Chef Selection -->
-      <div class="mb-4">
-        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+      <!-- Chef Selection - Horizontal Cards Layout -->
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-700 dark:text-slate-300 mb-2">
           Recommander un chef de projet <span class="text-red-500">*</span>
         </label>
         
         <div *ngIf="workloadLoading" class="text-center py-4">
-          <div class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
-          <p class="text-xs text-gray-500 mt-1">Chargement des chefs...</p>
+          <div class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent"></div>
+          <p class="text-[10px] text-slate-500 mt-1">Chargement des chefs...</p>
         </div>
         
-        <div *ngIf="!workloadLoading" class="space-y-2 max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-2">
+        <div *ngIf="!workloadLoading" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
           <div *ngFor="let chef of availableChefs" 
                (click)="selectedChefId = chef.id"
-               class="flex items-center p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer transition-colors"
-               [class]="selectedChefId === chef.id ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700' : ''">
-            <input type="radio" 
-                   [checked]="selectedChefId === chef.id"
-                   (change)="selectedChefId = chef.id"
-                   name="chefSelection"
-                   class="h-4 w-4 text-blue-600 mr-3">
-            <div class="flex-1">
-              <div class="flex justify-between items-center">
-                <span class="text-sm font-medium text-gray-800 dark:text-white">
+               class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer transition-all hover:shadow-sm"
+               [ngClass]="selectedChefId === chef.id ? 
+                 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600' : 
+                 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600'">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-transparent-400 to-tansparent-400">
+                <img [src]="getChefAvatarUrl(chef)" 
+                     class="w-full h-full object-cover"
+                     (error)="handleChefImageError($event, chef)">
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1">
+                <p class="text-xs font-semibold text-slate-900 dark:text-white truncate">
                   {{ chef.firstName }} {{ chef.lastName }}
-                </span>
+                </p>
                 <span *ngIf="getChefWorkload(chef.id) as workload" 
-                      class="text-xs px-2 py-0.5 rounded-full"
+                      class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium"
                       [style.background]="getWorkloadColor(workload.currentWorkload) + '20'"
                       [style.color]="getWorkloadColor(workload.currentWorkload)">
                   {{ getWorkloadText(workload.currentWorkload) }}
                 </span>
               </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ chef.email }}</p>
+              <p class="text-[9px] text-slate-500 dark:text-slate-400 truncate">{{ chef.email }}</p>
+            </div>
+            <div *ngIf="selectedChefId === chef.id" class="flex-shrink-0">
+              <div class="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                <i class="fas fa-check text-white text-[8px]"></i>
+              </div>
             </div>
           </div>
-          <div *ngIf="availableChefs.length === 0" class="text-center py-4 text-gray-500 text-sm">
-            Aucun autre chef de projet disponible
-          </div>
+        </div>
+        
+        <div *ngIf="!workloadLoading && availableChefs.length === 0" class="text-center py-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
+          <i class="fas fa-users text-slate-400 text-lg mb-1"></i>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Aucun autre chef de projet disponible</p>
         </div>
       </div>
 
       <!-- Recommendations Field (Optional) -->
-      <div class="mb-4">
-        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Recommandations supplémentaires (optionnel)
+      <div>
+        <label class="block text-[10px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+          Recommandations supplémentaires <span class="text-slate-400">(optionnel)</span>
         </label>
         <textarea
           [(ngModel)]="recommendations"
-          rows="2"
-          class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          placeholder="Informations supplémentaires pour l'administrateur..."
-        ></textarea>
+          rows="1"
+          class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white resize-none"
+          placeholder="Informations supplémentaires pour l'administrateur..."></textarea>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+    <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2">
       <button (click)="close()" 
-              class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors">
+              class="px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-all">
         Annuler
       </button>
       <button (click)="submitRequest()"
               [disabled]="loading || !selectedChefId || !reason.trim() || successMessage"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+              class="px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg hover:shadow-md disabled:opacity-50 transition-all flex items-center gap-1.5">
         <span *ngIf="loading" class="flex items-center gap-1">
-          <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+          <svg class="animate-spin h-3 w-3 text-white" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
           <span>Traitement...</span>
         </span>
-        <span *ngIf="!loading">Envoyer la demande</span>
+        <span *ngIf="!loading">
+          <i class="fas fa-paper-plane mr-1 text-[9px]"></i>
+          Envoyer la demande
+        </span>
       </button>
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out forwards;
+  }
+</style>

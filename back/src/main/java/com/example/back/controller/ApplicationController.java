@@ -516,7 +516,26 @@ public class ApplicationController {
 
 
 
+    @GetMapping("/check-code")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")
+    public ResponseEntity<?> checkApplicationCodeExists(@RequestParam String code) {
+        try {
+            log.info("Checking if application code exists: {}", code);
 
+            boolean exists = applicationRepository.existsByCode(code);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("exists", exists);
+            response.put("code", code);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error checking application code: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
+    }
 
 
 

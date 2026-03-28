@@ -6,6 +6,8 @@ import { ConventionService } from '../../services/convention.service';
 import { FactureService } from '../../services/facture.service';
 import { AuthService } from '../../services/auth.service';
 import { DatePipe } from '@angular/common';
+import { environment } from 'src/environments/environment';
+
 
 @Component({
   selector: 'app-application-archive',
@@ -42,6 +44,13 @@ export class ApplicationArchiveComponent implements OnInit {
   selectedAppForConventions: Application | null = null;
   archivedConventions: any[] = [];
   loadingConventions = false;
+
+    applications: Application[] = [];
+
+    
+  
+  baseUrl = environment.baseUrl;
+  Math = Math;
 
   constructor(
     private applicationService: ApplicationService,
@@ -246,4 +255,68 @@ loadArchivedApplications(): void {
   canRestore(): boolean {
     return this.isAdmin || this.isChefProjet;
   }
+
+
+   getChefAvatarUrlForApp(app: Application): string {
+    if (!app.chefDeProjetFullName) {
+      return this.generateDefaultChefAvatar('?');
+    }
+    
+    if (app.chefDeProjetProfileImage) {
+      const profileImage = app.chefDeProjetProfileImage;
+      if (profileImage.startsWith('http')) {
+        return profileImage;
+      }
+      if (profileImage.startsWith('/uploads/')) {
+        return this.baseUrl + profileImage;
+      }
+      if (profileImage.startsWith('data:image')) {
+        return profileImage;
+      }
+      return this.baseUrl + '/uploads/avatars/' + profileImage;
+    }
+    
+    let initials = '?';
+    const names = app.chefDeProjetFullName.split(' ');
+    if (names.length >= 2) {
+      initials = (names[0][0] + names[1][0]).toUpperCase();
+    } else if (names.length === 1 && names[0]) {
+      initials = names[0][0].toUpperCase();
+    }
+    
+    return this.generateDefaultChefAvatar(initials);
+  }
+  
+  // ADD THIS METHOD - Handle chef image error
+  handleChefImageErrorForApp(event: any, app: Application): void {
+    let initials = '?';
+    if (app.chefDeProjetFullName) {
+      const names = app.chefDeProjetFullName.split(' ');
+      if (names.length >= 2) {
+        initials = (names[0][0] + names[1][0]).toUpperCase();
+      } else if (names.length === 1) {
+        initials = names[0][0].toUpperCase();
+      }
+    }
+    event.target.src = this.generateDefaultChefAvatar(initials);
+    event.target.onerror = null;
+  }
+  
+  // ADD THIS METHOD - Generate default avatar
+  generateDefaultChefAvatar(initials: string): string {
+    const colors = ['#8B5CF6', '#A855F7', '#C084FC', '#D946EF', '#E879F9'];
+    const colorIndex = initials.charCodeAt(0) % colors.length;
+    const color = colors[colorIndex];
+    
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+      <circle cx="50" cy="50" r="48" fill="${color}"/>
+      <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" 
+            font-size="38" font-weight="bold" fill="white" dominant-baseline="middle">
+        ${initials}
+      </text>
+    </svg>`;
+    
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+  }
+  
 }

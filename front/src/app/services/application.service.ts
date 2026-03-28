@@ -208,5 +208,9 @@ deleteApplication(id: number): Observable<ApiResponse> {
 }
 
 
+checkApplicationCodeExists(code: string): Observable<any> {
+  return this.http.get(`${this.apiUrl}/api/applications/check-code?code=${code}`);
+}
+
 
 }

@@ -1,681 +1,471 @@
-<div class="p-6">
-  <!-- Header -->
-  <div class="mb-8">
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">
-      {{ 'Gestion des nomenclatures' | translate }}
-    </h1>
-    <p class="text-gray-600 dark:text-gray-300">
-      {{ 'Gérer les zones géographiques et les structures' | translate }}
-    </p>
-  </div>
+<div class="p-4 mx-auto max-w-screen-2xl md:p-7"> 
 
-<!-- Stats -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-  
-  <!-- Geographic Zones - Market/Expansion Theme -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200">
-    <div class="flex items-center justify-between">
-      <div>
-        <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          {{ 'Zones géographiques' | translate }}
-        </span>
-        <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats.zones || 0 }}</p>
-        
+<div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-[17px] font-bold text-gray-800 dark:text-white">            {{ 'Gestion des nomenclatures' | translate }}
+</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-[11px] mt-0.5"> {{ 'Gérez vos zones géographiques et structures organisationnelles' | translate }}</p>
+        </div>
       </div>
-
-      
-      <div class="p-3 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-xl">
-        <svg class="w-8 h-8 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
-        </svg>
-      </div>
-
-      
-    </div>
-
-    <div class="mt-3 flex items-center text-xs text-gray-600 dark:text-gray-400 bg-indigo-50 dark:bg-gray-900/20 px-2 py-1 rounded-md w-fit">
-      <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-</svg>
-      {{ ' Marchés couverts' | translate }}
+   
     </div>
   </div>
   
-  <!-- Structures Responsables - Governance/Authority Theme -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200">
-    <div class="flex items-center justify-between">
-      <div>
-        <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          {{ 'Structures Responsables' | translate }}
-        </span>
-        <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats.structuresRes || 0 }}</p>
-        
-      </div>
-      <div class="p-3 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/30 rounded-xl">
-        <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15" />
-        </svg>
-      </div>
-    </div>
-    <!-- Professional badge for "in charge" concept -->
-    <div class="mt-3 flex items-center text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-md w-fit">
-      <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-      </svg>
-      {{ 'Autorité de gestion' | translate }}
-    </div>
-  </div>
 
-  <!-- Structures Beneficiels - Commerce/Acquisition Theme -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200">
-    <div class="flex items-center justify-between">
-      <div>
-        <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          {{ 'Structures Beneficiels' | translate }}
-        </span>
-        <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stats.structuresBen || 0 }}</p>
-        
+  
+
+  <!-- Stats Cards - Smaller -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-3 h-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z"/>
+            </svg>
+          </div>
+          <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ 'Zones' | translate }}</span>
+        </div>
+        <span class="text-lg font-bold text-gray-900 dark:text-white">{{ stats.zones || 0 }}</span>
       </div>
-      <div class="p-3 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/30 rounded-xl">
-        <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-        </svg>
+      <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1 overflow-hidden">
+        <div class="bg-blue-600 h-full rounded-full transition-all duration-500" 
+             [style.width.%]="(stats.zones || 0) > 0 ? Math.min(((stats.zones || 0) / 10) * 100, 100) : 0"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1 text-xs">
+        <span class="text-gray-500 dark:text-gray-400">{{ 'Marchés couverts' | translate }}</span>
+        <span class="text-blue-600 dark:text-blue-400 font-medium">{{ ((stats.zones || 0) / 10 * 100).toFixed(0) }}%</span>
       </div>
     </div>
-    <!-- Professional badge for "buyer" concept -->
-    <div class="mt-3 flex items-center text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md w-fit">
-      <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-      </svg>
-      {{ 'Acquéreur / Client' | translate }}
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15"/>
+            </svg>
+          </div>
+          <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ 'Responsables' | translate }}</span>
+        </div>
+        <span class="text-lg font-bold text-gray-900 dark:text-white">{{ stats.structuresRes || 0 }}</span>
+      </div>
+      <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1 overflow-hidden">
+        <div class="bg-indigo-600 h-full rounded-full transition-all duration-500" 
+             [style.width.%]="(stats.structuresRes || 0) > 0 ? Math.min(((stats.structuresRes || 0) / 20) * 100, 100) : 0"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1 text-xs">
+        <span class="text-gray-500 dark:text-gray-400">{{ 'Autorité de gestion' | translate }}</span>
+        <span class="text-indigo-600 dark:text-indigo-400 font-medium">{{ ((stats.structuresRes || 0) / 20 * 100).toFixed(0) }}%</span>
+      </div>
     </div>
-  </div>
-</div>
 
-  <!-- Tabs -->
-  <div class="mb-6">
-    <div class="border-b border-gray-200 dark:border-gray-700">
-      <nav class="flex space-x-8">
-       
-        <button 
-          [class]="activeTab === 'zones' 
-            ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
-          class="py-2 px-1 border-b-2 font-medium text-sm"
-          (click)="setActiveTab('zones')"
-        >
-          {{ 'Zones Géographiques' | translate }}
-        </button>
-        <button 
-          [class]="activeTab === 'structuresR' 
-            ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
-          class="py-2 px-1 border-b-2 font-medium text-sm"
-          (click)="setActiveTab('structuresR')"
-        >
-          {{ 'Structures Responsables' | translate }}
-        </button>
-
-        <button 
-          [class]="activeTab === 'structuresB' 
-            ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
-            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
-          class="py-2 px-1 border-b-2 font-medium text-sm"
-          (click)="setActiveTab('structuresB')"
-        >
-          {{ 'Structures Beneficiels' | translate }}
-        </button>
-      </nav>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
+            </svg>
+          </div>
+          <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ 'Bénéficiels' | translate }}</span>
+        </div>
+        <span class="text-lg font-bold text-gray-900 dark:text-white">{{ stats.structuresBen || 0 }}</span>
+      </div>
+      <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1 overflow-hidden">
+        <div class="bg-emerald-600 h-full rounded-full transition-all duration-500" 
+             [style.width.%]="(stats.structuresBen || 0) > 0 ? Math.min(((stats.structuresBen || 0) / 15) * 100, 100) : 0"></div>
+      </div>
+      <div class="flex items-center justify-between mt-1 text-xs">
+        <span class="text-gray-500 dark:text-gray-400">{{ 'Acquéreur / Client' | translate }}</span>
+        <span class="text-emerald-600 dark:text-emerald-400 font-medium">{{ ((stats.structuresBen || 0) / 15 * 100).toFixed(0) }}%</span>
+      </div>
     </div>
   </div>
 
   <!-- Alert Messages -->
-  <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-    {{ errorMessage }}
-  </div>
-  
-  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-    {{ successMessage }}
+  <div *ngIf="errorMessage || successMessage" class="mb-6">
+    <div *ngIf="errorMessage" class="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-400 text-sm rounded-lg">
+      <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+      {{ errorMessage }}
+    </div>
+    <div *ngIf="successMessage" class="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 text-green-700 dark:text-green-400 text-sm rounded-lg">
+      <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+      {{ successMessage }}
+    </div>
   </div>
 
-  <!-- Main Content -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-    <!-- Toolbar -->
-    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div class="relative w-full sm:w-auto">
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
-          [placeholder]="'Search...' | translate"
-          class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-        <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-        </svg>
+  <!-- Main Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    
+    <!-- Tab Navigation - Pill Style -->
+    <div class="px-5 pt-5">
+      <div class="flex flex-wrap gap-1.5 border-b border-gray-200 dark:border-gray-700 pb-2">
+        <button 
+          (click)="setActiveTab('zones')"
+          [class]="activeTab === 'zones' 
+            ? 'bg-blue-600 text-white shadow-md' 
+            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'"
+          class="px-3 py-3 ml-2 text-xs font-medium rounded-full transition-all duration-200 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z"/>
+          </svg>
+          {{ 'Zones géographiques' | translate }}
+        </button>
+        <button 
+          (click)="setActiveTab('structuresR')"
+          [class]="activeTab === 'structuresR' 
+            ? 'bg-indigo-600 text-white shadow-md' 
+            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'"
+          class="px-3 py-3 ml-2 text-xs font-medium rounded-full transition-all duration-200 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+          {{ 'Structures Responsables' | translate }}
+        </button>
+        <button 
+          (click)="setActiveTab('structuresB')"
+          [class]="activeTab === 'structuresB' 
+            ? 'bg-emerald-600 text-white shadow-md' 
+            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'"
+          class="px-3 py-3 ml-2 text-xs font-medium rounded-full transition-all duration-200 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
+          </svg>
+          {{ 'Structures Bénéficiels' | translate }}
+        </button>
       </div>
-      
-      <button
-        (click)="showAddForm( activeTab === 'zones' ? 'zone' : 'structure')"
-        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        {{ 'Ajouter' | translate }} {{ 
-          activeTab === 'zones' ? ('Zone' | translate) : ('Structure' | translate)
-        }}
-      </button>
     </div>
 
-    <!-- Form -->
-    <div *ngIf="showForm" class="p-6 border-b border-gray-200 dark:border-gray-700">
-      <div class="mb-4">
-        <h3 class="text-lg font-medium text-gray-800 dark:text-white">
-          {{ (isEditing ? 'Modifier' : 'Ajouter') | translate }} 
-          {{  
-             currentFormType === 'zone' ? ('Zone Géographique' | translate) : ('Structure' | translate) }}
-        </h3>
-      </div>
-
-    
-
-      <!-- Zone Form -->
-      <form *ngIf="currentFormType === 'zone'" [formGroup]="zoneForm" (ngSubmit)="onSubmitZone()" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div>
-  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-    {{ 'Code' | translate }} *
-  </label>
+    <!-- Toolbar -->
+    <div class="px-6 py-5 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div class="relative w-full sm:w-100">
+  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+  </svg>
   <input
     type="text"
-    formControlName="code"
-    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-    [placeholder]="'e.g., ZONE001 (Avoid TN- codes for custom zones)' | translate"
+    [(ngModel)]="searchTerm"
+    (input)="onSearch()"
+    [placeholder]="'Rechercher...' | translate"
+    class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
   >
-  <div *ngIf="zoneForm.get('code')?.value?.startsWith('TN-')" 
-       class="text-yellow-600 text-sm mt-1">
-    ⚠️ {{ 'Les codes TN- sont réservés aux gouvernorats tunisiens' | translate }}
-  </div>
-  <div *ngIf="zoneForm.get('code')?.invalid && zoneForm.get('code')?.touched" class="text-red-500 text-sm mt-1">
-    <span *ngIf="zoneForm.get('code')?.errors?.['required']">{{ 'Code est requis' | translate }}</span>
-    <span *ngIf="zoneForm.get('code')?.errors?.['minlength']">{{ 'Minimum 2 caractéres' | translate }}</span>
-    <span *ngIf="zoneForm.get('code')?.errors?.['maxlength']">{{ 'Maximum 20 caractéres' | translate }}</span>
-  </div>
 </div>
+        
+        <button
+          (click)="showAddForm(activeTab === 'zones' ? 'zone' : 'structure')"
+          class="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all duration-200 shadow-sm hover:shadow-md"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          {{ 'Ajouter' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Form Section -->
+    <div *ngIf="showForm" class="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-2xl mx-auto mt-3">
+        <!-- Zone Form -->
+        <form *ngIf="currentFormType === 'zone'" [formGroup]="zoneForm" (ngSubmit)="onSubmitZone()" class="space-y-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Code <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="code" 
+                class="w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700"
+                [class]="zoneForm.get('code')?.invalid && zoneForm.get('code')?.touched ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'"
+                placeholder="Ex: ZONE001">
+              <div *ngIf="zoneForm.get('code')?.invalid && zoneForm.get('code')?.touched" class="mt-1 text-red-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                Code requis et doit être unique
+              </div>
+              <div *ngIf="zoneForm.get('code')?.valid && zoneForm.get('code')?.value" class="mt-1 text-green-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                Code valide
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Nom <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="name" 
+                class="w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700"
+                [class]="zoneForm.get('name')?.invalid && zoneForm.get('name')?.touched ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'"
+                placeholder="Ex: Tunis">
+              <div *ngIf="zoneForm.get('name')?.invalid && zoneForm.get('name')?.touched" class="mt-1 text-red-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                Nom requis (minimum 2 caractères)
+              </div>
+              <div *ngIf="zoneForm.get('name')?.valid && zoneForm.get('name')?.value" class="mt-1 text-green-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                Nom valide
+              </div>
+            </div>
+          </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Nom' | translate }} *
-            </label>
-            <input
-              type="text"
-              formControlName="name"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              [placeholder]="'e.g., Tunis, Sfax...' | translate"
-            >
-            <div *ngIf="zoneForm.get('name')?.invalid && zoneForm.get('name')?.touched" class="text-red-500 text-sm mt-1">
-              <span *ngIf="zoneForm.get('name')?.errors?.['required']">{{ 'Nom est requis' | translate }}</span>
-              <span *ngIf="zoneForm.get('name')?.errors?.['minlength']">{{ 'Minimum 2 caractéres' | translate }}</span>
-              <span *ngIf="zoneForm.get('name')?.errors?.['maxlength']">{{ 'Maximum 100 caractéres' | translate }}</span>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
+            <textarea formControlName="description" rows="3" 
+              class="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700"
+              placeholder="Description de la zone..."></textarea>
+            <div *ngIf="zoneForm.get('description')?.value && zoneForm.get('description')?.value.length > 100" class="mt-1 text-orange-500 text-xs flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+              Description longue ({{ zoneForm.get('description')?.value.length }}/500 caractères)
             </div>
           </div>
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {{ 'Description' | translate }}
-          </label>
-          <textarea
-            formControlName="description"
-            rows="3"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            [placeholder]="'Zone description...' | translate"
-          ></textarea>
-        </div>
-        
-        <div class="flex justify-end gap-3">
-          <button
-            type="button"
-            (click)="cancelForm()"
-            class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            {{ 'Annuler' | translate }}
-          </button>
-          <button
-            type="submit"
-            [disabled]="loading || zoneForm.invalid"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {{ loading ? ('Traitement en cours...' | translate) : (isEditing ? ('Mise à jour' | translate) : ('Créer' | translate)) }}
-          </button>
-        </div>
-      </form>
+          <div class="flex justify-end gap-3 pt-3">
+            <button type="button" (click)="cancelForm()" class="px-4 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
+              Annuler
+            </button>
+            <button type="submit" [disabled]="loading || zoneForm.invalid" class="px-4 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:shadow-lg transition-all disabled:opacity-50">
+              {{ loading ? 'Traitement...' : (isEditing ? 'Mettre à jour' : 'Créer') }}
+            </button>
+          </div>
+        </form>
 
-      <!-- Structure Form -->
-   <!-- Structure Form - Replace with this -->
-<form *ngIf="currentFormType === 'structure'" [formGroup]="structureForm" (ngSubmit)="onSubmitStructure()" class="space-y-4">
-  
-  <!-- For Beneficiary Structures - Hide Code field completely -->
-  <ng-container *ngIf="!showBeneficialForm; else beneficialFields">
-    <!-- Normal Structure Form (for Responsables) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {{ 'Code' | translate }} *
-        </label>
-        <input
-          type="text"
-          formControlName="code"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          [placeholder]="'e.g., STR001' | translate"
-        >
-        <div *ngIf="structureForm.get('code')?.invalid && structureForm.get('code')?.touched" class="text-red-500 text-sm mt-1">
-          <span *ngIf="structureForm.get('code')?.errors?.['required']">{{ 'Code est requis' | translate }}</span>
-        </div>
-      </div>
-      
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {{ 'Nom' | translate }} *
-        </label>
-        <input
-          type="text"
-          formControlName="name"
-          (input)="onClientNameChange()"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          [placeholder]="'e.g., Company ABC' | translate"
-        >
-        <div *ngIf="structureForm.get('name')?.invalid && structureForm.get('name')?.touched" class="text-red-500 text-sm mt-1">
-          <span *ngIf="structureForm.get('name')?.errors?.['required']">{{ 'Nom est requis' | translate }}</span>
-        </div>
-      </div>
-    </div>
-  </ng-container>
-
-  <!-- Beneficiary Structure Fields (No Code Field) -->
-  <ng-template #beneficialFields>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="col-span-2 md:col-span-1">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {{ 'Nom du client' | translate }} *
-        </label>
-        <input
-          type="text"
-          formControlName="name"
-          (input)="onClientNameChange()"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          [placeholder]="'e.g., Tunisie Telecom' | translate"
-        >
-        <div *ngIf="structureForm.get('name')?.invalid && structureForm.get('name')?.touched" class="text-red-500 text-sm mt-1">
-          <span *ngIf="structureForm.get('name')?.errors?.['required']">{{ 'Nom du client est requis' | translate }}</span>
-        </div>
-      </div>
-      
-      <!-- Code is hidden but value is set automatically -->
-      <input type="hidden" formControlName="code">
-
-      <input type="hidden" formControlName="typeStructure" value="Client">
-
-      
-      <!-- Show generated code preview (optional) -->
-      <div class="col-span-2 md:col-span-1" *ngIf="structureForm.get('code')?.value">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {{ 'Code généré' | translate }}
-        </label>
-        <div class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
-          {{ structureForm.get('code')?.value }}
-        </div>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          ⚡ Code généré automatiquement
-        </p>
-      </div>
-    </div>
-  </ng-template>
-
-  <!-- Structure Type - Only show for non-beneficiary -->
-  <div *ngIf="!showBeneficialForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {{ 'Type de structure' | translate }}
-      </label>
-      <select
-        formControlName="typeStructure"
-        (change)="onTypeChange()"
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option *ngFor="let type of structureTypes" [value]="type">{{ type | translate }}</option>
-      </select>
-      
-      <!-- Custom Type Input -->
-      <div *ngIf="showCustomTypeInput" class="mt-2">
-        <div class="flex items-center gap-2">
-          <span class="text-gray-400">↳</span>
-          <div class="flex-1">
-            <input
-              type="text"
-              [(ngModel)]="customTypeValue"
-              [ngModelOptions]="{standalone: true}"
-              (input)="onTypeChange()"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              [placeholder]="'Spécifiez le type...' | translate"
-              required
-            />
-            <div *ngIf="showCustomTypeInput && !customTypeValue.trim()" class="text-red-500 text-sm mt-1">
-              {{ 'Veuillez spécifier le type' | translate }}
+        <!-- Structure Form -->
+        <form *ngIf="currentFormType === 'structure'" [formGroup]="structureForm" (ngSubmit)="onSubmitStructure()" class="space-y-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div *ngIf="!showBeneficialForm">
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Code <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="code" 
+                class="w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700"
+                [class]="structureForm.get('code')?.invalid && structureForm.get('code')?.touched ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'"
+                placeholder="Ex: STR001">
+              <div *ngIf="structureForm.get('code')?.invalid && structureForm.get('code')?.touched" class="mt-1 text-red-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                Code requis et doit être unique
+              </div>
+              <div *ngIf="structureForm.get('code')?.valid && structureForm.get('code')?.value" class="mt-1 text-green-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                Code valide
+              </div>
+            </div>
+            <div [class.md:col-span-2]="showBeneficialForm">
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{{ showBeneficialForm ? 'Nom du client' : 'Nom' }} <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="name" (input)="onClientNameChange()"
+                class="w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700"
+                [class]="structureForm.get('name')?.invalid && structureForm.get('name')?.touched ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'"
+                [placeholder]="showBeneficialForm ? 'Ex: Tunisie Telecom' : 'Ex: Company ABC'">
+              <div *ngIf="showBeneficialForm && structureForm.get('code')?.value" class="mt-1 text-blue-500 text-xs">
+                Code généré: {{ structureForm.get('code')?.value }}
+              </div>
+              <div *ngIf="structureForm.get('name')?.invalid && structureForm.get('name')?.touched" class="mt-1 text-red-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                {{ showBeneficialForm ? 'Nom du client requis' : 'Nom requis (minimum 2 caractères)' }}
+              </div>
+              <div *ngIf="structureForm.get('name')?.valid && structureForm.get('name')?.value" class="mt-1 text-green-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                {{ showBeneficialForm ? 'Nom du client valide' : 'Nom valide' }}
+              </div>
             </div>
           </div>
-        </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 ">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 mt-3">Zone géographique</label>
+              <select formControlName="zoneId" 
+                class="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 dark:bg-gray-700">
+                <option [ngValue]="null">-- Sélectionnez --</option>
+                <option *ngFor="let zone of zones" [ngValue]="zone.id">{{ zone.name }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 mt-3">Téléphone</label>
+              <input type="tel" formControlName="phone" 
+                class="w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700"
+                [class]="structureForm.get('phone')?.invalid && structureForm.get('phone')?.touched ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'"
+                placeholder="+216 71 000 000">
+              <div *ngIf="structureForm.get('phone')?.invalid && structureForm.get('phone')?.touched" class="mt-1 text-red-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                Format téléphone invalide
+              </div>
+              <div *ngIf="structureForm.get('phone')?.valid && structureForm.get('phone')?.value" class="mt-1 text-green-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                Téléphone valide
+              </div>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 mt-3">Email</label>
+              <input type="email" formControlName="email" 
+                class="w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700"
+                [class]="structureForm.get('email')?.invalid && structureForm.get('email')?.touched ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'"
+                placeholder="contact@company.com">
+              <div *ngIf="structureForm.get('email')?.invalid && structureForm.get('email')?.touched" class="mt-1 text-red-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                Format email invalide
+              </div>
+              <div *ngIf="structureForm.get('email')?.valid && structureForm.get('email')?.value" class="mt-1 text-green-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                Email valide
+              </div>
+            </div>
+            <div *ngIf="!showBeneficialForm">
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 mt-3">Type de structure</label>
+              <select formControlName="typeStructure" 
+                class="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 dark:bg-gray-700">
+                <option *ngFor="let type of structureTypes" [value]="type">{{ type }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 mt-4">Description</label>
+            <textarea formControlName="description" rows="3" 
+              class="w-full px-3 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700"
+              placeholder="Description de la structure..."></textarea>
+            <div *ngIf="structureForm.get('description')?.value && structureForm.get('description')?.value.length > 100" class="mt-1 text-orange-500 text-xs flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+              Description longue ({{ structureForm.get('description')?.value.length }}/500 caractères)
+            </div>
+          </div>
+          
+          <div class="flex justify-end gap-3 pt-3">
+            <button type="button" (click)="cancelForm()" class="px-4 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
+              Annuler
+            </button>
+            <button type="submit" [disabled]="loading || structureForm.invalid" class="px-4 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:shadow-lg transition-all disabled:opacity-50">
+              {{ loading ? 'Traitement...' : (isEditing ? 'Mettre à jour' : 'Créer') }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
-  
-  </div>
-
-
-  <div>
-      <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {{ 'Zone Géographique' | translate }}
-      </label>
-      <select
-        formControlName="zoneId"
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option [ngValue]="null">-- {{ 'Sélectionnez une zone' | translate }} --</option>
-        <option *ngFor="let zone of zones" [ngValue]="zone.id">
-          {{ zone.code }} - {{ zone.name }}
-        </option>
-      </select>
-    </div>
-    
-    <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {{ 'Numéro de téléphone' | translate }}
-      </label>
-      <input
-        type="text"
-        formControlName="phone"
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        [placeholder]="'e.g., +216 71 000 000' | translate"
-      >
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {{ 'Email' | translate }}
-      </label>
-      <input
-        type="email"
-        formControlName="email"
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        [placeholder]="'e.g., contact@company.com' | translate"
-      >
-    </div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-      {{ 'Description' | translate }}
-    </label>
-    <textarea
-      formControlName="description"
-      rows="3"
-      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-      [placeholder]="'Structure description...' | translate"
-    ></textarea>
-  </div>
-  
-  <!-- Form Actions -->
-  <div class="flex justify-end gap-3">
-    <button
-      type="button"
-      (click)="cancelForm()"
-      class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-    >
-      {{ 'Annuler' | translate }}
-    </button>
-    <button
-      type="submit"
-      [disabled]="loading || structureForm.invalid"
-      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {{ loading ? ('Traitement en cours...' | translate) : (isEditing ? ('Mettre à jour' | translate) : ('Créer' | translate)) }}
-    </button>
-  </div>
-</form>
-    </div>
-
-    <!-- Data Table -->
+    <!-- Data Display - Table Format -->
     <div *ngIf="!showForm" class="overflow-x-auto">
       <!-- Loading -->
-      <div *ngIf="loading" class="p-8 text-center">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p class="mt-2 text-gray-600 dark:text-gray-300">{{ 'Chargement en cours...' | translate }}</p>
+      <div *ngIf="loading" class="flex flex-col items-center justify-center py-4">
+        <div class="animate-spin rounded-full h-6 w-6 border-4 border-blue-200 border-t-blue-600"></div>
+        <p class="mt-1 text-gray-500 dark:text-gray-400 text-xs">Chargement...</p>
       </div>
-
-     
 
       <!-- Zones Table -->
       <div *ngIf="!loading && activeTab === 'zones'">
-        <table *ngIf="filteredZones.length > 0" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead class="bg-gray-50 dark:bg-gray-900">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Code' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Nom' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Description' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Crée à' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Actions' | translate }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr *ngFor="let zone of paginatedItems">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white">
-                {{ zone.code }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-white">
-                {{ zone.name }}
-              </td>
-              <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
-                {{ zone.description || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                {{ zone.createdAt | date:'dd/MM/yyyy' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button
-                  (click)="showEditForm(zone, 'zone')"
-                  class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
-                >
-                  {{ 'Modifier' | translate }}
-                </button>
-                <button
-  *ngIf="!isTunisianZone(zone)"
-  (click)="confirmDelete(zone, 'zone')"
-  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
->
-  {{ 'Supprimer' | translate }}
-</button>
-              </td>
-
-              
-            </tr>
-          </tbody>
-        </table>
-        
-        <div *ngIf="filteredZones.length === 0" class="p-8 text-center">
-          <p class="text-gray-600 dark:text-gray-300">{{ 'Aucune zone trouvée' | translate }}</p>
+        <div *ngIf="filteredZones.length > 0" class="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <table class="w-full text-xs mt-5">
+            <thead class="bg-gray-50 dark:bg-gray-900/50">
+              <tr>
+                <th class="px-1.5 py-0.5 text-left text-[13px] font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ 'Code' | translate }}</th>
+                <th class="px-1.5 py-0.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ 'Nom' | translate }}</th>
+                <th class="px-1.5 py-0.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ 'Description' | translate }}</th>
+                <th class="px-1.5 py-0.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ 'Actions' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <tr *ngFor="let zone of paginatedItems" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <td class="px-1.5 py-0.5">
+                  <span class="px-1.5 py-0.5 text-xs font-medium text-gray-900 dark:text-white ">{{ zone.code }}</span>
+                </td>
+                <td class="px-1.5 py-0.5 text-xs font-medium text-gray-900 dark:text-white">{{ zone.name }}</td>
+                <td class="px-1.5 py-0.5 text-xs text-gray-500 dark:text-gray-400 max-w-xs truncate">{{ zone.description || 'Aucune description' }}</td>
+                <td class="px-1.5 py-0.5 text-center">
+                  <div class="flex gap-0.5 justify-center">
+                    <button (click)="showEditForm(zone, 'zone')" class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-all">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </button>
+                    <button *ngIf="!isTunisianZone(zone)" (click)="confirmDelete(zone, 'zone')" class="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="filteredZones.length === 0" class="flex flex-col items-center justify-center py-4">
+          <svg class="w-6 h-6 text-gray-300 dark:text-gray-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-gray-500 dark:text-gray-400 text-xs">Aucune zone trouvée</p>
+          <button (click)="showAddForm('zone')" class="mt-1 text-blue-600 hover:text-blue-700 font-medium text-xs">+ Ajouter une zone</button>
         </div>
       </div>
 
       <!-- Structures Table -->
-      <div *ngIf="!loading && activeTab === 'structuresR'">
-        <table *ngIf="filteredStructuresR.length > 0" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead class="bg-gray-50 dark:bg-gray-900">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Code' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Nom' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Type de structure' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Email' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Governorat' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Actions' | translate }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr *ngFor="let structure of paginatedItems">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white">
-                {{ structure.code }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-white">
-                {{ structure.name }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                {{ structure.typeStructure || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                {{ structure.email || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                {{ structure.zoneGeographique?.name || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button
-                  (click)="showEditForm(structure, 'structure')"
-                  class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
-                >
-                  {{ 'Modifier' | translate }}
-                </button>
-                <button
-                  (click)="confirmDelete(structure, 'structure')"
-                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                >
-                  {{ 'Supprimer' | translate }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <div *ngIf="filteredStructuresR.length === 0" class="p-8 text-center">
-          <p class="text-gray-600 dark:text-gray-300">{{ 'Aucune structure trouvée' | translate }}</p>
+      <div *ngIf="!loading && (activeTab === 'structuresR' || activeTab === 'structuresB')">
+        <div *ngIf="(activeTab === 'structuresR' ? filteredStructuresR : filteredStructuresB).length > 0" class="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <table class="w-full text-xs mt-5">
+            <thead class="bg-gray-50 dark:bg-gray-900/50">
+              <tr>
+                <th class="px-1.5 py-0.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ 'Code' | translate }}</th>
+                <th class="px-1.5 py-0.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ 'Nom' | translate }}</th>
+                <th class="px-1.5 py-0.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ 'Type' | translate }}</th>
+                <th class="px-1.5 py-0.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ 'Zone' | translate }}</th>
+                <th class="px-1.5 py-0.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ 'Email' | translate }}</th>
+                <th class="px-1.5 py-0.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ 'Actions' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <tr *ngFor="let structure of paginatedItems" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <td class="px-1.5 py-0.5">
+                  <span class="px-1.5 py-0.5 text-xs font-medium text-gray-900 dark:text-white">{{ structure.code }}</span>
+                </td>
+                <td class="px-1.5 py-0.5 text-xs font-medium text-gray-900 dark:text-white">{{ structure.name }}</td>
+                <td class="px-1.5 py-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  <span class="px-1 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{{ structure.typeStructure || 'Non spécifié' }}</span>
+                </td>
+                <td class="px-1.5 py-0.5 text-xs text-gray-500 dark:text-gray-400">{{ structure.zoneGeographique?.name || 'Non assigné' }}</td>
+                <td class="px-1.5 py-0.5 text-xs text-gray-500 dark:text-gray-400">{{ structure.email || '-' }}</td>
+                <td class="px-1.5 py-0.5 text-center">
+                  <div class="flex gap-0.5 justify-center">
+                    <button (click)="showEditForm(structure, 'structure')" class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-all">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </button>
+                    <button (click)="confirmDelete(structure, 'structure')" class="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </div>
-
-      <div *ngIf="!loading && activeTab === 'structuresB'">
-        <table *ngIf="filteredStructuresB.length > 0" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead class="bg-gray-50 dark:bg-gray-900">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Code' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Nom' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Type de structure' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Email' | translate }}
-              </th>
-               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Governorat' | translate }}
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                {{ 'Actions' | translate }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr *ngFor="let structure of paginatedItems">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white">
-                {{ structure.code }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-white">
-                {{ structure.name }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                {{ structure.typeStructure || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                {{ structure.email || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                {{ structure.zoneGeographique?.name || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button
-                  (click)="showEditForm(structure, 'structure')"
-                  class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
-                >
-                  {{ 'Modifier' | translate }}
-                </button>
-                <button
-                  (click)="confirmDelete(structure, 'structure')"
-                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                >
-                  {{ 'Supprimer' | translate }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <div *ngIf="filteredStructuresB.length === 0" class="p-8 text-center">
-          <p class="text-gray-600 dark:text-gray-300">{{ 'Aucune structure trouvée' | translate }}</p>
+        <div *ngIf="(activeTab === 'structuresR' ? filteredStructuresR : filteredStructuresB).length === 0" class="flex flex-col items-center justify-center py-4">
+          <svg class="w-6 h-6 text-gray-300 dark:text-gray-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+          <p class="text-gray-500 dark:text-gray-400 text-xs">Aucune structure trouvée</p>
+          <button (click)="showAddForm('structure')" class="mt-1 text-blue-600 hover:text-blue-700 font-medium text-xs">+ Ajouter une structure</button>
         </div>
       </div>
 
       <!-- Pagination -->
-      <div *ngIf="!loading && totalPages > 1" class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+      <div *ngIf="!loading && totalPages > 1" class="px-4 py-1.5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
         <div class="flex items-center justify-between">
-          <div class="text-sm text-gray-600 dark:text-gray-300">
-            {{ 'Page' | translate }} {{ currentPage }} {{ 'sur' | translate }} {{ totalPages }}
+          <div class="text-xs text-gray-600 dark:text-gray-400">
+            Page {{ currentPage }} sur {{ totalPages }}
           </div>
-          <div class="flex space-x-2">
-            <button
-              (click)="changePage(currentPage - 1)"
-              [disabled]="currentPage === 1"
-              class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 disabled:opacity-50"
-            >
-              {{ 'Précédent' | translate }}
+          <div class="flex gap-0.5">
+            <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" 
+              class="px-1.5 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded disabled:opacity-40 hover:bg-white dark:hover:bg-gray-700 transition-all">
+              Précédent
             </button>
-            
-            <div class="flex space-x-1">
-              <button
-                *ngFor="let page of pageNumbers"
-                (click)="changePage(page)"
-                [class]="page === currentPage 
-                  ? 'px-3 py-1 bg-blue-600 text-white rounded' 
-                  : 'px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'"
-              >
-                {{ page }}
-              </button>
-            </div>
-            
-            <button
-              (click)="changePage(currentPage + 1)"
-              [disabled]="currentPage === totalPages"
-              class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 disabled:opacity-50"
-            >
-              {{ 'Suivant' | translate }}
+            <button *ngFor="let page of pageNumbers" (click)="changePage(page)" 
+              [class]="page === currentPage ? 'px-1.5 py-0.5 text-xs bg-blue-600 text-white rounded shadow-sm' : 'px-1.5 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-white dark:hover:bg-gray-700 transition-all'">
+              {{ page }}
+            </button>
+            <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" 
+              class="px-1.5 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded disabled:opacity-40 hover:bg-white dark:hover:bg-gray-700 transition-all">
+              Suivant
             </button>
           </div>
         </div>

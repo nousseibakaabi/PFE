@@ -295,4 +295,70 @@ export class RequestsComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
   }
+
+get pendingRequests() {
+  return this.filteredRequests.filter(r => r.status === 'PENDING');
+}
+
+get approvedRequests() {
+  return this.filteredRequests.filter(r => r.status === 'APPROVED');
+}
+
+get deniedRequests() {
+  return this.filteredRequests.filter(r => r.status === 'DENIED');
+}
+
+
+// Add these methods to your RequestsComponent class
+
+getChefAvatarUrl(chef: any): string {
+  if (!chef || !chef.profileImage) {
+    let initials = '?';
+    if (chef?.firstName && chef?.lastName) {
+      initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
+    } else if (chef?.firstName) {
+      initials = chef.firstName[0].toUpperCase();
+    } else if (chef?.username) {
+      initials = chef.username[0].toUpperCase();
+    }
+    return this.generateDefaultAvatar(initials);
+  }
+  
+  const profileImage = chef.profileImage;
+  if (profileImage.startsWith('http')) {
+    return profileImage;
+  }
+  if (profileImage.startsWith('/uploads/')) {
+    return 'http://localhost:8080' + profileImage; // Adjust base URL as needed
+  }
+  if (profileImage.startsWith('data:image')) {
+    return profileImage;
+  }
+  return 'http://localhost:8080/uploads/avatars/' + profileImage;
+}
+
+generateDefaultAvatar(initials: string): string {
+  // Blue ring with no fill and blue initials
+  const blueColor = '#3b82f6';
+  
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+    <circle cx="50" cy="50" r="48" fill="none" stroke="${blueColor}" stroke-width="2"/>
+    <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="500" fill="${blueColor}" dominant-baseline="middle">${initials}</text>
+  </svg>`;
+  
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+}
+
+handleChefImageErrorForUser(event: any, chef: any): void {
+  let initials = '?';
+  if (chef?.firstName && chef?.lastName) {
+    initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
+  } else if (chef?.firstName) {
+    initials = chef.firstName[0].toUpperCase();
+  } else if (chef?.username) {
+    initials = chef.username[0].toUpperCase();
+  }
+  event.target.src = this.generateDefaultAvatar(initials);
+  event.target.onerror = null;
+}
 }

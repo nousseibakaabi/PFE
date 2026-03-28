@@ -1,32 +1,30 @@
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
-  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-    
-    <!-- Header -->
-    <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
+<div class="p-4 mx-auto max-w-screen-2xl md:p-7"> 
+
+<div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
           <button (click)="goBack()" 
-                  class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-            <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24">
+                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+        <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="white" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-          </div>
-          <div>
-            <h2 class="text-lg font-bold text-gray-800 dark:text-white">
-              {{ isEditing ? 'Modifier l\'Application' : 'Nouvelle Application' }}
-            </h2>
-            <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
-              {{ isEditing ? 'Modifiez les informations de l\'application' : 'Créez une nouvelle application' }}
-            </p>
-          </div>
+        </div>
+        <div>
+          <h2 class="text-[17px] font-bold text-gray-800 dark:text-white">                {{ isEditing ? 'Modifier l\'Application' : 'Nouvelle Application' }}
+
+</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-[11px] mt-0.5">                           {{ isEditing ? 'Modifiez les informations de l\'application' : 'Créez une nouvelle application' }}
+</p>
         </div>
       </div>
+   
     </div>
+  </div>
 
     <!-- Success Message -->
     <div *ngIf="successMessage" class="mb-4 p-3 bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-900/5 border border-green-200 dark:border-green-800/30 rounded-xl">
@@ -64,303 +62,365 @@
       <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">Chargement...</p>
     </div>
 
-    <!-- Form -->
-    <div *ngIf="!loading || !isEditing" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/30 p-6">
-      <form (ngSubmit)="saveApplication()" class="space-y-5">
-        <!-- Basic Info -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Code Application *
-            </label>
+   
+
+<!-- Form - Two Column Layout with Animated Separator -->
+<div *ngIf="!loading || !isEditing" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+  <form (ngSubmit)="saveApplication()" class="p-4">
+    
+    <!-- Two Column Layout with Lightning Bar -->
+    <div class="flex flex-col lg:flex-row gap-6">
+      
+      <!-- LEFT COLUMN -->
+      <div class="flex-1 space-y-5">
+        <!-- Code Application -->
+        <div>
+          <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+            Code Application <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
             <input
               type="text"
               [(ngModel)]="applicationForm.code"
               name="code"
               [disabled]="isEditing"
-              required
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+              (input)="onCodeChange()"
+              [class.border-red-500]="codeExists && applicationForm.code"
+              [class.border-green-500]="codeValid && !codeExists && applicationForm.code"
+              class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
               placeholder="APP-2024-001"
             />
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Format: APP-AAAA-XXX</p>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2">
+              <i *ngIf="checkingCode" class="fas fa-spinner fa-spin text-gray-400 text-[10px]"></i>
+              <i *ngIf="codeValid && !codeExists && !checkingCode && applicationForm.code" 
+                 class="fas fa-check-circle text-green-500 text-[10px]"></i>
+              <i *ngIf="codeInvalid && applicationForm.code && !checkingCode" 
+                 class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
+              <i *ngIf="codeExists && !checkingCode && applicationForm.code" 
+                 class="fas fa-times-circle text-red-500 text-[10px]"></i>
+            </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Nom de l'Application *
-            </label>
+          <div *ngIf="codeInvalid && applicationForm.code && !checkingCode" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-times-circle text-[9px]"></i>
+            Format invalide (APP-AAAA-XXX)
+          </div>
+          <div *ngIf="codeExists && !checkingCode && applicationForm.code" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-times-circle text-[9px]"></i>
+            Ce code existe déjà
+          </div>
+          <div *ngIf="codeValid && !codeExists && applicationForm.code && !checkingCode" class="text-green-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-check-circle text-[9px]"></i>
+            Code disponible
+          </div>
+        </div>
+
+        <!-- Nom Application -->
+        <div>
+          <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+            Nom de l'Application <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
             <input
               type="text"
               [(ngModel)]="applicationForm.name"
               name="name"
-              required
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+              (input)="validateName()"
+              [class.border-red-500]="nameInvalid && applicationForm.name"
+              [class.border-green-500]="nameValid && applicationForm.name"
+              class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               placeholder="Nom de l'application"
             />
+            <div class="absolute right-2 top-1/2 -translate-y-1/2">
+              <i *ngIf="nameValid && applicationForm.name" class="fas fa-check-circle text-green-500 text-[10px]"></i>
+              <i *ngIf="nameInvalid && applicationForm.name" class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
+            </div>
+          </div>
+          <div *ngIf="nameInvalid && applicationForm.name" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-times-circle text-[9px]"></i>
+            Nom requis (min 3 caractères)
+          </div>
+          <div *ngIf="nameValid && applicationForm.name" class="text-green-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-check-circle text-[9px]"></i>
+            Nom valide
           </div>
         </div>
 
-
-        <!-- Chef de Projet Selection with Workload in Custom Dropdown -->
-<!-- Chef de Projet Selection with Workload in Dropdown -->
-<div *ngIf="shouldShowChefField()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-      Chef de Projet
-    </label>
+        <!-- Chef de Projet -->
+        <div *ngIf="shouldShowChefField()">
+  <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+    Chef de Projet
+  </label>
+  <div class="relative">
+    <button 
+      type="button"
+      (click)="toggleChefDropdown()"
+      class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white flex items-center justify-between transition-all">
+      <span *ngIf="!getSelectedChef()" class="text-gray-500 dark:text-gray-400">Sélectionner un chef de projet</span>
+      <span *ngIf="getSelectedChef() as chef" class="flex items-center gap-2">
+        <!-- Avatar with fallback to initials -->
+        <div class="h-5 w-5 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 flex-shrink-0">
+          <img *ngIf="chef.profileImage" 
+               [src]="getChefAvatarUrl(chef)" 
+               [alt]="chef.firstName"
+               class="h-full w-full object-cover"
+               (error)="handleChefImageError($event, chef)">
+          <div *ngIf="!chef.profileImage" 
+               class="w-full h-full rounded-full border border-blue-500 flex items-center justify-center bg-transparent">
+            <span class="text-[9px] font-medium text-blue-600">{{ getChefInitials(chef) }}</span>
+          </div>
+        </div>
+        <span class="text-xs">{{ chef.firstName }} {{ chef.lastName }}</span>
+        <span *ngIf="getChefWorkload(chef.id) as workload" 
+              class="px-1.5 py-0.5 text-[10px] font-medium rounded-full"
+              [ngClass]="getWorkloadClass(workload.currentWorkload)">
+          {{ workload.currentWorkload.toFixed(0) }}%
+        </span>
+      </span>
+      <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
     
-    <!-- Loading indicator -->
-    <div *ngIf="workloadLoading" class="mb-2 text-xs text-gray-500 dark:text-gray-400">
-      <i class="fas fa-spinner fa-spin mr-1"></i> Chargement des charges...
-    </div>
-    
-    <!-- Custom dropdown with workload indicators and avatars -->
-    <div class="relative">
-      <button 
-        type="button"
-        (click)="toggleChefDropdown()"
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm flex items-center justify-between">
-        <span *ngIf="!getSelectedChef()" class="text-gray-500 dark:text-gray-400">Sélectionner un chef de projet</span>
-        <span *ngIf="getSelectedChef() as chef" class="flex items-center">
-          <div class="h-6 w-6 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 mr-2">
-            <img [src]="getChefAvatarUrl(chef)" 
+    <!-- Dropdown menu with avatars and initials -->
+    <div *ngIf="showChefDropdown" 
+         class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+      <div (click)="selectChef(null)" 
+           class="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700">
+        <span class="text-xs text-gray-500">Non assigné</span>
+      </div>
+      <div *ngFor="let chef of chefsProjet" 
+           (click)="selectChef(chef)"
+           class="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-between"
+           [class.bg-blue-50]="applicationForm.chefDeProjetId === chef.id">
+        <div class="flex items-center gap-2">
+          <!-- Avatar with fallback to initials -->
+          <div class="h-6 w-6 rounded-full overflow-hidden bg-transparent-200 dark:bg-transparent-600 flex-shrink-0">
+            <img *ngIf="chef.profileImage" 
+                 [src]="getChefAvatarUrl(chef)" 
                  [alt]="chef.firstName"
                  class="h-full w-full object-cover"
                  (error)="handleChefImageError($event, chef)">
+            <div *ngIf="!chef.profileImage" 
+                 class="w-full h-full rounded-full border border-blue-500 flex items-center justify-center bg-transparent">
+              <span class="text-[10px] font-medium text-blue-600">{{ getChefInitials(chef) }}</span>
+            </div>
           </div>
-          <span>{{ chef.firstName }} {{ chef.lastName }}</span>
-          <ng-container *ngIf="getChefWorkload(chef.id) as workload">
-            <span class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full"
-                  [ngClass]="getWorkloadClass(workload.currentWorkload)">
-              {{ workload.currentWorkload.toFixed(1) }}%
-            </span>
-            <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">
-              ({{ workload.currentApps }} applications)
-            </span>
-          </ng-container>
+          <span class="text-xs">{{ chef.firstName }} {{ chef.lastName }}</span>
+        </div>
+        <span *ngIf="getChefWorkload(chef.id) as workload" 
+              class="px-1.5 py-0.5 text-[10px] font-medium rounded-full"
+              [ngClass]="getWorkloadClass(workload.currentWorkload)">
+          {{ workload.currentWorkload.toFixed(0) }}%
         </span>
-        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      
-      <!-- Dropdown menu -->
-      <div *ngIf="showChefDropdown" 
-           class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-        <div class="py-1">
-          <!-- Non assigné option -->
-          <div (click)="selectChef(null)" 
-              class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-700">
-            <span class="text-gray-500 dark:text-gray-400">Non assigné</span>
-          </div>
-          
-          <!-- Chef options -->
-          <div *ngFor="let chef of chefsProjet" 
-               (click)="selectChef(chef)"
-               class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center"
-               [class.bg-blue-50]="applicationForm.chefDeProjetId === chef.id">
-            
-            <!-- Avatar -->
-            <div class="h-8 w-8 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3 flex-shrink-0">
-              <img [src]="getChefAvatarUrl(chef)" 
-                   [alt]="chef.firstName"
-                   class="h-full w-full object-cover"
-                   (error)="handleChefImageError($event, chef)">
-            </div>
-            
-            <!-- Name and workload -->
-            <div class="flex-1 flex items-center justify-between">
-              <span class="text-sm font-medium text-gray-900 dark:text-white">
-                {{ chef.firstName }} {{ chef.lastName }}
-              </span>
-              
-              <ng-container *ngIf="getChefWorkload(chef.id) as workload">
-                <div class="flex items-center ml-2">
-                  <span class="px-2 py-0.5 text-xs font-medium rounded-full mr-1"
-                        [ngClass]="getWorkloadClass(workload.currentWorkload)">
-                    {{ workload.currentWorkload.toFixed(1) }}%
-                  </span>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ workload.currentApps }} Apps
-                  </span>
-                </div>
-              </ng-container>
-              
-              <!-- Loading state -->
-              <span *ngIf="!getChefWorkload(chef.id) && workloadLoading" 
-                    class="text-xs text-gray-400">
-                <i class="fas fa-spinner fa-spin"></i>
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
-    
-
-  </div>
-</div>
-  
-
-        <!-- Client Info -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Client *
-            </label>
-            <input
-              type="text"
-              [(ngModel)]="applicationForm.clientName"
-              name="clientName"
-              required
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-              placeholder="Nom du client"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Email Client
-            </label>
-            <input
-              type="email"
-              [(ngModel)]="applicationForm.clientEmail"
-              name="clientEmail"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-              placeholder="client@entreprise.com"
-            />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Téléphone Client
-            </label>
-            <input
-              type="tel"
-              [(ngModel)]="applicationForm.clientPhone"
-              name="clientPhone"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-              placeholder="+216 71 123 456"
-            />
-          </div>
-          
-        </div>
-
-        <!-- User Limits -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Utilisateurs Minimum
-            </label>
-            <input
-              type="number"
-              [(ngModel)]="applicationForm.minUser"
-              name="minUser"
-              min="0"
-              step="1"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-              placeholder="0"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Utilisateurs Maximum
-            </label>
-            <input
-              type="number"
-              [(ngModel)]="applicationForm.maxUser"
-              name="maxUser"
-              min="0"
-              step="1"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-              placeholder="0"
-            />
-          </div>
-        </div>
-
-  
-
-        <!-- Status (only for editing) -->
-<!-- In application-form.component.html - Update the status section -->
-
-<!-- Status (only for editing) -->
-<div *ngIf="isEditing" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <div>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-      Statut
-    </label>
-    
-    <!-- If TERMINE, show read-only with option to change only for admin -->
-    <div *ngIf="applicationForm.status === 'TERMINE'" class="space-y-2">
-      <div class="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 text-sm flex items-center">
-        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium mr-2">Terminé</span>
-        <span>(statut final)</span>
-      </div>
-      
-      
-    </div>
-    
-    <!-- If PLANIFIE or EN_COURS, show dropdown with termination option -->
-    <div *ngIf="applicationForm.status === 'PLANIFIE' || applicationForm.status === 'EN_COURS'">
-      <select
-        [(ngModel)]="applicationForm.status"
-        name="status"
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-      >
-        <option [value]="applicationForm.status">
-          {{ applicationForm.status === 'PLANIFIE' ? 'Planifié' : 'En Cours' }}
-        </option>
-        <option value="TERMINE" class="text-green-600">
-          ✓ Terminé (manuellement)
-        </option>
-        
-      </select>
-      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-        <i class="fas fa-info-circle mr-1"></i>
-        Le statut peut être modifié manuellement. Les dates continueront d'être synchronisées avec les conventions.
-      </p>
     </div>
   </div>
 </div>
 
-        <!-- Description -->
+        <!-- User Numbers Section -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Description
+          <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            Utilisateurs
           </label>
-          <textarea
-            [(ngModel)]="applicationForm.description"
-            name="description"
-            rows="3"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-            placeholder="Description de l'application..."
-          ></textarea>
+          <div class="flex gap-4">
+            <div class="flex-1">
+              <label class="block text-[9px] text-gray-500 dark:text-gray-400 mb-1">Minimum</label>
+              <div class="flex items-center gap-1">
+                <button type="button" (click)="decrementMinUser()" 
+                  class="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 transition-all">
+                  <svg class="w-2.5 h-2.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                  </svg>
+                </button>
+                <input type="number" [(ngModel)]="applicationForm.minUser" name="minUser" 
+                  (change)="validateMinMaxUsers()"
+                  class="w-full px-1 py-1 text-center text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  [min]="1" step="1">
+                <button type="button" (click)="incrementMinUser()" 
+                  class="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 transition-all">
+                  <svg class="w-2.5 h-2.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="flex-1">
+              <label class="block text-[9px] text-gray-500 dark:text-gray-400 mb-1">Maximum</label>
+              <div class="flex items-center gap-1">
+                <button type="button" (click)="decrementMaxUser()" 
+                  class="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 transition-all">
+                  <svg class="w-2.5 h-2.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                  </svg>
+                </button>
+                <input type="number" [(ngModel)]="applicationForm.maxUser" name="maxUser" 
+                  (change)="validateMinMaxUsers()"
+                  class="w-full px-1 py-1 text-center text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  [min]="1" step="1">
+                <button type="button" (click)="incrementMaxUser()" 
+                  class="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 transition-all">
+                  <svg class="w-2.5 h-2.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="userLimitError" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-exclamation-circle text-[9px]"></i>
+            {{ userLimitError }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Lightning Animated Vertical Separator -->
+      <div class="hidden lg:block relative">
+        <div class="h-full w-px bg-gradient-to-b from-transparent via-blue-500 to-transparent"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></div>
+          <div class="absolute top-0 left-0 w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+        </div>
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-3 bg-blue-500 animate-[pulse_1s_ease-in-out_infinite]"></div>
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0.5 h-3 bg-blue-500 animate-[pulse_1s_ease-in-out_infinite]"></div>
+      </div>
+      <div class="lg:hidden h-px w-full bg-gradient-to-r from-transparent via-blue-500 to-transparent my-2"></div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="flex-1 space-y-5">
+        <!-- Client Name -->
+        <div>
+          <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+            Client <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input type="text" [(ngModel)]="applicationForm.clientName" name="clientName"
+              (input)="validateClient()"
+              [class.border-red-500]="clientInvalid && applicationForm.clientName"
+              [class.border-green-500]="clientValid && applicationForm.clientName"
+              class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="Nom du client" />
+            <div class="absolute right-2 top-1/2 -translate-y-1/2">
+              <i *ngIf="clientValid && applicationForm.clientName" class="fas fa-check-circle text-green-500 text-[10px]"></i>
+              <i *ngIf="clientInvalid && applicationForm.clientName" class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
+            </div>
+          </div>
+          <div *ngIf="clientInvalid && applicationForm.clientName" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-times-circle text-[9px]"></i>
+            Nom du client requis
+          </div>
+          <div *ngIf="clientValid && applicationForm.clientName" class="text-green-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-check-circle text-[9px]"></i>
+            Client valide
+          </div>
         </div>
 
-        <!-- Error Display -->
-        <div *ngIf="errorMessage" class="p-3 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-900/10 dark:to-red-900/5 border border-red-200 dark:border-red-800/30 rounded-xl">
-          <p class="text-sm text-red-600 dark:text-red-300">{{ errorMessage }}</p>
+        <!-- Client Email -->
+        <div>
+          <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+            Email Client
+          </label>
+          <div class="relative">
+            <input type="email" [(ngModel)]="applicationForm.clientEmail" name="clientEmail"
+              (input)="validateEmail()"
+              [class.border-red-500]="emailInvalid && applicationForm.clientEmail"
+              [class.border-green-500]="emailValid && applicationForm.clientEmail"
+              class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="client@entreprise.com" />
+            <div class="absolute right-2 top-1/2 -translate-y-1/2">
+              <i *ngIf="emailValid && applicationForm.clientEmail" class="fas fa-check-circle text-green-500 text-[10px]"></i>
+              <i *ngIf="emailInvalid && applicationForm.clientEmail" class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
+            </div>
+          </div>
+          <div *ngIf="emailInvalid && applicationForm.clientEmail" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-times-circle text-[9px]"></i>
+            Email invalide (domain@use.tn)
+          </div>
+          <div *ngIf="emailValid && applicationForm.clientEmail" class="text-green-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-check-circle text-[9px]"></i>
+            Email valide
+          </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <button type="button" (click)="goBack()" 
-                  class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm">
-            Annuler
-          </button>
-          <button type="submit" [disabled]="loading" 
-                  class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-            <span *ngIf="loading">
-              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {{ isEditing ? 'Mise à jour...' : 'Création...' }}
-            </span>
-            <span *ngIf="!loading">{{ isEditing ? 'Mettre à jour' : 'Créer l\'application' }}</span>
-          </button>
+        <!-- Client Phone -->
+        <div>
+          <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+            Téléphone Client
+          </label>
+          <div class="relative">
+            <input type="tel" [(ngModel)]="applicationForm.clientPhone" name="clientPhone"
+              (input)="validatePhone()"
+              [class.border-red-500]="phoneInvalid && applicationForm.clientPhone"
+              [class.border-green-500]="phoneValid && applicationForm.clientPhone"
+              class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="+216 71 123 456" />
+            <div class="absolute right-2 top-1/2 -translate-y-1/2">
+              <i *ngIf="phoneValid && applicationForm.clientPhone" class="fas fa-check-circle text-green-500 text-[10px]"></i>
+              <i *ngIf="phoneInvalid && applicationForm.clientPhone" class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
+            </div>
+          </div>
+          <div *ngIf="phoneInvalid && applicationForm.clientPhone" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-times-circle text-[9px]"></i>
+            Numéro invalide (8-15 chiffres)
+          </div>
+          <div *ngIf="phoneValid && applicationForm.clientPhone" class="text-green-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
+            <i class="fas fa-check-circle text-[9px]"></i>
+            Téléphone valide
+          </div>
         </div>
-      </form>
+
+
+         <div *ngIf="isEditing" class="mt-4">
+      <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Statut</label>
+      <div *ngIf="applicationForm.status === 'TERMINE'" class="w-full px-3 py-1.5 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-xs flex items-center">
+        <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-[10px] font-medium mr-2">Terminé</span>
+        <span class="text-[10px]">(statut final)</span>
+      </div>
+      <div *ngIf="applicationForm.status !== 'TERMINE'">
+        <select [(ngModel)]="applicationForm.status" name="status"
+          class="w-full px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+          <option [value]="applicationForm.status">{{ applicationForm.status === 'PLANIFIE' ? 'Planifié' : 'En Cours' }}</option>
+          <option value="TERMINE">✓ Terminé</option>
+        </select>
+      </div>
     </div>
-  </div>
+    
+      </div>
+    </div>
+
+    <!-- Description - Full Width at Bottom -->
+    <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+        Description
+      </label>
+      <textarea [(ngModel)]="applicationForm.description" name="description" rows="2"
+        class="w-full px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+        placeholder="Description de l'application..."></textarea>
+    </div>
+
+    <!-- Status (only for editing) -->
+   
+
+    <!-- Error/Success Messages -->
+    <div *ngIf="errorMessage" class="mt-4 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg text-xs text-red-600 font-medium">
+      <i class="fas fa-exclamation-circle mr-1"></i> {{ errorMessage }}
+    </div>
+    <div *ngIf="successMessage" class="mt-4 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-lg text-xs text-green-600 font-medium">
+      <i class="fas fa-check-circle mr-1"></i> {{ successMessage }}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <button type="button" (click)="goBack()" 
+        class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
+        Annuler
+      </button>
+      <button type="submit" [disabled]="loading || !isFormValid()" 
+        class="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+        <i *ngIf="loading" class="fas fa-spinner fa-spin text-xs"></i>
+        <i *ngIf="!loading" class="fas fa-save text-xs"></i>
+        {{ loading ? (isEditing ? 'Mise à jour...' : 'Création...') : (isEditing ? 'Mettre à jour' : 'Créer') }}
+      </button>
+    </div>
+  </form>
 </div>
+  </div>

@@ -19,6 +19,7 @@ export class AdminNomenclaturesComponent implements OnInit {
   zones: Nomenclature[] = [];
   structuresR: Structure[] = [];
   structuresB : Structure[]=[];
+    Math = Math;
   
   // Filtres
   searchTerm: string = '';

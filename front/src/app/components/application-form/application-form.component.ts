@@ -18,6 +18,23 @@ export class ApplicationFormComponent implements OnInit {
   applicationId: number | null = null;
   // ADD THIS: application property to store the loaded application
   application: Application | null = null;
+
+
+  codeValid = false;
+codeInvalid = false;
+nameValid = false;
+nameInvalid = false;
+clientValid = false;
+clientInvalid = false;
+emailValid = false;
+emailInvalid = false;
+phoneValid = false;
+phoneInvalid = false;
+
+codeExists = false;
+checkingCode = false;
+codeCheckTimeout: any;
+
   
   isEditing = false;
   loading = false;
@@ -318,14 +335,9 @@ saveApplication(): void {
     return true;
   }
 
-  validateCodeFormat(): boolean {
-    const pattern = /^APP-\d{4}-\d{3}$/;
-    if (!pattern.test(this.applicationForm.code)) {
-      this.errorMessage = 'Format invalide. Utilisez APP-AAAA-XXX (ex: APP-2024-001)';
-      return false;
-    }
-    return true;
-  }
+
+
+  
 
   canReturnToAutoStatus(): boolean {
     if (!this.applicationForm.dateDebut) return false;
@@ -503,4 +515,175 @@ saveApplication(): void {
       this.showChefDropdown = false;
     }
   }
+
+
+
+
+validateName(): boolean {
+  const isValid = this.applicationForm.name?.trim().length >= 3;
+  this.nameValid = isValid;
+  this.nameInvalid = !isValid && this.applicationForm.name?.trim().length > 0;
+  return isValid;
 }
+
+validateClient(): boolean {
+  const isValid = this.applicationForm.clientName?.trim().length > 0;
+  this.clientValid = isValid;
+  this.clientInvalid = !isValid && this.applicationForm.clientName?.trim().length > 0;
+  return isValid;
+}
+
+validateEmail(): boolean {
+  if (!this.applicationForm.clientEmail) {
+    this.emailValid = false;
+    this.emailInvalid = false;
+    return true;
+  }
+  const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const isValid = pattern.test(this.applicationForm.clientEmail);
+  this.emailValid = isValid;
+  this.emailInvalid = !isValid;
+  return isValid;
+}
+
+validatePhone(): boolean {
+  if (!this.applicationForm.clientPhone) {
+    this.phoneValid = false;
+    this.phoneInvalid = false;
+    return true;
+  }
+  const pattern = /^[0-9+\-\s]{8,15}$/;
+  const isValid = pattern.test(this.applicationForm.clientPhone);
+  this.phoneValid = isValid;
+  this.phoneInvalid = !isValid;
+  return isValid;
+}
+
+
+
+onCodeChange(): void {
+  // Clear previous timeout
+  if (this.codeCheckTimeout) {
+    clearTimeout(this.codeCheckTimeout);
+  }
+  
+  // First, validate format
+  this.validateCodeFormat();
+  
+  // If format is invalid, don't check existence
+  if (this.codeInvalid || !this.applicationForm.code) {
+    this.codeExists = false;
+    return;
+  }
+  
+  // Debounce API call (wait 500ms after user stops typing)
+  this.codeCheckTimeout = setTimeout(() => {
+    this.checkCodeExists();
+  }, 500);
+}
+
+// Validate code format
+validateCodeFormat(): boolean {
+  const pattern = /^APP-\d{4}-\d{3}$/;
+  const isValid = pattern.test(this.applicationForm.code);
+  this.codeValid = isValid;
+  this.codeInvalid = !isValid && this.applicationForm.code.length > 0;
+  return isValid;
+}
+
+// Check if code already exists
+checkCodeExists(): void {
+  if (!this.applicationForm.code || this.codeInvalid) {
+    return;
+  }
+  
+  this.checkingCode = true;
+  this.applicationService.checkApplicationCodeExists(this.applicationForm.code).subscribe({
+    next: (response: any) => {
+      this.codeExists = response.exists === true;
+      this.checkingCode = false;
+    },
+    error: (error) => {
+      console.error('Error checking code:', error);
+      this.codeExists = false;
+      this.checkingCode = false;
+    }
+  });
+}
+
+// Update isFormValid to include code existence check
+// User limit validation and increment/decrement methods
+userLimitError = '';
+
+validateMinMaxUsers(): void {
+  const min = this.applicationForm.minUser || 0;
+  const max = this.applicationForm.maxUser || 0;
+  
+  if (min <= 0) {
+    this.userLimitError = 'Le minimum doit être supérieur à 0';
+    return;
+  }
+  if (max <= 0) {
+    this.userLimitError = 'Le maximum doit être supérieur à 0';
+    return;
+  }
+  if (min > max) {
+    this.userLimitError = 'Le minimum ne peut pas être supérieur au maximum';
+    return;
+  }
+  this.userLimitError = '';
+}
+
+incrementMinUser(): void {
+  const current = this.applicationForm.minUser || 1;
+  this.applicationForm.minUser = current + 1;
+  this.validateMinMaxUsers();
+}
+
+decrementMinUser(): void {
+  const current = this.applicationForm.minUser || 1;
+  if (current > 1) {
+    this.applicationForm.minUser = current - 1;
+    this.validateMinMaxUsers();
+  }
+}
+
+incrementMaxUser(): void {
+  const current = this.applicationForm.maxUser || 1;
+  this.applicationForm.maxUser = current + 1;
+  this.validateMinMaxUsers();
+}
+
+decrementMaxUser(): void {
+  const current = this.applicationForm.maxUser || 1;
+  if (current > 1) {
+    this.applicationForm.maxUser = current - 1;
+    this.validateMinMaxUsers();
+  }
+}
+
+// Update isFormValid to include user limit validation
+isFormValid(): boolean {
+  if (!this.validateCodeFormat()) return false;
+  if (this.codeExists) return false;
+  if (!this.validateName()) return false;
+  if (!this.validateClient()) return false;
+  if (!this.validateEmail()) return false;
+  if (!this.validatePhone()) return false;
+  if (this.userLimitError) return false;
+  return true;
+}
+
+// Add getChefInitials method
+getChefInitials(chef: any): string {
+  if (!chef) return '?';
+  let initials = '';
+  if (chef.firstName) initials += chef.firstName.charAt(0).toUpperCase();
+  if (chef.lastName) initials += chef.lastName.charAt(0).toUpperCase();
+  return initials || '?';
+}
+
+}
+
+
+

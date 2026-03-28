@@ -33,6 +33,11 @@ export class ApplicationDetailComponent implements OnInit {
   selectedChefId: number | null = null;
   assigning = false;
 
+
+  showTerminateModal = false;
+terminating = false;
+terminationReason = '';
+
   applicationHistory: HistoryEntry[] = [];
   loadingHistory = false;
   Object = Object;
@@ -143,14 +148,25 @@ loadChefWorkload(): void {
   }
   }
 
-  getChefInitials(): string {
-    if (!this.application?.chefDeProjetFullName) return '?';
-    const names = this.application.chefDeProjetFullName.split(' ');
-    if (names.length >= 2) {
-      return (names[0][0] + names[1][0]).toUpperCase();
-    }
-    return names[0][0].toUpperCase();
+// Update your existing getChefInitials method to accept the chef parameter
+getChefInitials(chef: any): string {
+  if (!chef) return '?';
+  
+  let initials = '';
+  if (chef.firstName && chef.firstName.length > 0) {
+    initials += chef.firstName.charAt(0).toUpperCase();
   }
+  if (chef.lastName && chef.lastName.length > 0) {
+    initials += chef.lastName.charAt(0).toUpperCase();
+  }
+  
+  if (initials.length === 0 && chef.username && chef.username.length > 0) {
+    initials = chef.username.charAt(0).toUpperCase();
+  }
+  
+  return initials || '?';
+}
+
 
 
 getChefAvatarUrl(): string {
@@ -350,7 +366,7 @@ loadApplicationDetails(id: number): void {
   }
 
 
-  formatDate(dateString: string): string {
+formatDate(dateString: string | null | undefined): string {
   if (!dateString) return '-';
   const date = new Date(dateString);
   const day = date.getDate().toString().padStart(2, '0');
@@ -359,17 +375,17 @@ loadApplicationDetails(id: number): void {
   return `${day}/${month}/${year}`;
 }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'PLANIFIE': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'EN_COURS': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'TERMINE': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+getStatusClass(status: string | null | undefined): string {
+  switch (status) {
+    case 'PLANIFIE': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+    case 'EN_COURS': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+    case 'TERMINE': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+    default: return 'bg-gray-100 text-gray-800';
   }
+}
 
-  getStatusLabel(status: string | null): string {
-  if (status === null) return '-';
+getStatusLabel(status: string | null | undefined): string {
+  if (status === null || status === undefined) return '-';
   
   switch (status) {
     case 'PLANIFIE': return 'Planifié';
@@ -723,58 +739,7 @@ checkCanTerminate(application: Application | null): boolean {
   return !!(application && (application.status === 'PLANIFIE' || application.status === 'EN_COURS'));
 }
 
-/**
- * Terminate application manually
- */
-terminateApplication(): void {
-  if (!this.application || !this.checkCanTerminate(this.application)) {
-    this.errorMessage = 'Cette application ne peut pas être terminée';
-    return;
-  }
-  
-  // Optional: Show prompt with reason
-  const reason = prompt('Raison de la terminaison (optionnelle):', 'Terminé manuellement');
-  
-  if (reason === null) return; // User cancelled
-  
-  this.loading = true;
-  this.applicationService.manuallyTerminateApplication(this.application.id, reason || undefined).subscribe({
-    next: (response: any) => {
-      if (response.success) {
-        this.successMessage = 'Application marquée comme terminée avec succès';
-        
-        // Show termination details
-        if (response.terminationInfo) {
-          const info = response.terminationInfo;
-          let terminationDetail = '';
-          
-          if (info.daysRemaining > 0) {
-            terminationDetail = `Terminée ${info.daysRemaining} jours avant l'échéance`;
-          } else if (info.daysRemaining < 0) {
-            terminationDetail = `Terminée ${Math.abs(info.daysRemaining)} jours après l'échéance`;
-          } else if (info.daysRemaining === 0) {
-            terminationDetail = 'Terminée le jour de l\'échéance';
-          }
-          
-          if (terminationDetail) {
-            this.successMessage += ` - ${terminationDetail}`;
-          }
-        }
-        
-        // Reload application data
-        this.loadApplicationDetails(this.application!.id);
-      } else {
-        this.errorMessage = response.message || 'Erreur lors de la termination';
-      }
-      this.loading = false;
-    },
-    error: (error) => {
-      console.error('Error terminating application:', error);
-      this.errorMessage = error.error?.message || 'Erreur lors de la termination';
-      this.loading = false;
-    }
-  });
-}
+
 
 
 /**
@@ -840,5 +805,93 @@ closeReassignmentRequestModal(): void {
   this.showReassignmentModal = false;
 }
 
+
+// Add this method to your ApplicationDetailComponent class
+getChefInitialsFromName(fullName: string): string {
+  if (!fullName) return '?';
+  const parts = fullName.split(' ');
+  if (parts.length >= 2) {
+    return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+  }
+  return fullName.charAt(0).toUpperCase();
+}
+
+
+openTerminateModal(): void {
+  this.terminationReason = '';
+  this.showTerminateModal = true;
+}
+
+/**
+ * Close terminate modal
+ */
+closeTerminateModal(): void {
+  this.showTerminateModal = false;
+  this.terminationReason = '';
+}
+
+/**
+ * Confirm and execute termination
+ */
+confirmTerminate(): void {
+  if (!this.application) return;
+  
+  this.terminating = true;
+  
+  this.applicationService.manuallyTerminateApplication(
+    this.application.id, 
+    this.terminationReason || undefined
+  ).subscribe({
+    next: (response: any) => {
+      if (response.success) {
+        this.successMessage = 'Application marquée comme terminée avec succès';
+        
+        // Show termination details
+        if (response.terminationInfo) {
+          const info = response.terminationInfo;
+          let terminationDetail = '';
+          
+          if (info.daysRemaining > 0) {
+            terminationDetail = `Terminée ${info.daysRemaining} jours avant l'échéance`;
+          } else if (info.daysRemaining < 0) {
+            terminationDetail = `Terminée ${Math.abs(info.daysRemaining)} jours après l'échéance`;
+          } else if (info.daysRemaining === 0) {
+            terminationDetail = 'Terminée le jour de l\'échéance';
+          }
+          
+          if (terminationDetail) {
+            this.successMessage += ` - ${terminationDetail}`;
+          }
+        }
+        
+        // Reload application data
+        this.loadApplicationDetails(this.application!.id);
+        this.closeTerminateModal();
+      } else {
+        this.errorMessage = response.message || 'Erreur lors de la termination';
+      }
+      this.terminating = false;
+    },
+    error: (error) => {
+      console.error('Error terminating application:', error);
+      this.errorMessage = error.error?.message || 'Erreur lors de la termination';
+      this.terminating = false;
+    }
+  });
+}
+
+/**
+ * Update the terminate button to open modal instead of direct termination
+ */
+// Replace your existing terminateApplication() method with this:
+terminateApplication(): void {
+  if (!this.application || !this.checkCanTerminate(this.application)) {
+    this.errorMessage = 'Cette application ne peut pas être terminée';
+    return;
+  }
+  
+  // Open modal instead of prompt
+  this.openTerminateModal();
+}
 
 }

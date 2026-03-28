@@ -1,62 +1,49 @@
 <div *ngIf="isAdmin()">
-  <!-- Admin Dashboard Header -->
-  <div class="p-4 mx-auto max-w-screen-2xl md:p-6">
-    <div class="mb-6">
-<h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-  {{ 'Gestion des utilisateurs ' | translate }}
-</h1>
-      <p class="text-gray-600 dark:text-gray-400">{{ 'Gérer les utilisateurs et surveiller les métriques système ' | translate }}
-</p>
-    </div>
+  
 
-<!-- Success Panel Modal -->
-<div *ngIf="showSuccessMessage" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center p-4 z-40">
-  <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md mx-auto animate-fade-in">
-    <div class="p-6">
-      <!-- Modal Header -->
-      <div class="flex items-center mb-4">
-        <div class="flex-shrink-0 mr-3">
-          <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center animate-bounce">
-            <svg class="w-6 h-6 text-green-600 dark:text-green-400" 
-                 viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 6L9 17L4 12" 
-                    stroke="currentColor" 
-                    stroke-width="3" 
-                    stroke-linecap="round" 
-                    stroke-linejoin="round"
-                    class="animate-draw-check"/>
-            </svg>
-          </div>
+  <div class="p-4 mx-auto max-w-screen-2xl md:p-7"> 
+
+<div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0zM16 16c0-1 1.5-2 4-2s4 1 4 2" />
+          </svg>
         </div>
         <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ ' Succès' | translate }}
-          </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ '   Opération réussie  ' | translate }}
+          <h2 class="text-[17px] font-bold text-gray-800 dark:text-white">                    {{ 'Gestion des utilisateurs' | translate }}
 
-          </p>
+</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-[11px] mt-0.5">             {{ 'Gérer les utilisateurs et surveiller les métriques système' | translate }}
+</p>
         </div>
       </div>
-      
-      <!-- Modal Body -->
-      <div class="mb-6">
-        <p class="text-gray-700 dark:text-gray-300">
-          {{ successMessage }}
-        </p>
-      </div>
-      
-      <!-- Modal Footer -->
-      <div class="flex justify-end">
-        <button 
-          type="button" 
-          (click)="hideSuccessMessage()"
-          class="px-4 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors"
-        >
-                      {{ ' OK' | translate }}
+   
+    </div>
+  </div>
 
-        </button>
+
+  
+
+<!-- Success Panel Modal - HORIZONTAL LAYOUT -->
+<div *ngIf="showSuccessMessage" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-sm mx-auto shadow-2xl">
+    <div class="p-5 flex items-center gap-4">
+      <div class="flex-shrink-0">
+        <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+          <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+        </div>
       </div>
+      <div class="flex-1">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ 'Succès' | translate }}</h3>
+        <p class="text-xs text-green-700 dark:text-green-400 mt-0.5">{{ successMessage }}</p>
+      </div>
+      <button (click)="hideSuccessMessage()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
   </div>
 </div>
@@ -117,22 +104,22 @@
   </div>
 </div>
     <!-- Dashboard Metrics Section -->
-    <div class="grid grid-cols-12 gap-4 md:gap-6 mb-6">
+    <div class="grid grid-cols-12 gap-3 md:gap-4 mb-6">
       <!-- Metric 1 - Total Users -->
       <div class="col-span-6 md:col-span-3">
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 hover:shadow-md transition-all">
           <div class="flex items-center justify-between">
             <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ ' Nombre total d\'utilisateurs' | translate }}
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                {{ 'Nombre total d\'utilisateurs' | translate }}
               </span>
-              <h3 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+              <h3 class="mt-1 text-xl font-bold text-indigo-600 dark:text-indigo-400">
                 {{ users.length }}
               </h3>
             </div>
-            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10">
-              <svg class="fill-blue-500" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30">
+              <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM9 12a6 6 0 1112 0 6 6 0 01-12 0z"/>
               </svg>
             </div>
           </div>
@@ -141,13 +128,13 @@
 
       <!-- Metric 2 - Locked Users -->
       <div class="col-span-6 md:col-span-3">
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 hover:shadow-md transition-all">
           <div class="flex items-center justify-between">
             <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ ' Utilisateurs bloqués' | translate }}
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                {{ 'Utilisateurs bloqués' | translate }}
               </span>
-              <h3 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+              <h3 class="mt-1 text-xl font-bold text-red-600 dark:text-red-400">
                 {{ getLockedUsers().length }}
               </h3>
             </div>
@@ -162,19 +149,19 @@
 
       <!-- Metric 3 - Failed Attempts -->
       <div class="col-span-6 md:col-span-3">
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 hover:shadow-md transition-all">
           <div class="flex items-center justify-between">
             <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ ' Nombre total de tentatives échouées' | translate }}
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                {{ 'Tentatives échouées' | translate }}
               </span>
-              <h3 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+              <h3 class="mt-1 text-xl font-bold text-amber-600 dark:text-amber-400">
                 {{ getTotalFailedAttempts() }}
               </h3>
             </div>
-            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500/10">
-              <svg class="fill-yellow-500" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+              <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M13 10a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
               </svg>
             </div>
           </div>
@@ -183,19 +170,19 @@
 
       <!-- Metric 4 - Active Users -->
       <div class="col-span-6 md:col-span-3">
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 hover:shadow-md transition-all">
           <div class="flex items-center justify-between">
             <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {{ ' Utilisateurs actifs' | translate }}
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                {{ 'Utilisateurs actifs' | translate }}
               </span>
-              <h3 class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+              <h3 class="mt-1 text-xl font-bold text-green-600 dark:text-green-400">
                 {{ getActiveUsersCount() }}
               </h3>
             </div>
-            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10">
-              <svg class="fill-green-500" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+              <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
               </svg>
             </div>
           </div>
@@ -204,65 +191,71 @@
     </div>
 
     <!-- User Management Section -->
-<div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 mb-6">
+<div class="rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 mb-6 hover:shadow-md transition-all">
        <div class="flex items-center justify-between mb-4">
-    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-      {{ ' Gestion des utilisateurs' | translate }}
+    <h3 class="text-base font-semibold text-indigo-600 dark:text-indigo-400 flex items-center">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0zM16 16c0-1 1.5-2 4-2s4 1 4 2"/>
+      </svg>
+      {{ 'Liste des utilisateurs' | translate }}
    </h3>
     <div class="flex items-center gap-2">
       <!-- Filter Dropdown -->
       <div class="relative">
-        <button (click)="toggleFilterDropdown()" 
-          class="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 flex items-center">
-          <i class="fas fa-ellipsis-v"></i>
-          <span class="ml-1"></span>
-        </button>
+       <button (click)="toggleFilterDropdown()" 
+        class="rounded-lg bg-slate-100 dark:bg-slate-700 px-2 py-1.5 text-[10px] font-medium text-gray-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-1">
+  <i class="fas fa-filter text-[10px]"></i>
+</button>
         
         <!-- Filter Dropdown Menu -->
         <div *ngIf="showFilterDropdown" 
           class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
-          <div class="p-3">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ 'Filtrer par rôle' | translate }}</h4>
-<!-- In your Filter Dropdown Menu section -->
-<select [(ngModel)]="roleFilter" (change)="applyFilters()" 
-  class="w-full mb-3 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white">
-  <option value="">{{ 'Tous les rôles' | translate }}</option>
-  <option value="Commercial Métier">{{ 'Commercial Métier' | translate }}</option>
-  <option value="Décideur">{{ 'Décideur' | translate }}</option>
-  <option value="Chef de Projet">{{ 'Chef de Projet' | translate }}</option>
-</select>
+          <div class="p-3 space-y-3">
+            <div>
+              <h4 class="text-xs font-semibold text-gray-900 dark:text-white mb-1.5 uppercase tracking-wide">{{ 'Filtrer par rôle' | translate }}</h4>
+              <select [(ngModel)]="roleFilter" (change)="applyFilters()" 
+                class="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="">{{ 'Tous les rôles' | translate }}</option>
+                <option value="Commercial Métier">{{ 'Commercial Métier' | translate }}</option>
+                <option value="Décideur">{{ 'Décideur' | translate }}</option>
+                <option value="Chef de Projet">{{ 'Chef de Projet' | translate }}</option>
+              </select>
+            </div>
 
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ 'Filtrer par statut' | translate }}</h4>
-            <select [(ngModel)]="statusFilter" (change)="applyFilters()" 
-              class="w-full mb-3 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white">
-              <option value="">{{ 'Tous les statuts' | translate }}</option>
-              <option value="active">{{ 'Actif' | translate }}</option>
-              <option value="temporarily_locked">{{ 'Temporairement bloqué' | translate }}</option>
-              <option value="admin_locked">{{ 'Bloqué par l\'administrateur' | translate }}</option>
-            </select>
+            <div>
+              <h4 class="text-xs font-semibold text-gray-900 dark:text-white mb-1.5 uppercase tracking-wide">{{ 'Filtrer par statut' | translate }}</h4>
+              <select [(ngModel)]="statusFilter" (change)="applyFilters()" 
+                class="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="">{{ 'Tous les statuts' | translate }}</option>
+                <option value="active">{{ 'Actif' | translate }}</option>
+                <option value="temporarily_locked">{{ 'Temporairement bloqué' | translate }}</option>
+                <option value="admin_locked">{{ 'Bloqué par l\'administrateur' | translate }}</option>
+              </select>
+            </div>
             
-            <div class="flex justify-between">
+            <div class="flex justify-between gap-2 border-t border-slate-200 dark:border-slate-700 pt-3">
               <button (click)="clearFilters()" 
-                class="px-2 py-1 text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
-                {{ 'Effacer les filtres' | translate }}
+                class="flex-1 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                {{ 'Effacer' | translate }}
               </button>
               <button (click)="toggleFilterDropdown()" 
-                class="px-2 py-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                class="flex-1 px-2.5 py-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors">
                 {{ 'Fermer' | translate }}
               </button>
             </div>
           </div>
         </div>
       </div>
-         <!-- Add User Button (smaller and on extreme right) -->
-      <button (click)="openAddUserModal()" 
-        class="rounded-lg bg-blue-500 px-3 py-2 text-sm font-medium text-white hover:bg-blue-600 flex items-center">
-        <i class="fas fa-user-plus"></i>
-      </button>
+         <!-- Add User Button -->
+     <button (click)="openAddUserModal()" 
+        class="rounded-lg bg-indigo-600 dark:bg-indigo-600 px-2 py-1.5 text-[4px] font-medium text-white hover:bg-indigo-700 dark:hover:bg-indigo-700 transition-all hover:scale-105 flex items-center gap-1">
+  <i class="fas fa-user-plus text-[4px]"></i>
+  
+</button>
       <!-- Refresh Button -->
       <button (click)="loadUsers()" 
-          class="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 flex items-center">
-        <i class="fas fa-sync-alt"></i>
+        class="rounded-lg bg-slate-100 dark:bg-slate-700 px-2 py-1.5 text-[10px] font-medium text-gray-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-1">
+        <i class="fas fa-sync-alt text-[10px]"></i>
       </button>
       
    
@@ -272,21 +265,21 @@
 <!-- Active Filters Display -->
 <div *ngIf="roleFilter || statusFilter" class="mb-4 flex flex-wrap gap-2">
   <div *ngIf="roleFilter" 
-    class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full dark:bg-blue-900 dark:text-blue-300">
+    class="inline-flex items-center px-2.5 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 text-xs rounded-full font-medium">
     {{ 'Rôle:' | translate }} {{ roleFilter }}
-    <button (click)="roleFilter = ''; applyFilters()" class="ml-1 text-blue-600 hover:text-blue-800">
+    <button (click)="roleFilter = ''; applyFilters()" class="ml-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200">
       <i class="fas fa-times text-xs"></i>
     </button>
   </div>
   <div *ngIf="statusFilter" 
-    class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full dark:bg-green-900 dark:text-green-300">
+    class="inline-flex items-center px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs rounded-full font-medium">
     {{ 'Statut:' | translate }} {{ 
       statusFilter === 'active' ? 'Actif' : 
       statusFilter === 'temporarily_locked' ? 'Temporairement bloqué' : 
       statusFilter === 'admin_locked' ? 'Bloqué par l\'administrateur' : 
       statusFilter 
     }}
-    <button (click)="statusFilter = ''; applyFilters()" class="ml-1 text-green-600 hover:text-green-800">
+    <button (click)="statusFilter = ''; applyFilters()" class="ml-2 text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-200">
       <i class="fas fa-times text-xs"></i>
     </button>
   </div>
@@ -294,100 +287,95 @@
 
       <!-- Loading -->
       <div *ngIf="loading" class="text-center p-8">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
-        <p class="mt-2 text-gray-600 dark:text-gray-400">{{ 'Chargement des utilisateurs...' | translate }}</p>
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">{{ 'Chargement des utilisateurs...' | translate }}</p>
       </div>
 
-      <!-- Users Table -->
-      <div *ngIf="!loading && users.length > 0" class="overflow-x-auto">
-        <table class="w-full min-w-[640px]">
-          <thead>
-              <tr class="border-b border-gray-200 dark:border-gray-800">
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Utilisateur' | translate }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Email' | translate }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Département' | translate }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Rôle' | translate }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Statut' | translate }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">{{ 'Actions' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-  <tr *ngFor="let user of paginatedUsers" class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-       <td class="px-4 py-3">
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 overflow-hidden rounded-full border-2 border-gray-300 dark:border-gray-700 flex-shrink-0">
-          <img [src]="getAvatarUrl(user)" 
-               [alt]="user.username"
-               class="h-full w-full object-cover"
-               (error)="handleImageError($event, user)">
-        </div>
-        <div>
-          <div class="text-sm font-medium text-gray-900 dark:text-white">
-            {{ user.firstName }} {{ user.lastName }}
+      <!-- LAYOUT OPTION 1: Card Grid (Recommended) -->
+      <div *ngIf="!loading && users.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div *ngFor="let user of paginatedUsers" 
+             class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm p-4 hover:shadow-md transition-shadow relative">
+          <!-- User Info with Status Badge -->
+          <div class="flex items-center gap-3 mb-4 justify-between">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div class="h-10 w-10 overflow-hidden rounded-full border border-slate-300 dark:border-slate-600 flex-shrink-0">
+                <img [src]="getAvatarUrl(user)" 
+                     [alt]="user.username"
+                     class="h-full w-full object-cover"
+                     (error)="handleImageError($event, user)">
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                  {{ user.firstName }} {{ user.lastName }}
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {{ user.email }}
+                </div>
+              </div>
+            </div>
+            <!-- Status Badge on Right Top -->
+            <span [class]="getLockStatusClass(getLockStatus(user))" class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold flex-shrink-0">
+              {{ getLockStatus(user) | translate }}
+            </span>
           </div>
-          <div class="text-xs text-gray-500 dark:text-gray-400">
-            @{{ user.username }}
+
+          <!-- User Details -->
+          <div class="space-y-2 mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-gray-500 dark:text-gray-400">{{ 'Département' | translate }}</span>
+              <div class="text-xs text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                {{ (user.department ? user.department : 'Non attribué') | translate }}
+                <button (click)="openEditDepartmentModal(user)" class="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-transform hover:scale-110">
+                  <i class="fas fa-edit text-xs"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-gray-500 dark:text-gray-400">{{ 'Rôle' | translate }}</span>
+              <div class="text-xs text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                {{ getUserRolesDisplay(user) | translate }}
+                <button (click)="openEditRoleModal(user)" class="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-transform hover:scale-110">
+                  <i class="fas fa-edit text-xs"></i>
+                </button>
+              </div>
+            </div>
           </div>
+
+          <!-- Actions -->
+          <div class="flex gap-2 flex-wrap">
+            <button 
+              (click)="openUserHistoryModal(user)"
+              class="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 px-2 py-1 text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-950/30 flex items-center gap-1 transition-all duration-200 hover:scale-105 flex-1 justify-center" 
+              title="{{ 'Voir l\'historique' | translate }}">
+              <i class="fas fa-history"></i><span>{{ 'Historique' | translate }}</span>
+            </button>
+            <button 
+              *ngIf="!user.lockedByAdmin" 
+              (click)="openConfirmModal(user, 'lock')"
+              class="rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 px-2 py-1 text-xs font-medium hover:bg-orange-100 dark:hover:bg-orange-950/30 flex items-center gap-1 transition-all duration-200 hover:scale-105 flex-1 justify-center"
+              title="{{ 'Verrouiller' | translate }}">
+              <i class="fas fa-lock"></i> <span>{{ 'Vérrouiller' | translate }}</span>
+            </button>
+            <button 
+              *ngIf="user.lockedByAdmin" 
+              (click)="openConfirmModal(user, 'unlock')"
+              class="rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-2 py-1 text-xs font-medium hover:bg-green-100 dark:hover:bg-green-950/30 flex items-center gap-1 transition-all duration-200 hover:scale-105 flex-1 justify-center"
+              title="{{ 'Déverrouiller' | translate }}">
+              <i class="fas fa-unlock"></i> <span>{{ 'Déverrouiller' | translate }}</span>
+            </button>
+          </div>
+
+          <button *ngIf="user.roles.includes('Chef de Projet')"
+                  (click)="showAssignProjectsModal(user)"
+                  class="w-full mt-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 px-3 py-1.5 text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-950/30 flex items-center justify-center gap-1 transition-all hover:scale-105">
+            <i class="fas fa-project-diagram"></i> {{ 'Assigner Applications' | translate }}
+          </button>
         </div>
       </div>
-    </td>
-    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">{{ user.email }}</td>
-<td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
-  {{ (user.department ? user.department : 'Non attribué') | translate }}
-  <button (click)="openEditDepartmentModal(user)" class="ml-2 text-blue-500 hover:text-blue-700">
-    <i class="fas fa-edit text-xs"></i>
-  </button>
-</td>
-<td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
-  {{ getUserRolesDisplay(user) | translate }}
-  <button (click)="openEditRoleModal(user)" class="ml-2 text-blue-500 hover:text-blue-700">
-    <i class="fas fa-edit text-xs"></i>
-  </button>
-</td>
-<td class="px-4 py-3">
-  <span [class]="getLockStatusClass(getLockStatus(user))" class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium">
-    {{ getLockStatus(user) | translate }}
-  </span>
-</td>
-
-
-             <td class="px-4 py-3">
-  <div class="flex gap-2">
-        <button 
-      (click)="openUserHistoryModal(user)"
-      class="rounded-lg bg-purple-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-600 flex items-center transition-all hover:scale-105"
-      title="{{ 'Voir l\'historique' | translate }}">
-      <i class="fas fa-history mr-1"></i> {{ 'Historique' | translate }}
-    </button>
-    <button 
-      *ngIf="!user.lockedByAdmin" 
-      (click)="openConfirmModal(user, 'lock')"
-      class="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600 flex items-center transition-all hover:scale-105"
-    >
-      <i class="fas fa-lock mr-1"></i> {{ 'Verrouiller' | translate }}
-    </button>
-    <button 
-      *ngIf="user.lockedByAdmin" 
-      (click)="openConfirmModal(user, 'unlock')"
-      class="rounded-lg bg-green-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-600 flex items-center transition-all hover:scale-105"
-    >
-      <i class="fas fa-unlock mr-1"></i> {{ 'Déverrouiller' | translate }}
-    </button>
-
-    <button *ngIf="user.roles.includes('Chef de Projet')"
-            (click)="showAssignProjectsModal(user)"
-            class="rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-600 flex items-center transition-all hover:scale-105">
-      <i class="fas fa-project-diagram mr-1"></i> {{ 'Assigner' | translate }}
-    </button>
-  </div>
-</td>
-            </tr>
-          </tbody>
-        </table>
 
         <!-- Pagination -->
 <div *ngIf="!loading && users.length > pageSize" class="mt-6 flex items-center justify-between px-4 py-3">
-  <div class="text-sm text-gray-700 dark:text-gray-300">
+  <div class="text-xs text-gray-600 dark:text-gray-400">
     {{ 'Affichage' | translate }}
     <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span>
     {{ 'à' | translate }}
@@ -402,35 +390,34 @@
     <button
       (click)="previousPage()"
       [disabled]="currentPage === 1"
-      class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      class="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       [class]="currentPage === 1 
-        ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500' 
-        : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'">
-      <i class="fas fa-chevron-left mr-1 text-xs"></i>
-      
+        ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500' 
+        : 'bg-white text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:scale-105'">
+      <i class="fas fa-chevron-left text-xs"></i>
     </button>
 
     <!-- Page Numbers -->
-    <div class="flex items-center space-x-1">
+    <div class="flex items-center gap-1">
       <button
         *ngFor="let page of getPageNumbers()"
         (click)="goToPage(page)"
-        class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors"
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold transition-all"
         [class]="currentPage === page
-          ? 'bg-blue-500 text-white shadow-sm'
-          : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'">
+          ? 'bg-indigo-600 text-white shadow-md'
+          : 'bg-white text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:scale-105'">
         {{ page }}
       </button>
       
       <!-- Ellipsis for many pages -->
       <span *ngIf="totalPages > 5 && currentPage < totalPages - 2" 
-        class="px-2 text-gray-500 dark:text-gray-400">...</span>
+        class="px-2 text-slate-500 dark:text-slate-400">...</span>
       
       <!-- Last Page -->
       <button
         *ngIf="totalPages > 5 && currentPage < totalPages - 1"
         (click)="goToPage(totalPages)"
-        class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600">
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold bg-white text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:scale-105">
         {{ totalPages }}
       </button>
     </div>
@@ -439,81 +426,112 @@
     <button
       (click)="nextPage()"
       [disabled]="currentPage === totalPages"
-      class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      class="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       [class]="currentPage === totalPages
-        ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
-        : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'">
-      
-      <i class="fas fa-chevron-right ml-1 text-xs"></i>
+        ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
+        : 'bg-white text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:scale-105'">
+      <i class="fas fa-chevron-right text-xs"></i>
     </button>
   </div>
 </div>
       </div>
 
       <!-- No Users -->
-<div *ngIf="!loading && users.length === 0" class="text-center p-8">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+<div *ngIf="!loading && users.length === 0" class="text-center py-12">
+        <svg class="mx-auto h-16 w-16 text-slate-300 dark:text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
         </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">{{ 'Aucun utilisateur trouvé' | translate }}</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ 'Aucun utilisateur n\'a encore été créé. Cliquez sur "Ajouter un utilisateur" pour en créer un.' | translate }}</p>
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ 'Aucun utilisateur trouvé' | translate }}</h3>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ 'Aucun utilisateur n\'a encore été créé. Cliquez sur "Ajouter un utilisateur" pour en créer un.' | translate }}</p>
+        <button (click)="openAddUserModal()" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors">
+          <i class="fas fa-user-plus"></i>
+          {{ 'Ajouter un utilisateur' | translate }}
+        </button>
       </div>
-    </div>
 
-  </div>
 
  
   <!-- Add User Modal - Made smaller -->
 <div *ngIf="showAddUserModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md mx-auto"> <!-- Changed from max-w-4xl to max-w-md -->
-    <div class="p-4"> <!-- Changed from p-6 to p-4 -->
-      <div class="flex justify-between items-center mb-4"> <!-- Changed mb-6 to mb-4 -->
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white"> <!-- Changed text-xl to text-lg -->
+  <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl mx-auto flex max-h-[90vh] overflow-hidden">
+    <!-- Left Side: Form (45% width) -->
+    <div class="w-[60%] overflow-y-auto p-5 border-r border-slate-200 dark:border-slate-700">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
           {{ 'Ajouter un nouvel utilisateur' | translate }}
         </h3>
-        <button (click)="closeAddUserModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+        <button (click)="closeAddUserModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 text-xl">
           <i class="fas fa-times"></i>
         </button>
       </div>
       
-      <!-- Add User Error inside modal -->
-      <div *ngIf="addUserError" class="mb-3 p-2 bg-red-100 text-red-700 text-sm rounded-lg dark:bg-red-900/30 dark:text-red-400">
+      <!-- Add User Error -->
+      <div *ngIf="addUserError" class="mb-3 p-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs rounded-lg border border-red-200 dark:border-red-800">
         {{ addUserError }}
       </div>
       
-      <form [formGroup]="addUserForm" (ngSubmit)="onSubmitAddUser()" class="space-y-3"> <!-- Changed space-y-6 to space-y-3 -->
-        <!-- Row 1: Username and Email -->
-        <div class="grid grid-cols-1 gap-2"> <!-- Changed grid-cols-2 to grid-cols-1 -->
-          <div>
-            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"> <!-- Changed text-sm to text-xs -->
-              {{ 'Nom d\'utilisateur' | translate }} *
-            </label>
+      <form [formGroup]="addUserForm" (ngSubmit)="onSubmitAddUser()" class="space-y-3">
+        <!-- Username -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {{ 'Nom d\'utilisateur' | translate }} *
+          </label>
+          <div class="relative">
             <input type="text" formControlName="username" 
               [class.border-red-500]="addUserForm.get('username')?.invalid && (addUserForm.get('username')?.dirty || addUserForm.get('username')?.touched)"
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            <div *ngIf="addUserForm.get('username')?.invalid && (addUserForm.get('username')?.dirty || addUserForm.get('username')?.touched)" 
-              class="text-red-500 text-xs mt-1">
-              <span *ngIf="addUserForm.get('username')?.errors?.['required']">{{ 'Nom d\'utilisateur requis' | translate }}</span>
-              <span *ngIf="addUserForm.get('username')?.errors?.['minlength']">{{ 'Minimum 3 caractères requis' | translate }}</span>
+              [class.border-green-500]="addUserForm.get('username')?.valid && (addUserForm.get('username')?.dirty || addUserForm.get('username')?.touched)"
+              class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-7">
+            <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
+              <i *ngIf="addUserForm.get('username')?.valid && (addUserForm.get('username')?.dirty || addUserForm.get('username')?.touched)" 
+                class="fas fa-check-circle text-green-500 text-[10px]"></i>
+              <i *ngIf="addUserForm.get('username')?.invalid && (addUserForm.get('username')?.dirty || addUserForm.get('username')?.touched)" 
+                class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
             </div>
           </div>
-
-          <div>
-            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Email' | translate }} *
-            </label>
-            <input type="email" formControlName="email" 
-              [class.border-red-500]="addUserForm.get('email')?.invalid && (addUserForm.get('email')?.dirty || addUserForm.get('email')?.touched)"
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            <div *ngIf="addUserForm.get('email')?.invalid && (addUserForm.get('email')?.dirty || addUserForm.get('email')?.touched)" 
-              class="text-red-500 text-xs mt-1">
-              <span *ngIf="addUserForm.get('email')?.errors?.['required']">{{ 'Email requis' | translate }}</span>
-              <span *ngIf="addUserForm.get('email')?.errors?.['email']">{{ 'Veuillez entrer un email valide' | translate }}</span>
-            </div>
+          <div *ngIf="addUserForm.get('username')?.invalid && (addUserForm.get('username')?.dirty || addUserForm.get('username')?.touched)" 
+            class="text-red-500 text-[10px] mt-0.5 flex items-center gap-1">
+            <i class="fas fa-times-circle text-[10px]"></i>
+            <span *ngIf="addUserForm.get('username')?.errors?.['required']">{{ 'Nom d\'utilisateur requis' | translate }}</span>
+            <span *ngIf="addUserForm.get('username')?.errors?.['minlength']">{{ 'Minimum 3 caractères requis' | translate }}</span>
+          </div>
+          <div *ngIf="addUserForm.get('username')?.valid && (addUserForm.get('username')?.dirty || addUserForm.get('username')?.touched)" 
+            class="text-green-500 text-[10px] mt-0.5 flex items-center gap-1">
+            <i class="fas fa-check-circle text-[10px]"></i>
+            {{ 'Nom d\'utilisateur valide' | translate }}
           </div>
         </div>
 
-        <!-- Row 2: Password -->
+        <!-- Email -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {{ 'Email' | translate }} *
+          </label>
+          <div class="relative">
+            <input type="email" formControlName="email" 
+              [class.border-red-500]="addUserForm.get('email')?.invalid && (addUserForm.get('email')?.dirty || addUserForm.get('email')?.touched)"
+              [class.border-green-500]="addUserForm.get('email')?.valid && (addUserForm.get('email')?.dirty || addUserForm.get('email')?.touched)"
+              class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-7">
+            <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
+              <i *ngIf="addUserForm.get('email')?.valid && (addUserForm.get('email')?.dirty || addUserForm.get('email')?.touched)" 
+                class="fas fa-check-circle text-green-500 text-[10px]"></i>
+              <i *ngIf="addUserForm.get('email')?.invalid && (addUserForm.get('email')?.dirty || addUserForm.get('email')?.touched)" 
+                class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
+            </div>
+          </div>
+          <div *ngIf="addUserForm.get('email')?.invalid && (addUserForm.get('email')?.dirty || addUserForm.get('email')?.touched)" 
+            class="text-red-500 text-[10px] mt-0.5 flex items-center gap-1">
+            <i class="fas fa-times-circle text-[10px]"></i>
+            <span *ngIf="addUserForm.get('email')?.errors?.['required']">{{ 'Email requis' | translate }}</span>
+            <span *ngIf="addUserForm.get('email')?.errors?.['pattern']">{{ 'Email invalide (ex: user@domain.nn)' | translate }}</span>
+          </div>
+          <div *ngIf="addUserForm.get('email')?.valid && (addUserForm.get('email')?.dirty || addUserForm.get('email')?.touched)" 
+            class="text-green-500 text-[10px] mt-0.5 flex items-center gap-1">
+            <i class="fas fa-check-circle text-[10px]"></i>
+            {{ 'Email valide' | translate }}
+          </div>
+        </div>
+
+        <!-- Password -->
         <div>
           <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             {{ 'Mot de passe' | translate }} *
@@ -521,132 +539,249 @@
           <div class="relative">
             <input [type]="passwordVisible ? 'text' : 'password'" formControlName="password" 
               [class.border-red-500]="addUserForm.get('password')?.invalid && (addUserForm.get('password')?.dirty || addUserForm.get('password')?.touched)"
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10">
+              [class.border-green-500]="addUserForm.get('password')?.valid && (addUserForm.get('password')?.dirty || addUserForm.get('password')?.touched)"
+              class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-14">
             <button type="button" (click)="togglePasswordVisibility()" 
-              class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-              <i [class]="passwordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              class="absolute right-7 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+              <i [class]="passwordVisible ? 'fas fa-eye-slash text-[10px]' : 'fas fa-eye text-[10px]'"></i>
             </button>
+            <div class="absolute right-2 top-1/2 transform -translate-y-1/2">
+              <i *ngIf="addUserForm.get('password')?.valid && (addUserForm.get('password')?.dirty || addUserForm.get('password')?.touched)" 
+                class="fas fa-check-circle text-green-500 text-[10px]"></i>
+              <i *ngIf="addUserForm.get('password')?.invalid && (addUserForm.get('password')?.dirty || addUserForm.get('password')?.touched)" 
+                class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
+            </div>
           </div>
           <div *ngIf="addUserForm.get('password')?.invalid && (addUserForm.get('password')?.dirty || addUserForm.get('password')?.touched)" 
-            class="text-red-500 text-xs mt-1">
+            class="text-red-500 text-[10px] mt-0.5 flex items-center gap-1">
+            <i class="fas fa-times-circle text-[10px]"></i>
             <span *ngIf="addUserForm.get('password')?.errors?.['required']">{{ 'Mot de passe requis' | translate }}</span>
-            <span *ngIf="addUserForm.get('password')?.errors?.['minlength']">{{ 'Minimum 6 caractères requis' | translate }}</span>
+            <span *ngIf="addUserForm.get('password')?.errors?.['minlength']">{{ 'Minimum 8 caractères requis' | translate }}</span>
+          </div>
+          <div *ngIf="addUserForm.get('password')?.valid && (addUserForm.get('password')?.dirty || addUserForm.get('password')?.touched)" 
+            class="text-green-500 text-[10px] mt-0.5 flex items-center gap-1">
+            <i class="fas fa-check-circle text-[10px]"></i>
+            {{ 'Mot de passe valide' | translate }}
           </div>
         </div>
 
-        <!-- Row 3: First Name & Last Name -->
+        <!-- First Name & Last Name -->
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               {{ 'Prénom' | translate }}
             </label>
             <input type="text" formControlName="firstName" 
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              [class.border-red-500]="addUserForm.get('firstName')?.invalid && (addUserForm.get('firstName')?.dirty || addUserForm.get('firstName')?.touched)"
+              [class.border-green-500]="addUserForm.get('firstName')?.valid && (addUserForm.get('firstName')?.dirty || addUserForm.get('firstName')?.touched)"
+              class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+            <div *ngIf="addUserForm.get('firstName')?.invalid && (addUserForm.get('firstName')?.dirty || addUserForm.get('firstName')?.touched)" 
+              class="text-red-500 text-[10px] mt-0.5 flex items-center gap-1">
+              <i class="fas fa-times-circle text-[10px]"></i>
+              <span>{{ 'Lettres seulement' | translate }}</span>
+            </div>
           </div>
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-             {{ 'Nom de famille' | translate }}
+              {{ 'Nom de famille' | translate }}
             </label>
             <input type="text" formControlName="lastName" 
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              [class.border-red-500]="addUserForm.get('lastName')?.invalid && (addUserForm.get('lastName')?.dirty || addUserForm.get('lastName')?.touched)"
+              [class.border-green-500]="addUserForm.get('lastName')?.valid && (addUserForm.get('lastName')?.dirty || addUserForm.get('lastName')?.touched)"
+              class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+            <div *ngIf="addUserForm.get('lastName')?.invalid && (addUserForm.get('lastName')?.dirty || addUserForm.get('lastName')?.touched)" 
+              class="text-red-500 text-[10px] mt-0.5 flex items-center gap-1">
+              <i class="fas fa-times-circle text-[10px]"></i>
+              <span>{{ 'Lettres seulement' | translate }}</span>
+            </div>
           </div>
         </div>
 
-        <!-- Row 4: Phone & Department -->
+        <!-- Phone & Department -->
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               {{ 'Numéro de téléphone' | translate }}
             </label>
             <input type="text" formControlName="phone" 
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              [class.border-red-500]="addUserForm.get('phone')?.invalid && (addUserForm.get('phone')?.dirty || addUserForm.get('phone')?.touched)"
+              [class.border-green-500]="addUserForm.get('phone')?.valid && (addUserForm.get('phone')?.dirty || addUserForm.get('phone')?.touched)"
+              class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+            <div *ngIf="addUserForm.get('phone')?.invalid && (addUserForm.get('phone')?.dirty || addUserForm.get('phone')?.touched)" 
+              class="text-red-500 text-[10px] mt-0.5 flex items-center gap-1">
+              <i class="fas fa-times-circle text-[10px]"></i>
+              <span>{{ '8 chiffres minimum' | translate }}</span>
+            </div>
           </div>
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Départment' | translate }}
+              {{ 'Département' | translate }}
             </label>
             <input type="text" formControlName="department" 
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              [class.border-red-500]="addUserForm.get('department')?.invalid && (addUserForm.get('department')?.dirty || addUserForm.get('department')?.touched)"
+              [class.border-green-500]="addUserForm.get('department')?.valid && (addUserForm.get('department')?.dirty || addUserForm.get('department')?.touched)"
+              class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+            <div *ngIf="addUserForm.get('department')?.invalid && (addUserForm.get('department')?.dirty || addUserForm.get('department')?.touched)" 
+              class="text-red-500 text-[10px] mt-0.5 flex items-center gap-1">
+              <i class="fas fa-times-circle text-[10px]"></i>
+              <span>{{ 'Lettres, chiffres et espaces seulement' | translate }}</span>
+            </div>
           </div>
         </div>
 
-   <div>
-  <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-    {{ 'Rôles ' | translate }} *
-  </label>
-  <div class="space-y-1">
-    <label *ngFor="let role of availableRoles" 
-      class="flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-      <input type="radio" [value]="role.value" 
-        (change)="onRoleRadioChange($event, role.value)"
-        [checked]="addUserForm.get('roles')?.value?.includes(role.value)"
-        name="roleSelection"
-        class="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:bg-gray-700">
-      <span class="ml-2 text-xs text-gray-700 dark:text-gray-300 font-medium">
-        {{ role.label | translate }}
-      </span>
-    </label>
-  </div>
-  <div *ngIf="addUserForm.get('roles')?.invalid && addUserForm.get('roles')?.touched" 
-    class="text-red-500 text-xs mt-1">
-    <span *ngIf="addUserForm.get('roles')?.errors?.['required']">{{ 'Au moins un rôle est requis' | translate }}</span>
-  </div>
-</div>
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <button type="button" (click)="closeAddUserModal()" 
-            class="px-4 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-            {{ 'Annuler' | translate }}
-          </button>
-          <button type="submit" [disabled]="addUserForm.invalid" 
-            class="px-4 py-2 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-            {{ 'Créer l\'utilisateur' | translate }}
-          </button>
+        <!-- Roles -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            {{ 'Rôles' | translate }} *
+          </label>
+          <div class="space-y-1.5">
+            <label *ngFor="let role of availableRoles" 
+              class="flex items-center px-2 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors">
+              <input type="radio" [value]="role.value" 
+                (change)="onRoleRadioChange($event, role.value)"
+                [checked]="addUserForm.get('roles')?.value?.includes(role.value)"
+                name="roleSelection"
+                class="h-3.5 w-3.5 text-blue-600 border-slate-300 dark:border-slate-600 focus:ring-blue-500 dark:bg-slate-700">
+              <span class="ml-2 text-xs text-gray-700 dark:text-gray-300 font-medium">
+                {{ role.label | translate }}
+              </span>
+            </label>
+          </div>
+          <div *ngIf="addUserForm.get('roles')?.invalid && addUserForm.get('roles')?.touched" 
+            class="text-red-500 text-[10px] mt-1">
+            <span *ngIf="addUserForm.get('roles')?.errors?.['required']">{{ 'Au moins un rôle est requis' | translate }}</span>
+          </div>
         </div>
       </form>
+    </div>
+
+    <!-- Right Side: Summary (55% width) -->
+    <div class="w-[40%] bg-gradient-to-b from-blue-50 to-slate-50 dark:from-blue-950/20 dark:to-slate-900/20 p-4 flex flex-col justify-between border-l border-slate-200 dark:border-slate-700">
+      <div>
+        <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+          <i class="fas fa-info-circle text-blue-500 mr-1.5 text-xs"></i>
+          {{ 'Résumé' | translate }}
+        </h4>
+        
+        <div class="space-y-3">
+          <!-- User Preview -->
+          <div class="bg-white dark:bg-slate-800 rounded-lg p-2 border border-slate-200 dark:border-slate-700">
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-1.5">{{ 'Nouvel utilisateur' | translate }}</p>
+            <div class="flex items-center gap-2">
+              <div class="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <div>
+                <div class="text-xs font-semibold text-gray-900 dark:text-white">
+                  {{ addUserForm.get('firstName')?.value || 'Prénom' }} {{ addUserForm.get('lastName')?.value || 'Nom' }}
+                </div>
+                <div class="text-[10px] text-gray-500 dark:text-gray-400">
+                  @{{ addUserForm.get('username')?.value || 'username' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Role Info -->
+          <div class="bg-white dark:bg-slate-800 rounded-lg p-2 border border-slate-200 dark:border-slate-700">
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-1.5">{{ 'Accès' | translate }}</p>
+            <div *ngIf="addUserForm.get('roles')?.value?.length > 0" class="flex flex-wrap gap-1">
+              <span *ngFor="let role of addUserForm.get('roles')?.value"
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                {{ role | translate }}
+              </span>
+            </div>
+            <p *ngIf="!addUserForm.get('roles')?.value?.length" class="text-[10px] text-gray-500 dark:text-gray-400">
+              {{ 'Sélectionner un rôle' | translate }}
+            </p>
+          </div>
+
+          <!-- Contact Info -->
+          <div class="bg-white dark:bg-slate-800 rounded-lg p-2 border border-slate-200 dark:border-slate-700">
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-1.5">{{ 'Contact' | translate }}</p>
+            <div class="space-y-1 text-[10px]">
+              <div *ngIf="addUserForm.get('email')?.value" class="flex items-center text-gray-700 dark:text-gray-300">
+                <i class="fas fa-envelope mr-1.5 text-blue-500 text-[10px]"></i>
+                <span class="truncate">{{ addUserForm.get('email')?.value }}</span>
+              </div>
+              <div *ngIf="addUserForm.get('phone')?.value" class="flex items-center text-gray-700 dark:text-gray-300">
+                <i class="fas fa-phone mr-1.5 text-blue-500 text-[10px]"></i>
+                {{ addUserForm.get('phone')?.value }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Department Info -->
+          <div class="bg-white dark:bg-slate-800 rounded-lg p-2 border border-slate-200 dark:border-slate-700">
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-1.5">{{ 'Département' | translate }}</p>
+            <div *ngIf="addUserForm.get('department')?.value" class="flex items-center">
+              <i class="fas fa-building mr-1.5 text-blue-500 text-[10px]"></i>
+              <span class="text-xs text-gray-700 dark:text-gray-300 text-[10px]">{{ addUserForm.get('department')?.value }}</span>
+            </div>
+            <p *ngIf="!addUserForm.get('department')?.value" class="text-[10px] text-gray-500 dark:text-gray-400">
+              {{ 'Non assigné' | translate }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2 mt-4">
+        <button type="button" (click)="closeAddUserModal()" 
+          class="flex-1 px-2 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg transition-colors border border-slate-300 dark:border-slate-600">
+          {{ 'Annuler' | translate }}
+        </button>
+        <button type="submit" [disabled]="addUserForm.invalid" (click)="onSubmitAddUser()"
+          class="flex-1 px-2 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105">
+          {{ 'Créer' | translate }}
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Edit Department Modal - Made smaller -->
+
+<!-- Edit Department Modal - Restyled -->
 <div *ngIf="showEditDepartmentModal && selectedUser" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm mx-auto">
-    <div class="p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md mx-auto">
+    <div class="p-5">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-         {{ 'Départment pour' | translate }}<span class="text-blue-500">{{ selectedUser.username }}</span>
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1">
+          <i class="fas fa-building text-blue-500 text-sm mr-1"></i>
+          {{ 'Département pour' | translate }} 
+          <span class="text-blue-600 dark:text-blue-400 font-medium">{{ selectedUser.username }}</span>
         </h3>
-        <button (click)="closeEditDepartmentModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+        <button (click)="closeEditDepartmentModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 text-lg">
           <i class="fas fa-times"></i>
         </button>
       </div>
       
-      <!-- Edit Department Error inside modal -->
-      <div *ngIf="editDepartmentError" class="mb-3 p-2 bg-red-100 text-red-700 text-sm rounded-lg dark:bg-red-900/30 dark:text-red-400">
+      <div *ngIf="editDepartmentError" class="mb-4 p-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs rounded-lg border border-red-200 dark:border-red-800">
         {{ editDepartmentError }}
       </div>
       
       <form [formGroup]="editDepartmentForm" (ngSubmit)="onSubmitEditDepartment()">
-        <div class="space-y-3">
+        <div class="space-y-4">
           <div>
-            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {{ 'Départment' | translate }} *
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              {{ 'Département' | translate }} *
             </label>
             <input type="text" formControlName="department" 
               [class.border-red-500]="editDepartmentForm.get('department')?.invalid && (editDepartmentForm.get('department')?.dirty || editDepartmentForm.get('department')?.touched)"
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
             <div *ngIf="editDepartmentForm.get('department')?.invalid && (editDepartmentForm.get('department')?.dirty || editDepartmentForm.get('department')?.touched)" 
-              class="text-red-500 text-xs mt-1">
-              {{ 'Départment est requis' | translate }}
+              class="text-red-500 text-[10px] mt-1">
+              {{ 'Département est requis' | translate }}
             </div>
           </div>
           
-          <div class="flex gap-2">
+          <div class="flex gap-3 pt-3">
             <button type="button" (click)="closeEditDepartmentModal()" 
-              class="w-full px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg transition-colors border border-slate-300 dark:border-slate-600">
               {{ 'Annuler' | translate }}
             </button>
             <button type="submit" [disabled]="editDepartmentForm.invalid" 
-              class="w-full px-3 py-2 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              class="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105">
               {{ 'Mettre à jour' | translate }}
             </button>
           </div>
@@ -656,56 +791,56 @@
   </div>
 </div>
 
-<!-- Edit Role Modal - Made smaller -->
+<!-- Edit Role Modal - Restyled -->
 <div *ngIf="showEditRoleModal && selectedUser" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm mx-auto">
-    <div class="p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md mx-auto">
+    <div class="p-5">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-          {{ 'Rôles pour' | translate }}<span class="text-blue-500">{{ selectedUser.username }}</span>
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1">
+          <i class="fas fa-user-tag text-purple-500 text-sm mr-1"></i>
+          {{ 'Rôles pour' | translate }}
+          <span class="text-purple-600 dark:text-purple-400 font-medium">{{ selectedUser.username }}</span>
         </h3>
-        <button (click)="closeEditRoleModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+        <button (click)="closeEditRoleModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 text-lg">
           <i class="fas fa-times"></i>
         </button>
       </div>
       
-      <!-- Edit Role Error inside modal -->
-      <div *ngIf="editRoleError" class="mb-3 p-2 bg-red-100 text-red-700 text-sm rounded-lg dark:bg-red-900/30 dark:text-red-400">
+      <div *ngIf="editRoleError" class="mb-4 p-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs rounded-lg border border-red-200 dark:border-red-800">
         {{ editRoleError }}
       </div>
       
       <form [formGroup]="editRoleForm" (ngSubmit)="onSubmitEditRole()">
-        <div class="space-y-3">
+        <div class="space-y-4">
           <div>
             <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
               {{ 'Sélectionner le rôle' | translate }} *
             </label>
-            <!-- In your Edit Role Modal HTML -->
-<div class="space-y-1">
-  <label *ngFor="let role of availableRoles" 
-    class="flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-    <input type="radio" [value]="role.value" 
-      (change)="onRoleRadio(role.value)"
-      [checked]="isRoleChecked(role.value)"
-      name="roleSelection"
-      class="h-4 w-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500 dark:bg-gray-700">
-    <span class="ml-2 text-xs text-gray-700 dark:text-gray-300 font-medium">{{ role.label }}</span>
-  </label>
-</div>
+            <div class="space-y-1.5">
+              <label *ngFor="let role of availableRoles" 
+                class="flex items-center px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors">
+                <input type="radio" [value]="role.value" 
+                  (change)="onRoleRadio(role.value)"
+                  [checked]="isRoleChecked(role.value)"
+                  name="roleSelection"
+                  class="h-3.5 w-3.5 text-blue-600 border-slate-300 dark:border-slate-600 focus:ring-blue-500 dark:bg-slate-700">
+                <span class="ml-2 text-xs text-gray-700 dark:text-gray-300 font-medium">{{ role.label }}</span>
+              </label>
+            </div>
             <div *ngIf="editRoleForm.get('roles')?.invalid && editRoleForm.get('roles')?.touched" 
-              class="text-red-500 text-xs mt-2">
+              class="text-red-500 text-[10px] mt-1.5">
               {{ 'Au moins un rôle est requis' | translate }}
             </div>
           </div>
 
-          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex gap-3 pt-3">
             <button type="button" (click)="closeEditRoleModal()" 
-              class="px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg transition-colors border border-slate-300 dark:border-slate-600">
               {{ 'Annuler' | translate }}
             </button>
             <button type="submit" [disabled]="editRoleForm.invalid" 
-              class="px-3 py-2 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-              {{ 'Mettre à jour le rôle' | translate }}
+              class="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105">
+              {{ 'Mettre à jour' | translate }}
             </button>
           </div>
         </div>
@@ -714,42 +849,40 @@
   </div>
 </div>
 
-<!-- Confirmation Modal -->
+<!-- Confirmation Modal - Restyled -->
 <div *ngIf="showConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md mx-auto animate-fade-in">
-    <div class="p-6">
-      <!-- Modal Header -->
-      <div class="flex items-center mb-4">
-        <div class="flex-shrink-0 mr-3">
-          <div class="w-10 h-10 rounded-full flex items-center justify-center"
-            [class]="confirmAction === 'lock' 
-              ? 'bg-red-100 dark:bg-red-900/30' 
-              : 'bg-green-100 dark:bg-green-900/30'">
-            <i [class]="confirmAction === 'lock' 
-              ? 'fas fa-lock text-red-600 dark:text-red-400' 
-              : 'fas fa-unlock text-green-600 dark:text-green-400'"></i>
-          </div>
+  <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md mx-auto animate-fade-in">
+    <div class="p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+          [class]="confirmAction === 'lock' 
+            ? 'bg-red-100 dark:bg-red-900/30' 
+            : 'bg-green-100 dark:bg-green-900/30'">
+          <i [class]="confirmAction === 'lock' 
+            ? 'fas fa-lock text-red-600 dark:text-red-400 text-sm' 
+            : 'fas fa-unlock text-green-600 dark:text-green-400 text-sm'"></i>
         </div>
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <div class="flex-1">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">
             {{ confirmTitle }}
           </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="text-xs text-gray-500 dark:text-gray-400">
             {{ 'Veuillez confirmer votre action' | translate }}
           </p>
         </div>
+        <button (click)="closeConfirmModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+          <i class="fas fa-times text-sm"></i>
+        </button>
       </div>
       
-      <!-- Modal Body -->
-      <div class="mb-6">
-        <p class="text-gray-700 dark:text-gray-300">
+      <div class="mb-5">
+        <p class="text-sm text-gray-700 dark:text-gray-300">
           {{ confirmMessage }}
         </p>
         
-        <!-- User Info Card -->
-        <div *ngIf="userToConfirm" class="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-          <div class="flex items-center">
-            <div class="h-8 w-8 overflow-hidden rounded-full border border-gray-300 dark:border-gray-600 mr-3 flex-shrink-0">
+        <div *ngIf="userToConfirm" class="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          <div class="flex items-center gap-3">
+            <div class="h-8 w-8 overflow-hidden rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0">
               <img [src]="getAvatarUrl(userToConfirm)" 
                    [alt]="userToConfirm.username"
                    class="h-full w-full object-cover"
@@ -767,374 +900,291 @@
         </div>
       </div>
       
-      <!-- Modal Footer -->
-      <div class="flex justify-end gap-3">
-        <button 
-          type="button" 
-          (click)="closeConfirmModal()"
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-300 dark:border-gray-600"
-        >
+      <div class="flex gap-3">
+        <button type="button" (click)="closeConfirmModal()"
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg transition-colors border border-slate-300 dark:border-slate-600">
           {{ 'Annuler' | translate }}
         </button>
-        <button 
-          type="button" 
-          (click)="executeConfirmedAction()"
+        <button type="button" (click)="executeConfirmedAction()"
           [class]="confirmAction === 'lock'
-            ? 'bg-red-500 hover:bg-red-600'
-            : 'bg-green-500 hover:bg-green-600'"
-          class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors flex items-center"
-        >
-          <i [class]="confirmAction === 'lock' 
-            ? 'fas fa-lock mr-2' 
-            : 'fas fa-unlock mr-2'"></i>
-          {{ confirmAction === 'lock' ? 'Verrouiller l\'utilisateur' : 'Déverrouiller l\'utilisateur' }}
+            ? 'flex-1 px-3 py-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors'
+            : 'flex-1 px-3 py-1.5 text-xs font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors'"
+          class="flex items-center justify-center gap-1">
+          <i [class]="confirmAction === 'lock' ? 'fas fa-lock text-xs' : 'fas fa-unlock text-xs'"></i>
+          {{ confirmAction === 'lock' ? 'Verrouiller' : 'Déverrouiller' }}
         </button>
       </div>
-
-
-      
     </div>
   </div>
 </div>
 
- <!-- Project Assignment Modal -->
+<!-- Project Assignment Modal - Restyled -->
 <div *ngIf="showAssignmentModal && selectedUserForAssignment" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl mx-auto max-h-[80vh] overflow-hidden">
-    <div class="p-6">
-      <!-- Modal Header with Avatar -->
-      <div class="flex justify-between items-start mb-6">
-        <div class="flex items-center">
-          <div class="h-12 w-12 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 mr-3 flex-shrink-0">
+  <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl mx-auto max-h-[85vh] overflow-hidden">
+    <div class="p-5">
+      <!-- Modal Header -->
+      <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 overflow-hidden rounded-lg bg-transparent-200 dark:bg-transparent-700 flex-shrink-0">
             <img [src]="getAvatarUrl(selectedUserForAssignment)" 
                  [alt]="selectedUserForAssignment.firstName + ' ' + selectedUserForAssignment.lastName"
                  class="h-full w-full object-cover"
                  (error)="handleImageError($event, selectedUserForAssignment)">
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ 'Assigner les applications non assignées' | translate }}
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ 'Assigner les applications' | translate }}
             </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              {{ 'Assignation à' | translate }}: 
-              <span class="font-medium">{{ selectedUserForAssignment.firstName }} {{ selectedUserForAssignment.lastName }}</span>
-            </p>
             <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ 'Assignation à' | translate }}: 
+              <span class="font-medium text-blue-600 dark:text-blue-400">{{ selectedUserForAssignment.firstName }} {{ selectedUserForAssignment.lastName }}</span>
+            </p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400">
               @{{ selectedUserForAssignment.username }} • {{ selectedUserForAssignment.email }}
             </p>
           </div>
         </div>
         <button (click)="closeAssignmentModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-          <i class="fas fa-times"></i>
+          <i class="fas fa-times text-sm"></i>
         </button>
       </div>
       
       <!-- Project List -->
-      <div class="mb-6 max-h-[50vh] overflow-y-auto">
+      <div class="mb-4 max-h-[45vh] overflow-y-auto">
         <div *ngIf="unassignedProjects.length === 0" class="text-center py-8">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg class="mx-auto h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
           </svg>
-          <h4 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+          <h4 class="mt-2 text-xs font-medium text-gray-900 dark:text-white">
             {{ 'Aucune application non assignée' | translate }}
           </h4>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {{ 'Toutes les applications sont déjà assignées à un chef de projet.' | translate }}
+          <p class="mt-1 text-[10px] text-gray-500 dark:text-gray-400">
+            {{ 'Toutes les applications sont déjà assignées.' | translate }}
           </p>
         </div>
         
         <div *ngIf="unassignedProjects.length > 0" class="space-y-2">
           <div *ngFor="let project of unassignedProjects" 
                (click)="toggleProjectSelection(project)"
-               class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+               class="p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors"
                [class.bg-blue-50]="isProjectSelected(project)"
                [class.dark:bg-blue-900-20]="isProjectSelected(project)">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <div class="mr-3">
-                  <input type="checkbox" 
-                         [checked]="isProjectSelected(project)"
-                         (change)="toggleProjectSelection(project)"
-                         class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+            <div class="flex items-start gap-3">
+              <input type="checkbox" 
+                     [checked]="isProjectSelected(project)"
+                     (change)="toggleProjectSelection(project)"
+                     class="h-3.5 w-3.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500 mt-0.5">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-xs font-medium text-gray-900 dark:text-white">{{ project.code }}</span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">- {{ project.name }}</span>
                 </div>
-                <div>
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">
-                    {{ project.code }} - {{ project.name }}
-                  </h4>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {{ project.clientName }} • {{ project.applicationName }}
-                  </p>
-                  <div class="flex items-center mt-1 space-x-2">
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                      {{ project.status }}
-                    </span>
-                    <span *ngIf="project.dateDebut" class="text-xs text-gray-500 dark:text-gray-400">
-                      {{ project.dateDebut | date:'shortDate' }}
-                    </span>
-                  </div>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                  {{ project.clientName }} • {{ project.applicationName }}
+                </p>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                    {{ project.status }}
+                  </span>
+                  <span *ngIf="project.dateDebut" class="text-[10px] text-gray-500 dark:text-gray-400">
+                    {{ project.dateDebut | date:'shortDate' }}
+                  </span>
                 </div>
               </div>
-              
             </div>
           </div>
         </div>
       </div>
       
-      <!-- Selected Projects Summary -->
-      <div *ngIf="projectsToAssign.length > 0" class="mb-6 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-        <div class="flex items-center justify-between">
-          <div>
-            <h4 class="text-sm font-medium text-blue-900 dark:text-blue-300">
-              {{ 'Application Selectionné' | translate }}
-            </h4>
-            <p class="text-xs text-blue-700 dark:text-blue-400">
-              {{ projectsToAssign.length }} {{ 'application(s) seléctionné(s)' | translate }}
-            </p>
+      <!-- Workload Summary -->
+      <div *ngIf="selectedUserForAssignment && getChefWorkload(selectedUserForAssignment.id) as workload" class="mb-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+        <div class="flex items-center gap-2 mb-2">
+          <i class="fas fa-chart-line text-purple-500 text-xs"></i>
+          <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Charge de travail actuelle</span>
+        </div>
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[10px] text-gray-600 dark:text-gray-400">Charge globale</span>
+          <span class="text-xs font-bold" [style.color]="getWorkloadColor(workload.currentWorkload)">
+            {{ workload.currentWorkload.toFixed(1) }}%
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5 mb-2">
+          <div class="h-1.5 rounded-full transition-all duration-300"
+               [style.width.%]="workload.currentWorkload"
+               [style.backgroundColor]="getWorkloadColor(workload.currentWorkload)">
           </div>
-          
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div>
+            <div class="text-[10px] text-gray-500 dark:text-gray-400">Apps</div>
+            <div class="text-xs font-medium text-gray-800 dark:text-white">{{ workload.currentApps }}</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-gray-500 dark:text-gray-400">Valeur</div>
+            <div class="text-xs font-medium text-gray-800 dark:text-white">{{ (workload.totalValue / 1000).toFixed(0) }}k</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-gray-500 dark:text-gray-400">Durée</div>
+            <div class="text-xs font-medium text-gray-800 dark:text-white">{{ Math.floor(workload.totalDuration / 30) }} mois</div>
+          </div>
         </div>
       </div>
-
-
-      <!-- Add this inside the assignment modal, after the project list -->
-
-<!-- Workload Summary for Selected Chef -->
-<div *ngIf="selectedUserForAssignment && getChefWorkload(selectedUserForAssignment.id) as workload" class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-  <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
-    <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-    </svg>
-    Charge de travail actuelle
-  </h4>
-  
-  <div class="flex items-center justify-between mb-2">
-    <span class="text-xs text-gray-600 dark:text-gray-400">Charge globale</span>
-    <span class="text-sm font-bold" [style.color]="getWorkloadColor(workload.currentWorkload)">
-      {{ workload.currentWorkload.toFixed(1) }}%
-    </span>
-  </div>
-  
-  <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mb-3">
-    <div class="h-2 rounded-full transition-all duration-300"
-         [style.width.%]="workload.currentWorkload"
-         [style.background]="getWorkloadColor(workload.currentWorkload)">
-    </div>
-  </div>
-  
-  <div class="grid grid-cols-3 gap-2 text-center text-xs">
-    <div>
-      <div class="text-gray-500 dark:text-gray-400">Applications</div>
-      <div class="font-medium text-gray-800 dark:text-white">{{ workload.currentApps }}</div>
-    </div>
-    <div>
-      <div class="text-gray-500 dark:text-gray-400">Valeur</div>
-      <div class="font-medium text-gray-800 dark:text-white">{{ (workload.totalValue / 1000).toFixed(0) }}k TND</div>
-    </div>
-    <div>
-      <div class="text-gray-500 dark:text-gray-400">Durée</div>
-      <div class="font-medium text-gray-800 dark:text-white">{{ Math.floor(workload.totalDuration / 30) }} mois</div>
-    </div>
-  </div>
-</div>
-
-<!-- Workload Check Results -->
-<div *ngIf="workloadCheck && !workloadCheck.canAssign && !workloadLoadingForChef" 
-     class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-  <div class="flex items-start">
-    <svg class="w-5 h-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-    </svg>
-    <div>
-      <p class="text-sm font-medium text-red-800 dark:text-red-300 mb-1">
-        {{ workloadCheck.message }}
-      </p>
-      <div class="text-xs text-red-700 dark:text-red-400 space-y-1">
-        <p>• Charge actuelle: {{ workloadCheck.analysis.currentWorkload.toFixed(1) }}%</p>
-        <p>• Charge projetée: {{ workloadCheck.analysis.projectedWorkload.toFixed(1) }}%</p>
+      
+      <!-- Workload Check Results -->
+      <div *ngIf="workloadCheck && !workloadCheck.canAssign && !workloadLoadingForChef" 
+           class="mb-3 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <div class="flex items-start gap-1.5">
+          <i class="fas fa-exclamation-triangle text-red-500 text-xs mt-0.5"></i>
+          <div>
+            <p class="text-xs font-medium text-red-800 dark:text-red-300">{{ workloadCheck.message }}</p>
+            <p class="text-[10px] text-red-700 dark:text-red-400">Charge projetée: {{ workloadCheck.analysis.projectedWorkload.toFixed(1) }}%</p>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- Workload Warning for Caution -->
-<div *ngIf="workloadCheck && workloadCheck.assignWithCaution && !workloadLoadingForChef" 
-     class="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-  <div class="flex items-start">
-    <svg class="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-    </svg>
-    <div>
-      <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">
-        Attention: {{ workloadCheck.message }}
-      </p>
-      <p class="text-xs text-yellow-700 dark:text-yellow-400">
-        Charge projetée: {{ workloadCheck.analysis.projectedWorkload.toFixed(1) }}%
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- Force Assign Toggle -->
-<div *ngIf="workloadCheck && !workloadCheck.canAssign && !workloadLoadingForChef" class="mb-4">
-  <label class="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
-    <input type="checkbox" 
-           [checked]="forceAssignMode"
-           (change)="toggleForceAssign()"
-           class="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500 mr-3">
-    <span class="text-sm text-gray-700 dark:text-gray-300">
-      <span class="font-medium">Forcer l'assignation</span>
-      <span class="text-xs text-gray-500 dark:text-gray-400 block mt-1">
-        Ignorer les limites de charge de travail
-      </span>
-    </span>
-  </label>
-</div>
+      
+      <div *ngIf="workloadCheck && workloadCheck.assignWithCaution && !workloadLoadingForChef" 
+           class="mb-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+        <div class="flex items-start gap-1.5">
+          <i class="fas fa-exclamation-triangle text-yellow-500 text-xs mt-0.5"></i>
+          <div>
+            <p class="text-xs font-medium text-yellow-800 dark:text-yellow-300">{{ workloadCheck.message }}</p>
+            <p class="text-[10px] text-yellow-700 dark:text-yellow-400">Charge projetée: {{ workloadCheck.analysis.projectedWorkload.toFixed(1) }}%</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Force Assign Toggle -->
+      <div *ngIf="workloadCheck && !workloadCheck.canAssign && !workloadLoadingForChef" class="mb-3">
+        <label class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
+          <input type="checkbox" 
+                 [checked]="forceAssignMode"
+                 (change)="toggleForceAssign()"
+                 class="h-3.5 w-3.5 text-red-600 border-slate-300 rounded focus:ring-red-500">
+          <span class="text-xs text-gray-700 dark:text-gray-300">
+            Forcer l'assignation
+          </span>
+        </label>
+      </div>
+      
+      <!-- Selected Summary -->
+      <div *ngIf="projectsToAssign.length > 0" class="mb-4 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-medium text-blue-900 dark:text-blue-300">
+              {{ projectsToAssign.length }} application(s) sélectionnée(s)
+            </span>
+          </div>
+        </div>
+      </div>
       
       <!-- Modal Footer -->
-      <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <button 
-          type="button" 
-          (click)="closeAssignmentModal()"
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-300 dark:border-gray-600">
+      <div class="flex gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+        <button type="button" (click)="closeAssignmentModal()"
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg transition-colors border border-slate-300 dark:border-slate-600">
           {{ 'Annuler' | translate }}
         </button>
-        <button 
-          type="button" 
-          (click)="assignSelectedProjects()"
+        <button type="button" (click)="assignSelectedProjects()"
           [disabled]="projectsToAssign.length === 0 || loading"
-          class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center">
-          <i *ngIf="loading" class="fas fa-spinner fa-spin mr-2"></i>
-          <span *ngIf="!loading">
-            {{ 'Assigner' | translate }} ({{ projectsToAssign.length }})
-          </span>
-          <span *ngIf="loading">
-            {{ 'Assignation en cours...' | translate }}
-          </span>
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 flex items-center justify-center gap-1">
+          <i *ngIf="loading" class="fas fa-spinner fa-spin text-xs"></i>
+          <span>{{ loading ? 'Assignation...' : 'Assigner' }}</span>
+          <span *ngIf="!loading && projectsToAssign.length > 0">({{ projectsToAssign.length }})</span>
         </button>
       </div>
     </div>
   </div>
 </div>
 
-
-
-<!-- User History Modal -->
+<!-- User History Modal - Restyled -->
 <div *ngIf="showUserHistoryModal && selectedUserForHistory" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-  <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl mx-auto max-h-[80vh] overflow-hidden">
-    <div class="p-6">
-      <!-- Modal Header with User Info -->
-      <div class="flex justify-between items-start mb-6">
-        <div class="flex items-center">
-          <div class="h-12 w-12 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 mr-3 flex-shrink-0">
+  <div class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-4xl mx-auto max-h-[85vh] overflow-hidden">
+    <div class="p-5">
+      <!-- Modal Header -->
+      <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 flex-shrink-0">
             <img [src]="getAvatarUrl(selectedUserForHistory)" 
                  [alt]="selectedUserForHistory.firstName + ' ' + selectedUserForHistory.lastName"
                  class="h-full w-full object-cover"
                  (error)="handleImageError($event, selectedUserForHistory)">
           </div>
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-1">
+              <i class="fas fa-history text-purple-500 text-sm"></i>
               {{ 'Historique de l\'utilisateur' | translate }}
             </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              {{ selectedUserForHistory.firstName }} {{ selectedUserForHistory.lastName }} 
-              <span class="text-xs">(@{{ selectedUserForHistory.username }})</span>
-            </p>
             <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ selectedUserForHistory.firstName }} {{ selectedUserForHistory.lastName }}
+              <span class="text-[10px]">(@{{ selectedUserForHistory.username }})</span>
+            </p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400">
               {{ selectedUserForHistory.email }} • {{ selectedUserForHistory.roles.join(', ') }}
             </p>
           </div>
         </div>
         <button (click)="closeUserHistoryModal()" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-          <i class="fas fa-times"></i>
+          <i class="fas fa-times text-sm"></i>
         </button>
       </div>
       
       <!-- History Timeline -->
-      <div class="mb-4 max-h-[60vh] overflow-y-auto">
-        <div *ngIf="loadingHistory" class="text-center py-12">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-purple-600 border-t-transparent"></div>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">{{ 'Chargement de l\'historique...' | translate }}</p>
+      <div class="mb-3 max-h-[55vh] overflow-y-auto">
+        <div *ngIf="loadingHistory" class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-purple-600 border-t-transparent"></div>
+          <p class="mt-2 text-xs text-gray-600 dark:text-gray-400">{{ 'Chargement...' | translate }}</p>
         </div>
         
-        <div *ngIf="!loadingHistory && userHistory.length === 0" class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <h4 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+        <div *ngIf="!loadingHistory && userHistory.length === 0" class="text-center py-8">
+          <i class="fas fa-clock text-gray-400 text-2xl"></i>
+          <h4 class="mt-2 text-xs font-medium text-gray-900 dark:text-white">
             {{ 'Aucun historique trouvé' | translate }}
           </h4>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {{ 'Cet utilisateur n\'a pas encore d\'activité enregistrée.' | translate }}
-          </p>
         </div>
         
-        <div *ngIf="!loadingHistory && userHistory.length > 0" class="space-y-4">
-          <!-- Group by date -->
-          <div *ngFor="let dateGroup of groupHistoryByDate(userHistory)" class="mb-6">
-            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 sticky top-0 bg-white dark:bg-gray-800 py-2">
+        <div *ngIf="!loadingHistory && userHistory.length > 0" class="space-y-3">
+          <div *ngFor="let dateGroup of groupHistoryByDate(userHistory)" class="mb-4">
+            <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 sticky top-0 bg-white dark:bg-gray-800 py-1">
               {{ dateGroup.date }}
             </h4>
-            
-            <div class="space-y-3">
+            <div class="space-y-2">
               <div *ngFor="let entry of dateGroup.entries" 
-                   class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                <div class="flex items-start gap-3">
-                  <!-- Time -->
-                  <div class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap min-w-[60px]">
+                   class="border border-slate-200 dark:border-slate-700 rounded-lg p-2 hover:shadow-sm transition-shadow">
+                <div class="flex items-start gap-2">
+                  <div class="text-[10px] text-gray-500 dark:text-gray-400 min-w-[55px]">
                     {{ entry.timeFormatted }}
                   </div>
-                  
-                  <!-- Icon -->
                   <div class="flex-shrink-0">
-                    <i [class]="historyService.getActionIcon(entry.actionType) + ' text-base'"></i>
+                    <i [class]="historyService.getActionIcon(entry.actionType) + ' text-xs'"></i>
                   </div>
-                  
-                  <!-- Content -->
                   <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                      <span [class]="getActionClass(entry.actionType) + ' px-2 py-0.5 text-xs font-medium rounded-full'">
+                    <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                      <span [class]="getActionClass(entry.actionType) + ' px-1.5 py-0.5 text-[10px] font-medium rounded-full'">
                         {{ entry.actionTypeLabel }}
                       </span>
-                      <span class="text-xs text-gray-500 dark:text-gray-400">
-                        <i [class]="historyService.getEntityIcon(entry.entityType) + ' mr-1'"></i>
+                      <span class="text-[10px] text-gray-500 dark:text-gray-400">
+                        <i [class]="historyService.getEntityIcon(entry.entityType) + ' text-[10px]'"></i>
                         {{ entry.entityTypeLabel }}
                       </span>
-                      <span *ngIf="entry.entityCode" class="text-xs font-mono text-gray-600 dark:text-gray-400">
+                      <span *ngIf="entry.entityCode" class="text-[10px] font-mono text-gray-600 dark:text-gray-400">
                         {{ entry.entityCode }}
                       </span>
                     </div>
                     
+                    <div *ngIf="entry.hasChanges && entry.newValues" class="mt-1 text-[10px] bg-gray-50 dark:bg-gray-900/50 rounded p-1.5">
+                      <div class="space-y-0.5">
+                        <div *ngFor="let change of getChangedFieldsArray(entry)" class="flex items-start gap-1.5">
+                          <span class="font-mono text-gray-500 dark:text-gray-400 min-w-[80px]">{{ change.field }}:</span>
+                          <div class="flex-1 flex items-center gap-1.5">
+                            <span class="text-red-600 line-through">{{ historyService.formatChangeValue(change.old) }}</span>
+                            <i class="fas fa-arrow-right text-[8px] text-gray-400"></i>
+                            <span class="text-green-600">{{ historyService.formatChangeValue(change.new) }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                     
-                    
-<!-- Changes (if any) - UPDATED TO HANDLE PAYMENTS -->
-<div *ngIf="entry.hasChanges && entry.newValues" class="mt-2 text-xs bg-gray-50 dark:bg-gray-900/50 rounded p-2">
-
-  <div class="space-y-1">
-    <div *ngFor="let change of getChangedFieldsArray(entry)" class="flex items-start gap-2">
-      <span class="font-mono text-gray-500 dark:text-gray-400 min-w-[100px]">{{ change.field }}:</span>
-      <div class="flex-1 flex items-center gap-2">
-        <!-- Show different display for payments -->
-        <ng-container *ngIf="entry.actionType === 'PAYMENT'">
-          <span *ngIf="change.old !== '-'" class="text-red-600 line-through">{{ historyService.formatChangeValue(change.old) }}</span>
-          <span class="text-green-600 font-medium">{{ historyService.formatChangeValue(change.new) }}</span>
-        </ng-container>
-        
-        <!-- Normal display for other actions -->
-        <ng-container *ngIf="entry.actionType !== 'PAYMENT'">
-          <span class="text-red-600 line-through">{{ historyService.formatChangeValue(change.old) }}</span>
-          <i class="fas fa-arrow-right text-xs text-gray-400"></i>
-          <span class="text-green-600">{{ historyService.formatChangeValue(change.new) }}</span>
-        </ng-container>
-      </div>
-    </div>
-  </div>
-</div>
-                    
-                    <!-- Metadata -->
-                    <div class="mt-2 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                      <span><i class="fas fa-globe mr-1"></i> {{ entry.ipAddress || 'IP inconnu' }}</span>
-                      <span *ngIf="entry.userAgent" class="truncate max-w-[200px]" title="{{ entry.userAgent }}">
-                        <i class="fas fa-laptop mr-1"></i> {{ entry.userAgent.split(' ')[0] }}
-                      </span>
+                    <div class="mt-1 flex items-center gap-2 text-[10px] text-gray-500 dark:text-gray-400">
+                      <span><i class="fas fa-globe text-[8px] mr-0.5"></i> {{ entry.ipAddress || 'IP inconnu' }}</span>
                     </div>
                   </div>
                 </div>
@@ -1144,19 +1194,14 @@
         </div>
       </div>
       
-      <!-- Modal Footer -->
-      <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
-        <button 
-          type="button" 
-          (click)="closeUserHistoryModal()"
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-300 dark:border-gray-600">
+      <div class="flex justify-end pt-3 border-t border-slate-200 dark:border-slate-700">
+        <button type="button" (click)="closeUserHistoryModal()"
+          class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg transition-colors border border-slate-300 dark:border-slate-600">
           {{ 'Fermer' | translate }}
         </button>
       </div>
     </div>
   </div>
-</div>
-  
 </div>
 
 <div *ngIf="!isAdmin()" class="p-8 text-center">

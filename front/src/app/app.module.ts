@@ -9,7 +9,6 @@ import { HeaderComponent } from './components/partials/header/header.component';
 import { SidebarComponent } from './components/partials/sidebar/sidebar.component';
 import { PreloaderComponent } from './components/partials/preloader/preloader.component';
 import { OverlayComponent } from './components/partials/overlay/overlay.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { LayoutService } from './components/partials/services/layout.service';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { EmailSendComponent } from './components/email-send/email-send.component';
@@ -64,7 +63,6 @@ import { TwoFactorSetupComponent } from './components/two-factor-setup/two-facto
     SidebarComponent,
     PreloaderComponent,
     OverlayComponent,
-    DashboardComponent,
     LoginComponent,
     ProfileComponent,
     ForgetPasswordComponent,
