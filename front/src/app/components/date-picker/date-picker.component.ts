@@ -8,7 +8,8 @@ import { Component, Input, Output, EventEmitter, OnInit, HostListener, ElementRe
 export class DatePickerComponent implements OnInit {
   @Input() date: string = '';
   @Input() placeholder: string = 'Sélectionner une date';
-  @Input() minDate: string = '';
+  @Input() minDate: string = ''; // Cannot select date before this
+  @Input() maxDate: string = ''; // Cannot select date after this
   @Output() dateChange = new EventEmitter<string>();
 
   showDatePicker = false;
@@ -149,8 +150,29 @@ export class DatePickerComponent implements OnInit {
   }
 
   isDateSelectable(date: Date): boolean {
-    if (!this.minDate) return true;
-    const min = new Date(this.minDate);
-    return date >= min;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+    
+    // Check min date
+    if (this.minDate) {
+      const min = new Date(this.minDate);
+      min.setHours(0, 0, 0, 0);
+      if (checkDate < min) return false;
+    }
+    
+    // Check max date
+    if (this.maxDate) {
+      const max = new Date(this.maxDate);
+      max.setHours(0, 0, 0, 0);
+      if (checkDate > max) return false;
+    }
+    
+    return true;
+  }
+
+  getTodayDate(): Date {
+    return new Date();
   }
 }

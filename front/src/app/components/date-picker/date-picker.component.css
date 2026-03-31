@@ -151,6 +151,16 @@
   cursor: not-allowed;
 }
 
+.calendar-day.disabled-date {
+  opacity: 0.35;
+  cursor: not-allowed;
+  color: #d1d5db !important;
+}
+
+.dark .calendar-day.disabled-date {
+  color: #4b5563 !important;
+}
+
 /* Border divider - cuter */
 .calendar-divider {
   border-top: 1px solid #f3f4f6;

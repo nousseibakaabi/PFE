@@ -18,6 +18,9 @@ export class ConventionFacturesComponent implements OnInit {
   loading = true;
   currentDate = new Date();
 
+  // Add this property
+viewMode: 'card' | 'list' = 'card';
+
   
   // For payment modal
   showPaymentModal = false;

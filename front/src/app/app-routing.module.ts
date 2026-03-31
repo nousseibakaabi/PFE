@@ -24,7 +24,6 @@ import { FactureDetailComponent } from './components/facture-detail/facture-deta
 import { ApplicationDetailComponent } from './components/application-detail/application-detail.component';
 import { ApplicationFormComponent } from './components/application-form/application-form.component';
 import { ApplicationComponent } from './components/application/application.component';
-import { HistoryComponent } from './components/history/history.component';
 import { NotificationsComponent } from './components/notifications/notifications.component';
 import { ConventionFacturesComponent } from './components/convention-factures/convention-factures.component';
 import { ConventionHistoryComponent } from './components/convention-history/convention-history.component';
@@ -158,12 +157,7 @@ const routes: Routes = [
   },
 
 
-  {
-  path: 'history',
-  component: HistoryComponent,
-  canActivate: [AuthGuard],
-  data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHEF_PROJET'] }
-  },
+
 
 {
   path: 'conventions/:id/factures',

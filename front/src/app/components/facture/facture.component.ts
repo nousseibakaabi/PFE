@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { TimeFormatService } from '../../services/time-format.service';
 import { ApplicationService } from '../../services/application.service';
 import { Router } from '@angular/router';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-facture',
@@ -16,6 +17,7 @@ import { Router } from '@angular/router';
   standalone: false
 })
 export class FactureComponent implements OnInit {
+  facture: Facture | null = null;
   factures: Facture[] = [];
   filteredFactures: Facture[] = [];
   conventions: any[] = [];
@@ -34,6 +36,10 @@ export class FactureComponent implements OnInit {
   menuPosition: 'top' | 'bottom' = 'bottom';
 
 
+
+  showPrintModal = false;
+printFactureData: Facture | null = null;
+printFactureConvention: any = null;
 
   currentPage = 1;
   itemsPerPage = 7;
@@ -638,11 +644,6 @@ sendReminder(factureId: number): void {
   this.activeActionMenu = null;
 }
 
-generatePDF(factureId: number): void {
-  console.log('Generating PDF for facture:', factureId);
-  // Implement your logic
-  this.activeActionMenu = null;
-}
 
 emailPDF(factureId: number): void {
   console.log('Emailing PDF for facture:', factureId);
@@ -650,9 +651,5 @@ emailPDF(factureId: number): void {
   this.activeActionMenu = null;
 }
 
-printFacture(factureId: number): void {
-  console.log('Printing facture:', factureId);
-  // Implement your logic
-  this.activeActionMenu = null;
-}
+
 }

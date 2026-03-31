@@ -213,6 +213,30 @@ label {
   transition: opacity 0.2s ease;
 }
 
+/* Custom smaller floating search input for application dropdown */
+.app-search-wrapper {
+  min-height: 2rem;
+}
+
+.app-search-input {
+  font-size: 0.75rem !important; /* 12px */
+  line-height: 1rem !important;
+  height: 1.75rem !important; /* ~28px */
+  padding-left: 2rem !important;
+  padding-right: 0.5rem !important;
+  border-radius: 0.35rem !important;
+}
+
+.app-search-input:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+.app-search-icon {
+  width: 0.75rem !important; /* 12px */
+  height: 0.75rem !important; /* 12px */
+  color: #9ca3af !important;
+}
+
 /* Header title - BIGGER */
 .text-lg {
   font-size: 1.125rem !important; /* 18px */

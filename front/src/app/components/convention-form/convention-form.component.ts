@@ -48,6 +48,15 @@ export class ConventionFormComponent implements OnInit {
   isCalculatingTTC: boolean = false;
   isDeterminingUsers: boolean = false;
 
+  // Real-time validation errors
+  validationErrors: { [key: string]: string } = {};
+
+  // Date max values for blocking future dates
+  dateDebut_maxDate: string = ''; // No future date limit for debut
+  dateFin_minDate: string = ''; // Min 15 days after debut
+  dateFin_maxDate: string = ''; // No max date for fin
+  dateSignature_minDate: string = ''; // Cannot be before today
+
   showApplicationDropdown: boolean = false;
   applicationSearchTerm: string = '';
   filteredApplications: any[] = [];
@@ -71,7 +80,201 @@ export class ConventionFormComponent implements OnInit {
     private nomenclatureService: NomenclatureService,
     private applicationService: ApplicationService,
     private authService: AuthService
-  ) {}
+  ) {
+    // Initialize min date for date signature (today)
+    this.setMinDateSignature();
+  }
+
+  /**
+   * ===== REAL-TIME VALIDATION METHODS =====
+   */
+  
+  getTodayDateString(): string {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  }
+
+  private addDays(dateStr: string, days: number): string {
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
+  }
+
+  setMinDateSignature(): void {
+    this.dateSignature_minDate = this.getTodayDateString();
+  }
+
+  validateReferenceConvention(): void {
+    const ref = this.formData.referenceConvention?.trim() || '';
+    
+    delete this.validationErrors['referenceConvention'];
+    
+    if (!ref) {
+      this.validationErrors['referenceConvention'] = 'Référence Convention est requise';
+      return;
+    }
+    
+    const pattern = /^CONV-\d{4}-\d{3}$/;
+    if (!pattern.test(ref)) {
+      this.validationErrors['referenceConvention'] = 'Format: CONV-YYYY-XXX (ex: CONV-2024-001)';
+      return;
+    }
+  }
+
+  validateReferenceERP(): void {
+    const ref = this.formData.referenceERP?.trim() || '';
+    delete this.validationErrors['referenceERP'];
+    
+    if (!ref) {
+      this.validationErrors['referenceERP'] = 'Référence ERP est requise';
+    }
+  }
+
+  validateLibelle(): void {
+    const libelle = this.formData.libelle?.trim() || '';
+    delete this.validationErrors['libelle'];
+    
+    if (!libelle) {
+      this.validationErrors['libelle'] = 'Libellé est requis';
+    }
+  }
+
+  validateApplication(): void {
+    delete this.validationErrors['applicationId'];
+    
+    if (!this.formData.applicationId) {
+      this.validationErrors['applicationId'] = 'Application est requise';
+    }
+  }
+
+  validateStructureBeneficiel(): void {
+    delete this.validationErrors['structureBeneficielId'];
+    
+    if (!this.formData.structureBeneficielId) {
+      this.validationErrors['structureBeneficielId'] = 'Structure Bénéficiaire est requise';
+    }
+  }
+
+  validateStructureResponsable(): void {
+    delete this.validationErrors['structureResponsableId'];
+    
+    if (!this.formData.structureResponsableId) {
+      this.validationErrors['structureResponsableId'] = 'Structure Responsable est requise';
+    }
+  }
+
+  validatePeriodicite(): void {
+    delete this.validationErrors['periodicite'];
+    
+    if (!this.formData.periodicite) {
+      this.validationErrors['periodicite'] = 'Modalités de paiement est requise';
+    }
+  }
+
+  validateDateDebut(): void {
+    const dateDebut = this.formData.dateDebut?.trim() || '';
+    delete this.validationErrors['dateDebut'];
+    
+    if (!dateDebut) {
+      this.validationErrors['dateDebut'] = 'Date de début est requise';
+      return;
+    }
+    
+    const today = this.getTodayDateString();
+    if (dateDebut < today) {
+      this.validationErrors['dateDebut'] = 'La date de début ne peut pas être antérieure à aujourd\'hui';
+      return;
+    }
+    
+    // Update min date for dateFin (15 days after debut)
+    this.dateFin_minDate = this.addDays(dateDebut, 15);
+  }
+
+  validateDateFin(): void {
+    const dateFin = this.formData.dateFin?.trim() || '';
+    const dateDebut = this.formData.dateDebut?.trim() || '';
+    
+    delete this.validationErrors['dateFin'];
+    
+    if (!dateFin) {
+      this.validationErrors['dateFin'] = 'Date de fin est requise';
+      return;
+    }
+    
+    if (!dateDebut) {
+      this.validationErrors['dateFin'] = 'Sélectionnez d\'abord la date de début';
+      return;
+    }
+    
+    const minFin = this.addDays(dateDebut, 15);
+    if (dateFin < minFin) {
+      this.validationErrors['dateFin'] = 'La date de fin doit être au minimum 15 jours après la date de début';
+      return;
+    }
+  }
+
+  validateDateSignature(): void {
+    const dateSignature = this.formData.dateSignature?.trim() || '';
+    delete this.validationErrors['dateSignature'];
+    
+    if (!dateSignature) {
+      return; // Date signature is optional
+    }
+    
+    const today = this.getTodayDateString();
+    if (dateSignature < today) {
+      this.validationErrors['dateSignature'] = 'La date de signature ne peut pas être antérieure à aujourd\'hui';
+      return;
+    }
+  }
+
+  validateMontantHT(): void {
+    delete this.validationErrors['montantHT'];
+    
+    if (!this.formData.montantHT || this.formData.montantHT <= 0) {
+      this.validationErrors['montantHT'] = 'Montant HT doit être supérieur à 0';
+    }
+  }
+
+  validateTVA(): void {
+    delete this.validationErrors['tva'];
+    
+    if (this.formData.tva < 0 || this.formData.tva > 100) {
+      this.validationErrors['tva'] = 'TVA doit être entre 0 et 100%';
+    }
+  }
+
+  validateNbUsers(): void {
+    delete this.validationErrors['nbUsers'];
+    
+    if (!this.formData.nbUsers || this.formData.nbUsers <= 0) {
+      this.validationErrors['nbUsers'] = 'Nombre d\'utilisateurs doit être supérieur à 0';
+      return;
+    }
+    
+    if (this.userLimits) {
+      if (this.userLimits.minUser && this.formData.nbUsers < this.userLimits.minUser) {
+        this.validationErrors['nbUsers'] = `Minimum: ${this.userLimits.minUser} utilisateurs`;
+        return;
+      }
+      if (this.userLimits.maxUser && this.formData.nbUsers > this.userLimits.maxUser) {
+        this.validationErrors['nbUsers'] = `Maximum: ${this.userLimits.maxUser} utilisateurs`;
+        return;
+      }
+    }
+  }
+
+  hasError(fieldName: string): boolean {
+    return !!this.validationErrors[fieldName];
+  }
+
+  getErrorMessage(fieldName: string): string {
+    return this.validationErrors[fieldName] || '';
+  }
+
+  /**
+   * ===== END VALIDATION METHODS =====
+   */
 
 ngOnInit(): void {
   // Check if user has permission
@@ -117,10 +320,12 @@ loadApplicationsWithoutConventions(): void {
     next: (response: ApiResponse) => {
       if (response && response.success) {
         this.applications = response.data || [];
+        this.filteredApplications = [...this.applications];
         this.errorMessage = '';
       } else {
         this.errorMessage = response?.message || 'Failed to load applications';
         this.applications = [];
+        this.filteredApplications = [];
       }
       this.loading = false;
     },
@@ -128,6 +333,7 @@ loadApplicationsWithoutConventions(): void {
       console.error('Error loading applications:', error);
       this.errorMessage = error.error?.message || 'Failed to load applications';
       this.applications = [];
+      this.filteredApplications = [];
       this.loading = false;
     }
   });
@@ -142,14 +348,19 @@ loadAllApplicationsForEdit(): void {
     next: (response: ApiResponse) => {
       if (response && response.success) {
         this.applications = response.data || [];
+        this.filteredApplications = [...this.applications];
         console.log('All applications loaded for edit:', this.applications);
       } else {
         console.error('Failed to load applications for edit');
+        this.applications = [];
+        this.filteredApplications = [];
       }
       this.loading = false;
     },
     error: (error) => {
       console.error('Error loading applications for edit:', error);
+      this.applications = [];
+      this.filteredApplications = [];
       this.loading = false;
     }
   });
@@ -326,10 +537,12 @@ loadConvention(id: number): void {
   }
 
   onMontantHTChange(): void {
+    this.validateMontantHT();
     this.calculateTTC();
   }
 
   onTvaChange(): void {
+    this.validateTVA();
     this.calculateTTC();
   }
 
@@ -527,29 +740,35 @@ saveConvention(): void {
 
 
 // Toggle dropdown
+// Toggle application dropdown
 toggleApplicationDropdown(): void {
   if (!this.isEditing) {
     this.showApplicationDropdown = !this.showApplicationDropdown;
     if (this.showApplicationDropdown) {
-      this.applicationSearchTerm = '';
-      this.filteredApplications = [...this.applications];
+      this.applicationSearchTerm = '';  // Reset search term
+      this.filteredApplications = [...this.applications];  // Reset filtered list
     }
   }
 }
 
-// Filter applications
 filterApplications(): void {
-  if (!this.applicationSearchTerm.trim()) {
+  console.log('Searching with term:', this.applicationSearchTerm);
+  console.log('Applications count:', this.applications.length);
+  
+  if (!this.applicationSearchTerm || !this.applicationSearchTerm.trim()) {
     this.filteredApplications = [...this.applications];
+    console.log('Reset filtered applications:', this.filteredApplications.length);
     return;
   }
   
   const term = this.applicationSearchTerm.toLowerCase().trim();
-  this.filteredApplications = this.applications.filter(app => 
-    app.code?.toLowerCase().includes(term) || 
-    app.name?.toLowerCase().includes(term)
-  );
+  this.filteredApplications = this.applications.filter(app => {
+    const candidate = `${app.code || ''} ${app.name || ''}`.toLowerCase();
+    return candidate.includes(term);
+  });
+  console.log('Filtered applications:', this.filteredApplications.length);
 }
+
 
 // Select application
 selectApplication(app: any): void {
@@ -637,18 +856,21 @@ filterResponsableStructures(): void {
 selectBeneficielStructure(structure: any): void {
   this.formData.structureBeneficielId = structure.id;
   this.showBeneficielDropdown = false;
+  this.validateStructureBeneficiel();
 }
 
 // Select responsable structure
 selectResponsableStructure(structure: any): void {
   this.formData.structureResponsableId = structure.id;
   this.showResponsableDropdown = false;
+  this.validateStructureResponsable();
 }
 
 // Select periodicite
 selectPeriodicite(periodicite: string): void {
   this.formData.periodicite = periodicite;
   this.showPeriodiciteDropdown = false;
+  this.validatePeriodicite();
   this.onPeriodiciteChange();
 }
 
@@ -670,30 +892,20 @@ getSelectedResponsableName(): string {
 onDateChange(type: string, date: string): void {
   console.log(`Date ${type} changed to:`, date);
   
-  // You can add validation logic here
-  if (type === 'debut' && this.formData.dateFin) {
-    // Check if date fin is before date debut
-    const debut = new Date(date);
-    const fin = new Date(this.formData.dateFin);
-    
-    if (fin < debut) {
-      // If fin is before debut, reset fin
+  if (type === 'debut') {
+    this.validateDateDebut();
+    // Auto-reset dateFin if it's now invalid
+    if (this.formData.dateFin && this.formData.dateFin < this.dateFin_minDate) {
       this.formData.dateFin = '';
-      this.errorMessage = 'La date de fin ne peut pas être antérieure à la date de début';
+      delete this.validationErrors['dateFin'];
     }
+  } else if (type === 'fin') {
+    this.validateDateFin();
+  } else if (type === 'signature') {
+    this.validateDateSignature();
   }
   
-  if (type === 'fin' && this.formData.dateDebut) {
-    // Check if date fin is before date debut
-    const debut = new Date(this.formData.dateDebut);
-    const fin = new Date(date);
-    
-    if (fin < debut) {
-      this.errorMessage = 'La date de fin ne peut pas être antérieure à la date de début';
-    } else {
-      this.errorMessage = ''; // Clear error if valid
-    }
-  }
+  this.errorMessage = '';
 }
 
 }

@@ -1,276 +1,286 @@
-<div class="container mx-auto p-3 md:p-4 max-w-7xl">
-  <!-- Header with cute decoration -->
-  <div class="mb-6 relative">
-    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 flex gap-1 text-blue-300 text-xs">
-      <span>✧</span> <span>🧾</span> <span>✧</span> <span>🧾</span> <span>✧</span>
-    </div>
+<div class="p-4 mx-auto max-w-screen-2xl md:p-7">
+  <!-- Header with Back Button and View Toggle -->
+  <div class="mb-4 flex items-center justify-between">
+    <button (click)="goBack()" 
+            class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+    </button>
     
-    <div class="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-3 border-2 border-blue-200 dark:border-blue-800">
-      <button (click)="goBack()" 
-              class="flex items-center gap-1.5 px-3 py-1.5 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200 hover:bg-white dark:hover:bg-blue-900/40 rounded-full transition-all   dark:border-blue-700 shadow-sm">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    <!-- View Toggle Buttons -->
+    <div class="flex gap-1 bg-slate-100 dark:bg-slate-700 p-0.5 rounded-lg">
+      <button (click)="viewMode = 'card'" 
+              class="px-2.5 py-1 text-[10px] font-medium rounded-md transition-all flex items-center gap-1"
+              [class]="viewMode === 'card' ? 'bg-white dark:bg-slate-800 shadow-sm text-indigo-600' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800'">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
         </svg>
+        Cartes
       </button>
-      
-      <div class="flex items-center gap-3">
-        <h1 class="text-[17px] font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          {{ conventionReference }}
-        </h1>
-      </div>
-      
-      <div class="w-16"></div>
+      <button (click)="viewMode = 'list'" 
+              class="px-2.5 py-1 text-[10px] font-medium rounded-md transition-all flex items-center gap-1"
+              [class]="viewMode === 'list' ? 'bg-white dark:bg-slate-800 shadow-sm text-indigo-600' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800'">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        </svg>
+        Liste
+      </button>
     </div>
   </div>
-
-  <div class="mb-6 relative">
- 
   
-  <!-- Main stats container with soft blue background and shadow -->
-  <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 shadow-xl relative overflow-hidden border border-blue-200 dark:border-blue-800" style="box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3), 0 8px 10px -6px rgba(59, 130, 246, 0.2);">
-    <!-- Soft pattern overlay -->
-    <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 10px 10px, #3b82f6 1px, transparent 1px); background-size: 20px 20px;"></div>
-    
-    <!-- Stats content - all blue now -->
-    <div class="relative flex items-center justify-between text-blue-800 dark:text-blue-200">
-      <!-- Total factures -->
-      <div class="flex items-center gap-3">
-        <div class="bg-blue-200/50 dark:bg-blue-700/50 rounded-xl p-2 backdrop-blur-sm border border-blue-300 dark:border-blue-600">
-          <span class="text-2xl">🧾</span>
+  <!-- Convention Stats Card -->
+  <div class="mb-6 relative">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-md border border-slate-200 dark:border-slate-700">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <!-- Convention Reference -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[9px] font-medium text-slate-500 dark:text-slate-400">Convention</p>
+            <p class="text-xs font-semibold text-slate-800 dark:text-white">{{ conventionReference }}</p>
+          </div>
         </div>
-        <div>
-          <p class="text-[10px] font-medium text-blue-600 dark:text-blue-300 tracking-wide">total factures</p>
-          <p class="text-2xl font-bold text-blue-800 dark:text-blue-100">{{ factures.length }}</p>
+
+        <!-- Divider -->
+        <div class="hidden md:block w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
+
+        <!-- Montant Total TTC -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[9px] font-medium text-slate-500 dark:text-slate-400">Montant Total</p>
+            <p class="text-sm font-bold text-emerald-600 dark:text-emerald-400">{{ calculateTotalTTC() }} <span class="text-[9px] text-slate-400">TND</span></p>
+          </div>
         </div>
-      </div>
-      
-      <!-- Divider with star - blue version -->
-      <div class="flex items-center gap-2">
-        <div class="h-8 w-px bg-blue-300 dark:bg-blue-600"></div>
-        <span class="text-blue-400 dark:text-blue-500 text-xs">✧</span>
-        <div class="h-8 w-px bg-blue-300 dark:bg-blue-600"></div>
-      </div>
-      
-      <!-- Montant total TTC -->
-      <div class="flex items-center gap-3">
-        <div class="bg-blue-200/50 dark:bg-blue-700/50 rounded-xl p-2 backdrop-blur-sm border border-blue-300 dark:border-blue-600">
-          <span class="text-2xl">💰</span>
-        </div>
-        <div>
-          <p class="text-[10px] font-medium text-blue-600 dark:text-blue-300 tracking-wide">montant total TTC</p>
-          <p class="text-xl font-bold text-blue-800 dark:text-blue-100">{{ calculateTotalTTC() }} <span class="text-[10px] text-blue-500 dark:text-blue-400">TND</span></p>
-        </div>
-      </div>
-      
-      <!-- Divider with star - blue version -->
-      <div class="flex items-center gap-2">
-        <div class="h-8 w-px bg-blue-300 dark:bg-blue-600"></div>
-        <span class="text-blue-400 dark:text-blue-500 text-xs">✧</span>
-        <div class="h-8 w-px bg-blue-300 dark:bg-blue-600"></div>
-      </div>
-      
-      <!-- Payé / Total -->
-      <div class="flex items-center gap-3">
-        <div class="bg-blue-200/50 dark:bg-blue-700/50 rounded-xl p-2 backdrop-blur-sm border border-blue-300 dark:border-blue-600">
-          <span class="text-2xl">📊</span>
-        </div>
-        <div>
-          <p class="text-[10px] font-medium text-blue-600 dark:text-blue-300 tracking-wide">payé / total</p>
-          <p class="text-xl font-bold text-blue-800 dark:text-blue-100">{{ calculatePaidCount() }}/{{ factures.length }}</p>
+
+        <!-- Divider -->
+        <div class="hidden md:block w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
+
+        <!-- Payé / Total -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[9px] font-medium text-slate-500 dark:text-slate-400">Factures payées</p>
+            <p class="text-sm font-bold text-indigo-600 dark:text-indigo-400">{{ calculatePaidCount() }} <span class="text-xs text-slate-400">/ {{ factures.length }}</span></p>
+          </div>
         </div>
       </div>
-    </div>
-    
-    <!-- Cute decorative elements at bottom - blue version -->
-    <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 text-blue-400 dark:text-blue-600 text-xs">
-      <span>⤸</span><span>⤹</span><span>⤸</span><span>⤹</span>
     </div>
   </div>
-</div>
   
   <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-16">
     <div class="relative inline-block">
       <div class="animate-spin rounded-full h-8 w-8 border-2 border-blue-200 border-t-blue-500"></div>
-      <div class="absolute -top-1 -right-1 text-blue-400 animate-ping">🧾</div>
     </div>
-    <p class="mt-2 text-blue-400 dark:text-blue-300 text-xs flex items-center justify-center gap-1">
-      <span>calcul du total</span>
-      <span class="animate-bounce">.</span>
-      <span class="animate-bounce delay-100">.</span>
-      <span class="animate-bounce delay-200">.</span>
-    </p>
+    <p class="mt-2 text-slate-400 text-xs">Chargement des factures...</p>
   </div>
   
-  <!-- Invoices List - Receipt Roll Style with theme colors -->
-  <div *ngIf="!loading" class="space-y-4">
-
-
-    <!-- Receipt roll container -->
-    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border-2 border-blue-200 dark:border-blue-800 overflow-hidden relative">
-      
-      <!-- Receipt holes top -->
-      <div class="flex justify-between px-8 pt-2">
-        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
-        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
-        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
-        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+  <!-- Invoices - CARD VIEW -->
+  <div *ngIf="!loading && viewMode === 'card'" class="space-y-4">
+    <!-- Empty state -->
+    <div *ngIf="factures.length === 0" class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 text-center py-12">
+      <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-3">
+        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
       </div>
-      
-      
-      <!-- Receipt tear line -->
-      <div class="relative my-2">
-        <div class="border-t-2 border-dashed border-blue-200 dark:border-blue-800"></div>
-        <div class="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-blue-100 dark:bg-blue-900 px-4 py-0.5 rounded-full">
-          <span class="text-[10px] text-blue-600 dark:text-blue-300">✦  factures  ✦</span>
-        </div>
-      </div>
-      
-      <!-- Empty state -->
-      <div *ngIf="factures.length === 0" class="text-center py-12">
-        <div class="relative inline-block">
-          <div class="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span class="text-4xl">🧾</span>
+      <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Aucune facture</p>
+      <p class="text-xs text-slate-400">Les factures apparaîtront ici</p>
+    </div>
+    
+    <!-- Invoices Grid - Card View -->
+    <div *ngIf="factures.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngFor="let facture of factures" 
+           class="group bg-white dark:bg-slate-800 rounded-xl border transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+           [ngClass]="{
+             'border-slate-200 dark:border-slate-700': facture.statutPaiement !== 'PAYE',
+             'border-emerald-200 dark:border-emerald-800': facture.statutPaiement === 'PAYE'
+           }">
+        
+        <!-- Card Header -->
+        <div class="p-4 pb-2">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                   [ngClass]="{
+                     'bg-slate-100 dark:bg-slate-700': facture.statutPaiement !== 'PAYE',
+                     'bg-emerald-100 dark:bg-emerald-900/30': facture.statutPaiement === 'PAYE'
+                   }">
+                <svg class="w-4 h-4" [ngClass]="{
+                     'text-slate-500': facture.statutPaiement !== 'PAYE',
+                     'text-emerald-600 dark:text-emerald-400': facture.statutPaiement === 'PAYE'
+                   }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-slate-800 dark:text-white">{{ facture.numeroFacture }}</p>
+                <p class="text-[9px] text-slate-400">#{{ facture.id }}</p>
+              </div>
+            </div>
+            <span [class]="'px-2 py-0.5 text-[9px] font-medium rounded-full ' + getInvoiceStatusClass(facture.statutPaiement)">
+              {{ getInvoiceStatusLabel(facture.statutPaiement) }}
+            </span>
           </div>
-          <div class="absolute -top-2 -right-2 text-blue-400 animate-bounce">✨</div>
         </div>
-        <p class="text-blue-600 dark:text-blue-300 text-sm mb-2">aucune facture pour le moment</p>
-        <p class="text-xs text-gray-400">les nouvelles factures apparaîtront ici</p>
-      </div>
-      
-      <!-- Invoices - Receipt items -->
-      <div *ngIf="factures.length > 0" class="p-4 space-y-3">
-        <div *ngFor="let facture of factures; let i = index" 
-             class="relative group">
+        
+        <!-- Card Body -->
+        <div class="px-4 pb-3 space-y-2">
+          <!-- Date Row -->
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2">
+              <p class="text-[8px] text-slate-400 mb-0.5">Facturation</p>
+              <p class="text-[10px] font-medium text-slate-700 dark:text-slate-300">{{ facture.dateFacturation | date:'dd/MM/yyyy' }}</p>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2">
+              <p class="text-[8px] text-slate-400 mb-0.5">Échéance</p>
+              <p class="text-[10px] font-medium text-slate-700 dark:text-slate-300">{{ facture.dateEcheance | date:'dd/MM/yyyy' }}</p>
+            </div>
+          </div>
           
-          <!-- Receipt item with hover effect using theme colors -->
-          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-xl p-4 border-2 border-blue-100 dark:border-blue-900 hover:border-blue-300 dark:hover:border-blue-700 transition-all hover:shadow-lg transform hover:-translate-y-0.5">
-            
-            <!-- Receipt number -->
-            <div class="absolute -left-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity">
-              {{ i + 1 }}
+          <!-- Amount Row -->
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2">
+              <p class="text-[8px] text-slate-400 mb-0.5">Montant HT</p>
+              <p class="text-[10px] font-medium text-slate-700 dark:text-slate-300">{{ formatMontant(facture.montantHT) }} TND</p>
             </div>
-            
-            <!-- Header with invoice number and status -->
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <span class="text-lg">🧾</span>
-                <div>
-                  <span class="text-xs font-bold text-gray-800 dark:text-white">{{ facture.numeroFacture }}</span>
-                  <span class="text-[8px] text-gray-400 ml-2">#{{ facture.id }}</span>
-                </div>
-              </div>
-              <span [class]="'px-2 py-1 text-[10px] font-medium rounded-full ' + getInvoiceStatusClass(facture.statutPaiement)">
-                {{ getInvoiceStatusLabel(facture.statutPaiement) }}
-              </span>
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-2">
+              <p class="text-[8px] text-white/80 mb-0.5">TTC</p>
+              <p class="text-[11px] font-bold text-white">{{ formatMontant(facture.montantTTC) }} TND</p>
             </div>
-            
-            <!-- Cute decorative line -->
-            <div class="flex items-center gap-0.5 text-blue-200 text-[8px] mb-3">
-              <span>•</span><span>•</span><span>•</span><span>•</span><span>•</span><span>•</span><span>•</span><span>•</span><span>•</span>
+          </div>
+          
+          <!-- Payment Reference -->
+          <div *ngIf="facture.referencePaiement" class="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-2">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h10M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <span class="text-[9px] font-medium text-emerald-700 dark:text-emerald-300 truncate">{{ facture.referencePaiement }}</span>
             </div>
-            
-            <!-- Invoice details in cute card grid -->
-            <div class="grid grid-cols-2 gap-2 mb-3">
-              <!-- Date card -->
-              <div class="bg-white dark:bg-gray-700 rounded-lg p-2 shadow-sm">
-                <div class="flex items-center gap-1 text-blue-400 text-[8px] mb-0.5">
-                  <span>📅</span>
-                  <span>facturation</span>
-                </div>
-                <p class="text-[11px] font-medium text-gray-800 dark:text-white">{{ facture.dateFacturation | date:'dd MMM yyyy' }}</p>
-              </div>
-              
-              <!-- Due date card -->
-              <div class="bg-white dark:bg-gray-700 rounded-lg p-2 shadow-sm">
-                <div class="flex items-center gap-1 text-blue-400 text-[8px] mb-0.5">
-                  <span>⏰</span>
-                  <span>échéance</span>
-                </div>
-                <p class="text-[11px] font-medium text-gray-800 dark:text-white">{{ facture.dateEcheance | date:'dd MMM yyyy' }}</p>
-              </div>
-              
-              <!-- HT Amount -->
-              <div class="bg-white dark:bg-gray-700 rounded-lg p-2 shadow-sm">
-                <div class="flex items-center gap-1 text-blue-400 text-[8px] mb-0.5">
-                  <span>📦</span>
-                  <span>HT</span>
-                </div>
-                <p class="text-[11px] font-medium text-gray-800 dark:text-white">{{ formatMontant(facture.montantHT) }} TND</p>
-              </div>
-              
-              <!-- TTC Amount with blue gradient -->
-              <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-2 shadow-sm">
-                <div class="flex items-center gap-1 text-white text-[8px] mb-0.5">
-                  <span>💎</span>
-                  <span>TTC</span>
-                </div>
-                <p class="text-[11px] font-bold text-white">{{ formatMontant(facture.montantTTC) }} TND</p>
-              </div>
-            </div>
-            
-            <!-- Payment reference if exists -->
-            <div *ngIf="facture.referencePaiement" class="mb-2 bg-green-50 dark:bg-green-900/20 rounded-lg p-2 flex items-center gap-2">
-              <span class="text-green-500">💳
-                <span class="text-[11px] font-medium text-gray-800 dark:text-white">{{ facture.referencePaiement }}</span>
-              </span>
-            </div>
-
-            
-            <!-- Notes if exists -->
-            <div *ngIf="facture.notes" class="mb-3 text-[9px] text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
-              ✎ {{ facture.notes }}
-            </div>
-            
-            <!-- Cute action buttons row -->
-            <div class="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-dashed border-blue-200 dark:border-blue-800">
-              <span class="text-[8px] text-blue-300 mr-auto">⋆｡°✩</span>
-              
-              <button *ngIf="facture.statutPaiement !== 'PAYE' && !conventionArchived && canEdit()"
-                      (click)="openPaymentModal(facture)"
-                      class="p-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-all text-[10px] flex items-center gap-1">
-                <span>💸</span>
-                <span class="hidden group-hover:inline">Payer</span>
-              </button>
-              
-              <button (click)="viewFactureDetails(facture.id)" 
-                      class="p-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all text-[10px] flex items-center gap-1">
-<span class="fas fa-eye" style="font-size: 0.55rem;"></span>
-               <span class="hidden group-hover:inline">Détails</span>
-
-              </button>
+          </div>
+          
+          <!-- Notes -->
+          <div *ngIf="facture.notes" class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2">
+            <div class="flex items-start gap-1.5">
+              <svg class="w-3 h-3 text-slate-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <span class="text-[9px] text-slate-500 line-clamp-2">{{ facture.notes }}</span>
             </div>
           </div>
         </div>
-      </div>
-      
-      <!-- Receipt footer -->
-      <div class="relative mt-4">
-        <div class="border-t-2 border-dashed border-blue-200 dark:border-blue-800"></div>
-        <div class="flex justify-between px-4 py-2">
-          <span class="text-[8px] text-blue-300">✦  fin du ticket  ✦</span>
-          <span class="text-[8px] text-blue-300">{{ currentDate | date:'dd/MM/yyyy' }}</span>
+        
+        <!-- Card Footer -->
+        <div class="px-4 py-2 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-1.5">
+          <button *ngIf="facture.statutPaiement !== 'PAYE' && !conventionArchived && canEdit()"
+                  (click)="openPaymentModal(facture)"
+                  class="px-2.5 py-1 text-[9px] font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-all flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Payer
+          </button>
+          <button (click)="viewFactureDetails(facture.id)" 
+                  class="px-2.5 py-1 text-[9px] font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-all flex items-center gap-1">
+            <i class="fas fa-eye text-[8px]"></i>
+            Détails
+          </button>
         </div>
       </div>
+    </div>
+  </div>
+  
+  <!-- Invoices - LIST VIEW -->
+  <div *ngIf="!loading && viewMode === 'list'" class="space-y-2">
+    <!-- Empty state -->
+    <div *ngIf="factures.length === 0" class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 text-center py-12">
+      <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-3">
+        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Aucune facture</p>
+      <p class="text-xs text-slate-400">Les factures apparaîtront ici</p>
+    </div>
+    
+    <!-- Invoices List View -->
+    <div *ngIf="factures.length > 0" class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <!-- Table Header -->
+      <div class="grid grid-cols-12 gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-700/30 border-b border-slate-200 dark:border-slate-700 text-[10px] font-medium text-slate-500">
+        <div class="col-span-2">N° Facture</div>
+        <div class="col-span-2">Date facturation</div>
+        <div class="col-span-2">Échéance</div>
+        <div class="col-span-2">Montant TTC</div>
+        <div class="col-span-2">Statut</div>
+        <div class="col-span-2 text-right">Actions</div>
+      </div>
       
-      <!-- Receipt holes bottom -->
-      <div class="flex justify-between px-8 pb-2">
-        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
-        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
-        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
-        <div class="w-3 h-3 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+      <!-- Table Rows -->
+      <div *ngFor="let facture of factures" 
+           class="grid grid-cols-12 gap-2 px-4 py-3 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all items-center">
+        <div class="col-span-2">
+          <p class="text-xs font-medium text-slate-800 dark:text-white">{{ facture.numeroFacture }}</p>
+          <p class="text-[8px] text-slate-400">#{{ facture.id }}</p>
+        </div>
+        <div class="col-span-2">
+          <p class="text-xs text-slate-600 dark:text-slate-300">{{ facture.dateFacturation | date:'dd/MM/yyyy' }}</p>
+        </div>
+        <div class="col-span-2">
+          <p class="text-xs text-slate-600 dark:text-slate-300">{{ facture.dateEcheance | date:'dd/MM/yyyy' }}</p>
+        </div>
+        <div class="col-span-2">
+          <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{{ formatMontant(facture.montantTTC) }} TND</p>
+          <p class="text-[8px] text-slate-400">HT: {{ formatMontant(facture.montantHT) }} TND</p>
+        </div>
+        <div class="col-span-2">
+          <span [class]="'px-2 py-0.5 text-[9px] font-medium rounded-full ' + getInvoiceStatusClass(facture.statutPaiement)">
+            {{ getInvoiceStatusLabel(facture.statutPaiement) }}
+          </span>
+        </div>
+        <div class="col-span-2 flex justify-end gap-1.5">
+          <button *ngIf="facture.statutPaiement !== 'PAYE' && !conventionArchived && canEdit()"
+                  (click)="openPaymentModal(facture)"
+                  class="px-2 py-1 text-[9px] font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-all flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Payer
+          </button>
+          <button (click)="viewFactureDetails(facture.id)" 
+                  class="px-2 py-1 text-[9px] font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-all flex items-center gap-1">
+            <i class="fas fa-eye text-[8px]"></i>
+            Détails
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Payment Modal - with theme colors -->
+<!-- Payment Modal - (same as before) -->
 <div *ngIf="showPaymentModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
   <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full p-5 animate-fadeIn border-2 border-blue-200 dark:border-blue-800">
-    <!-- Cute modal header -->
+    <!-- Modal content same as before -->
     <div class="flex justify-between items-center mb-4">
       <div class="flex items-center gap-2">
-        <span class="text-2xl">💸</span>
+        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
         <div>
           <h3 class="text-sm font-bold text-gray-800 dark:text-white">Enregistrer paiement</h3>
           <p *ngIf="selectedFacture" class="text-blue-400 text-[10px] mt-0.5">
@@ -278,58 +288,42 @@
           </p>
         </div>
       </div>
-      <button (click)="closePaymentModal()" 
-              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full">
+      <button (click)="closePaymentModal()" class="text-gray-400 hover:text-gray-600 p-1 hover:bg-blue-50 rounded-full">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
     
-    <!-- Decorative line -->
     <div class="flex items-center gap-1 text-blue-200 text-[8px] mb-4">
       <span>••••••••••••••••••••••••••</span>
     </div>
     
     <div class="space-y-4">
       <div>
-        <label class="block text-[10px] font-medium text-gray-600 dark:text-gray-300 mb-1 flex items-center gap-1">
-          <span>🔑</span> Référence de paiement *
+        <label class="block text-[10px] font-medium text-gray-600 mb-1 flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 7z" />
+          </svg>
+          Référence de paiement *
         </label>
-        <input
-          type="text"
-          [(ngModel)]="paymentData.referencePaiement"
-          class="w-full px-3 py-2 text-xs border-2 border-blue-200 dark:border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 dark:bg-gray-700 dark:text-white"
-          placeholder="ex: VIREMENT-001"
-        />
+        <input type="text" [(ngModel)]="paymentData.referencePaiement" class="w-full px-3 py-2 text-xs border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 dark:bg-gray-700 dark:text-white" placeholder="ex: VIREMENT-001" />
       </div>
       
       <div>
-        <label class="block text-[10px] font-medium text-gray-600 dark:text-gray-300 mb-1 flex items-center gap-1">
-          <span>📅</span> Date de paiement
+        <label class="block text-[10px] font-medium text-gray-600 mb-1 flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Date de paiement
         </label>
-        <input
-          type="date"
-          [(ngModel)]="paymentData.datePaiement"
-          class="w-full px-3 py-2 text-xs border-2 border-blue-200 dark:border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 dark:bg-gray-700 dark:text-white"
-        />
+        <input type="date" [(ngModel)]="paymentData.datePaiement" class="w-full px-3 py-2 text-xs border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 dark:bg-gray-700 dark:text-white" />
       </div>
       
       <div class="flex gap-2 pt-2">
-        <button type="button" (click)="closePaymentModal()" 
-                class="flex-1 px-3 py-2 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 text-xs">
-          Annuler
-        </button>
-        <button (click)="registerPayment()"
-                [disabled]="loading"
-                class="flex-1 px-3 py-2 bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white rounded-xl font-medium text-xs disabled:opacity-50 flex items-center justify-center gap-1">
-          <span *ngIf="loading" class="flex items-center gap-1">
-            <svg class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>...</span>
-          </span>
+        <button type="button" (click)="closePaymentModal()" class="flex-1 px-3 py-2 border-2 border-gray-200 text-gray-600 rounded-xl font-medium hover:bg-gray-50 text-xs">Annuler</button>
+        <button (click)="registerPayment()" [disabled]="loading" class="flex-1 px-3 py-2 bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white rounded-xl font-medium text-xs disabled:opacity-50 flex items-center justify-center gap-1">
+          <span *ngIf="loading" class="flex items-center gap-1"><svg class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>...</span></span>
           <span *ngIf="!loading">Enregistrer</span>
         </button>
       </div>

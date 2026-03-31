@@ -21,6 +21,11 @@ export class ConventionVersionsComponent implements OnInit {
   previousVersions: VersionData[] = [];
   selectedVersion: any = null;
   selectedVersionFactures: any[] = [];
+
+  // Modal state for full invoice view
+  showInvoiceModal = false;
+  modalFactures: any[] = [];
+  modalVersionTitle = '';
   
   loading = true;
   errorMessage = '';
@@ -225,5 +230,22 @@ showFullDetails(version: any): void {
   
   // OR 2. Navigate to a dedicated details page
   // this.router.navigate(['/conventions/old', version.id]);
+}
+
+
+// Add this method to open the invoice modal instead of navigating away
+viewAllInvoices(conventionId: number): void {
+  const version = this.previousVersions.find(v => v.oldConvention.id === conventionId);
+  if (version) {
+    this.modalFactures = version.oldFactures || [];
+    this.modalVersionTitle = version.oldConvention.referenceConvention || 'Détails Factures';
+    this.showInvoiceModal = true;
+  }
+}
+
+closeInvoiceModal(): void {
+  this.showInvoiceModal = false;
+  this.modalFactures = [];
+  this.modalVersionTitle = '';
 }
 }

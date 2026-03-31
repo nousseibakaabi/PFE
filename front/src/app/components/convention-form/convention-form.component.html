@@ -75,16 +75,24 @@
     <input
       type="text"
       [(ngModel)]="formData.referenceConvention"
+      (ngModelChange)="validateReferenceConvention()"
       name="referenceConvention"
       [disabled]="isEditing"
       required
-      class="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+      class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+      [class.border-red-300]="hasError('referenceConvention')"
+      [class.border-gray-200]="!hasError('referenceConvention')"
+      [class.dark:border-red-600]="hasError('referenceConvention')"
+      [class.dark:border-gray-600]="!hasError('referenceConvention')"
       placeholder="CONV-2024-001"
     />
     <!-- Format hint inside input on the right -->
     <span class="absolute right-3 top-2 text-2xs text-gray-400 pointer-events-none select-none">
       CONV-YYYY-XXX
     </span>
+  </div>
+  <div *ngIf="hasError('referenceConvention')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+    {{ getErrorMessage('referenceConvention') }}
   </div>
 </div>
         
@@ -95,10 +103,18 @@
           <input
             type="text"
             [(ngModel)]="formData.referenceERP"
+            (ngModelChange)="validateReferenceERP()"
             name="referenceERP"
-            class="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600"
+            class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600"
+            [class.border-red-300]="hasError('referenceERP')"
+            [class.border-gray-200]="!hasError('referenceERP')"
+            [class.dark:border-red-600]="hasError('referenceERP')"
+            [class.dark:border-gray-600]="!hasError('referenceERP')"
             placeholder="ERP-REF-001"
           />
+          <div *ngIf="hasError('referenceERP')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+            {{ getErrorMessage('referenceERP') }}
+          </div>
         </div>
       </div>
 
@@ -112,10 +128,14 @@
   
 <button 
   type="button"
-  (click)="toggleApplicationDropdown()"
+  (click)="toggleApplicationDropdown(); validateApplication()"
   [disabled]="isEditing"
-  class="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 flex items-center justify-between text-left"
+  class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 flex items-center justify-between text-left"
   [class.border-blue-500]="showApplicationDropdown"
+  [class.border-red-300]="hasError('applicationId') && !showApplicationDropdown"
+  [class.border-gray-200]="!hasError('applicationId') && !showApplicationDropdown"
+  [class.dark:border-red-600]="hasError('applicationId') && !showApplicationDropdown"
+  [class.dark:border-gray-600]="!hasError('applicationId') && !showApplicationDropdown"
   [class.pointer-events-none]="isEditing"
 >
   <span [class.text-gray-400]="!formData.applicationId" 
@@ -137,26 +157,31 @@
   </svg>
 </button>
 
+  <div *ngIf="hasError('applicationId')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+    {{ getErrorMessage('applicationId') }}
+  </div>
+
   <!-- Custom dropdown menu -->
   <div *ngIf="showApplicationDropdown" 
        class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto animate-fadeIn">
     
-    <!-- Search input inside dropdown -->
-    <div class="sticky top-0 p-2 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-      <div class="relative">
-        <input
-          type="text"
-          [(ngModel)]="applicationSearchTerm"
-          (ngModelChange)="filterApplications()"
-          placeholder="Rechercher..."
-          class="w-full pl-8 pr-2 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          (click)="$event.stopPropagation()"
-        />
-        <svg class="absolute left-2.5 top-2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </div>
-    </div>
+<!-- Search input inside dropdown -->
+<div class="sticky top-0 p-1.5 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+  <div class="relative app-search-wrapper">
+    <input
+      type="text"
+      name="applicationSearch"
+      [(ngModel)]="applicationSearchTerm"
+      (ngModelChange)="filterApplications()"
+      placeholder="Rechercher..."
+      class="w-full pr-2 py-1 text-[11px] border border-gray-200 dark:border-gray-600 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 app-search-input"
+      (click)="$event.stopPropagation()"
+    />
+    <svg class="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400 app-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+  </div>
+</div>
 
     <!-- Options list -->
     <div class="py-1">
@@ -180,14 +205,14 @@
       
       <!-- Empty state -->
       <div *ngIf="filteredApplications.length === 0" 
-           class="px-3 py-4 text-center text-xs text-gray-500 dark:text-gray-400">
+           class="px-3 py-4 text-center text-[11px] text-gray-500 dark:text-gray-400">
         Aucune application trouvée
       </div>
     </div>
   </div>
 
   <!-- Info message -->
-  <div *ngIf="!isEditing && applications.length === 0" class="mt-2 text-xs text-yellow-600 dark:text-yellow-400">
+  <div *ngIf="!isEditing && applications.length === 0" class="mt-2 text-[11px] text-yellow-600 dark:text-yellow-400">
     ⚠️ Toutes les applications ont déjà des conventions
   </div>
 </div>
@@ -204,8 +229,12 @@
     type="button"
     (click)="toggleDropdown('beneficiel')"
      [disabled]="isEditing"
-      class="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 flex items-center justify-between text-left"
+      class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 flex items-center justify-between text-left"
       [class.border-blue-500]="showBeneficielDropdown"
+      [class.border-red-300]="hasError('structureBeneficielId') && !showBeneficielDropdown"
+      [class.border-gray-200]="!hasError('structureBeneficielId') && !showBeneficielDropdown"
+      [class.dark:border-red-600]="hasError('structureBeneficielId') && !showBeneficielDropdown"
+      [class.dark:border-gray-600]="!hasError('structureBeneficielId') && !showBeneficielDropdown"
       [class.pointer-events-none]="isEditing"
   >
     <span [class.text-gray-400]="!formData.structureBeneficielId">
@@ -220,6 +249,10 @@
   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
 </svg>
   </button>
+
+  <div *ngIf="hasError('structureBeneficielId')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+    {{ getErrorMessage('structureBeneficielId') }}
+  </div>
 
   <!-- Custom dropdown menu -->
   <div *ngIf="showBeneficielDropdown" class="custom-dropdown-menu">
@@ -254,21 +287,24 @@
       </div>
 
       <!-- Info message for app date sync - Cuter -->
-      <div *ngIf="formData.applicationId" class="p-2.5 bg-blue-50/80 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-800/30 animate-slideDown">
-        <div class="flex items-start gap-2">
-          <svg class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div class="text-2xs">
-            <p class="font-medium text-blue-700 dark:text-blue-300 mb-0.5">
-              ✨ Mise à jour automatique
-            </p>
-            <p class="text-blue-600 dark:text-blue-400">
-              Les dates de <span class="font-semibold">{{ getApplicationName(formData.applicationId) }}</span> seront synchronisées
-            </p>
-          </div>
-        </div>
-      </div>
+<div *ngIf="formData.applicationId" class="p-1.5 bg-blue-50/80 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-800/30 animate-slideDown">
+  <div class="flex items-start gap-1.5">
+    <svg class="w-3 h-3 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <div class="text-[10px]">
+      <p class="font-medium text-blue-700 dark:text-blue-300 mb-0.5 flex items-center gap-0.5">
+        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Mise à jour automatique
+      </p>
+      <p class="text-blue-600 dark:text-blue-400">
+        Les dates de <span class="font-semibold">{{ getApplicationName(formData.applicationId) }}</span> seront synchronisées
+      </p>
+    </div>
+  </div>
+</div>
 
       <!-- Structure Responsable -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -281,8 +317,12 @@
   <button 
     type="button"
     (click)="toggleDropdown('responsable')"
-    class="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 flex items-center justify-between text-left"
+    class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 flex items-center justify-between text-left"
     [class.border-blue-500]="showResponsableDropdown"
+    [class.border-red-300]="hasError('structureResponsableId') && !showResponsableDropdown"
+    [class.border-gray-200]="!hasError('structureResponsableId') && !showResponsableDropdown"
+    [class.dark:border-red-600]="hasError('structureResponsableId') && !showResponsableDropdown"
+    [class.dark:border-gray-600]="!hasError('structureResponsableId') && !showResponsableDropdown"
   >
     <span [class.text-gray-400]="!formData.structureResponsableId">
       {{ getSelectedResponsableName() || 'Choisir une structure responsable' }}
@@ -296,6 +336,10 @@
   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
 </svg>
   </button>
+
+  <div *ngIf="hasError('structureResponsableId')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+    {{ getErrorMessage('structureResponsableId') }}
+  </div>
 
   <!-- Custom dropdown menu -->
   <div *ngIf="showResponsableDropdown" class="custom-dropdown-menu">
@@ -337,8 +381,12 @@
   <button 
     type="button"
     (click)="toggleDropdown('periodicite')"
-    class="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 flex items-center justify-between text-left"
+    class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-600 flex items-center justify-between text-left"
     [class.border-blue-500]="showPeriodiciteDropdown"
+    [class.border-red-300]="hasError('periodicite') && !showPeriodiciteDropdown"
+    [class.border-gray-200]="!hasError('periodicite') && !showPeriodiciteDropdown"
+    [class.dark:border-red-600]="hasError('periodicite') && !showPeriodiciteDropdown"
+    [class.dark:border-gray-600]="!hasError('periodicite') && !showPeriodiciteDropdown"
   >
     <span [class.text-gray-400]="!formData.periodicite">
       {{ formData.periodicite || 'Sélectionner' }}
@@ -352,6 +400,10 @@
   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
 </svg>
   </button>
+
+  <div *ngIf="hasError('periodicite')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+    {{ getErrorMessage('periodicite') }}
+  </div>
 
   <!-- Custom dropdown menu -->
   <div *ngIf="showPeriodiciteDropdown" class="custom-dropdown-menu">
@@ -375,7 +427,7 @@
     </div>
   </div>
 </div>
-      </div>
+</div>
 
       <!-- Libellé -->
       <div>
@@ -385,11 +437,19 @@
         <input
           type="text"
           [(ngModel)]="formData.libelle"
+          (ngModelChange)="validateLibelle()"
           name="libelle"
           required
-          class="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50"
+          class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all"
+          [class.border-red-300]="hasError('libelle')"
+          [class.border-gray-200]="!hasError('libelle')"
+          [class.dark:border-red-600]="hasError('libelle')"
+          [class.dark:border-gray-600]="!hasError('libelle')"
           placeholder="Libellé de la convention"
         />
+        <div *ngIf="hasError('libelle')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+          {{ getErrorMessage('libelle') }}
+        </div>
       </div>
 
     
@@ -408,9 +468,16 @@
               (ngModelChange)="onMontantHTChange()"
               step="0.01"
               min="0"
-              class="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50"
+              class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50"
+              [class.border-red-300]="hasError('montantHT')"
+              [class.border-gray-200]="!hasError('montantHT')"
+              [class.dark:border-red-600]="hasError('montantHT')"
+              [class.dark:border-gray-600]="!hasError('montantHT')"
               placeholder="0.00"
             />
+            <div *ngIf="hasError('montantHT')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+              {{ getErrorMessage('montantHT') }}
+            </div>
           </div>
           
           <div>
@@ -425,8 +492,15 @@
               step="0.01"
               min="0"
               max="100"
-              class="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50"
+              class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50"
+              [class.border-red-300]="hasError('tva')"
+              [class.border-gray-200]="!hasError('tva')"
+              [class.dark:border-red-600]="hasError('tva')"
+              [class.dark:border-gray-600]="!hasError('tva')"
             />
+            <div *ngIf="hasError('tva')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+              {{ getErrorMessage('tva') }}
+            </div>
           </div>
           
           <div>
@@ -455,9 +529,13 @@
           </label>
            <app-date-picker
     [(date)]="formData.dateDebut"
+    [minDate]="getTodayDateString()"
     [placeholder]="'Sélectionner une date'"
     (dateChange)="onDateChange('debut', $event)">
   </app-date-picker>
+  <div *ngIf="hasError('dateDebut')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+    {{ getErrorMessage('dateDebut') }}
+  </div>
         </div>
         <div>
           <label class="block text-2xs font-medium text-gray-600 dark:text-gray-400 mb-1 ml-1">
@@ -465,10 +543,13 @@
           </label>
          <app-date-picker
     [(date)]="formData.dateFin"
-    [placeholder]="'Sélectionner une date'"
-    [minDate]="formData.dateDebut"
+    [minDate]="dateFin_minDate || formData.dateDebut"
+    [placeholder]="'15 jours min. après début'"
     (dateChange)="onDateChange('fin', $event)">
   </app-date-picker>
+  <div *ngIf="hasError('dateFin')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+    {{ getErrorMessage('dateFin') }}
+  </div>
         </div>
         <div>
           <label class="block text-2xs font-medium text-gray-600 dark:text-gray-400 mb-1 ml-1">
@@ -476,9 +557,13 @@
           </label>
          <app-date-picker
     [(date)]="formData.dateSignature"
-    [placeholder]="'Sélectionner une date'"
+    [minDate]="dateSignature_minDate"
+    [placeholder]="'À partir d\'aujourd\'hui'"
     (dateChange)="onDateChange('signature', $event)">
   </app-date-picker>
+  <div *ngIf="hasError('dateSignature')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+    {{ getErrorMessage('dateSignature') }}
+  </div>
         </div>
       </div>
       <!-- Number of Users - Cuter -->
@@ -496,7 +581,11 @@
               (focus)="onNbUsersFocus()"
               min="1"
               step="1"
-              class="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50"
+              class="w-full px-3 py-2 text-xs border rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50"
+              [class.border-red-300]="hasError('nbUsers')"
+              [class.border-gray-200]="!hasError('nbUsers')"
+              [class.dark:border-red-600]="hasError('nbUsers')"
+              [class.dark:border-gray-600]="!hasError('nbUsers')"
               placeholder="Saisir le nombre"
             />
             <svg class="absolute right-3 top-2.5 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -508,7 +597,10 @@
             <span *ngIf="userLimits.maxUser"> | Max: {{ userLimits.maxUser }}</span>
           </div>
         </div>
-        <div *ngIf="userRuleMessage" class="mt-1.5 text-2xs px-2 py-1 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-yellow-700 dark:text-yellow-300 animate-pulse">
+        <div *ngIf="hasError('nbUsers')" class="mt-2 text-[11px] text-red-500 dark:text-red-400 ml-1">
+          {{ getErrorMessage('nbUsers') }}
+        </div>
+        <div *ngIf="userRuleMessage" class="mt-2 text-[11px] px-2 py-1 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-yellow-700 dark:text-yellow-300 animate-pulse">
           <span class="font-medium">📋 Règle:</span> {{ userRuleMessage }}
         </div>
       </div>
