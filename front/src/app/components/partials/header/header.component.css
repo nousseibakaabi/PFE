@@ -56,3 +56,16 @@
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #6b7280;
 }
+
+
+
+/* Ensure dropdowns have higher z-index */
+.dropdown-menu,
+.notification-dropdown {
+  z-index: 100000;
+}
+
+.fas{
+  font-size: 11px;
+
+}

@@ -319,3 +319,32 @@ canvas {
     height: 120px !important;
   }
 }
+
+
+
+
+/* Override the global canvas height for this specific chart */
+.chart-container canvas,
+canvas:not(.small-chart) {
+  height: auto !important;
+  max-height: 100% !important;
+}
+
+/* Make sure the monthly trends chart respects the container height */
+#monthlyTrendsChart,
+canvas[#monthlyTrendsChart] {
+  height: 100% !important;
+  max-height: 100% !important;
+}
+
+/* Keep other charts at 300px if needed */
+.small-chart {
+  max-height: 130px !important;
+  height: 130px !important;
+}
+
+/* Specific override for the main chart in the new layout */
+.bg-white.rounded-xl .h-40 canvas {
+  height: 100% !important;
+  max-height: 100% !important;
+}

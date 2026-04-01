@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // Ajouter ChangeDetectorRef
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
@@ -32,8 +32,6 @@ export class ProfileComponent implements OnInit {
   isPasswordModal = false;
 
   avatarPreview: string | null = null;
-
-  // AJOUTER CETTE PROPRIÉTÉ
   isTwoFactorEnabled = false;
 
   notificationForm!: FormGroup;
@@ -50,7 +48,7 @@ export class ProfileComponent implements OnInit {
     private apiService: ApiService,
     private translationService: TranslationService,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef // AJOUTER ChangeDetectorRef
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -61,8 +59,7 @@ export class ProfileComponent implements OnInit {
       lastName: ['', Validators.required],
       email: [{value: '', disabled: true}],
       phone: [''],
-      department: [''],
-      avatar: [null]
+      department: ['']
     });
 
     this.passwordForm = this.formBuilder.group({
@@ -81,7 +78,6 @@ export class ProfileComponent implements OnInit {
     this.authService.getProfile().subscribe({
       next: (user) => {
         this.user = user;
-        // AJOUTER CETTE LIGNE POUR INITIALISER isTwoFactorEnabled
         this.isTwoFactorEnabled = user.twoFactorEnabled || false;
         
         this.personalInfoForm.patchValue({
@@ -100,6 +96,80 @@ export class ProfileComponent implements OnInit {
         this.profileLoading = false;
       }
     });
+  }
+
+  // IMPROVED AVATAR METHODS (from application-form)
+  getAvatarUrl(): string {
+    if (!this.user) {
+      return this.generateDefaultAvatar();
+    }
+    
+    const profileImage = this.user.profileImage;
+    
+    if (!profileImage) {
+      return this.generateDefaultAvatar();
+    }
+    
+    if (profileImage.startsWith('http')) {
+      return profileImage;
+    }
+    
+    if (profileImage.startsWith('/uploads/')) {
+      return this.baseUrl + profileImage;
+    }
+    
+    if (profileImage.startsWith('data:image')) {
+      return profileImage;
+    }
+    
+    return this.generateDefaultAvatar();
+  }
+
+generateDefaultAvatar(): string {
+  if (!this.user) {
+    return 'assets/images/user/owner.jpg';
+  }
+  
+  let initials = 'U';
+  if (this.user?.firstName && this.user?.lastName) {
+    initials = (this.user.firstName.charAt(0) + this.user.lastName.charAt(0)).toUpperCase();
+  } else if (this.user?.firstName) {
+    initials = this.user.firstName.charAt(0).toUpperCase();
+  } else if (this.user?.lastName) {
+    initials = this.user.lastName.charAt(0).toUpperCase();
+  } else if (this.user?.username) {
+    initials = this.user.username.charAt(0).toUpperCase();
+  }
+  
+  const blueColor = '#2B72DF';
+  
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+    <circle cx="50" cy="50" r="48" fill="white" stroke="${blueColor}" stroke-width="2"/>
+    <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" 
+          font-size="38" font-weight="500" fill="${blueColor}" dominant-baseline="middle">
+      ${initials}
+    </text>
+  </svg>`;
+  
+  return 'data:image/svg+xml;base64,' + btoa(svg);
+}
+  handleImageError(event: any): void {
+    event.target.src = this.generateDefaultAvatar();
+    event.target.onerror = null;
+  }
+
+  getUserInitials(): string {
+    if (!this.user) return 'U';
+    if (this.user.firstName && this.user.lastName) {
+      return (this.user.firstName.charAt(0) + this.user.lastName.charAt(0)).toUpperCase();
+    } else if (this.user.firstName) {
+      return this.user.firstName.charAt(0).toUpperCase();
+    } else if (this.user.lastName) {
+      return this.user.lastName.charAt(0).toUpperCase();
+    } else if (this.user.username) {
+      return this.user.username.charAt(0).toUpperCase();
+    }
+    return 'U';
   }
 
   loadNotificationMode(): void {
@@ -142,26 +212,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  getNotificationModeText(): string {
-    const mode = this.user?.notifMode;
-    switch(mode) {
-      case 'email': return 'Email';
-      case 'sms': return 'SMS';
-      case 'both': return 'Email & SMS';
-      default: return 'Email';
-    }
-  }
-
-  getNotificationModeDescription(): string {
-    const mode = this.user?.notifMode;
-    switch(mode) {
-      case 'email': return 'Recevoir les notifications uniquement par email';
-      case 'sms': return 'Recevoir les notifications uniquement par SMS';
-      case 'both': return 'Recevoir les notifications par email et SMS';
-      default: return 'Notifications par email uniquement';
-    }
-  }
-
   getNotificationModeTextKey(): string {
     const mode = this.user?.notifMode;
     switch(mode) {
@@ -182,12 +232,10 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // CORRIGER CETTE MÉTHODE
   refreshUserData(): void {
     this.authService.refreshUser().subscribe({
       next: (user) => {
         this.user = user;
-        // Mettre à jour le statut 2FA
         this.isTwoFactorEnabled = user.twoFactorEnabled || false;
         this.cdr.markForCheck();
       },
@@ -212,58 +260,6 @@ export class ProfileComponent implements OnInit {
     }
     
     return this.user.enabled ? 'Active' : 'Disabled';
-  }
-
-  getAvatarUrl(): string {
-    if (!this.user?.profileImage) {
-      return this.generateAvatarUrl();
-    }
-    
-    const profileImage = this.user.profileImage;
-    
-    if (profileImage.startsWith('http')) {
-      return profileImage;
-    }
-    
-    if (profileImage.startsWith('/uploads/')) {
-      return this.baseUrl + profileImage;
-    }
-    
-    if (profileImage.startsWith('data:image')) {
-      return profileImage;
-    }
-    
-    return this.generateAvatarUrl();
-  }
-
-  generateAvatarUrl(): string {
-    if (!this.user) {
-      return 'assets/images/user/owner.jpg';
-    }
-    
-    let initials = 'U';
-    if (this.user?.firstName && this.user?.lastName) {
-      initials = this.user.firstName.charAt(0).toUpperCase() + this.user.lastName.charAt(0).toUpperCase();
-    } else if (this.user?.firstName) {
-      initials = this.user.firstName.charAt(0).toUpperCase();
-    } else if (this.user?.lastName) {
-      initials = this.user.lastName.charAt(0).toUpperCase();
-    } else if (this.user?.username) {
-      initials = this.user.username.charAt(0).toUpperCase();
-    }
-    
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="48" fill="#e9d709"/>
-      <text x="50" y="58" text-anchor="middle" font-family="Arial" font-size="38" fill="white">${initials}</text>
-    </svg>`;
-    
-    return 'data:image/svg+xml;base64,' + btoa(svg);
-  }
-
-  handleImageError(event: any) {
-    console.error('Image failed to load:', this.user?.profileImage);
-    event.target.src = this.generateAvatarUrl();
-    event.target.onerror = null;
   }
 
   updatePersonalInfo(): void {
@@ -296,9 +292,7 @@ export class ProfileComponent implements OnInit {
         this.authService.refreshUser().subscribe({
           next: (updatedUser) => {
             this.user = updatedUser;
-            // Mettre à jour le statut 2FA après refresh
             this.isTwoFactorEnabled = updatedUser.twoFactorEnabled || false;
-            console.log('User updated in modal:', this.user);
           },
           error: (err) => {
             console.error('Failed to refresh user:', err);
@@ -383,11 +377,6 @@ export class ProfileComponent implements OnInit {
       .replace(/\b\w/g, (l: string) => l.toUpperCase());
   }
 
-  get userRoles(): string {
-    if (!this.user) return '';
-    return this.user.roles.join(', ');
-  }
-
   closeProfileInfoModal(): void {
     this.isProfileInfoModal = false;
     this.error = '';
@@ -399,30 +388,6 @@ export class ProfileComponent implements OnInit {
     this.isPasswordModal = false;
     this.error = '';
     this.passwordForm.reset();
-  }
-
-  debugAvatar(): void {
-    console.log('User object:', this.user);
-    console.log('User profileImage:', this.user?.profileImage);
-    console.log('getAvatarUrl():', this.getAvatarUrl());
-    console.log('avatarPreview:', this.avatarPreview);
-  }
-
-  getAccountStatus(): string {
-    if (!this.user) return 'Loading...';
-    
-    if (this.user.lockedByAdmin) {
-      return 'Locked by Administrator';
-    } else if (this.user.accountLockedUntil) {
-      const lockDate = new Date(this.user.accountLockedUntil);
-      if (lockDate > new Date()) {
-        return `Temporarily Locked until ${lockDate.toLocaleString()}`;
-      }
-    } else if (this.user.failedLoginAttempts && this.user.failedLoginAttempts > 0) {
-      return `${this.user.failedLoginAttempts} failed login attempt(s)`;
-    }
-    
-    return this.user.enabled ? 'Active' : 'Disabled';
   }
 
   getStatusClass(): string {

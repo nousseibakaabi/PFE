@@ -497,4 +497,46 @@ getUserInitials(): string {
 getUserEmail(): string {
   return this.currentUser?.email || 'No email';
 }
+
+
+// Add these methods to your HeaderComponent class
+
+/**
+ * Get days status text in French
+ */
+getDaysStatusTextFr(daysUntilDue?: number): string {
+  if (daysUntilDue === undefined || daysUntilDue === null) return '';
+  
+  if (daysUntilDue > 0) {
+    return daysUntilDue === 1 ? 'Demain' : `Dans ${daysUntilDue} jours`;
+  } else if (daysUntilDue === 0) {
+    return "Aujourd'hui";
+  } else {
+    return `${Math.abs(daysUntilDue)} jours de retard`;
+  }
+}
+
+/**
+ * Format notification time in French
+ */
+formatTimeFr(createdAt: string): string {
+  const date = new Date(createdAt);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return "À l'instant";
+  if (diffMins < 60) return `Il y a ${diffMins} minute${diffMins === 1 ? '' : 's'}`;
+  if (diffHours < 24) return `Il y a ${diffHours} heure${diffHours === 1 ? '' : 's'}`;
+  if (diffDays < 7) return `Il y a ${diffDays} jour${diffDays === 1 ? '' : 's'}`;
+  
+  return date.toLocaleDateString('fr-FR', { 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
 }

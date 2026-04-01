@@ -168,7 +168,8 @@
         <app-translate></app-translate>
 
 <!-- Notification Menu Area -->
-<div class="relative mt-3">
+<!-- Notification Menu Area -->
+<div class="relative mt-3" style="z-index: 99999;">
   <button
     class="hover:text-dark-900 relative flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
     (click)="toggleNotifications()"
@@ -201,19 +202,20 @@
     </svg>
   </button>
 
-  <!-- Dropdown Start -->
+  <!-- Dropdown Start with inline style for max z-index -->
   <div
     *ngIf="isNotificationsOpen"
-    class="shadow-sm dark:bg-gray-dark absolute -right-[240px] mt-[17px] flex h-[400px] w-[320px] flex-col rounded-xl border border-gray-200 bg-white p-3 sm:w-[340px] lg:right-0 dark:border-gray-800 z-50"
+    class="shadow-sm dark:bg-gray-dark absolute -right-[240px] mt-[17px] flex h-[400px] w-[320px] flex-col rounded-xl border border-gray-200 bg-white p-3 sm:w-[340px] lg:right-0 dark:border-gray-800"
+    style="z-index: 999999; position: absolute;"
     (clickOutside)="isNotificationsOpen = false"
   >
     <div
-      class=" flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800"
+      class="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800"
     >
       <h5 class="text-sm font-semibold text-gray-800 dark:text-white/90">
         {{ 'Notifications' | translate }}
         <span *ngIf="unreadCount > 0" class="ml-2 rounded-full bg-orange-100 px-2 py-0.5 text-xs text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
-          {{ unreadCount }} new
+          {{ unreadCount }} {{ 'nouvelle' | translate }}{{ unreadCount > 1 ? 's' : '' }}
         </span>
       </h5>
 
@@ -222,9 +224,9 @@
           *ngIf="notifications.length > 0 && unreadCount > 0"
           (click)="markAllAsRead()"
           class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-          title="Mark all as read"
+          title="Tout marquer comme lu"
         >
-          Mark all read
+          {{ 'Tout marquer lu' | translate }}
         </button>
         <button
           (click)="toggleNotifications()"
@@ -263,7 +265,7 @@
         <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
         </svg>
-        <p class="text-gray-500 dark:text-gray-400">{{ 'No notifications' | translate }}</p>
+        <p class="text-gray-500 dark:text-gray-400">{{ 'Aucune notification' | translate }}</p>
       </div>
 
       <div *ngFor="let notification of notifications" 
@@ -279,7 +281,7 @@
           <button
             (click)="deleteNotification(notification, $event)"
             class="absolute top-1 right-1 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
-            title="Delete"
+            title="Supprimer"
           >
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -287,45 +289,44 @@
           </button>
 
           <!-- Icon -->
-          <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
+          <div class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full"
                [ngClass]="{
                  'bg-blue-100 dark:bg-blue-900/20': notification.type === 'INFO',
                  'bg-yellow-100 dark:bg-yellow-900/20': notification.type === 'WARNING',
                  'bg-green-100 dark:bg-green-900/20': notification.type === 'SUCCESS',
                  'bg-red-100 dark:bg-red-900/20': notification.type === 'DANGER'
                }">
-            <i class="fas" [ngClass]="getNotificationIcon(notification.type)" 
-               [ngClass]="getNotificationColor(notification.type)"></i>
+            <i class="fas" [ngClass]="getNotificationIcon(notification.type) + ' ' + getNotificationColor(notification.type)"></i>
           </div>
 
           <!-- Content -->
           <div class="flex-1 min-w-0 pr-4">
-            <p class="text-sm font-medium text-gray-800 dark:text-white/90"
+            <p class="text-xs font-medium text-gray-800 dark:text-white/90"
                [ngClass]="{'font-semibold': !notification.isRead}">
               {{ notification.title }}
             </p>
-            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+            <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2">
               {{ notification.message }}
             </p>
             
-            <!-- Days remaining badge -->
+            <!-- Days remaining badge in French -->
             <div *ngIf="notification.daysUntilDue !== undefined" class="mt-1 flex items-center gap-1">
-              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-medium"
                     [ngClass]="{
                       'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300': notification.daysUntilDue > 0,
                       'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300': notification.daysUntilDue === 0,
                       'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300': notification.daysUntilDue < 0
                     }">
-                {{ getDaysStatusText(notification.daysUntilDue) }}
+                {{ getDaysStatusTextFr(notification.daysUntilDue) }}
               </span>
-              <span class="text-[10px] text-gray-400 dark:text-gray-500">
-                {{ formatTime(notification.createdAt) }}
+              <span class="text-[9px] text-gray-400 dark:text-gray-500">
+                {{ formatTimeFr(notification.createdAt) }}
               </span>
             </div>
             
             <div *ngIf="notification.daysUntilDue === undefined" class="mt-1">
               <span class="text-[10px] text-gray-400 dark:text-gray-500">
-                {{ formatTime(notification.createdAt) }}
+                {{ formatTimeFr(notification.createdAt) }}
               </span>
             </div>
           </div>
@@ -340,13 +341,7 @@
       <!-- Loading indicator -->
       <div *ngIf="isLoadingNotifications" class="flex justify-center py-4">
         <div class="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
-      </div>
-
-      <!-- End of list -->
-      <div *ngIf="!hasMoreNotifications && notifications.length > 0" 
-           class="py-3 text-center text-xs text-gray-400 dark:text-gray-500">
-        {{ 'No more notifications' | translate }}
-      </div>
+      </div>     
     </div>
 
     <!-- Footer -->
@@ -354,12 +349,14 @@
       <a routerLink="/notifications" 
          class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
          (click)="isNotificationsOpen = false">
-        {{ 'View all notifications' | translate }}
+        {{ 'Voir toutes les notifications' | translate }}
       </a>
     </div>
   </div>
   <!-- Dropdown End -->
 </div>
+
+
 
                 <!-- Email Menu Area -->
 

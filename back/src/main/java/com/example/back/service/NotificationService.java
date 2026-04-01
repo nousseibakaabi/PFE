@@ -87,13 +87,13 @@ public class NotificationService {
             String title;
             String type;
             if (daysUntilDue > 0) {
-                title = daysUntilDue == 1 ? "Facture Due Tomorrow" : "Facture Due in " + daysUntilDue + " Days";
+                title = daysUntilDue == 1 ? "Facture à échéance demain" : "Facture à échéance dans " + daysUntilDue + " jours";
                 type = "WARNING";
             } else if (daysUntilDue == 0) {
-                title = "Facture Due Today";
+                title = "Facture à échéance aujourd'hui";
                 type = "DANGER";
             } else {
-                title = "Facture Overdue";
+                title = "Facture en retard";
                 type = "DANGER";
             }
 
