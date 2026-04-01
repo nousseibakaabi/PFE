@@ -384,6 +384,52 @@ getStatusClass(status: string | null | undefined): string {
   }
 }
 
+
+// Add these methods to your component class
+
+/**
+ * Get archived status class (similar to status)
+ */
+getArchivedClass(application: Application): string {
+  if (application.archived) {
+    return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+  }
+  return '';
+}
+
+/**
+ * Get archived label
+ */
+getArchivedLabel(application: Application): string {
+  return application.archived ? 'Archivée' : 'Non archivée';
+}
+
+/**
+ * Check if application is archived
+ */
+isArchived(application: Application): boolean {
+  return application.archived === true;
+}
+
+/**
+ * Get archive info text
+ */
+getArchiveInfo(application: Application): string {
+  if (!application.archived) return '';
+  
+  let info = 'Archivée';
+  if (application.archivedAt) {
+    info += ` le ${this.formatDate(application.archivedAt)}`;
+  }
+  if (application.archivedBy) {
+    info += ` par ${application.archivedBy}`;
+  }
+  if (application.archivedReason) {
+    info += ` - Raison: ${application.archivedReason}`;
+  }
+  return info;
+}
+
 getStatusLabel(status: string | null | undefined): string {
   if (status === null || status === undefined) return '-';
   
@@ -413,7 +459,7 @@ getStatusLabel(status: string | null | undefined): string {
     case 'PLANIFIE': return 'Planifié';
     case 'EN COURS': return 'En Cours';
     case 'TERMINE': return 'Terminé';
-    case 'ARCHIVE': return 'Archivé';
+    case 'ARCHIVE': return 'Archivée';
     default: return etat;
   }
 }

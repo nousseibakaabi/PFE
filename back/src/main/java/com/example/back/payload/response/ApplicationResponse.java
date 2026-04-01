@@ -62,6 +62,25 @@ public class ApplicationResponse {
     private LocalDateTime renewedAt;
     private String renewedBy;
 
+    // Add these fields to ApplicationResponse class
+    private Boolean archived;
+    private LocalDateTime archivedAt;
+    private String archivedBy;
+    private String archivedReason;
+
+    // Add getters and setters
+    public Boolean getArchived() { return archived; }
+    public void setArchived(Boolean archived) { this.archived = archived; }
+
+    public LocalDateTime getArchivedAt() { return archivedAt; }
+    public void setArchivedAt(LocalDateTime archivedAt) { this.archivedAt = archivedAt; }
+
+    public String getArchivedBy() { return archivedBy; }
+    public void setArchivedBy(String archivedBy) { this.archivedBy = archivedBy; }
+
+    public String getArchivedReason() { return archivedReason; }
+    public void setArchivedReason(String archivedReason) { this.archivedReason = archivedReason; }
+
     // Add getters and setters
     public Boolean getRenewed() { return renewed; }
     public void setRenewed(Boolean renewed) { this.renewed = renewed; }

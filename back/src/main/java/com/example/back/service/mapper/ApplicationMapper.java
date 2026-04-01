@@ -77,6 +77,11 @@ public class ApplicationMapper {
         response.setTerminatedOnTime(application.isTerminatedOnTime());
         response.setTerminatedLate(application.isTerminatedLate());
 
+        response.setArchived(application.getArchived());
+        response.setArchivedAt(application.getArchivedAt());
+        response.setArchivedBy(application.getArchivedBy());
+        response.setArchivedReason(application.getArchivedReason());
+
         // Add these lines in toResponse method
         response.setRenewed(application.getRenewed());
         response.setRenewedAt(application.getRenewedAt());

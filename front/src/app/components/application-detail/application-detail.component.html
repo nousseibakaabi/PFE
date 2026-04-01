@@ -100,9 +100,15 @@
           <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight">{{ application.name }}</p>
           <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">{{ application.code }}</p>
         </div>
-        <span class="px-2.5 py-1 text-[10px] font-semibold rounded-full" [ngClass]="getStatusClass(application.status)">
-          {{ getStatusLabel(application.status) }}
-        </span>
+         <span *ngIf="application.archived" 
+        class="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+   Archivée
+  </span>
+  <span *ngIf="!application.archived" 
+        class="px-2.5 py-1 text-[10px] font-semibold rounded-full" 
+        [ngClass]="getStatusClass(application.status)">
+    {{ getStatusLabel(application.status) }}
+  </span>
       </div>
       
       <!-- User Stats - Compact Row Layout -->
@@ -154,6 +160,9 @@
     </div>
   </div>
 
+
+  
+
   <!-- Termination Card (shown when terminated) - Compact Version -->
   <div *ngIf="application?.status === 'TERMINE'" class="mt-4">
     <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-700/50 overflow-hidden">
@@ -168,10 +177,10 @@
           <p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Date</p>
           <p class="text-xs font-medium text-slate-900 dark:text-white">{{ application.terminatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
         </div>
-        <div class="flex justify-between items-center">
-          <p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Par</p>
-          <p class="text-xs text-slate-700 dark:text-slate-300">{{ application.terminatedBy === 'SYSTEM_AUTO' ? 'Système' : (application.terminatedBy || '-') }}</p>
-        </div>
+       <div *ngIf="isAdmin || application.terminatedBy === 'SYSTEM_AUTO' || application.terminatedBy === 'admin'" class="flex justify-between items-center">
+  <p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Par</p>
+  <p class="text-xs text-slate-700 dark:text-slate-300">{{ application.terminatedBy === 'SYSTEM_AUTO' ? 'Système' : (application.terminatedBy || '-') }}</p>
+</div>
         <div class="flex justify-between items-center pt-1">
           <p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Statut</p>
           <span class="px-2 py-0.5 text-[9px] font-bold rounded-full"
@@ -188,6 +197,8 @@
       </div>
     </div>
   </div>
+
+  
 </div>
         <!-- MIDDLE COLUMN - Main Content Cards -->
        

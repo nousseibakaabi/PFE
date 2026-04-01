@@ -59,6 +59,11 @@ export interface Application {
   renewed?: boolean;
   renewedAt?: string;
   renewedBy?: string;
+
+  archived?: boolean;
+  archivedAt?: string;
+  archivedBy?: string;
+  archivedReason?: string;
 }
 
 export interface ApplicationRequest {
