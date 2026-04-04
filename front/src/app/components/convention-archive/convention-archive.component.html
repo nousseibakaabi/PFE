@@ -1,10 +1,10 @@
 <div class="p-4 mx-auto max-w-screen-2xl md:p-7">  
-  <!-- Header - unchanged -->
+  <!-- Header -->
   <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         
-        <!-- Your exact blue icon - kept as is -->
+        <!-- Blue icon -->
         <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
           <svg class="w-4 h-4" fill="none" stroke="white" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -12,19 +12,19 @@
         </div>
         
         <div>
-          <h2 class="text-[16px] font-bold text-gray-800 dark:text-white">Archives</h2>
-          <p class="text-gray-500 dark:text-gray-400 text-[10px] mt-0.2">Dossiers classés</p>
+          <h2 class="text-[16px] font-bold text-gray-800 dark:text-white">{{ 'Archives' | translate }}</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-[10px] mt-0.2">{{ 'Dossiers classés' | translate }}</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
         <span class="text-[11px] text-blue-500 dark:text-blue-500 bg-gray-50 dark:bg-gray-700/30 px-3 py-1 rounded-full border border-blue-500 dark:border-blue-800">
-          {{ filteredConventions.length }} élément(s)
+          {{ filteredConventions.length }} {{ 'élément(s)' | translate }}
         </span>
       </div>
     </div>
   </div>
 
-  <!-- Messages - unchanged -->
+  <!-- Messages -->
   <div *ngIf="errorMessage" class="mb-4 p-3 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-900/10 dark:to-red-900/5 border border-red-200 dark:border-red-800/30 rounded-xl">
     <div class="flex items-center gap-2">
       <div class="w-6 h-6 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center">
@@ -36,55 +36,66 @@
     </div>
   </div>
 
-  <!-- Search Bar - unchanged -->
+  <div *ngIf="successMessage" class="mb-4 p-3 bg-gradient-to-r from-green-50 to-green-100/50 dark:from-green-900/10 dark:to-green-900/5 border border-green-200 dark:border-green-800/30 rounded-xl">
+    <div class="flex items-center gap-2">
+      <div class="w-6 h-6 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center">
+        <svg class="w-3.5 h-3.5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <span class="text-green-700 dark:text-green-300 text-xs font-medium">{{ successMessage }}</span>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-4 p-3 border border-gray-100 dark:border-gray-700/30">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
       <div class="flex flex-col sm:flex-row gap-2 flex-1">
-        <!-- Search with clear button - Cuter Version -->
+        <!-- Search with clear button -->
         <div class="relative flex-1 group">
           <input
             type="text"
             [(ngModel)]="searchTerm"
             (ngModelChange)="searchConventions()"
-            placeholder="Rechercher..."
+            [placeholder]="'Rechercher...' | translate"
             class="w-full pl-9 pr-9 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white bg-gray-50 dark:bg-gray-800/50 transition-all duration-200 hover:border-blue-500 dark:hover:border-blue-500 focus:border-blue-500 dark:focus:border-blue-500" />
           
-          <!-- Search Icon - Smaller -->
+          <!-- Search Icon -->
           <svg class="absolute left-3 top-2 w-3.5 h-3.5 text-blue-400 group-focus-within:text-blue-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
       </div>
 
-      <!-- Optional: Results count badge -->
+      <!-- Results count badge -->
       <div class="flex items-center gap-2 text-xs text-blue-500 dark:text-blue-400 bg-gray-50 dark:bg-gray-700/30 px-2 py-1 rounded-lg">
-        <span class="text-[10px]">{{ filteredConventions.length }} résultat(s)</span>
+        <span class="text-[10px]">{{ filteredConventions.length }} {{ 'résultat(s)' | translate }}</span>
       </div>
     </div>
   </div>
 
-  <!-- Loading State - unchanged -->
+  <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-12">
     <div class="inline-block animate-spin rounded-full h-8 w-8 border-3 border-blue-400 border-t-blue-600"></div>
-    <p class="mt-3 text-blue-600 dark:text-blue-400 text-sm">Ouverture des dossiers...</p>
+    <p class="mt-3 text-blue-600 dark:text-blue-400 text-sm">{{ 'Ouverture des dossiers...' | translate }}</p>
   </div>
 
-  <!-- Drawer Style with Pagination - 2 items per page -->
+  <!-- Drawer Style with Pagination -->
   <div *ngIf="!loading" class="space-y-3">
     <div *ngFor="let convention of paginatedConventions; let i = index" 
          class="group cursor-pointer"
          (click)="viewConventionDetails(convention.id)">
       
-      <!-- Drawer Handle - unchanged -->
+      <!-- Drawer Handle -->
       <div class="flex items-center gap-2 mb-1 ml-4 mt-6">
         <div class="w-6 h-2 bg-blue-400 dark:bg-blue-600 rounded-full"></div>
-        <span class="text-[8px] text-blue-600 dark:text-blue-400">Dossier #{{ getItemNumber(i) }}</span>
+        <span class="text-[8px] text-blue-600 dark:text-blue-400">{{ 'Dossier #' | translate }}{{ getItemNumber(i) }}</span>
       </div>
       
-      <!-- Drawer Card - unchanged -->
+      <!-- Drawer Card -->
       <div class="bg-gradient-to-r from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-900/10 rounded-lg border-2 border-blue-100 shadow-md hover:shadow-xl transition-all group-hover:translate-x-1 overflow-hidden relative">
         
-        <!-- Drawer Top Pull Tab - unchanged -->
+        <!-- Drawer Top Pull Tab -->
         <div class="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-12 bg-blue-200 dark:bg-blue-800 rounded-l-full border border-blue-300 dark:border-blue-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <span class="text-blue-600 dark:text-blue-300 text-xs">📂</span>
         </div>
@@ -92,7 +103,7 @@
         <div class="p-4">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
-              <!-- Document icon - unchanged -->
+              <!-- Document icon -->
               <div class="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-800 dark:to-blue-900 rounded flex items-center justify-center">
                 <span class="text-blue-700 dark:text-blue-300 text-sm">📄</span>
               </div>
@@ -106,52 +117,51 @@
             <button
               (click)="openRestoreModal(convention, $event)"
               class="p-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
-              title="Restaurer"
-            >
+              [attr.title]="'Restaurer' | translate">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </button>
           </div>
           
-          <!-- File Details - unchanged -->
+          <!-- File Details -->
           <div class="mt-3 grid grid-cols-2 gap-2 text-[9px]">
-            <!-- Period - Using Blue -->
+            <!-- Period -->
             <div class="bg-blue-50 dark:bg-blue-900/10 p-2 rounded border border-blue-100 dark:border-blue-800">
-              <span class="text-blue-600 dark:text-blue-400 block mb-1">📅 Période</span>
+              <span class="text-blue-600 dark:text-blue-400 block mb-1">📅 {{ 'Période' | translate }}</span>
               {{ convention.dateDebut | date:'dd/MM/yy' }} - {{ convention.dateFin | date:'dd/MM/yy' }}
             </div>
-            <!-- Amount - Using Green -->
+            <!-- Amount -->
             <div class="bg-green-50 dark:bg-green-900/10 p-2 rounded border border-green-100 dark:border-green-800">
-              <span class="text-green-600 dark:text-green-400 block mb-1">💰 Montant</span>
-              {{ convention.montantTTC }} TND
+              <span class="text-green-600 dark:text-green-400 block mb-1">💰 {{ 'Montant' | translate }}</span>
+              {{ convention.montantTTC }} {{'TND' | translate}}
             </div>
           </div>
           
-          <!-- Archive Info - unchanged -->
+          <!-- Archive Info -->
           <div class="mt-2 flex items-center justify-between text-[9px] text-gray-400">
             <span class="flex items-center gap-1">
-              <span class=" text-yellow-600">📌</span> Archivé: {{ formatArchivedDate(convention.archivedAt) }}
+              <span class="text-yellow-600">📌</span> {{ 'Archivé:' | translate }} {{ formatArchivedDate(convention.archivedAt) }}
             </span>
             <span class="flex items-center gap-1">
               <span class="text-purple-600">📍</span> {{ convention.zoneName || '-' }}
             </span>
           </div>
 
-          <!-- Archive Reason - unchanged -->
+          <!-- Archive Reason -->
           <div class="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg border border-yellow-200 dark:border-yellow-800">
             <p class="text-[9px] text-gray-600 dark:text-gray-400 italic">
-              "{{ convention.archivedReason || 'Aucune raison spécifiée' }}"
+              "{{ convention.archivedReason || ('Aucune raison spécifiée' | translate) }}"
             </p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Pagination Controls - NEW -->
-    <div *ngIf="filteredConventions.length > 2" class="flex items-center justify-between pt-4 pb-2 border-t border-gray-100 dark:border-gray-700 mt-4">
+    <!-- Pagination Controls -->
+    <div *ngIf="filteredConventions.length > itemsPerPage" class="flex items-center justify-between pt-4 pb-2 border-t border-gray-100 dark:border-gray-700 mt-4">
       <div class="text-[9px] text-gray-500 dark:text-gray-400">
-        Page {{ currentPage }} sur {{ totalPages }}
+        {{ 'Page' | translate }} {{ currentPage }} {{ 'sur' | translate }} {{ totalPages }}
       </div>
       <div class="flex items-center gap-2">
         <button 
@@ -159,23 +169,23 @@
           [disabled]="currentPage === 1"
           class="px-2.5 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[9px] font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
-          <i class="fas fa-chevron-left mr-1 text-[7px]"></i> Précédent
+          <i class="fas fa-chevron-left mr-1 text-[7px]"></i> {{ 'Précédent' | translate }}
         </button>
         <button 
           (click)="nextPage()"
           [disabled]="currentPage === totalPages"
           class="px-2.5 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-[9px] font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
-          Suivant <i class="fas fa-chevron-right ml-1 text-[7px]"></i>
+          {{ 'Suivant' | translate }} <i class="fas fa-chevron-right ml-1 text-[7px]"></i>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Empty State - unchanged -->
+  <!-- Empty State -->
   <div *ngIf="!loading && filteredConventions.length === 0" class="text-center py-16">
     <div class="relative inline-block">
-      <!-- Empty drawer with Blue -->
+      <!-- Empty drawer -->
       <div class="w-32 h-24 bg-gradient-to-b from-blue-100 to-blue-200 dark:from-blue-800/50 dark:to-blue-900/50 rounded-lg border-2 border-blue-300 dark:border-blue-700 shadow-lg">
         <div class="absolute -top-2 left-4 w-12 h-4 bg-blue-300 dark:bg-blue-700 rounded-t-lg"></div>
         <div class="absolute top-4 left-2 right-2 h-16 bg-blue-50 dark:bg-blue-900/30 rounded border border-blue-200 dark:border-blue-800 flex items-center justify-center">
@@ -186,18 +196,18 @@
       </div>
       <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-blue-300 dark:bg-blue-700 rounded-full"></div>
     </div>
-    <h3 class="text-base font-bold text-gray-800 dark:text-white mt-6 mb-2">Le classeur est vide</h3>
+    <h3 class="text-base font-bold text-gray-800 dark:text-white mt-6 mb-2">{{ 'Le classeur est vide' | translate }}</h3>
     <p class="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-      Aucune convention archivée pour le moment. Les dossiers apparaîtront ici.
+      {{ 'Aucune convention archivée pour le moment. Les dossiers apparaîtront ici.' | translate }}
     </p>
   </div>
 </div>
 
-<!-- Restore Modal - unchanged -->
+<!-- Restore Modal -->
 <div *ngIf="showRestoreModal" class="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeRestoreModal()">
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-sm w-full p-4 animate-fadeIn border border-gray-200 dark:border-gray-700" (click)="$event.stopPropagation()">
     
-    <!-- Modal Header - Smaller -->
+    <!-- Modal Header -->
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-sm">
@@ -206,7 +216,7 @@
           </svg>
         </div>
         <div>
-          <h3 class="text-sm font-bold text-gray-800 dark:text-white">Restaurer la convention</h3>
+          <h3 class="text-sm font-bold text-gray-800 dark:text-white">{{ 'Restaurer la convention' | translate }}</h3>
           <p class="text-[9px] text-gray-500 dark:text-gray-400 mt-0.5">{{ selectedConventionForRestore?.referenceConvention }}</p>
         </div>
       </div>
@@ -217,26 +227,26 @@
       </button>
     </div>
 
-    <!-- Modal Content - Smaller -->
+    <!-- Modal Content -->
     <div class="space-y-3">
-      <!-- Warning Message - Smaller -->
+      <!-- Warning Message -->
       <div class="bg-yellow-50 dark:bg-yellow-900/10 rounded-lg p-2.5 border border-yellow-200 dark:border-yellow-800">
         <div class="flex items-start gap-1.5">
           <svg class="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <p class="text-[9px] text-yellow-700 dark:text-yellow-300">
-            Cette convention sera déplacée des archives vers la liste active.
+            {{ 'Cette convention sera déplacée des archives vers la liste active.' | translate }}
           </p>
         </div>
       </div>
 
-      <!-- Error Message - Smaller -->
+      <!-- Error Message -->
       <div *ngIf="restoreErrorMessage" class="p-2 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg">
         <p class="text-[9px] text-red-600 dark:text-red-400">{{ restoreErrorMessage }}</p>
       </div>
 
-      <!-- Action Buttons - Smaller -->
+      <!-- Action Buttons -->
       <div class="flex gap-2 pt-1">
         <button 
           type="button" 
@@ -244,7 +254,7 @@
           class="flex-1 px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-[9px] font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           [disabled]="restoreLoading"
         >
-          Annuler
+          {{ 'Annuler' | translate }}
         </button>
         <button 
           (click)="confirmRestore()" 
@@ -259,7 +269,7 @@
             <span>...</span>
           </span>
           <span *ngIf="!restoreLoading" class="flex items-center gap-1">
-            <span>Confirmer</span>
+            <span>{{ 'Confirmer' | translate }}</span>
           </span>
         </button>
       </div>

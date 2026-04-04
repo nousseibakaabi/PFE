@@ -122,7 +122,7 @@ unassignedProjects: any[] = [];
     private chartService: ChartService,
     private mapService: MapService,
     private fb: FormBuilder,
-    private trasnlationService: TranslationService,
+    private translationService: TranslationService,
     private applicationServive : ApplicationService,
     public historyService: HistoryService,
     private workloadService: WorkloadService
@@ -787,15 +787,15 @@ getUserRolesDisplay(user: AdminUser): string {
     );
   }
 
-  getLockStatus(user: AdminUser): string {
+getLockStatus(user: AdminUser): string {
   if (user.lockedByAdmin) {
-    return 'Verrouillé par l\'administrateur';
+    return this.translationService.translate('Verrouillé par l\'administrateur');
   } else if (user.accountLockedUntil && new Date(user.accountLockedUntil) > new Date()) {
-    return 'Temporairement bloqué';
+    return this.translationService.translate('Temporairement bloqué');
   } else if (user.failedLoginAttempts > 0) {
-    return `${user.failedLoginAttempts} tentatives échouées`;
+    return `${user.failedLoginAttempts} ${this.translationService.translate('tentatives échouées')}`;
   }
-  return 'Actif';
+  return this.translationService.translate('Actif');
 }
 
 getTranslatedLockStatus(user: AdminUser): string {
@@ -808,7 +808,7 @@ getTranslatedLockStatus(user: AdminUser): string {
     let translatedText = 'failed attempts';
     
     // Check if we're in Arabic and use manual translation
-    if (this.trasnlationService.getCurrentLanguage() === 'ar') {
+    if (this.translationService.getCurrentLanguage() === 'ar') {
       translatedText = 'محاولات فاشلة';
     }
     
@@ -874,19 +874,19 @@ getTotalSelectedBudget(): number {
     ).length;
   }
 
-  getLockStatusClass(status: string): string {
-    switch(status) {
-      case 'Actif':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'Bloqué par l\'administrateur':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      case 'Temporairement bloqué':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-    }
+getLockStatusClass(status: string): string {
+  const translatedStatus = this.translationService.translate(status);
+  switch(translatedStatus) {
+    case this.translationService.translate('Actif'):
+      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+    case this.translationService.translate('Verrouillé par l\'administrateur'):
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+    case this.translationService.translate('Temporairement bloqué'):
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+    default:
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
   }
-
+}
   ngOnDestroy(): void {
     if (this.chart01) this.chart01.destroy();
     if (this.chart02) this.chart02.destroy();
@@ -961,11 +961,11 @@ openConfirmModal(user: AdminUser, action: 'lock' | 'unlock'): void {
   this.confirmAction = action;
   
   if (action === 'lock') {
-    this.confirmTitle = 'Confirmer le verrouillage de l\'utilisateur';
-    this.confirmMessage = `Êtes-vous sûr de vouloir verrouiller ${user.firstName} ${user.lastName}? Ils ne pourront pas accéder à leur compte tant qu'il n'est pas déverrouillé.`;
+    this.confirmTitle = this.translationService.translate('Confirmer le verrouillage de l\'utilisateur');
+    this.confirmMessage = this.translationService.translate('Êtes-vous sûr de vouloir verrouiller') + ` ${user.firstName} ${user.lastName}? ` + this.translationService.translate('Ils ne pourront pas accéder à leur compte tant qu\'il n\'est pas déverrouillé.');
   } else {
-    this.confirmTitle = 'Confirmer le déverrouillage de l\'utilisateur';
-    this.confirmMessage = `Êtes-vous sûr de vouloir déverrouiller ${user.firstName} ${user.lastName}? Ils retrouveront l'accès à leur compte.`;
+    this.confirmTitle = this.translationService.translate('Confirmer le déverrouillage de l\'utilisateur');
+    this.confirmMessage = this.translationService.translate('Êtes-vous sûr de vouloir déverrouiller') + ` ${user.firstName} ${user.lastName}? ` + this.translationService.translate('Ils retrouveront l\'accès à leur compte.');
   }
   
   this.showConfirmModal = true;
@@ -996,23 +996,21 @@ executeConfirmedAction(): void {
 // Replace your existing success/error message setting with these methods
 
 showSuccess(msg: string, type: 'success' | 'info' | 'warning' = 'success'): void {
-  this.successMessage = msg;
+  this.successMessage = this.translationService.translate(msg);
   this.successMessageType = type;
   this.showSuccessMessage = true;
   this.showErrorMessage = false;
   
-  // Auto-hide after 5 seconds
   setTimeout(() => {
     this.hideSuccessMessage();
   }, 5000);
 }
 
 showError(msg: string): void {
-  this.error = msg;
+  this.error = this.translationService.translate(msg);
   this.showErrorMessage = true;
   this.showSuccessMessage = false;
   
-  // Auto-hide after 5 seconds
   setTimeout(() => {
     this.hideErrorMessage();
   }, 5000);
@@ -1114,11 +1112,12 @@ assignSelectedProjects(): void {
             this.projectsToAssign = [];
             this.workloadCheck = null;
             
-            if (failedAssignments === 0) {
-              this.showSuccess(`Successfully assigned ${completedAssignments} project(s) to ${this.selectedUserForAssignment?.firstName} ${this.selectedUserForAssignment?.lastName}`);
-            } else {
-              this.showError(`Assigned ${completedAssignments} project(s), failed to assign ${failedAssignments} project(s)`);
-            }
+             if (failedAssignments === 0) {
+    this.showSuccess(this.translationService.translate('Successfully assigned') + ` ${completedAssignments} ` + this.translationService.translate('project(s) to') + ` ${this.selectedUserForAssignment?.firstName} ${this.selectedUserForAssignment?.lastName}`);
+  } else {
+    this.showError(this.translationService.translate('Assigned') + ` ${completedAssignments} ` + this.translationService.translate('project(s), failed to assign') + ` ${failedAssignments} ` + this.translationService.translate('project(s)'));
+  }
+
           }
         } else {
           console.error('Error assigning project:', response.message);

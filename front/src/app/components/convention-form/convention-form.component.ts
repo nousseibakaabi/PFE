@@ -4,6 +4,8 @@ import { ConventionService, Convention, ConventionRequest } from '../../services
 import { NomenclatureService, Structure } from '../../services/nomenclature.service';
 import { ApplicationService, ApiResponse } from '../../services/application.service';
 import { AuthService } from '../../services/auth.service';
+import { TranslationService } from '../partials/traduction/translation.service';
+
 
 @Component({
   selector: 'app-convention-form',
@@ -79,7 +81,8 @@ export class ConventionFormComponent implements OnInit {
     private conventionService: ConventionService,
     private nomenclatureService: NomenclatureService,
     private applicationService: ApplicationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private translationService: TranslationService
   ) {
     // Initialize min date for date signature (today)
     this.setMinDateSignature();
@@ -110,13 +113,13 @@ export class ConventionFormComponent implements OnInit {
     delete this.validationErrors['referenceConvention'];
     
     if (!ref) {
-      this.validationErrors['referenceConvention'] = 'Référence Convention est requise';
+this.validationErrors['referenceConvention'] = this.translationService.translate('Référence Convention est requise');
       return;
     }
     
     const pattern = /^CONV-\d{4}-\d{3}$/;
     if (!pattern.test(ref)) {
-      this.validationErrors['referenceConvention'] = 'Format: CONV-YYYY-XXX (ex: CONV-2024-001)';
+this.validationErrors['referenceConvention'] = this.translationService.translate('Format: CONV-YYYY-XXX (ex: CONV-2024-001)');
       return;
     }
   }
@@ -126,8 +129,7 @@ export class ConventionFormComponent implements OnInit {
     delete this.validationErrors['referenceERP'];
     
     if (!ref) {
-      this.validationErrors['referenceERP'] = 'Référence ERP est requise';
-    }
+this.validationErrors['referenceERP'] = this.translationService.translate('Référence ERP est requise');    }
   }
 
   validateLibelle(): void {
@@ -135,39 +137,35 @@ export class ConventionFormComponent implements OnInit {
     delete this.validationErrors['libelle'];
     
     if (!libelle) {
-      this.validationErrors['libelle'] = 'Libellé est requis';
-    }
+this.validationErrors['libelle'] = this.translationService.translate('Libellé est requis');    }
   }
 
   validateApplication(): void {
     delete this.validationErrors['applicationId'];
     
     if (!this.formData.applicationId) {
-      this.validationErrors['applicationId'] = 'Application est requise';
-    }
+this.validationErrors['applicationId'] = this.translationService.translate('Application est requise');    }
   }
 
   validateStructureBeneficiel(): void {
     delete this.validationErrors['structureBeneficielId'];
     
     if (!this.formData.structureBeneficielId) {
-      this.validationErrors['structureBeneficielId'] = 'Structure Bénéficiaire est requise';
-    }
+this.validationErrors['structureBeneficielId'] = this.translationService.translate('Structure Bénéficiaire est requise');    }
   }
 
   validateStructureResponsable(): void {
     delete this.validationErrors['structureResponsableId'];
     
     if (!this.formData.structureResponsableId) {
-      this.validationErrors['structureResponsableId'] = 'Structure Responsable est requise';
-    }
+this.validationErrors['structureResponsableId'] = this.translationService.translate('Structure Responsable est requise');    }
   }
 
   validatePeriodicite(): void {
     delete this.validationErrors['periodicite'];
     
     if (!this.formData.periodicite) {
-      this.validationErrors['periodicite'] = 'Modalités de paiement est requise';
+      this.validationErrors['periodicite'] = this.translationService.translate('Modalités de paiement est requise');
     }
   }
 
@@ -176,13 +174,13 @@ export class ConventionFormComponent implements OnInit {
     delete this.validationErrors['dateDebut'];
     
     if (!dateDebut) {
-      this.validationErrors['dateDebut'] = 'Date de début est requise';
+      this.validationErrors['dateDebut'] = this.translationService.translate('Date de début est requise');
       return;
     }
     
     const today = this.getTodayDateString();
     if (dateDebut < today) {
-      this.validationErrors['dateDebut'] = 'La date de début ne peut pas être antérieure à aujourd\'hui';
+      this.validationErrors['dateDebut'] = this.translationService.translate('La date de début ne peut pas être antérieure à aujourd\'hui');
       return;
     }
     
@@ -197,18 +195,18 @@ export class ConventionFormComponent implements OnInit {
     delete this.validationErrors['dateFin'];
     
     if (!dateFin) {
-      this.validationErrors['dateFin'] = 'Date de fin est requise';
+      this.validationErrors['dateFin'] = this.translationService.translate('Date de fin est requise');
       return;
     }
     
     if (!dateDebut) {
-      this.validationErrors['dateFin'] = 'Sélectionnez d\'abord la date de début';
+      this.validationErrors['dateFin'] = this.translationService.translate('Sélectionnez d\'abord la date de début');
       return;
     }
     
     const minFin = this.addDays(dateDebut, 15);
     if (dateFin < minFin) {
-      this.validationErrors['dateFin'] = 'La date de fin doit être au minimum 15 jours après la date de début';
+      this.validationErrors['dateFin'] = this.translationService.translate('La date de fin doit être au minimum 15 jours après la date de début');
       return;
     }
   }
@@ -223,7 +221,7 @@ export class ConventionFormComponent implements OnInit {
     
     const today = this.getTodayDateString();
     if (dateSignature < today) {
-      this.validationErrors['dateSignature'] = 'La date de signature ne peut pas être antérieure à aujourd\'hui';
+      this.validationErrors['dateSignature'] = this.translationService.translate('La date de signature ne peut pas être antérieure à aujourd\'hui');
       return;
     }
   }
@@ -232,7 +230,7 @@ export class ConventionFormComponent implements OnInit {
     delete this.validationErrors['montantHT'];
     
     if (!this.formData.montantHT || this.formData.montantHT <= 0) {
-      this.validationErrors['montantHT'] = 'Montant HT doit être supérieur à 0';
+      this.validationErrors['montantHT'] = this.translationService.translate('Montant HT doit être supérieur à 0');
     }
   }
 
@@ -240,7 +238,7 @@ export class ConventionFormComponent implements OnInit {
     delete this.validationErrors['tva'];
     
     if (this.formData.tva < 0 || this.formData.tva > 100) {
-      this.validationErrors['tva'] = 'TVA doit être entre 0 et 100%';
+      this.validationErrors['tva'] = this.translationService.translate('TVA doit être entre 0 et 100%');
     }
   }
 
@@ -248,17 +246,17 @@ export class ConventionFormComponent implements OnInit {
     delete this.validationErrors['nbUsers'];
     
     if (!this.formData.nbUsers || this.formData.nbUsers <= 0) {
-      this.validationErrors['nbUsers'] = 'Nombre d\'utilisateurs doit être supérieur à 0';
+      this.validationErrors['nbUsers'] = this.translationService.translate('Nombre d\'utilisateurs doit être supérieur à 0');
       return;
     }
     
     if (this.userLimits) {
       if (this.userLimits.minUser && this.formData.nbUsers < this.userLimits.minUser) {
-        this.validationErrors['nbUsers'] = `Minimum: ${this.userLimits.minUser} utilisateurs`;
+        this.validationErrors['nbUsers'] = this.translationService.translate(`Minimum: ${this.userLimits.minUser} utilisateurs`);
         return;
       }
       if (this.userLimits.maxUser && this.formData.nbUsers > this.userLimits.maxUser) {
-        this.validationErrors['nbUsers'] = `Maximum: ${this.userLimits.maxUser} utilisateurs`;
+        this.validationErrors['nbUsers'] = this.translationService.translate(`Maximum: ${this.userLimits.maxUser} utilisateurs`);
         return;
       }
     }
@@ -323,7 +321,7 @@ loadApplicationsWithoutConventions(): void {
         this.filteredApplications = [...this.applications];
         this.errorMessage = '';
       } else {
-        this.errorMessage = response?.message || 'Failed to load applications';
+        this.errorMessage = this.translationService.translate(response?.message || 'Failed to load applications');
         this.applications = [];
         this.filteredApplications = [];
       }
@@ -331,7 +329,7 @@ loadApplicationsWithoutConventions(): void {
     },
     error: (error: any) => {
       console.error('Error loading applications:', error);
-      this.errorMessage = error.error?.message || 'Failed to load applications';
+      this.errorMessage = this.translationService.translate(error.error?.message || 'Failed to load applications');
       this.applications = [];
       this.filteredApplications = [];
       this.loading = false;
@@ -500,7 +498,7 @@ loadConvention(id: number): void {
 
   determineNbUsers(): void {
     if (!this.formData.applicationId) {
-      this.userRuleMessage = 'Veuillez d\'abord sélectionner une application';
+      this.userRuleMessage = this.translationService.translate('Veuillez d\'abord sélectionner une application');
       return;
     }
 
@@ -526,11 +524,12 @@ loadConvention(id: number): void {
             maxUser: data.maxUser
           };
         }
+        
         this.isDeterminingUsers = false;
       },
       error: (error) => {
         console.error('Error determining nb users:', error);
-        this.userRuleMessage = 'Erreur lors de la détermination du nombre d\'utilisateurs';
+this.userRuleMessage = this.translationService.translate('Erreur lors de la détermination du nombre d\'utilisateurs');
         this.isDeterminingUsers = false;
       }
     });
@@ -584,15 +583,16 @@ loadConvention(id: number): void {
     const reference = this.formData.referenceConvention;
     const pattern = /^CONV-\d{4}-\d{3}$/;
     if (!pattern.test(reference)) {
-      this.errorMessage = 'Le format de référence doit être: CONV-YYYY-XXX (ex: CONV-2024-001)';
+this.errorMessage = this.translationService.translate('Le format de référence doit être: CONV-YYYY-XXX (ex: CONV-2024-001)');
       return false;
     }
     return true;
   }
 
+
   validateForm(): boolean {
     if (!this.formData.referenceConvention?.trim()) {
-      this.errorMessage = 'Référence Convention est requise';
+  this.errorMessage = this.translationService.translate('Référence Convention est requise');
       return false;
     }
 
@@ -601,48 +601,48 @@ loadConvention(id: number): void {
     }
 
     if (!this.formData.referenceERP?.trim()) {
-      this.errorMessage = 'Référence ERP est requise';
+      this.errorMessage = this.translationService.translate('Référence ERP est requise');
       return false;
     }
     
     if (!this.formData.libelle?.trim()) {
-      this.errorMessage = 'Libellé est requis';
+      this.errorMessage = this.translationService.translate('Libellé est requis');
       return false;
     }
     if (!this.formData.dateDebut) {
-      this.errorMessage = 'Date de début est requise';
+      this.errorMessage = this.translationService.translate('Date de début est requise');
       return false;
     }
 
     if (!this.formData.dateFin) {
-      this.errorMessage = 'Date de fin est requise';
+      this.errorMessage = this.translationService.translate('Date de fin est requise');
       return false;
     }
 
     if (!this.formData.structureResponsableId) { 
-      this.errorMessage = 'Structure interne est requise';
+      this.errorMessage = this.translationService.translate('Structure interne est requise');
       return false;
     }
     if (!this.formData.structureBeneficielId) {
-      this.errorMessage = 'Structure beneficiel est requise';
+      this.errorMessage = this.translationService.translate('Structure beneficiel est requise');
       return false;
     }
     if (!this.formData.applicationId) {
-      this.errorMessage = 'Application est requise';
+      this.errorMessage = this.translationService.translate('Application est requise');
       return false;
     }
     if (!this.formData.periodicite) {
-      this.errorMessage = 'Périodicité est requise';
+      this.errorMessage = this.translationService.translate('Périodicité est requise');
       return false;
     }
     
     if (!this.formData.montantHT || this.formData.montantHT <= 0) {
-      this.errorMessage = 'Le montant HT est requis et doit être supérieur à 0';
+      this.errorMessage = this.translationService.translate('Le montant HT est requis et doit être supérieur à 0');
       return false;
     }
     
     if (!this.formData.nbUsers || this.formData.nbUsers <= 0) {
-      this.errorMessage = 'Le nombre d\'utilisateurs est requis et doit être supérieur à 0';
+      this.errorMessage = this.translationService.translate('Le nombre d\'utilisateurs est requis et doit être supérieur à 0');
       return false;
     }
     

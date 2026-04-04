@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { WorkloadService, WorkloadDTO } from '../../services/workload.service';
 import { Location } from '@angular/common';
 import { environment } from '../../../environments/environment';
+import { TranslationService } from '../partials/traduction/translation.service';
 
 @Component({
   selector: 'app-application-form',
@@ -16,26 +17,23 @@ import { environment } from '../../../environments/environment';
 })
 export class ApplicationFormComponent implements OnInit {
   applicationId: number | null = null;
-  // ADD THIS: application property to store the loaded application
   application: Application | null = null;
 
-
   codeValid = false;
-codeInvalid = false;
-nameValid = false;
-nameInvalid = false;
-clientValid = false;
-clientInvalid = false;
-emailValid = false;
-emailInvalid = false;
-phoneValid = false;
-phoneInvalid = false;
+  codeInvalid = false;
+  nameValid = false;
+  nameInvalid = false;
+  clientValid = false;
+  clientInvalid = false;
+  emailValid = false;
+  emailInvalid = false;
+  phoneValid = false;
+  phoneInvalid = false;
 
-codeExists = false;
-checkingCode = false;
-codeCheckTimeout: any;
+  codeExists = false;
+  checkingCode = false;
+  codeCheckTimeout: any;
 
-  
   isEditing = false;
   loading = false;
   errorMessage = '';
@@ -46,17 +44,14 @@ codeCheckTimeout: any;
   baseUrl = environment.baseUrl;
   Math = Math;
 
-  // Current user info
   currentUser: any = null;
   isAdmin = false;
   isChefProjet = false;
   chefsProjet: any[] = [];
   
-  // Workload data for chefs
   chefsWorkload: Map<number, WorkloadDTO> = new Map();
   workloadLoading = false;
 
-  // Application form
   applicationForm: ApplicationRequest = {
     code: '',
     name: '',
@@ -72,12 +67,13 @@ codeCheckTimeout: any;
     status: 'PLANIFIE'
   };
 
-  // Status options
   statusOptions = [
     { value: 'PLANIFIE', label: 'Planifié' },
     { value: 'EN_COURS', label: 'En Cours' },
     { value: 'TERMINE', label: 'Terminé' },
   ];
+
+  userLimitError = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -86,25 +82,23 @@ codeCheckTimeout: any;
     private applicationService: ApplicationService,
     private userService: UserService,
     private authService: AuthService,
-    private workloadService: WorkloadService
+    private workloadService: WorkloadService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
     this.loadCurrentUser();
     
-    // Check if we're editing
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.applicationId = +params['id'];
         this.isEditing = true;
         this.loadApplication(this.applicationId);
       } else {
-        // New application - load suggested code
         this.loadSuggestedApplicationCode();
       }
     });
 
-    // Load chefs if admin
     if (this.isAdmin) {
       this.loadChefsProjet();
     }
@@ -115,7 +109,6 @@ codeCheckTimeout: any;
     this.isAdmin = this.authService.isAdmin();
     this.isChefProjet = this.authService.isChefProjet();
     
-    // For chef de projet creating new application, auto-assign themselves
     if (this.isChefProjet && !this.isAdmin && !this.isEditing) {
       this.applicationForm.chefDeProjetId = this.currentUser?.id;
     }
@@ -131,6 +124,7 @@ codeCheckTimeout: any;
       },
       error: (error) => {
         console.error('Error loading chefs:', error);
+        this.errorMessage = this.translationService.translate('Erreur lors du chargement des chefs de projet');
       }
     });
   }
@@ -170,7 +164,6 @@ codeCheckTimeout: any;
     this.applicationService.getApplication(id).subscribe({
       next: (response: ApiResponse) => {
         if (response.success) {
-          // Store the full application object
           this.application = response.data;
           
           const app = response.data;
@@ -189,19 +182,18 @@ codeCheckTimeout: any;
             status: app.status || 'PLANIFIE'
           };
           
-          // Check if chef de projet can edit this
           if (this.isChefProjet && !this.isAdmin && app.chefDeProjetId !== this.currentUser?.id) {
-            this.errorMessage = 'Vous ne pouvez modifier que vos propres applications';
+            this.errorMessage = this.translationService.translate('Vous ne pouvez modifier que vos propres applications');
             setTimeout(() => this.goBack(), 2000);
           }
         } else {
-          this.errorMessage = 'Application non trouvée';
+          this.errorMessage = this.translationService.translate('Application non trouvée');
         }
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading application:', error);
-        this.errorMessage = 'Erreur lors du chargement';
+        this.errorMessage = this.translationService.translate('Erreur lors du chargement');
         this.loading = false;
       }
     });
@@ -220,101 +212,94 @@ codeCheckTimeout: any;
     });
   }
 
+  saveApplication(): void {
+    if (!this.validateForm()) return;
 
-
-saveApplication(): void {
-  if (!this.validateForm()) return;
-
-  this.loading = true;
-  
-  if (this.isEditing && this.applicationId) {
-    // Check if we're setting status to TERMINE
-    if (this.applicationForm.status === 'TERMINE') {
-      // Use special termination method
-      this.applicationService.manuallyTerminateApplication(
-        this.applicationId, 
-        'Terminé via formulaire'
-      ).subscribe({
-        next: (response: any) => {
-          if (response.success) {
-            this.successMessage = 'Application marquée comme terminée avec succès';
-            
-            // Show termination details
-            if (response.terminationInfo) {
-              const info = response.terminationInfo;
-              let terminationDetail = '';
+    this.loading = true;
+    
+    if (this.isEditing && this.applicationId) {
+      if (this.applicationForm.status === 'TERMINE') {
+        this.applicationService.manuallyTerminateApplication(
+          this.applicationId, 
+          this.translationService.translate('Terminé via formulaire')
+        ).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.successMessage = this.translationService.translate('Application marquée comme terminée avec succès');
               
-              if (info.daysRemaining > 0) {
-                terminationDetail = `Terminée ${info.daysRemaining} jours avant l'échéance`;
-              } else if (info.daysRemaining < 0) {
-                terminationDetail = `Terminée ${Math.abs(info.daysRemaining)} jours après l'échéance`;
-              } else if (info.daysRemaining === 0) {
-                terminationDetail = 'Terminée le jour de l\'échéance';
+              if (response.terminationInfo) {
+                const info = response.terminationInfo;
+                let terminationDetail = '';
+                
+                if (info.daysRemaining > 0) {
+                  terminationDetail = this.translationService.translate('Terminée') + ` ${info.daysRemaining} ` + this.translationService.translate('jours avant l\'échéance');
+                } else if (info.daysRemaining < 0) {
+                  terminationDetail = this.translationService.translate('Terminée') + ` ${Math.abs(info.daysRemaining)} ` + this.translationService.translate('jours après l\'échéance');
+                } else if (info.daysRemaining === 0) {
+                  terminationDetail = this.translationService.translate('Terminée le jour de l\'échéance');
+                }
+                
+                if (terminationDetail) {
+                  this.successMessage += ` - ${terminationDetail}`;
+                }
               }
               
-              if (terminationDetail) {
-                this.successMessage += ` - ${terminationDetail}`;
-              }
+              setTimeout(() => {
+                this.router.navigate(['/applications', this.applicationId]);
+              }, 1500);
+            } else {
+              this.errorMessage = response.message || this.translationService.translate('Échec de la mise à jour');
             }
-            
-            setTimeout(() => {
-              this.router.navigate(['/applications', this.applicationId]);
-            }, 1500);
-          } else {
-            this.errorMessage = response.message || 'Échec de la mise à jour';
+            this.loading = false;
+          },
+          error: (error) => {
+            this.errorMessage = error.error?.message || this.translationService.translate('Erreur lors de la mise à jour');
+            this.loading = false;
           }
-          this.loading = false;
-        },
-        error: (error) => {
-          this.errorMessage = error.error?.message || 'Erreur lors de la mise à jour';
-          this.loading = false;
-        }
-      });
+        });
+      } else {
+        this.applicationService.updateApplication(this.applicationId, this.applicationForm).subscribe({
+          next: (response: ApiResponse) => {
+            if (response.success) {
+              this.successMessage = this.translationService.translate('Application mise à jour avec succès');
+              setTimeout(() => {
+                this.router.navigate(['/applications', this.applicationId]);
+              }, 1500);
+            } else {
+              this.errorMessage = response.message || this.translationService.translate('Échec de la mise à jour');
+            }
+            this.loading = false;
+          },
+          error: (error) => {
+            this.errorMessage = error.error?.message || this.translationService.translate('Erreur lors de la mise à jour');
+            this.loading = false;
+          }
+        });
+      }
     } else {
-      // Regular update for non-TERMINE status
-      this.applicationService.updateApplication(this.applicationId, this.applicationForm).subscribe({
+      this.applicationService.createApplication(this.applicationForm).subscribe({
         next: (response: ApiResponse) => {
           if (response.success) {
-            this.successMessage = 'Application mise à jour avec succès';
+            this.successMessage = this.translationService.translate('Application créée avec succès');
             setTimeout(() => {
-              this.router.navigate(['/applications', this.applicationId]);
+              this.router.navigate(['/applications', response.data.id]);
             }, 1500);
           } else {
-            this.errorMessage = response.message || 'Échec de la mise à jour';
+            this.errorMessage = response.message || this.translationService.translate('Échec de la création');
           }
           this.loading = false;
         },
         error: (error) => {
-          this.errorMessage = error.error?.message || 'Erreur lors de la mise à jour';
+          this.errorMessage = error.error?.message || this.translationService.translate('Erreur lors de la création');
           this.loading = false;
         }
       });
     }
-  } else {
-    // Create new application
-    this.applicationService.createApplication(this.applicationForm).subscribe({
-      next: (response: ApiResponse) => {
-        if (response.success) {
-          this.successMessage = 'Application créée avec succès';
-          setTimeout(() => {
-            this.router.navigate(['/applications', response.data.id]);
-          }, 1500);
-        } else {
-          this.errorMessage = response.message || 'Échec de la création';
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Erreur lors de la création';
-        this.loading = false;
-      }
-    });
   }
-}
 
   validateForm(): boolean {
     if (!this.applicationForm.code?.trim()) {
-      this.errorMessage = 'Le code est requis';
+      this.errorMessage = this.translationService.translate('Le code est requis');
       return false;
     }
 
@@ -323,21 +308,17 @@ saveApplication(): void {
     }
 
     if (!this.applicationForm.name?.trim()) {
-      this.errorMessage = 'Le nom est requis';
+      this.errorMessage = this.translationService.translate('Le nom est requis');
       return false;
     }
 
     if (!this.applicationForm.clientName?.trim()) {
-      this.errorMessage = 'Le nom du client est requis';
+      this.errorMessage = this.translationService.translate('Le nom du client est requis');
       return false;
     }
 
     return true;
   }
-
-
-
-  
 
   canReturnToAutoStatus(): boolean {
     if (!this.applicationForm.dateDebut) return false;
@@ -357,7 +338,7 @@ saveApplication(): void {
 
   getStatusLabel(status: string): string {
     const option = this.statusOptions.find(opt => opt.value === status);
-    return option ? option.label : status;
+    return option ? this.translationService.translate(option.label) : status;
   }
 
   shouldShowChefField(): boolean {
@@ -369,7 +350,6 @@ saveApplication(): void {
     return `${this.currentUser.firstName} ${this.currentUser.lastName}`;
   }
 
-  // Avatar handling methods
   getChefAvatarUrl(chef: any): string {
     if (!chef || !chef.profileImage) {
       let initials = '?';
@@ -446,23 +426,20 @@ saveApplication(): void {
     return this.chefsProjet.find(c => c.id === this.applicationForm.chefDeProjetId) || null;
   }
 
-  // ADD THIS: Check if application can be terminated
   checkCanTerminate(application: Application | null): boolean {
     return !!(application && (application.status === 'PLANIFIE' || application.status === 'EN_COURS'));
   }
 
-  // ADD THIS: Terminate application method
   terminateApplication(): void {
     if (!this.application || !this.checkCanTerminate(this.application)) {
-      this.errorMessage = 'Cette application ne peut pas être terminée';
+      this.errorMessage = this.translationService.translate('Cette application ne peut pas être terminée');
       return;
     }
     
-    // Optional: Show prompt with reason
-    const reason = prompt('Raison de la terminaison (optionnelle):');
+    const reason = prompt(this.translationService.translate('Raison de la terminaison (optionnelle):'));
     
     if (this.applicationId === null) {
-      this.errorMessage = 'ID d\'application invalide';
+      this.errorMessage = this.translationService.translate('ID d\'application invalide');
       return;
     }
     
@@ -470,19 +447,18 @@ saveApplication(): void {
     this.applicationService.manuallyTerminateApplication(this.applicationId, reason || undefined).subscribe({
       next: (response: any) => {
         if (response.success) {
-          this.successMessage = 'Application marquée comme terminée avec succès';
+          this.successMessage = this.translationService.translate('Application marquée comme terminée avec succès');
           
-          // Show termination details
           if (response.terminationInfo) {
             const info = response.terminationInfo;
             let terminationDetail = '';
             
             if (info.daysRemaining > 0) {
-              terminationDetail = `Terminée ${info.daysRemaining} jours avant l'échéance`;
+              terminationDetail = this.translationService.translate('Terminée') + ` ${info.daysRemaining} ` + this.translationService.translate('jours avant l\'échéance');
             } else if (info.daysRemaining < 0) {
-              terminationDetail = `Terminée ${Math.abs(info.daysRemaining)} jours après l'échéance`;
+              terminationDetail = this.translationService.translate('Terminée') + ` ${Math.abs(info.daysRemaining)} ` + this.translationService.translate('jours après l\'échéance');
             } else if (info.daysRemaining === 0) {
-              terminationDetail = 'Terminée le jour de l\'échéance';
+              terminationDetail = this.translationService.translate('Terminée le jour de l\'échéance');
             }
             
             if (terminationDetail) {
@@ -490,23 +466,20 @@ saveApplication(): void {
             }
           }
           
-          // Reload application data
           if (this.applicationId) {
             this.loadApplication(this.applicationId);
           }
         } else {
-          this.errorMessage = response.message || 'Erreur lors de la termination';
+          this.errorMessage = response.message || this.translationService.translate('Erreur lors de la termination');
         }
         this.loading = false;
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Erreur lors de la termination';
+        this.errorMessage = error.error?.message || this.translationService.translate('Erreur lors de la termination');
         this.loading = false;
       }
     });
   }
-
- 
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -516,174 +489,153 @@ saveApplication(): void {
     }
   }
 
-
-
-
-validateName(): boolean {
-  const isValid = this.applicationForm.name?.trim().length >= 3;
-  this.nameValid = isValid;
-  this.nameInvalid = !isValid && this.applicationForm.name?.trim().length > 0;
-  return isValid;
-}
-
-validateClient(): boolean {
-  const isValid = this.applicationForm.clientName?.trim().length > 0;
-  this.clientValid = isValid;
-  this.clientInvalid = !isValid && this.applicationForm.clientName?.trim().length > 0;
-  return isValid;
-}
-
-validateEmail(): boolean {
-  if (!this.applicationForm.clientEmail) {
-    this.emailValid = false;
-    this.emailInvalid = false;
-    return true;
+  validateName(): boolean {
+    const isValid = this.applicationForm.name?.trim().length >= 3;
+    this.nameValid = isValid;
+    this.nameInvalid = !isValid && this.applicationForm.name?.trim().length > 0;
+    return isValid;
   }
-  const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  const isValid = pattern.test(this.applicationForm.clientEmail);
-  this.emailValid = isValid;
-  this.emailInvalid = !isValid;
-  return isValid;
-}
 
-validatePhone(): boolean {
-  if (!this.applicationForm.clientPhone) {
-    this.phoneValid = false;
-    this.phoneInvalid = false;
-    return true;
+  validateClient(): boolean {
+    const isValid = this.applicationForm.clientName?.trim().length > 0;
+    this.clientValid = isValid;
+    this.clientInvalid = !isValid && this.applicationForm.clientName?.trim().length > 0;
+    return isValid;
   }
-  const pattern = /^[0-9+\-\s]{8,15}$/;
-  const isValid = pattern.test(this.applicationForm.clientPhone);
-  this.phoneValid = isValid;
-  this.phoneInvalid = !isValid;
-  return isValid;
-}
 
-
-
-onCodeChange(): void {
-  // Clear previous timeout
-  if (this.codeCheckTimeout) {
-    clearTimeout(this.codeCheckTimeout);
-  }
-  
-  // First, validate format
-  this.validateCodeFormat();
-  
-  // If format is invalid, don't check existence
-  if (this.codeInvalid || !this.applicationForm.code) {
-    this.codeExists = false;
-    return;
-  }
-  
-  // Debounce API call (wait 500ms after user stops typing)
-  this.codeCheckTimeout = setTimeout(() => {
-    this.checkCodeExists();
-  }, 500);
-}
-
-// Validate code format
-validateCodeFormat(): boolean {
-  const pattern = /^APP-\d{4}-\d{3}$/;
-  const isValid = pattern.test(this.applicationForm.code);
-  this.codeValid = isValid;
-  this.codeInvalid = !isValid && this.applicationForm.code.length > 0;
-  return isValid;
-}
-
-// Check if code already exists
-checkCodeExists(): void {
-  if (!this.applicationForm.code || this.codeInvalid) {
-    return;
-  }
-  
-  this.checkingCode = true;
-  this.applicationService.checkApplicationCodeExists(this.applicationForm.code).subscribe({
-    next: (response: any) => {
-      this.codeExists = response.exists === true;
-      this.checkingCode = false;
-    },
-    error: (error) => {
-      console.error('Error checking code:', error);
-      this.codeExists = false;
-      this.checkingCode = false;
+  validateEmail(): boolean {
+    if (!this.applicationForm.clientEmail) {
+      this.emailValid = false;
+      this.emailInvalid = false;
+      return true;
     }
-  });
-}
-
-// Update isFormValid to include code existence check
-// User limit validation and increment/decrement methods
-userLimitError = '';
-
-validateMinMaxUsers(): void {
-  const min = this.applicationForm.minUser || 0;
-  const max = this.applicationForm.maxUser || 0;
-  
-  if (min <= 0) {
-    this.userLimitError = 'Le minimum doit être supérieur à 0';
-    return;
+    const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const isValid = pattern.test(this.applicationForm.clientEmail);
+    this.emailValid = isValid;
+    this.emailInvalid = !isValid;
+    return isValid;
   }
-  if (max <= 0) {
-    this.userLimitError = 'Le maximum doit être supérieur à 0';
-    return;
-  }
-  if (min > max) {
-    this.userLimitError = 'Le minimum ne peut pas être supérieur au maximum';
-    return;
-  }
-  this.userLimitError = '';
-}
 
-incrementMinUser(): void {
-  const current = this.applicationForm.minUser || 1;
-  this.applicationForm.minUser = current + 1;
-  this.validateMinMaxUsers();
-}
+  validatePhone(): boolean {
+    if (!this.applicationForm.clientPhone) {
+      this.phoneValid = false;
+      this.phoneInvalid = false;
+      return true;
+    }
+    const pattern = /^[0-9+\-\s]{8,15}$/;
+    const isValid = pattern.test(this.applicationForm.clientPhone);
+    this.phoneValid = isValid;
+    this.phoneInvalid = !isValid;
+    return isValid;
+  }
 
-decrementMinUser(): void {
-  const current = this.applicationForm.minUser || 1;
-  if (current > 1) {
-    this.applicationForm.minUser = current - 1;
+  onCodeChange(): void {
+    if (this.codeCheckTimeout) {
+      clearTimeout(this.codeCheckTimeout);
+    }
+    
+    this.validateCodeFormat();
+    
+    if (this.codeInvalid || !this.applicationForm.code) {
+      this.codeExists = false;
+      return;
+    }
+    
+    this.codeCheckTimeout = setTimeout(() => {
+      this.checkCodeExists();
+    }, 500);
+  }
+
+  validateCodeFormat(): boolean {
+    const pattern = /^APP-\d{4}-\d{3}$/;
+    const isValid = pattern.test(this.applicationForm.code);
+    this.codeValid = isValid;
+    this.codeInvalid = !isValid && this.applicationForm.code.length > 0;
+    return isValid;
+  }
+
+  checkCodeExists(): void {
+    if (!this.applicationForm.code || this.codeInvalid) {
+      return;
+    }
+    
+    this.checkingCode = true;
+    this.applicationService.checkApplicationCodeExists(this.applicationForm.code).subscribe({
+      next: (response: any) => {
+        this.codeExists = response.exists === true;
+        this.checkingCode = false;
+      },
+      error: (error) => {
+        console.error('Error checking code:', error);
+        this.codeExists = false;
+        this.checkingCode = false;
+      }
+    });
+  }
+
+  validateMinMaxUsers(): void {
+    const min = this.applicationForm.minUser || 0;
+    const max = this.applicationForm.maxUser || 0;
+    
+    if (min <= 0) {
+      this.userLimitError = this.translationService.translate('Le minimum doit être supérieur à 0');
+      return;
+    }
+    if (max <= 0) {
+      this.userLimitError = this.translationService.translate('Le maximum doit être supérieur à 0');
+      return;
+    }
+    if (min > max) {
+      this.userLimitError = this.translationService.translate('Le minimum ne peut pas être supérieur au maximum');
+      return;
+    }
+    this.userLimitError = '';
+  }
+
+  incrementMinUser(): void {
+    const current = this.applicationForm.minUser || 1;
+    this.applicationForm.minUser = current + 1;
     this.validateMinMaxUsers();
   }
-}
 
-incrementMaxUser(): void {
-  const current = this.applicationForm.maxUser || 1;
-  this.applicationForm.maxUser = current + 1;
-  this.validateMinMaxUsers();
-}
+  decrementMinUser(): void {
+    const current = this.applicationForm.minUser || 1;
+    if (current > 1) {
+      this.applicationForm.minUser = current - 1;
+      this.validateMinMaxUsers();
+    }
+  }
 
-decrementMaxUser(): void {
-  const current = this.applicationForm.maxUser || 1;
-  if (current > 1) {
-    this.applicationForm.maxUser = current - 1;
+  incrementMaxUser(): void {
+    const current = this.applicationForm.maxUser || 1;
+    this.applicationForm.maxUser = current + 1;
     this.validateMinMaxUsers();
   }
+
+  decrementMaxUser(): void {
+    const current = this.applicationForm.maxUser || 1;
+    if (current > 1) {
+      this.applicationForm.maxUser = current - 1;
+      this.validateMinMaxUsers();
+    }
+  }
+
+  isFormValid(): boolean {
+    if (!this.validateCodeFormat()) return false;
+    if (this.codeExists) return false;
+    if (!this.validateName()) return false;
+    if (!this.validateClient()) return false;
+    if (!this.validateEmail()) return false;
+    if (!this.validatePhone()) return false;
+    if (this.userLimitError) return false;
+    return true;
+  }
+
+  getChefInitials(chef: any): string {
+    if (!chef) return '?';
+    let initials = '';
+    if (chef.firstName) initials += chef.firstName.charAt(0).toUpperCase();
+    if (chef.lastName) initials += chef.lastName.charAt(0).toUpperCase();
+    return initials || '?';
+  }
 }
-
-// Update isFormValid to include user limit validation
-isFormValid(): boolean {
-  if (!this.validateCodeFormat()) return false;
-  if (this.codeExists) return false;
-  if (!this.validateName()) return false;
-  if (!this.validateClient()) return false;
-  if (!this.validateEmail()) return false;
-  if (!this.validatePhone()) return false;
-  if (this.userLimitError) return false;
-  return true;
-}
-
-// Add getChefInitials method
-getChefInitials(chef: any): string {
-  if (!chef) return '?';
-  let initials = '';
-  if (chef.firstName) initials += chef.firstName.charAt(0).toUpperCase();
-  if (chef.lastName) initials += chef.lastName.charAt(0).toUpperCase();
-  return initials || '?';
-}
-
-}
-
-
-

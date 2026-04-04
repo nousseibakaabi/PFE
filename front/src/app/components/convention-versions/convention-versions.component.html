@@ -8,16 +8,17 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
+        {{ 'Retour' | translate }}
       </button>
 
       <div class="flex-1 text-center">
-        <h1 class="text-lg font-bold text-blue-700 dark:text-blue-300">Versions de convention</h1>
-        <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">{{ currentConvention?.referenceConvention || 'Aucune convention sélectionnée' }}</p>
+        <h1 class="text-lg font-bold text-blue-700 dark:text-blue-300">{{ 'Versions de convention' | translate }}</h1>
+        <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">{{ currentConvention?.referenceConvention || ('Aucune convention sélectionnée' | translate) }}</p>
       </div>
       
       <button (click)="toggleViewMode()"
               class="w-9 h-9 bg-white/90 dark:bg-slate-900/80 rounded-full flex items-center justify-center hover:shadow-md transition-all border border-blue-300 dark:border-blue-600 group shadow-sm"
-              [title]="isGridView ? 'Voir en mode split' : 'Voir en mode grille'">
+              [attr.title]="isGridView ? ('Voir en mode split' | translate) : ('Voir en mode grille' | translate)">
         <svg *ngIf="!isGridView" class="w-4 h-4 text-blue-600 group-hover:text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
         </svg>
@@ -28,491 +29,483 @@
     </div>
   </div>
 
-  <!-- Stats Summary with modern glassmorphism style -->
-<div class="mb-6">
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-    <!-- Total versions -->
-    <div class="bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-blue-200 dark:border-blue-700 p-3 transition-all duration-200 hover:shadow-xl">
-      <div class="flex items-center gap-2">
-        <div class="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
-          <svg class="w-4 h-4 text-blue-700 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-          </svg>
-        </div>
-        <div>
-          <p class="text-[13px] font-medium text-slate-500 dark:text-slate-400">Total versions</p>
-          <p class="text-[13px] font-semibold text-slate-800 dark:text-white">{{ previousVersions.length + 1 }}</p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Première version -->
-    <div class="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-blue-200 dark:border-blue-700 p-3 transition-all duration-200 hover:shadow-xl">
-      <div class="flex items-center gap-2">
-        <div class="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
-          <svg class="w-4 h-4 text-blue-700 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-        </div>
-        <div>
-          <p class="text-[13px] font-medium text-slate-500 dark:text-slate-400">Première version</p>
-          <p class="text-[13px] font-medium text-slate-800 dark:text-slate-200">
-            {{ previousVersions.length > 0 ? formatDate(previousVersions[previousVersions.length-1].oldConvention.dateDebut) : formatDate(currentConvention?.dateDebut) }}
-          </p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Dernière archivée -->
-    <div class="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-blue-200 dark:border-blue-700 p-3 transition-all duration-200 hover:shadow-xl">
-      <div class="flex items-center gap-2">
-        <div class="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
-          <svg class="w-4 h-4 text-blue-700 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-        </div>
-        <div>
-          <p class="text-[13px] font-medium text-slate-500 dark:text-slate-400">Dernière archivée</p>
-          <p class="text-[13px] font-medium text-slate-800 dark:text-slate-200">
-            {{ previousVersions.length > 0 ? formatDate(previousVersions[0].oldConvention.archivedAt) : '-' }}
-          </p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Version actuelle -->
-    <div class="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 backdrop-blur-sm rounded-2xl border border-blue-300 dark:border-blue-700 p-3 transition-all duration-200 hover:shadow-xl">
-      <div class="flex items-center gap-2">
-        <div class="p-2 bg-blue-200 dark:bg-blue-900/40 rounded-lg">
-          <svg class="w-4 h-4 text-blue-700 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-          </svg>
-        </div>
-        <div>
-          <p class="text-[13px] font-medium text-slate-500 dark:text-slate-400">Version actuelle</p>
-          <p class="text-[13px] font-semibold text-blue-700 dark:text-blue-200">v{{ currentConvention?.renewalVersion || 1 }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- Loading State -->
-<div *ngIf="loading" class="text-center py-12">
-  <div class="relative inline-block">
-    <div class="animate-spin rounded-full h-6 w-6 border-2 border-slate-200 border-t-indigo-500"></div>
-  </div>
-  <p class="mt-2 text-slate-400 text-xs">Chargement des versions...</p>
-</div>
-
-<!-- Error State -->
-<div *ngIf="!loading && errorMessage" class="max-w-7xl mx-auto">
-  <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-center">
-    <svg class="w-8 h-8 text-red-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-    <p class="text-red-700 dark:text-red-300 text-sm">{{ errorMessage }}</p>
-    <button (click)="loadPreviousVersions()" class="mt-2 px-3 py-1 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700">Réessayer</button>
-  </div>
-</div>
-
-<!-- Main Content -->
-<div *ngIf="!loading && previousVersions.length > 0" class="max-w-7xl mx-auto">
-  
-  <!-- SPLIT VIEW MODE -->
-  <div *ngIf="!isGridView" class="flex flex-col lg:flex-row gap-4">
-    
-    <!-- Left Sidebar - Version Cards -->
-    <div class="lg:w-1/3">
-      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <div class="bg-slate-50 dark:bg-slate-700/30 px-3 py-2 border-b border-slate-200 dark:border-slate-700">
-          <h3 class="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  <!-- Stats Summary -->
+  <div class="mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-blue-200 dark:border-blue-700 p-3 transition-all duration-200 hover:shadow-xl">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+            <svg class="w-4 h-4 text-blue-700 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
             </svg>
-            Versions archivées
-            <span class="ml-auto bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 text-[10px] px-1.5 py-0.5 rounded-full">{{ previousVersions.length }}</span>
-          </h3>
+          </div>
+          <div>
+            <p class="text-[13px] font-medium text-slate-500 dark:text-slate-400">{{ 'Total versions' | translate }}</p>
+            <p class="text-[13px] font-semibold text-slate-800 dark:text-white">{{ previousVersions.length + 1 }}</p>
+          </div>
         </div>
-        
-        <div class="p-2 space-y-1.5 max-h-[500px] overflow-y-auto">
-          <!-- Current Version Card -->
-          <div *ngIf="currentConvention" 
-               class="relative p-2 bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer hover:shadow-sm transition-all"
-               (click)="viewCurrentVersion()">
-            <div class="flex items-start gap-2">
-              <div class="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <p class="text-[11px] font-medium text-slate-800 dark:text-white">Version actuelle</p>
-                  <span class="text-[10px] text-indigo-600 font-medium">v{{ currentConvention.renewalVersion || 1 }}</span>
+      </div>
+      
+      <div class="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-blue-200 dark:border-blue-700 p-3 transition-all duration-200 hover:shadow-xl">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+            <svg class="w-4 h-4 text-blue-700 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-[13px] font-medium text-slate-500 dark:text-slate-400">{{ 'Première version' | translate }}</p>
+            <p class="text-[13px] font-medium text-slate-800 dark:text-slate-200">
+              {{ previousVersions.length > 0 ? formatDate(previousVersions[previousVersions.length-1].oldConvention.dateDebut) : formatDate(currentConvention?.dateDebut) }}
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-blue-200 dark:border-blue-700 p-3 transition-all duration-200 hover:shadow-xl">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+            <svg class="w-4 h-4 text-blue-700 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-[13px] font-medium text-slate-500 dark:text-slate-400">{{ 'Dernière archivée' | translate }}</p>
+            <p class="text-[13px] font-medium text-slate-800 dark:text-slate-200">
+              {{ previousVersions.length > 0 ? formatDate(previousVersions[0].oldConvention.archivedAt) : '-' }}
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 backdrop-blur-sm rounded-2xl border border-blue-300 dark:border-blue-700 p-3 transition-all duration-200 hover:shadow-xl">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-blue-200 dark:bg-blue-900/40 rounded-lg">
+            <svg class="w-4 h-4 text-blue-700 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-[13px] font-medium text-slate-500 dark:text-slate-400">{{ 'Version actuelle' | translate }}</p>
+            <p class="text-[13px] font-semibold text-blue-700 dark:text-blue-200">v{{ currentConvention?.renewalVersion || 1 }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-12">
+    <div class="relative inline-block">
+      <div class="animate-spin rounded-full h-6 w-6 border-2 border-slate-200 border-t-indigo-500"></div>
+    </div>
+    <p class="mt-2 text-slate-400 text-xs">{{ 'Chargement des versions...' | translate }}</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && errorMessage" class="max-w-7xl mx-auto">
+    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-center">
+      <svg class="w-8 h-8 text-red-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p class="text-red-700 dark:text-red-300 text-sm">{{ errorMessage }}</p>
+      <button (click)="loadPreviousVersions()" class="mt-2 px-3 py-1 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700">{{ 'Réessayer' | translate }}</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && previousVersions.length > 0" class="max-w-7xl mx-auto">
+    
+    <!-- SPLIT VIEW MODE -->
+    <div *ngIf="!isGridView" class="flex flex-col lg:flex-row gap-4">
+      
+      <!-- Left Sidebar - Version Cards -->
+      <div class="lg:w-1/3">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div class="bg-slate-50 dark:bg-slate-700/30 px-3 py-2 border-b border-slate-200 dark:border-slate-700">
+            <h3 class="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ 'Versions archivées' | translate }}
+              <span class="ml-auto bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 text-[10px] px-1.5 py-0.5 rounded-full">{{ previousVersions.length }}</span>
+            </h3>
+          </div>
+          
+          <div class="p-2 space-y-1.5 max-h-[500px] overflow-y-auto">
+            <!-- Current Version Card -->
+            <div *ngIf="currentConvention" 
+                 class="relative p-2 bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer hover:shadow-sm transition-all"
+                 (click)="viewCurrentVersion()">
+              <div class="flex items-start gap-2">
+                <div class="w-7 h-7 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
                 </div>
-                <p class="text-[9px] text-slate-500 dark:text-slate-400">
-                  {{ formatDate(currentConvention.dateDebut) }} - {{ formatDate(currentConvention.dateFin) }}
-                </p>
-                <span [class]="'px-1.5 py-0.5 text-[8px] font-medium rounded-full ' + getEtatClass(currentConvention.etat)">
-                  {{ getEtatLabel(currentConvention.etat) }}
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Separator -->
-          <div class="relative py-0.5">
-            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
-            <div class="relative flex justify-center"><span class="px-2 bg-white dark:bg-slate-800 text-[9px] text-slate-400">Anciennes versions</span></div>
-          </div>
-          
-          <!-- Version Cards -->
-          <div *ngFor="let version of previousVersions" 
-               (click)="selectVersion(version)"
-               class="relative p-2 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer transition-all hover:border-indigo-300 dark:hover:border-indigo-600"
-               [class]="selectedVersion?.id === version.oldConvention.id ? 'border-indigo-300 bg-indigo-50/30 dark:bg-indigo-900/20' : ''">
-            <div class="flex items-start gap-2">
-              <div class="w-7 h-7 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">v{{ version.oldConvention.renewalVersion }}</span>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-[11px] font-medium text-slate-800 dark:text-white truncate">{{ version.oldConvention.libelle }}</p>
-                <p class="text-[9px] text-slate-500">{{ formatDate(version.oldConvention.dateDebut) }} - {{ formatDate(version.oldConvention.dateFin) }}</p>
-                <div class="flex items-center gap-2 mt-0.5">
-                  <span class="text-[8px] text-slate-400">{{ version.oldConvention.periodicite }}</span>
-                  <span class="text-[8px] text-slate-400 flex items-center gap-0.5">
-                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    {{ version.oldFactures.length || 0 }}
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <p class="text-[11px] font-medium text-slate-800 dark:text-white">{{ 'Version actuelle' | translate }}</p>
+                    <span class="text-[10px] text-indigo-600 font-medium">v{{ currentConvention.renewalVersion || 1 }}</span>
+                  </div>
+                  <p class="text-[9px] text-slate-500 dark:text-slate-400">
+                    {{ formatDate(currentConvention.dateDebut) }} - {{ formatDate(currentConvention.dateFin) }}
+                  </p>
+                  <span [class]="'px-1.5 py-0.5 text-[8px] font-medium rounded-full ' + getEtatClass(currentConvention.etat)">
+                    {{ getEtatLabel(currentConvention.etat) | translate }}
                   </span>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Side - Selected Version Details -->
-    <div class="lg:w-2/3" *ngIf="selectedVersion">
-      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <!-- Version Header -->
-        <div class="bg-slate-50 dark:bg-slate-700/30 px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-                <span class="text-indigo-600 dark:text-indigo-400 font-bold text-sm">v{{ selectedVersion.renewalVersion }}</span>
-              </div>
-              <div>
-                <h2 class="text-sm font-semibold text-slate-800 dark:text-white">{{ selectedVersion.referenceConvention }}</h2>
-                <p class="text-[10px] text-slate-500">{{ selectedVersion.libelle }}</p>
-              </div>
-            </div>
-            <span [class]="'px-2 py-0.5 text-[10px] font-medium rounded-full ' + getEtatClass(selectedVersion.etat)">
-              {{ getEtatLabel(selectedVersion.etat) }}
-            </span>
-          </div>
-        </div>
-        
-        <!-- Archive Info -->
-        <div class="mx-4 mt-3 p-2 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
-          <div class="flex items-start gap-1.5">
-            <svg class="w-3.5 h-3.5 text-slate-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
-            <div>
-              <p class="text-[11px] text-slate-600 dark:text-slate-300"><span class="font-medium">Archivée le</span> {{ formatDateTime(selectedVersion.archivedAt) }}</p>
-              <p class="text-[11px] text-slate-500"><span class="font-medium">Raison:</span> {{ selectedVersion.archivedReason }}</p>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Details Grid -->
-        <div class="p-4">
-          <h3 class="text-[11px] font-semibold text-slate-600 mb-2 flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Informations générales
-          </h3>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-            <div class="space-y-2">
-              <div><p class="text-[9px] text-slate-400">Référence ERP</p><p class="text-xs font-medium text-slate-800 dark:text-white">{{ selectedVersion.referenceERP || '-' }}</p></div>
-              <div><p class="text-[9px] text-slate-400">Structures</p><p class="text-[10px] text-slate-700"><span class="text-indigo-500">R:</span> {{ selectedVersion.structureResponsableName || '-' }}</p><p class="text-[10px] text-slate-700"><span class="text-blue-500">B:</span> {{ selectedVersion.structureBeneficielName || '-' }}</p></div>
-            </div>
-            <div class="space-y-2">
-              <div><p class="text-[9px] text-slate-400">Période</p><p class="text-xs font-medium">{{ formatDate(selectedVersion.dateDebut) }} → {{ formatDate(selectedVersion.dateFin) }}</p><p class="text-[10px] text-slate-500">Signature: {{ formatDate(selectedVersion.dateSignature) || '-' }}</p></div>
-              <div><p class="text-[9px] text-slate-400">Application</p><p class="text-xs font-medium">{{ selectedVersion.applicationName || '-' }}</p><p class="text-[10px] text-slate-500">Code: {{ selectedVersion.applicationCode }}</p></div>
-            </div>
-          </div>
-          
-          <!-- Financial Info -->
-          <h3 class="text-[11px] font-semibold text-slate-600 mb-2 flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Détails financiers
-          </h3>
-          
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-            <div class="bg-slate-50 dark:bg-slate-700/30 p-2 rounded-lg"><p class="text-[8px] text-slate-500">Montant HT</p><p class="text-xs font-semibold">{{ formatMontant(selectedVersion.montantHT) }} TND</p></div>
-            <div class="bg-slate-50 dark:bg-slate-700/30 p-2 rounded-lg"><p class="text-[8px] text-slate-500">TVA</p><p class="text-xs font-semibold">{{ selectedVersion.tva }}%</p></div>
-            <div class="bg-indigo-50 dark:bg-indigo-900/20 p-2 rounded-lg"><p class="text-[8px] text-indigo-500">Montant TTC</p><p class="text-xs font-semibold text-indigo-600">{{ formatMontant(selectedVersion.montantTTC) }} TND</p></div>
-            <div class="bg-slate-50 dark:bg-slate-700/30 p-2 rounded-lg"><p class="text-[8px] text-slate-500">Utilisateurs</p><p class="text-xs font-semibold">{{ selectedVersion.nbUsers }}</p></div>
-          </div>
-          
-          <!-- Factures Section -->
-          <h3 class="text-[11px] font-semibold text-slate-600 mb-2 flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Factures archivées
-            <span class="ml-auto text-[9px] bg-slate-100 dark:bg-slate-700 text-slate-500 px-1.5 py-0.5 rounded-full">{{ selectedVersionFactures.length }}</span>
-          </h3>
-          
-          <!-- Show only first 2 invoices -->
-          <div *ngIf="selectedVersionFactures.length === 0" class="text-center py-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
-            <svg class="w-6 h-6 text-slate-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p class="text-xs text-slate-500">Aucune facture</p>
-          </div>
-          
-          <div *ngIf="selectedVersionFactures.length > 0" class="space-y-1.5">
-            <div *ngFor="let facture of selectedVersionFactures | slice:0:2" class="border border-slate-200 dark:border-slate-700 rounded-lg p-2">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-[10px] font-medium text-slate-800 dark:text-white">{{ facture.numeroFacture }}</span>
-                  <span [class]="'px-1.5 py-0.5 text-[8px] font-medium rounded-full ' + getInvoiceStatusClass(facture.statutPaiement)">
-                    {{ getInvoiceStatusLabel(facture.statutPaiement) }}
-                  </span>
-                </div>
-                <span class="text-[10px] font-medium text-indigo-600">{{ formatMontant(facture.montantTTC) }} TND</span>
-              </div>
-              <div class="flex gap-2 text-[8px] text-slate-400 mt-1">
-                <span>Facturation: {{ formatDate(facture.dateFacturation) }}</span>
-                <span>Échéance: {{ formatDate(facture.dateEcheance) }}</span>
               </div>
             </div>
             
-            <!-- "Voir tout" button - show if more than 2 invoices -->
-            <div *ngIf="selectedVersionFactures.length > 2" class="text-center pt-1">
-              <button (click)="viewAllInvoices(selectedVersion.id)" 
-                      class="text-[10px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 mx-auto">
-                <span>voir tout ({{ selectedVersionFactures.length }})</span>
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+            <!-- Separator -->
+            <div class="relative py-0.5">
+              <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
+              <div class="relative flex justify-center"><span class="px-2 bg-white dark:bg-slate-800 text-[9px] text-slate-400">{{ 'Anciennes versions' | translate }}</span></div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Empty State - No Version Selected -->
-    <div *ngIf="!selectedVersion" class="lg:w-2/3">
-      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center">
-        <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <h3 class="text-sm font-semibold text-slate-800 dark:text-white mb-1">Sélectionnez une version</h3>
-        <p class="text-xs text-slate-500">Cliquez sur une version dans la liste de gauche</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- GRID VIEW MODE -->
-  <div *ngIf="isGridView" class="space-y-4">
-    <!-- Current Version Card -->
-    <div *ngIf="currentConvention" 
-         class="p-3 bg-gradient-to-r from-slate-50 to-indigo-50/30 dark:from-slate-800 dark:to-indigo-900/20 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:shadow-sm transition-all"
-         (click)="viewCurrentVersion()">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-          <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-        </div>
-        <div class="flex-1">
-          <div class="flex items-center gap-1.5 mb-0.5">
-            <span class="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-medium rounded-full">Version actuelle</span>
-            <span [class]="'px-1.5 py-0.5 text-[9px] font-medium rounded-full ' + getEtatClass(currentConvention.etat)">{{ getEtatLabel(currentConvention.etat) }}</span>
-          </div>
-          <p class="text-xs font-semibold text-slate-800 dark:text-white">{{ currentConvention.referenceConvention }}</p>
-          <div class="flex flex-wrap gap-2 text-[8px] text-slate-400 mt-1">
-            <span>{{ formatDate(currentConvention.dateDebut) }} - {{ formatDate(currentConvention.dateFin) }}</span>
-            <span>{{ currentConvention.periodicite }}</span>
-            <span>{{ currentConvention.nbUsers || 0 }} utilisateurs</span>
-          </div>
-        </div>
-        <span class="text-xs font-bold text-indigo-600">v{{ currentConvention.renewalVersion || 1 }}</span>
-      </div>
-    </div>
-
-    <!-- Grid of Archived Version Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-      <div *ngFor="let version of previousVersions" 
-           class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:shadow-sm transition-all"
-           [class]="selectedVersion?.id === version.oldConvention.id ? 'border-indigo-300 ring-1 ring-indigo-200 dark:ring-indigo-800' : ''"
-           (click)="selectVersion(version)">
-        <div class="flex items-center justify-between mb-1.5">
-          <div class="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
-            <span class="text-[10px] font-bold text-slate-600 dark:text-slate-300">v{{ version.oldConvention.renewalVersion }}</span>
-          </div>
-          <span class="text-[8px] text-slate-400">{{ version.oldConvention.periodicite }}</span>
-        </div>
-        <p class="text-[11px] font-semibold text-slate-800 dark:text-white line-clamp-1">{{ version.oldConvention.referenceConvention }}</p>
-        <p class="text-[9px] text-slate-500 mb-1 line-clamp-1">{{ version.oldConvention.libelle }}</p>
-        <p class="text-[8px] text-slate-400 mb-1">{{ formatDate(version.oldConvention.dateDebut) }} → {{ formatDate(version.oldConvention.dateFin) }}</p>
-        <div class="flex items-center justify-between text-[8px] text-slate-400">
-          <span>{{ formatMontant(version.oldConvention.montantTTC) }} TND</span>
-          <span class="flex items-center gap-0.5">
-            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            {{ version.oldFactures.length || 0 }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Selected Version Preview in Grid View -->
-    <div *ngIf="selectedVersion" class="mt-4">
-      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <div class="bg-slate-50 dark:bg-slate-700/30 px-3 py-2 flex items-center justify-between">
-          <div class="flex items-center gap-1.5">
-            <div class="w-6 h-6 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-              <span class="text-[10px] font-bold text-indigo-600">v{{ selectedVersion.renewalVersion }}</span>
-            </div>
-            <h3 class="text-xs font-medium text-slate-800 dark:text-white">{{ selectedVersion.referenceConvention }}</h3>
-          </div>
-          <button (click)="selectedVersion = null" class="text-slate-400 hover:text-slate-600 p-0.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-        </div>
-        <div class="p-3">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px]">
-            <div><span class="text-slate-400">Période: </span> {{ formatDate(selectedVersion.dateDebut) }} - {{ formatDate(selectedVersion.dateFin) }}</div>
-            <div><span class="text-slate-400">Montant TTC: </span> <span class="text-indigo-600 font-medium">{{ formatMontant(selectedVersion.montantTTC) }} TND</span></div>
-            <div><span class="text-slate-400">Utilisateurs: </span> {{ selectedVersion.nbUsers }}</div>
-            <div><span class="text-slate-400">Factures: </span> {{ selectedVersionFactures.length }}</div>
-          </div>
-          <div class="mt-2 text-right">
-            <button (click)="showFullDetails(selectedVersion)" class="text-[9px] text-indigo-500 hover:text-indigo-600">Voir tous les détails →</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Empty State - No Versions -->
-<div *ngIf="!loading && previousVersions.length === 0 && !errorMessage" class="max-w-7xl mx-auto">
-  <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center">
-    <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-    </svg>
-    <h3 class="text-sm font-semibold text-slate-800 dark:text-white mb-1">Aucune version archivée</h3>
-    <p class="text-xs text-slate-500 mb-4">Cette convention n'a pas encore été renouvelée.</p>
-    <button (click)="goBack()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium">Retour à la convention</button>
-  </div>
-</div>
-
-<!-- Invoice Modal -->
-<div *ngIf="showInvoiceModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"> -->
-  <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-200 dark:border-slate-700">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700/30 dark:to-slate-600/30">
-      <div class="flex items-center gap-2">
-        <div class="w-6 h-6 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-          <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        </div>
-        <div>
-          <h3 class="text-sm font-semibold text-slate-800 dark:text-white">Factures archivées</h3>
-          <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ modalVersionTitle }}</p>
-        </div>
-      </div>
-      <button (click)="closeInvoiceModal()" class="w-6 h-6 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 dark:hover:text-white flex items-center justify-center transition-colors">
-        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-
-    <div class="max-h-[400px] overflow-y-auto p-4">
-      <div *ngIf="modalFactures.length === 0" class="text-center py-8 text-slate-500 dark:text-slate-400">
-        <svg class="w-12 h-12 mx-auto mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <p class="text-xs">Aucune facture disponible pour cette version</p>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-        <div *ngFor="let facture of modalFactures" 
-             class="group rounded border border-slate-200 dark:border-slate-700 p-2 bg-white dark:bg-slate-800/50 hover:shadow-sm transition-all duration-200 hover:border-indigo-300 dark:hover:border-indigo-600">
-          <div class="flex justify-between items-start mb-1">
-            <div>
-              <p class="text-[7px] text-slate-400 uppercase tracking-wider mb-0.5">Numéro facture</p>
-              <p class="text-xs font-bold text-slate-800 dark:text-white">{{ facture.numeroFacture }}</p>
-            </div>
-            <span [class]="'px-1 py-0.5 text-[7px] font-semibold rounded-full ' + getInvoiceStatusClass(facture.statutPaiement)">
-              {{ getInvoiceStatusLabel(facture.statutPaiement) }}
-            </span>
-          </div>
-          
-          <div class="border-t border-slate-100 dark:border-slate-700 my-1"></div>
-          
-          <div class="grid grid-cols-2 gap-1 mb-1">
-            <div>
-              <p class="text-[6px] text-slate-400 uppercase tracking-wider mb-0.5">Facturation</p>
-              <p class="text-[9px] font-medium text-slate-700 dark:text-slate-300">{{ formatDate(facture.dateFacturation) }}</p>
-            </div>
-            <div>
-              <p class="text-[6px] text-slate-400 uppercase tracking-wider mb-0.5">Échéance</p>
-              <p class="text-[9px] font-medium text-slate-700 dark:text-slate-300">{{ formatDate(facture.dateEcheance) }}</p>
-            </div>
-          </div>
-          
-          <div class="bg-gradient-to-r from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-indigo-800/10 rounded p-1 mb-1">
-            <div class="flex items-center justify-between">
-              <p class="text-[6px] text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Montant TTC</p>
-              <p class="text-xs font-bold text-indigo-700 dark:text-indigo-300">{{ formatMontant(facture.montantTTC) }} TND</p>
-            </div>
-          </div>
-          
-          <div *ngIf="facture.datePaiement" class="mt-1 pt-1 border-t border-slate-100 dark:border-slate-700">
-            <div class="flex items-center gap-0.5">
-              <svg class="w-2 h-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h10M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              <div class="flex-1">
-                <p class="text-[6px] text-slate-400">Payée le {{ formatDate(facture.datePaiement) }}</p>
-                <p class="text-[6px] text-slate-400 truncate">Réf: {{ facture.referencePaiement }}</p>
+            
+            <!-- Version Cards -->
+            <div *ngFor="let version of previousVersions" 
+                 (click)="selectVersion(version)"
+                 class="relative p-2 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer transition-all hover:border-indigo-300 dark:hover:border-indigo-600"
+                 [class]="selectedVersion?.id === version.oldConvention.id ? 'border-indigo-300 bg-indigo-50/30 dark:bg-indigo-900/20' : ''">
+              <div class="flex items-start gap-2">
+                <div class="w-7 h-7 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">v{{ version.oldConvention.renewalVersion }}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[11px] font-medium text-slate-800 dark:text-white truncate">{{ version.oldConvention.libelle }}</p>
+                  <p class="text-[9px] text-slate-500">{{ formatDate(version.oldConvention.dateDebut) }} - {{ formatDate(version.oldConvention.dateFin) }}</p>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-[8px] text-slate-400">{{ version.oldConvention.periodicite }}</span>
+                    <span class="text-[8px] text-slate-400 flex items-center gap-0.5">
+                      <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {{ version.oldFactures.length || 0 }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Right Side - Selected Version Details -->
+      <div class="lg:w-2/3" *ngIf="selectedVersion">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <!-- Version Header -->
+          <div class="bg-slate-50 dark:bg-slate-700/30 px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                  <span class="text-indigo-600 dark:text-indigo-400 font-bold text-sm">v{{ selectedVersion.renewalVersion }}</span>
+                </div>
+                <div>
+                  <h2 class="text-sm font-semibold text-slate-800 dark:text-white">{{ selectedVersion.referenceConvention }}</h2>
+                  <p class="text-[10px] text-slate-500">{{ selectedVersion.libelle }}</p>
+                </div>
+              </div>
+              <span [class]="'px-2 py-0.5 text-[10px] font-medium rounded-full ' + getEtatClass(selectedVersion.etat)">
+                {{ getEtatLabel(selectedVersion.etat) | translate }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Archive Info -->
+          <div class="mx-4 mt-3 p-2 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
+            <div class="flex items-start gap-1.5">
+              <svg class="w-3.5 h-3.5 text-slate-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+              <div>
+                <p class="text-[11px] text-slate-600 dark:text-slate-300"><span class="font-medium">{{ 'Archivée le' | translate }}</span> {{ formatDateTime(selectedVersion.archivedAt) }}</p>
+                <p class="text-[11px] text-slate-500"><span class="font-medium">{{ 'Raison:' | translate }}</span> {{ selectedVersion.archivedReason }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Details Grid -->
+          <div class="p-4">
+            <h3 class="text-[11px] font-semibold text-slate-600 mb-2 flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ 'Informations générales' | translate }}
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div class="space-y-2">
+                <div><p class="text-[9px] text-slate-400">{{ 'Référence ERP' | translate }}</p><p class="text-xs font-medium text-slate-800 dark:text-white">{{ selectedVersion.referenceERP || '-' }}</p></div>
+                <div><p class="text-[9px] text-slate-400">{{ 'Structures' | translate }}</p><p class="text-[10px] text-slate-700"><span class="text-indigo-500">R:</span> {{ selectedVersion.structureResponsableName || '-' }}</p><p class="text-[10px] text-slate-700"><span class="text-blue-500">B:</span> {{ selectedVersion.structureBeneficielName || '-' }}</p></div>
+              </div>
+              <div class="space-y-2">
+                <div><p class="text-[9px] text-slate-400">{{ 'Période' | translate }}</p><p class="text-xs font-medium">{{ formatDate(selectedVersion.dateDebut) }} → {{ formatDate(selectedVersion.dateFin) }}</p><p class="text-[10px] text-slate-500">{{ 'Signature' | translate }} : {{ formatDate(selectedVersion.dateSignature) || '-' }}</p></div>
+                <div><p class="text-[9px] text-slate-400">{{ 'Application' | translate }}</p><p class="text-xs font-medium">{{ selectedVersion.applicationName || '-' }}</p><p class="text-[10px] text-slate-500">{{ 'Code:' | translate }} {{ selectedVersion.applicationCode }}</p></div>
+              </div>
+            </div>
+            
+            <!-- Financial Info -->
+            <h3 class="text-[11px] font-semibold text-slate-600 mb-2 flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ 'Détails financiers' | translate }}
+            </h3>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+              <div class="bg-slate-50 dark:bg-slate-700/30 p-2 rounded-lg"><p class="text-[8px] text-slate-500">{{ 'Montant HT' | translate }}</p><p class="text-xs font-semibold">{{ formatMontant(selectedVersion.montantHT) }} {{'TND' | translate}}</p></div>
+              <div class="bg-slate-50 dark:bg-slate-700/30 p-2 rounded-lg"><p class="text-[8px] text-slate-500">{{ 'TVA' | translate }}</p><p class="text-xs font-semibold">{{ selectedVersion.tva }}%</p></div>
+              <div class="bg-indigo-50 dark:bg-indigo-900/20 p-2 rounded-lg"><p class="text-[8px] text-indigo-500">{{ 'Montant TTC' | translate }}</p><p class="text-xs font-semibold text-indigo-600">{{ formatMontant(selectedVersion.montantTTC) }} {{'TND' | translate}}</p></div>
+              <div class="bg-slate-50 dark:bg-slate-700/30 p-2 rounded-lg"><p class="text-[8px] text-slate-500">{{ 'Utilisateurs' | translate }}</p><p class="text-xs font-semibold">{{ selectedVersion.nbUsers }}</p></div>
+            </div>
+            
+            <!-- Factures Section -->
+            <h3 class="text-[11px] font-semibold text-slate-600 mb-2 flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {{ 'Factures archivées' | translate }}
+              <span class="ml-auto text-[9px] bg-slate-100 dark:bg-slate-700 text-slate-500 px-1.5 py-0.5 rounded-full">{{ selectedVersionFactures.length }}</span>
+            </h3>
+            
+            <div *ngIf="selectedVersionFactures.length === 0" class="text-center py-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
+              <svg class="w-6 h-6 text-slate-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p class="text-xs text-slate-500">{{ 'Aucune facture' | translate }}</p>
+            </div>
+            
+            <div *ngIf="selectedVersionFactures.length > 0" class="space-y-1.5">
+              <div *ngFor="let facture of selectedVersionFactures | slice:0:2" class="border border-slate-200 dark:border-slate-700 rounded-lg p-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] font-medium text-slate-800 dark:text-white">{{ facture.numeroFacture }}</span>
+                    <span [class]="'px-1.5 py-0.5 text-[8px] font-medium rounded-full ' + getInvoiceStatusClass(facture.statutPaiement)">
+                      {{ getInvoiceStatusLabel(facture.statutPaiement) | translate }}
+                    </span>
+                  </div>
+                  <span class="text-[10px] font-medium text-indigo-600">{{ formatMontant(facture.montantTTC) }} {{ 'TND' | translate }}</span>
+                </div>
+                <div class="flex gap-2 text-[8px] text-slate-400 mt-1">
+                  <span>{{ 'Facturation:' | translate }} {{ formatDate(facture.dateFacturation) }}</span>
+                  <span>{{ 'Échéance:' | translate }} {{ formatDate(facture.dateEcheance) }}</span>
+                </div>
+              </div>
+              
+              <div *ngIf="selectedVersionFactures.length > 2" class="text-center pt-1">
+                <button (click)="viewAllInvoices(selectedVersion.id)" 
+                        class="text-[10px] text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 mx-auto">
+                  <span>{{ 'voir tout' | translate }} ({{ selectedVersionFactures.length }})</span>
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Empty State - No Version Selected -->
+      <div *ngIf="!selectedVersion" class="lg:w-2/3">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center">
+          <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h3 class="text-sm font-semibold text-slate-800 dark:text-white mb-1">{{ 'Sélectionnez une version' | translate }}</h3>
+          <p class="text-xs text-slate-500">{{ 'Cliquez sur une version dans la liste de gauche' | translate }}</p>
+        </div>
+      </div>
     </div>
 
-    <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-      <div class="flex items-center gap-1.5">
-        <div class="w-5 h-5 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
-          <svg class="w-2.5 h-2.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+    <!-- GRID VIEW MODE -->
+    <div *ngIf="isGridView" class="space-y-4">
+      <!-- Current Version Card -->
+      <div *ngIf="currentConvention" 
+           class="p-3 bg-gradient-to-r from-slate-50 to-indigo-50/30 dark:from-slate-800 dark:to-indigo-900/20 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:shadow-sm transition-all"
+           (click)="viewCurrentVersion()">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <span class="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-medium rounded-full">{{ 'Version actuelle' | translate }}</span>
+              <span [class]="'px-1.5 py-0.5 text-[9px] font-medium rounded-full ' + getEtatClass(currentConvention.etat)">{{ getEtatLabel(currentConvention.etat) | translate }}</span>
+            </div>
+            <p class="text-xs font-semibold text-slate-800 dark:text-white">{{ currentConvention.referenceConvention }}</p>
+            <div class="flex flex-wrap gap-2 text-[8px] text-slate-400 mt-1">
+              <span>{{ formatDate(currentConvention.dateDebut) }} - {{ formatDate(currentConvention.dateFin) }}</span>
+              <span>{{ currentConvention.periodicite }}</span>
+              <span>{{ currentConvention.nbUsers || 0 }} {{ 'utilisateurs' | translate }}</span>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-indigo-600">v{{ currentConvention.renewalVersion || 1 }}</span>
         </div>
-        <p class="text-[10px] text-slate-600 dark:text-slate-300">Total : <span class="font-bold text-slate-800 dark:text-white">{{ modalFactures.length }}</span></p>
       </div>
-      <button (click)="closeInvoiceModal()" 
-              class="px-2.5 py-1 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-md text-[10px] font-medium transition-colors">
-        Fermer
-      </button>
+
+      <!-- Grid of Archived Version Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div *ngFor="let version of previousVersions" 
+             class="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:shadow-sm transition-all"
+             [class]="selectedVersion?.id === version.oldConvention.id ? 'border-indigo-300 ring-1 ring-indigo-200 dark:ring-indigo-800' : ''"
+             (click)="selectVersion(version)">
+          <div class="flex items-center justify-between mb-1.5">
+            <div class="w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+              <span class="text-[10px] font-bold text-slate-600 dark:text-slate-300">v{{ version.oldConvention.renewalVersion }}</span>
+            </div>
+            <span class="text-[8px] text-slate-400">{{ version.oldConvention.periodicite }}</span>
+          </div>
+          <p class="text-[11px] font-semibold text-slate-800 dark:text-white line-clamp-1">{{ version.oldConvention.referenceConvention }}</p>
+          <p class="text-[9px] text-slate-500 mb-1 line-clamp-1">{{ version.oldConvention.libelle }}</p>
+          <p class="text-[8px] text-slate-400 mb-1">{{ formatDate(version.oldConvention.dateDebut) }} → {{ formatDate(version.oldConvention.dateFin) }}</p>
+          <div class="flex items-center justify-between text-[8px] text-slate-400">
+            <span>{{ formatMontant(version.oldConvention.montantTTC) }} {{ 'TND' | translate }}</span>
+            <span class="flex items-center gap-0.5">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {{ version.oldFactures.length || 0 }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Version Preview in Grid View -->
+      <div *ngIf="selectedVersion" class="mt-4">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div class="bg-slate-50 dark:bg-slate-700/30 px-3 py-2 flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <div class="w-6 h-6 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                <span class="text-[10px] font-bold text-indigo-600">v{{ selectedVersion.renewalVersion }}</span>
+              </div>
+              <h3 class="text-xs font-medium text-slate-800 dark:text-white">{{ selectedVersion.referenceConvention }}</h3>
+            </div>
+            <button (click)="selectedVersion = null" class="text-slate-400 hover:text-slate-600 p-0.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+          </div>
+          <div class="p-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px]">
+              <div><span class="text-slate-400">{{ 'Période' | translate }} :</span> {{ formatDate(selectedVersion.dateDebut) }} - {{ formatDate(selectedVersion.dateFin) }}</div>
+              <div><span class="text-slate-400">{{ 'Montant TTC' | translate }} :</span> <span class="text-indigo-600 font-medium">{{ formatMontant(selectedVersion.montantTTC) }} {{ 'TND' | translate }}</span></div>
+              <div><span class="text-slate-400">{{ 'Utilisateurs' | translate }} :</span> {{ selectedVersion.nbUsers }}</div>
+              <div><span class="text-slate-400">{{ 'Factures' | translate }} :</span> {{ selectedVersionFactures.length }}</div>
+            </div>
+            <div class="mt-2 text-right">
+              <button (click)="showFullDetails(selectedVersion)" class="text-[9px] text-indigo-500 hover:text-indigo-600">{{ 'Voir tous les détails →' | translate }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</div> 
 
+  <!-- Empty State - No Versions -->
+  <div *ngIf="!loading && previousVersions.length === 0 && !errorMessage" class="max-w-7xl mx-auto">
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center">
+      <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+      </svg>
+      <h3 class="text-sm font-semibold text-slate-800 dark:text-white mb-1">{{ 'Aucune version archivée' | translate }}</h3>
+      <p class="text-xs text-slate-500 mb-4">{{ 'Cette convention n\'a pas encore été renouvelée.' | translate }}</p>
+      <button (click)="goBack()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium">{{ 'Retour à la convention' | translate }}</button>
+    </div>
+  </div>
+
+  <!-- Invoice Modal -->
+  <div *ngIf="showInvoiceModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-200 dark:border-slate-700">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700/30 dark:to-slate-600/30">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-slate-800 dark:text-white">{{ 'Factures archivées' | translate }}</h3>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ modalVersionTitle }}</p>
+          </div>
+        </div>
+        <button (click)="closeInvoiceModal()" class="w-6 h-6 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 dark:hover:text-white flex items-center justify-center transition-colors">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="max-h-[400px] overflow-y-auto p-4">
+        <div *ngIf="modalFactures.length === 0" class="text-center py-8 text-slate-500 dark:text-slate-400">
+          <svg class="w-12 h-12 mx-auto mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p class="text-xs">{{ 'Aucune facture disponible pour cette version' | translate }}</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div *ngFor="let facture of modalFactures" 
+               class="group rounded border border-slate-200 dark:border-slate-700 p-2 bg-white dark:bg-slate-800/50 hover:shadow-sm transition-all duration-200 hover:border-indigo-300 dark:hover:border-indigo-600">
+            <div class="flex justify-between items-start mb-1">
+              <div>
+                <p class="text-[7px] text-slate-400 uppercase tracking-wider mb-0.5">{{ 'Numéro facture' | translate }}</p>
+                <p class="text-xs font-bold text-slate-800 dark:text-white">{{ facture.numeroFacture }}</p>
+              </div>
+              <span [class]="'px-1 py-0.5 text-[7px] font-semibold rounded-full ' + getInvoiceStatusClass(facture.statutPaiement)">
+                {{ getInvoiceStatusLabel(facture.statutPaiement) | translate }}
+              </span>
+            </div>
+            
+            <div class="border-t border-slate-100 dark:border-slate-700 my-1"></div>
+            
+            <div class="grid grid-cols-2 gap-1 mb-1">
+              <div>
+                <p class="text-[6px] text-slate-400 uppercase tracking-wider mb-0.5">{{ 'Facturation' | translate }}</p>
+                <p class="text-[9px] font-medium text-slate-700 dark:text-slate-300">{{ formatDate(facture.dateFacturation) }}</p>
+              </div>
+              <div>
+                <p class="text-[6px] text-slate-400 uppercase tracking-wider mb-0.5">{{ 'Échéance' | translate }}</p>
+                <p class="text-[9px] font-medium text-slate-700 dark:text-slate-300">{{ formatDate(facture.dateEcheance) }}</p>
+              </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-indigo-50 to-indigo-100/50 dark:from-indigo-900/20 dark:to-indigo-800/10 rounded p-1 mb-1">
+              <div class="flex items-center justify-between">
+                <p class="text-[6px] text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">{{ 'Montant TTC' | translate }}</p>
+                <p class="text-xs font-bold text-indigo-700 dark:text-indigo-300">{{ formatMontant(facture.montantTTC) }} {{ 'TND' | translate }}</p>
+              </div>
+            </div>
+            
+            <div *ngIf="facture.datePaiement" class="mt-1 pt-1 border-t border-slate-100 dark:border-slate-700">
+              <div class="flex items-center gap-0.5">
+                <svg class="w-2 h-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h10M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                <div class="flex-1">
+                  <p class="text-[6px] text-slate-400">{{ 'Payée le' | translate }} {{ formatDate(facture.datePaiement) }}</p>
+                  <p class="text-[6px] text-slate-400 truncate">{{ 'Réf:' | translate }} {{ facture.referencePaiement }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+        <div class="flex items-center gap-1.5">
+          <div class="w-5 h-5 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
+            <svg class="w-2.5 h-2.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <p class="text-[10px] text-slate-600 dark:text-slate-300">{{ 'Total :' | translate }} <span class="font-bold text-slate-800 dark:text-white">{{ modalFactures.length }}</span></p>
+        </div>
+        <button (click)="closeInvoiceModal()" 
+                class="px-2.5 py-1 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-md text-[10px] font-medium transition-colors">
+          {{ 'Fermer' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
 
 </div>

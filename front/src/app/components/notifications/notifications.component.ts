@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NotificationService, Notification } from '../../services/notification.service';
+import { TranslationService } from '../partials/traduction/translation.service';
 
 @Component({
   selector: 'app-notifications',
@@ -15,7 +16,10 @@ export class NotificationsComponent implements OnInit {
   showDetailModal = false;
   selectedNotification: Notification | null = null;
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService,
+    private translationService: TranslationService
+  ) {}
 
   ngOnInit(): void {
     this.loadNotifications();
@@ -138,75 +142,90 @@ export class NotificationsComponent implements OnInit {
   }
 
   getDaysStatusText(daysUntilDue?: number): string {
+    const translate = (key: string) => this.translationService.translate(key);
+    
     if (daysUntilDue === undefined || daysUntilDue === null) return '';
     
     if (daysUntilDue > 0) {
-      return daysUntilDue === 1 ? 'Demain' : `Dans ${daysUntilDue} jours`;
+      return daysUntilDue === 1 ? translate('Demain') : translate('Dans {{days}} jours').replace('{{days}}', daysUntilDue.toString());
     } else if (daysUntilDue === 0) {
-      return 'Aujourd\'hui';
+      return translate('Aujourd\'hui');
     } else {
-      return `${Math.abs(daysUntilDue)} jours en retard`;
+      return translate('{{days}} jours en retard').replace('{{days}}', Math.abs(daysUntilDue).toString());
     }
   }
 
- formatTime(createdAt: string): string {
-  const date = new Date(createdAt);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
+  formatTime(createdAt: string): string {
+    const translate = (key: string) => this.translationService.translate(key);
+    const date = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMins < 1) return 'À l\'instant';
-  if (diffMins < 60) return `Il y a ${diffMins} minute${diffMins === 1 ? '' : 's'}`;
-  if (diffHours < 24) return `Il y a ${diffHours} heure${diffHours === 1 ? '' : 's'}`;
-  if (diffDays < 7) return `Il y a ${diffDays} jour${diffDays === 1 ? '' : 's'}`;
-  
-  return date.toLocaleDateString('fr-FR', { 
-    month: 'short', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
-
+    if (diffMins < 1) return translate('À l\'instant');
+    if (diffMins < 60) {
+      return diffMins === 1 
+        ? translate('Il y a 1 minute') 
+        : translate('Il y a {{minutes}} minutes').replace('{{minutes}}', diffMins.toString());
+    }
+    if (diffHours < 24) {
+      return diffHours === 1 
+        ? translate('Il y a 1 heure') 
+        : translate('Il y a {{hours}} heures').replace('{{hours}}', diffHours.toString());
+    }
+    if (diffDays < 7) {
+      return diffDays === 1 
+        ? translate('Il y a 1 jour') 
+        : translate('Il y a {{days}} jours').replace('{{days}}', diffDays.toString());
+    }
+    
+    return date.toLocaleDateString(this.translationService.getCurrentLanguage() === 'ar' ? 'ar' : 'fr-FR', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
 
   openDetailModal(notification: Notification): void {
-  this.selectedNotification = notification;
-  this.showDetailModal = true;
-  if (!notification.isRead) {
+    this.selectedNotification = notification;
+    this.showDetailModal = true;
+    if (!notification.isRead) {
+      this.markAsRead(notification);
+    }
+  }
+
+  closeDetailModal(): void {
+    this.showDetailModal = false;
+    this.selectedNotification = null;
+  }
+
+  markAsReadAndClose(notification: Notification): void {
     this.markAsRead(notification);
+    this.closeDetailModal();
   }
-}
 
-closeDetailModal(): void {
-  this.showDetailModal = false;
-  this.selectedNotification = null;
-}
-
-markAsReadAndClose(notification: Notification): void {
-  this.markAsRead(notification);
-  this.closeDetailModal();
-}
-
-getModalHeaderClass(type: string): string {
-  switch (type) {
-    case 'INFO': return 'bg-gradient-to-r from-blue-500 to-blue-600';
-    case 'WARNING': return 'bg-gradient-to-r from-amber-500 to-orange-500';
-    case 'SUCCESS': return 'bg-gradient-to-r from-emerald-500 to-green-600';
-    case 'DANGER': return 'bg-gradient-to-r from-red-500 to-rose-600';
-    default: return 'bg-gradient-to-r from-indigo-500 to-indigo-600';
+  getModalHeaderClass(type: string): string {
+    switch (type) {
+      case 'INFO': return 'bg-gradient-to-r from-blue-500 to-blue-600';
+      case 'WARNING': return 'bg-gradient-to-r from-amber-500 to-orange-500';
+      case 'SUCCESS': return 'bg-gradient-to-r from-emerald-500 to-green-600';
+      case 'DANGER': return 'bg-gradient-to-r from-red-500 to-rose-600';
+      default: return 'bg-gradient-to-r from-indigo-500 to-indigo-600';
+    }
   }
-}
 
-formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    const lang = this.translationService.getCurrentLanguage();
+    return date.toLocaleDateString(lang === 'ar' ? 'ar' : 'fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
 }

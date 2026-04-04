@@ -94,41 +94,10 @@ public class Notification {
         this.readAt = LocalDateTime.now();
     }
 
-    // Helper method to mark email as sent
-    public void markEmailSent() {
-        this.emailSent = true;
-        this.emailSentAt = LocalDateTime.now();
-        this.isSent = this.emailSent || this.smsSent;
-        if (this.isSent && this.sentAt == null) {
-            this.sentAt = LocalDateTime.now();
-        }
-    }
-
-    // Helper method to mark SMS as sent
-    public void markSmsSent() {
-        this.smsSent = true;
-        this.smsSentAt = LocalDateTime.now();
-        this.isSent = this.emailSent || this.smsSent;
-        if (this.isSent && this.sentAt == null) {
-            this.sentAt = LocalDateTime.now();
-        }
-    }
-
     // Helper to check if notification is for a facture
     public boolean isFactureNotification() {
         return "FACTURE".equals(referenceType);
     }
 
-    // Get days status message
-    public String getDaysStatusMessage() {
-        if (daysUntilDue == null) return "";
 
-        if (daysUntilDue > 0) {
-            return daysUntilDue == 1 ? "Due tomorrow" : "Due in " + daysUntilDue + " days";
-        } else if (daysUntilDue == 0) {
-            return "Due today";
-        } else {
-            return "Overdue by " + Math.abs(daysUntilDue) + " days";
-        }
-    }
 }

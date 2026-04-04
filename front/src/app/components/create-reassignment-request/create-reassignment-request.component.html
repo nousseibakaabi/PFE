@@ -11,7 +11,7 @@
           </svg>
         </div>
         <div class="flex-1">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Demande de réassignation</h3>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white">{{ 'Demande de réassignation' | translate }}</h3>
           <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
             {{ application?.name }} ({{ application?.code }})
           </p>
@@ -39,31 +39,31 @@
       <div class="p-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
         <p class="text-[11px] text-amber-700 dark:text-amber-300">
           <i class="fas fa-info-circle mr-1 text-[10px]"></i>
-          <strong>Note:</strong> Vous êtes le créateur de cette application. Si vous ne pouvez pas continuer à travailler dessus, vous pouvez demander une réassignation.
+          <strong>{{ 'Note:' | translate }}</strong> {{ 'Vous êtes le créateur de cette application. Si vous ne pouvez pas continuer à travailler dessus, vous pouvez demander une réassignation.' | translate }}
         </p>
       </div>
 
       <!-- Reason Field -->
       <div>
         <label class="block text-[10px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
-          Raison de la demande <span class="text-red-500">*</span>
+          {{ 'Raison de la demande' | translate }} <span class="text-red-500">*</span>
         </label>
         <textarea
           [(ngModel)]="reason"
           rows="2"
           class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white resize-none"
-          placeholder="Expliquez pourquoi vous ne pouvez pas continuer à travailler sur cette application..."></textarea>
+          [placeholder]="'Expliquez pourquoi vous ne pouvez pas continuer à travailler sur cette application...' | translate"></textarea>
       </div>
 
       <!-- Chef Selection - Horizontal Cards Layout -->
       <div>
         <label class="block text-[10px] font-semibold text-slate-700 dark:text-slate-300 mb-2">
-          Recommander un chef de projet <span class="text-red-500">*</span>
+          {{ 'Recommander un chef de projet' | translate }} <span class="text-red-500">*</span>
         </label>
         
         <div *ngIf="workloadLoading" class="text-center py-4">
           <div class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent"></div>
-          <p class="text-[10px] text-slate-500 mt-1">Chargement des chefs...</p>
+          <p class="text-[10px] text-slate-500 mt-1">{{ 'Chargement des chefs...' | translate }}</p>
         </div>
         
         <div *ngIf="!workloadLoading" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
@@ -89,7 +89,7 @@
                       class="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium"
                       [style.background]="getWorkloadColor(workload.currentWorkload) + '20'"
                       [style.color]="getWorkloadColor(workload.currentWorkload)">
-                  {{ getWorkloadText(workload.currentWorkload) }}
+                  {{ getWorkloadText(workload.currentWorkload) | translate }}
                 </span>
               </div>
               <p class="text-[9px] text-slate-500 dark:text-slate-400 truncate">{{ chef.email }}</p>
@@ -104,20 +104,20 @@
         
         <div *ngIf="!workloadLoading && availableChefs.length === 0" class="text-center py-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg">
           <i class="fas fa-users text-slate-400 text-lg mb-1"></i>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Aucun autre chef de projet disponible</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ 'Aucun autre chef de projet disponible' | translate }}</p>
         </div>
       </div>
 
       <!-- Recommendations Field (Optional) -->
       <div>
         <label class="block text-[10px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
-          Recommandations supplémentaires <span class="text-slate-400">(optionnel)</span>
+          {{ 'Recommandations supplémentaires' | translate }} <span class="text-slate-400">({{ 'optionnel' | translate }})</span>
         </label>
         <textarea
           [(ngModel)]="recommendations"
           rows="1"
           class="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white resize-none"
-          placeholder="Informations supplémentaires pour l'administrateur..."></textarea>
+          [placeholder]="'Informations supplémentaires pour l\'administrateur...' | translate"></textarea>
       </div>
     </div>
 
@@ -125,7 +125,7 @@
     <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2">
       <button (click)="close()" 
               class="px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-all">
-        Annuler
+        {{ 'Annuler' | translate }}
       </button>
       <button (click)="submitRequest()"
               [disabled]="loading || !selectedChefId || !reason.trim() || successMessage"
@@ -135,23 +135,13 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span>Traitement...</span>
+          <span>{{ 'Traitement...' | translate }}</span>
         </span>
         <span *ngIf="!loading">
           <i class="fas fa-paper-plane mr-1 text-[9px]"></i>
-          Envoyer la demande
+          {{ 'Envoyer la demande' | translate }}
         </span>
       </button>
     </div>
   </div>
 </div>
-
-<style>
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  .animate-fade-in {
-    animation: fade-in 0.2s ease-out forwards;
-  }
-</style>

@@ -3,6 +3,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } fr
 import { StatsService } from '../../services/stats.service';
 import { ChartService } from '../../services/chart.service';
 import { WorkloadDTO, WorkloadService } from 'src/app/services/workload.service';
+import { TranslationService } from '../partials/traduction/translation.service';
 
 @Component({
   selector: 'app-admin',
@@ -52,12 +53,14 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private statsService: StatsService,
     private chartService: ChartService,
-    private workloadService: WorkloadService 
+    private workloadService: WorkloadService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
     this.loadAdminStats();
     this.loadWorkloadDashboard(); 
+    
   }
 
   ngAfterViewInit(): void {
@@ -134,73 +137,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
-  renderCharts(): void {
-    // 1. Convention Status Chart (Pie)
-    if (this.conventionStatusChartRef && this.conventionStats?.statusDistribution) {
-      const labels = this.conventionStats.statusDistribution.map((s: any) => 
-        this.getConventionEtatLabel(s.name)
-      );
-      const data = this.conventionStats.statusDistribution.map((s: any) => s.count);
-      
-      this.conventionStatusChart = this.chartService.createChart(
-        this.conventionStatusChartRef.nativeElement,
-        'pie',
-        {
-          labels: labels,
-          datasets: [{
-            data: data,
-            backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336']
-          }]
-        },
-        {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom'
-            }
-          }
-        }
-      );
-    }
 
-    // 2. Payment Status Chart (Bar)
-    if (this.paymentStatusChartRef && this.factureStats?.paymentStatus) {
-      const labels = this.factureStats.paymentStatus.map((p: any) => 
-        this.getFactureStatutLabel(p.status)
-      );
-      const data = this.factureStats.paymentStatus.map((p: any) => p.count);
-      
-      this.paymentStatusChart = this.chartService.createChart(
-        this.paymentStatusChartRef.nativeElement,
-        'bar',
-        {
-          labels: labels,
-          datasets: [{
-            label: 'Nombre de Factures',
-            data: data,
-            backgroundColor: ['#4CAF50', '#FF9800', '#F44336']
-          }]
-        },
-        {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                precision: 0
-              }
-            }
-          }
-        }
-      );
-    }
+  renderCharts(): void {
 
     // 3. User Role Chart (Doughnut)
     if (this.userRoleChartRef && this.userStats?.roleDistribution) {
       const labels = Object.keys(this.userStats.roleDistribution).map(role => 
-        this.getRoleLabel(role)
+        this.translationService.translate(this.getRoleLabel(role))
       );
       const data = Object.values(this.userStats.roleDistribution) as number[];
       
@@ -237,7 +180,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         {
           labels: labels,
           datasets: [{
-            label: 'Nombre de Structures',
+            label: this.translationService.translate('Nombre de Structures'),
             data: data,
             backgroundColor: '#2196F3'
           }]
@@ -268,7 +211,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         {
           labels: labels,
           datasets: [{
-            label: 'Revenus (TND)',
+            label: this.translationService.translate('Revenus (TND)'),
             data: data,
             backgroundColor: 'rgba(33, 150, 243, 0.2)',
             borderColor: '#2196F3',
@@ -348,24 +291,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'bg-green-500';
   }
 
-  getConventionEtatLabel(etat: string): string {
-    switch (etat) {
-      case 'PLANIFIE': return 'Planifié';
-      case 'EN COURS': return 'En Cours';
-      case 'TERMINE': return 'Terminé';
-      case 'ARCHIVE': return 'Archivé';
-      default: return etat;
-    }
-  }
 
-  getFactureStatutLabel(statut: string): string {
-    switch (statut) {
-      case 'PAYE': return 'Payée';
-      case 'NON_PAYE': return 'Non Payée';
-      case 'EN_RETARD': return 'En Retard';
-      default: return statut;
-    }
-  }
 
   getRoleLabel(role: string): string {
     switch (role) {
@@ -402,14 +328,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     this.destroyCharts();
   }
 
-  getApplicationStatusLabel(status: string): string {
-    switch (status) {
-      case 'PLANIFIE': return 'Planifié';
-      case 'EN_COURS': return 'En Cours';
-      case 'TERMINE': return 'Terminé';
-      default: return status;
-    }
-  }
+
 
   getProgressClass(progress: number): string {
     if (progress >= 90) return 'bg-green-500';

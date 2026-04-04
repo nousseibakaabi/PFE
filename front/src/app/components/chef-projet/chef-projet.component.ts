@@ -1,4 +1,3 @@
-// src/app/components/chef-projet/chef-projet.component.ts
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { Application, ApplicationService } from '../../services/application.service';
 import { ConventionService } from '../../services/convention.service';
@@ -6,6 +5,9 @@ import { StatsService } from '../../services/stats.service';
 import { AuthService } from '../../services/auth.service';
 import { WorkloadService, WorkloadDTO } from '../../services/workload.service';
 import { ChartService } from '../../services/chart.service';
+import Chart from 'chart.js/auto';
+import { LayoutService } from '../partials/services/layout.service'; 
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-chef-projet',
@@ -14,6 +16,8 @@ import { ChartService } from '../../services/chart.service';
 })
 export class ChefProjetComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('applicationStatusChart') applicationStatusChartRef!: ElementRef;
+  @ViewChild('workloadChartRef') workloadChartRef!: ElementRef;
+workloadChart: any = null;
   
   // Chart instances
   applicationStatusChart: any = null;
@@ -41,23 +45,56 @@ export class ChefProjetComponent implements OnInit, AfterViewInit, OnDestroy {
 
   Math = Math;
 
+
+  currentSlide = 0;
+slidesPerView = 1;
+autoSlideInterval: any;
+  isSidebarOpen: boolean = false;
+
+
   constructor(
     private applicationService: ApplicationService,
     private conventionService: ConventionService,
     private statsService: StatsService,
-    private authService: AuthService,
+    public authService: AuthService,
     private workloadService: WorkloadService,
-    private chartService: ChartService
+    private chartService: ChartService,
+        private layoutService: LayoutService ,
+          private cdr: ChangeDetectorRef
+
+
   ) {}
 
-  ngOnInit(): void {
+ ngOnInit(): void {
     this.loadDashboardData();
     this.loadMyWorkload();
+    
+    // Subscribe to sidebar state changes
+    this.layoutService.sidebarOpen$.subscribe((isOpen: boolean) => {
+      this.isSidebarOpen = isOpen;
+      // Optional: trigger a small delay to recalculate charts if needed
+      setTimeout(() => {
+        if (this.workloadChart) {
+          this.workloadChart.resize();
+        }
+      }, 100);
+    });
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => this.renderCharts(), 100);
+  getContainerMaxWidth(): string {
+    return this.isSidebarOpen ? '1250px' : '1400px';
   }
+
+ngAfterViewInit() {
+  this.initAutoSlide();
+  this.updateSlidesPerView();
+  window.addEventListener('resize', () => this.updateSlidesPerView());
+  setTimeout(() => this.renderCharts(), 100);
+  
+  // Force change detection for chart
+  this.cdr.detectChanges();
+}
+
 
   loadDashboardData(): void {
     this.loading = true;
@@ -139,7 +176,8 @@ export class ChefProjetComponent implements OnInit, AfterViewInit, OnDestroy {
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'bottom'
+              position: 'bottom',
+              display: false
             }
           }
         }
@@ -152,27 +190,28 @@ export class ChefProjetComponent implements OnInit, AfterViewInit, OnDestroy {
     this.applicationStatusChart = null;
   }
 
-  loadMyWorkload(): void {
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser || !currentUser.id) return;
+loadMyWorkload() {
+  const currentUser = this.authService.getCurrentUser();
+  if (!currentUser || !currentUser.id) return;
 
-    this.workloadLoading = true;
-    
-    this.workloadService.getWorkloadDashboard().subscribe({
-      next: (response) => {
-        if (response.success && response.data?.workloads) {
-          this.myWorkload = response.data.workloads.find(
-            (w: WorkloadDTO) => w.chefId === currentUser.id
-          ) || null;
-        }
-        this.workloadLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading workload:', error);
-        this.workloadLoading = false;
+  this.workloadLoading = true;
+  
+  this.workloadService.getWorkloadDashboard().subscribe({
+    next: (response) => {
+      if (response.success && response.data?.workloads) {
+        this.myWorkload = response.data.workloads.find(
+          (w: WorkloadDTO) => w.chefId === currentUser.id
+        ) || null;
+        setTimeout(() => this.initWorkloadChart(), 100);
       }
-    });
-  }
+      this.workloadLoading = false;
+    },
+    error: (error) => {
+      console.error('Error loading workload:', error);
+      this.workloadLoading = false;
+    }
+  });
+}
 
   getWorkloadColor(): string {
     if (!this.myWorkload) return '#10b981';
@@ -291,13 +330,7 @@ export class ChefProjetComponent implements OnInit, AfterViewInit, OnDestroy {
     return new Date(dateString).toLocaleDateString('fr-FR');
   }
 
-  formatCurrency(value: number): string {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'TND',
-      minimumFractionDigits: 2
-    }).format(value);
-  }
+
 
   refreshData(): void {
     this.loadDashboardData();
@@ -309,7 +342,212 @@ export class ChefProjetComponent implements OnInit, AfterViewInit, OnDestroy {
     this.errorMessage = '';
   }
 
-  ngOnDestroy(): void {
-    this.destroyCharts();
+
+
+
+updateSlidesPerView() {
+  if (window.innerWidth >= 1024) {
+    this.slidesPerView = 3;
+  } else if (window.innerWidth >= 768) {
+    this.slidesPerView = 2;
+  } else {
+    this.slidesPerView = 1;
   }
+  this.currentSlide = Math.min(this.currentSlide, this.totalSlides - 1);
+}
+
+get totalSlides(): number {
+  return Math.ceil(this.overdueAlerts.length / this.slidesPerView);
+}
+
+initAutoSlide() {
+  this.autoSlideInterval = setInterval(() => {
+    if (this.overdueAlerts.length > 0) {
+      this.nextSlide();
+    }
+  }, 4000);
+}
+
+nextSlide() {
+  if (this.currentSlide < this.totalSlides - 1) {
+    this.currentSlide++;
+  } else {
+    this.currentSlide = 0;
+  }
+}
+
+prevSlide() {
+  if (this.currentSlide > 0) {
+    this.currentSlide--;
+  } else {
+    this.currentSlide = this.totalSlides - 1;
+  }
+}
+
+goToSlide(index: number) {
+  this.currentSlide = index;
+}
+
+ngOnDestroy() {
+  if (this.autoSlideInterval) {
+    clearInterval(this.autoSlideInterval);
+  }
+  this.destroyCharts();
+}
+
+
+
+
+  // Add these methods to your ChefProjetComponent class
+
+// Get connected user full name
+getConnectedFullName(): string {
+  const currentUser = this.authService.getCurrentUser();
+  if (currentUser) {
+    // Adjust property names based on your User model
+    return `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.email || 'Utilisateur';
+  }
+  return 'Chef de Projet';
+}
+
+// Get total financial value from conventions
+getTotalFinancialValue(): number {
+  if (!this.myConventions || this.myConventions.length === 0) return 0;
+  
+  let total = 0;
+  this.myConventions.forEach(conv => {
+    // Adjust property name based on your convention model (montant, valeur, etc.)
+    total += conv.montantTotal || conv.valeur || conv.montant || 0;
+  });
+  return total;
+}
+
+getTotalDuration(): number {
+  if (!this.myProjects || this.myProjects.length === 0) return 0;
+  
+  let totalDays = 0;
+  this.myProjects.forEach(project => {
+    if (project.dateDebut && project.dateFin) {
+      const start = new Date(project.dateDebut);
+      const end = new Date(project.dateFin);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      totalDays += diffDays;
+    }
+  });
+  return totalDays;
+}
+
+
+initWorkloadChart() {
+  // Add safety checks
+  if (!this.workloadChartRef) {
+    console.warn('Workload chart ref not available');
+    setTimeout(() => this.initWorkloadChart(), 200);
+    return;
+  }
+  
+  const canvasEl = this.workloadChartRef.nativeElement;
+  if (!canvasEl) {
+    console.warn('Canvas element not found');
+    return;
+  }
+  
+  const ctx = canvasEl.getContext('2d');
+  if (!ctx) {
+    console.warn('Could not get canvas context');
+    return;
+  }
+  
+  if (!this.myWorkload) {
+    console.warn('Workload data not available yet');
+    setTimeout(() => this.initWorkloadChart(), 500);
+    return;
+  }
+  
+  const used = this.myWorkload.currentWorkload || 0;
+  const remaining = 100 - used;
+  
+  if (this.workloadChart) {
+    this.workloadChart.destroy();
+  }
+  
+  this.workloadChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Charge utilisée', 'Capacité disponible'],
+      datasets: [{
+        data: [used, remaining],
+        backgroundColor: ['#3b82f6', '#76b7e8'],
+        borderWidth: 0,
+        hoverOffset: 4,
+        borderRadius: 10,
+        spacing: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      layout: {
+        padding: {
+          bottom: 10
+        }
+      },
+      plugins: {
+        legend: {
+           display: false,
+          position: 'bottom',
+          align: 'center',
+          labels: {
+            font: { size: 11, weight: '500' },
+            boxWidth: 10,
+            boxHeight: 10,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 15
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (context: any) => {
+              const label = context.label || '';
+              const value = context.parsed || 0;
+              return `${label}: ${value.toFixed(1)}%`;
+            }
+          }
+        }
+      },
+      cutout: '75%'
+    }
+  });
+  
+  // Add percentage text inside the chart - FIXED for better positioning and smaller text
+  if (this.workloadChart) {
+    const originalDraw = this.workloadChart.draw;
+    this.workloadChart.draw = function(this: any) {
+      originalDraw.apply(this, arguments);
+      const ctx = this.ctx;
+      const width = this.width;
+      const height = this.height;
+      
+      ctx.save();
+      // Make the font smaller - using absolute pixel size
+      const fontSize = Math.min(height * 0.10, 26);
+      ctx.font = `700 ${fontSize}px "Inter", system-ui, sans-serif`;
+      ctx.fillStyle = '#1f2937';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      const text = `${used.toFixed(1)}%`;
+      const textX = width / 2;
+      const textY = height / 2;
+      
+      ctx.fillText(text, textX, textY);
+      ctx.restore();
+    };
+    
+    this.workloadChart.update();
+  }
+}
+
 }

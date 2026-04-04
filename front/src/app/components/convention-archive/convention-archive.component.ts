@@ -1,4 +1,3 @@
-// convention-archive.component.ts
 import { Component, OnInit } from '@angular/core';
 import { ConventionService, Convention } from '../../services/convention.service';
 import { CommonModule } from '@angular/common';
@@ -6,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { TranslationService } from '../partials/traduction/translation.service';
 
 @Component({
   selector: 'app-convention-archive',
@@ -33,7 +33,8 @@ export class ConventionArchiveComponent implements OnInit {
   constructor(
     private conventionService: ConventionService,
     private authService: AuthService,
-    private router:Router
+    private router: Router,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
@@ -41,29 +42,27 @@ export class ConventionArchiveComponent implements OnInit {
   }
 
   loadArchivedConventions(): void {
-      this.loading = true;
-      this.conventionService.getArchivedConventions().subscribe({
-        next: (response) => {
-          if (response.success) {
-            // The backend already filters by current user
-            this.archivedConventions = response.data;
-            this.filteredConventions = [...this.archivedConventions];
-          }
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Error loading archived conventions:', error);
-          this.errorMessage = 'Échec du chargement des conventions archivées';
-          this.loading = false;
+    this.loading = true;
+    this.conventionService.getArchivedConventions().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.archivedConventions = response.data;
+          this.filteredConventions = [...this.archivedConventions];
         }
-      });
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading archived conventions:', error);
+        this.errorMessage = this.translationService.translate('Échec du chargement des conventions archivées');
+        this.loading = false;
+      }
+    });
   }
 
-
   get paginatedConventions(): any[] {
-  const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-  const endIndex = startIndex + this.itemsPerPage;
-  return this.filteredConventions.slice(startIndex, endIndex);
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return this.filteredConventions.slice(startIndex, endIndex);
   }
 
   get totalPages(): number {
@@ -82,9 +81,8 @@ export class ConventionArchiveComponent implements OnInit {
     }
   }
 
-
   getItemNumber(index: number): number {
-  return (this.currentPage - 1) * this.itemsPerPage + index + 1;
+    return (this.currentPage - 1) * this.itemsPerPage + index + 1;
   }
 
   searchConventions(): void {
@@ -99,12 +97,12 @@ export class ConventionArchiveComponent implements OnInit {
       conv.libelle.toLowerCase().includes(term) ||
       (conv.structureBeneficielName?.toLowerCase().includes(term)) ||
       (conv.structureResponsableName?.toLowerCase().includes(term)) ||
-       (conv.zoneName?.toLowerCase().includes(term)) ||
+      (conv.zoneName?.toLowerCase().includes(term)) ||
       conv.archivedReason?.toLowerCase().includes(term) ||
       conv.archivedBy?.toLowerCase().includes(term)
     );
 
-    this.currentPage = 1; 
+    this.currentPage = 1;
   }
 
   restoreConvention(id: number): Observable<any> {
@@ -112,7 +110,7 @@ export class ConventionArchiveComponent implements OnInit {
   }
 
   formatArchivedDate(dateString: string): string {
-    if (!dateString) return 'Non spécifié';
+    if (!dateString) return this.translationService.translate('Non spécifié');
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
       day: '2-digit',
@@ -129,52 +127,42 @@ export class ConventionArchiveComponent implements OnInit {
     return text.substring(0, maxLength) + '...';
   }
 
-
   viewConventionDetails(id: number): void {
-  this.router.navigate(['/conventions', id]);
-}
+    this.router.navigate(['/conventions', id]);
+  }
 
+  openRestoreModal(convention: any, event: Event): void {
+    event.stopPropagation();
+    this.selectedConventionForRestore = convention;
+    this.showRestoreModal = true;
+    this.restoreErrorMessage = '';
+  }
 
-// Open restore modal
-openRestoreModal(convention: any, event: Event): void {
-  event.stopPropagation(); // Prevent card click
-  this.selectedConventionForRestore = convention;
-  this.showRestoreModal = true;
-  this.restoreErrorMessage = '';
-}
+  closeRestoreModal(): void {
+    this.showRestoreModal = false;
+    this.selectedConventionForRestore = null;
+    this.restoreLoading = false;
+    this.restoreErrorMessage = '';
+  }
 
-// Close restore modal
-closeRestoreModal(): void {
-  this.showRestoreModal = false;
-  this.selectedConventionForRestore = null;
-  this.restoreLoading = false;
-  this.restoreErrorMessage = '';
-}
-
-// Confirm restore
-confirmRestore(): void {
-  if (!this.selectedConventionForRestore) return;
-  
-  this.restoreLoading = true;
-  this.restoreErrorMessage = '';
-  
-  // Call your restore API
-  this.restoreConvention(this.selectedConventionForRestore.id)
-    .subscribe({
-      next: (response) => {
-        this.restoreLoading = false;
-        this.closeRestoreModal();
-        // Show success message
-        this.successMessage = 'Convention restaurée avec succès';
-        // Refresh your list
-        this.loadArchivedConventions(); // or whatever your refresh method is
-      },
-      error: (error) => {
-        this.restoreLoading = false;
-        this.restoreErrorMessage = error.error?.message || 'Erreur lors de la restauration';
-      }
-    });
-}
-
-  
+  confirmRestore(): void {
+    if (!this.selectedConventionForRestore) return;
+    
+    this.restoreLoading = true;
+    this.restoreErrorMessage = '';
+    
+    this.restoreConvention(this.selectedConventionForRestore.id)
+      .subscribe({
+        next: (response) => {
+          this.restoreLoading = false;
+          this.closeRestoreModal();
+          this.successMessage = this.translationService.translate('Convention restaurée avec succès');
+          this.loadArchivedConventions();
+        },
+        error: (error) => {
+          this.restoreLoading = false;
+          this.restoreErrorMessage = error.error?.message || this.translationService.translate('Erreur lors de la restauration');
+        }
+      });
+  }
 }

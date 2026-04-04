@@ -5,7 +5,7 @@
       <div class="relative">
         <div class="animate-spin rounded-full h-12 w-12 border-3 border-blue-200 border-t-blue-600"></div>
       </div>
-      <p class="mt-4 text-sm text-slate-600 dark:text-slate-400">Chargement des détails...</p>
+      <p class="mt-4 text-sm text-slate-600 dark:text-slate-400">{{ 'Chargement des détails...' | translate }}</p>
     </div>
 
     <div *ngIf="!loading && application">
@@ -20,34 +20,34 @@
   </button>
 
 <div class="flex gap-1.5 flex-wrap justify-end">
-  <!-- Terminer button - Red/Danger color -->
+  <!-- Terminer button -->
   <button *ngIf="canEdit() && checkCanTerminate(application)" 
           (click)="terminateApplication()"
           class="px-3 py-1.5 bg-transparent border border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-500 hover:text-white-600 rounded-md text-[11px] font-semibold transition-all flex items-center gap-1.5">
     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
     </svg>
-    Terminer
+    {{ 'Terminer' | translate }}
   </button>
   
-  <!-- Modifier button - Blue/Primary color -->
+  <!-- Modifier button -->
   <button *ngIf="canEdit()"
           (click)="editApplication()"
           class="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-md text-[11px] font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-1.5">
     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
     </svg>
-    Modifier
+    {{ 'Modifier' | translate }}
   </button>
   
-  <!-- Réassignation button - Amber/Warning color -->
+  <!-- Réassignation button -->
   <button *ngIf="isChefProjet && isAppCreator() && application?.renewed"
           (click)="openReassignmentRequestModal()"
           class="px-3 py-1.5 bg-transparent border border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-500 hover:text-white-600 rounded-md text-[11px] font-semibold transition-all flex items-center gap-1.5">
     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
-    Réassignation
+    {{ 'Réassignation' | translate }}
   </button>
 </div>
 </div>
@@ -88,7 +88,7 @@
     <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10">
       <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
         <i class="fas fa-key text-blue-600 text-xs"></i>
-        Informations clés
+        {{ 'Informations clés' | translate }}
       </h3>
     </div>
     
@@ -96,29 +96,29 @@
       <!-- Application Title & Status -->
       <div class="flex items-start justify-between">
         <div class="flex-1">
-          <p class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mb-0.5">Application</p>
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mb-0.5">{{ 'Application' | translate }}</p>
           <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight">{{ application.name }}</p>
           <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">{{ application.code }}</p>
         </div>
          <span *ngIf="application.archived" 
         class="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-   Archivée
+   {{ 'Archivée' | translate }}
   </span>
   <span *ngIf="!application.archived" 
         class="px-2.5 py-1 text-[10px] font-semibold rounded-full" 
         [ngClass]="getStatusClass(application.status)">
-    {{ getStatusLabel(application.status) }}
+    {{ getStatusLabel(application.status) | translate }}
   </span>
       </div>
       
       <!-- User Stats - Compact Row Layout -->
       <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
         <div class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2 text-center">
-          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium">Min</p>
+          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium">{{ 'Min' | translate }}</p>
           <p class="text-sm font-bold text-slate-900 dark:text-white">{{ application.minUser || '—' }}</p>
         </div>
         <div class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2 text-center">
-          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium">Max</p>
+          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium">{{ 'Max' | translate }}</p>
           <p class="text-sm font-bold text-slate-900 dark:text-white">{{ application.maxUser || '—' }}</p>
         </div>
       </div>
@@ -126,11 +126,11 @@
       <!-- Dates - Compact Grid Layout -->
       <div class="grid grid-cols-2 gap-2 pt-1">
         <div>
-          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Début</p>
+          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">{{ 'Début' | translate }}</p>
           <p class="text-xs font-semibold text-slate-900 dark:text-white mt-0.5">{{ formatDate(application.dateDebut) }}</p>
         </div>
         <div>
-          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Fin</p>
+          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">{{ 'Fin' | translate }}</p>
           <p class="text-xs font-semibold text-slate-900 dark:text-white mt-0.5">{{ formatDate(application.dateFin) }}</p>
         </div>
       </div>
@@ -138,18 +138,18 @@
       <!-- Duration & Progress -->
       <div class="pt-1 space-y-2">
         <div class="flex justify-between items-center">
-          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium">Durée totale</p>
-          <p class="text-xs font-bold text-slate-900 dark:text-white">{{ application.totalDays || 0 }} jours</p>
+          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium">{{ 'Durée totale' | translate }}</p>
+          <p class="text-xs font-bold text-slate-900 dark:text-white">{{ application.totalDays || 0 }} {{ 'jours' | translate }}</p>
         </div>
         <div class="flex justify-between items-center">
-          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium">Jours restants</p>
+          <p class="text-[9px] text-slate-500 dark:text-slate-400 font-medium">{{ 'Jours restants' | translate }}</p>
           <p class="text-xs font-bold" [ngClass]="application.daysRemaining && application.daysRemaining > 0 ? 'text-emerald-600' : 'text-red-600'">
-            {{ application.daysRemaining && application.daysRemaining > 0 ? application.daysRemaining + ' j' : 'Terminé' }}
+            {{ application.daysRemaining && application.daysRemaining > 0 ? application.daysRemaining + ' ' + ('j' | translate) : ('Terminé' | translate) }}
           </p>
         </div>
         <div>
           <div class="flex justify-between text-[9px] mb-1">
-            <span class="text-slate-500">Progression</span>
+            <span class="text-slate-500">{{ 'Progression' | translate }}</span>
             <span class="font-semibold text-blue-600">{{ application.timeBasedProgress || 0 }}%</span>
           </div>
           <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
@@ -169,29 +169,29 @@
       <div class="px-4 py-2.5 border-b border-purple-200 dark:border-purple-700/50">
         <h3 class="text-xs font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1.5">
           <i class="fas fa-flag-checkered text-xs"></i>
-          Terminaison
+          {{ 'Terminaison' | translate }}
         </h3>
       </div>
       <div class="p-4 space-y-2">
         <div class="flex justify-between items-center">
-          <p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Date</p>
+          <p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">{{ 'Date' | translate }}</p>
           <p class="text-xs font-medium text-slate-900 dark:text-white">{{ application.terminatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
         </div>
        <div *ngIf="isAdmin || application.terminatedBy === 'SYSTEM_AUTO' || application.terminatedBy === 'admin'" class="flex justify-between items-center">
-  <p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Par</p>
-  <p class="text-xs text-slate-700 dark:text-slate-300">{{ application.terminatedBy === 'SYSTEM_AUTO' ? 'Système' : (application.terminatedBy || '-') }}</p>
+  <p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">{{ 'Par' | translate }}</p>
+  <p class="text-xs text-slate-700 dark:text-slate-300">{{ application.terminatedBy === 'SYSTEM_AUTO' ? ('Système' | translate) : (application.terminatedBy || '-') }}</p>
 </div>
         <div class="flex justify-between items-center pt-1">
-          <p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Statut</p>
+          <p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">{{ 'Statut' | translate }}</p>
           <span class="px-2 py-0.5 text-[9px] font-bold rounded-full"
                 [ngClass]="{
                   'bg-emerald-100 text-emerald-700': application.terminatedEarly,
                   'bg-blue-100 text-blue-700': application.terminatedOnTime,
                   'bg-red-100 text-red-700': application.terminatedLate
                 }">
-            {{ application.terminatedEarly ? 'En avance' : 
-               application.terminatedOnTime ? 'À temps' : 
-               application.terminatedLate ? 'En retard' : '' }}
+            {{ application.terminatedEarly ? ('En avance' | translate) : 
+               application.terminatedOnTime ? ('À temps' | translate) : 
+               application.terminatedLate ? ('En retard' | translate) : '' }}
           </span>
         </div>
       </div>
@@ -210,11 +210,11 @@
     <div class="px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-slate-700/30 dark:to-slate-700/10">
       <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
         <i class="fas fa-info-circle text-blue-600 text-xs"></i>
-        Description
+        {{ 'Description' | translate }}
       </h3>
     </div>
     <div class="p-4">
-      <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{{ application.description || 'Aucune description fournie' }}</p>
+      <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{{ application.description || ('Aucune description fournie' | translate) }}</p>
     </div>
   </div>
 
@@ -223,13 +223,13 @@
     <div class="px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-slate-700/30 dark:to-slate-700/10">
       <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
         <i class="fas fa-building text-blue-600 text-xs"></i>
-        Structures
+        {{ 'Structures' | translate }}
       </h3>
     </div>
     <div class="p-4 space-y-3">
       <!-- Structure Beneficiel -->
       <div class="bg-gradient-to-br from-blue-50 to-blue-100/30 dark:from-blue-900/20 dark:to-blue-800/10 rounded-lg p-3">
-        <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1.5">Structure Bénéficiaire</p>
+        <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1.5">{{ 'Structure Bénéficiaire' | translate }}</p>
         <p class="text-xs font-semibold text-slate-900 dark:text-white">{{ application.clientName }}</p>
         <div class="flex flex-wrap gap-3 mt-1.5">
           <p *ngIf="application.clientEmail" class="text-[10px] text-slate-600 dark:text-slate-400 flex items-center gap-1">
@@ -243,8 +243,8 @@
       
       <!-- Structure Responsable -->
       <div class="bg-gradient-to-br from-purple-50 to-purple-100/30 dark:from-purple-900/20 dark:to-purple-800/10 rounded-lg p-3">
-        <p class="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-1.5">Structure Responsable</p>
-        <p class="text-xs font-semibold text-slate-900 dark:text-white">{{ structureResponsableName || 'Non défini' }}</p>
+        <p class="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-1.5">{{ 'Structure Responsable' | translate }}</p>
+        <p class="text-xs font-semibold text-slate-900 dark:text-white">{{ structureResponsableName || ('Non défini' | translate) }}</p>
         <div class="flex flex-wrap gap-3 mt-1.5">
           <p *ngIf="structureResponsableEmail" class="text-[10px] text-slate-600 dark:text-slate-400 flex items-center gap-1">
             <i class="fas fa-envelope text-purple-500 text-[9px]"></i> {{ structureResponsableEmail }}
@@ -262,7 +262,7 @@
     <div class="px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-slate-700/30 dark:to-slate-700/10 flex items-center justify-between">
       <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
         <i class="fas fa-file-contract text-blue-600 text-xs"></i>
-        Conventions
+        {{ 'Conventions' | translate }}
       </h3>
     </div>
     <div class="p-4">
@@ -270,7 +270,7 @@
         <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mx-auto mb-2">
           <i class="fas fa-file-contract text-blue-600 text-lg"></i>
         </div>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Aucune convention associée</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ 'Aucune convention associée' | translate }}</p>
       </div>
 
       <div *ngIf="conventions.length > 0" class="space-y-3">
@@ -281,12 +281,12 @@
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-xs font-bold text-slate-900 dark:text-white font-mono">{{ convention.referenceConvention }}</span>
               <span class="px-2 py-0.5 text-[9px] font-semibold rounded-full" [ngClass]="getConventionStatusClass(convention.etat)">
-                {{ getConventionStatusLabel(convention.etat) }}
+                {{ getConventionStatusLabel(convention.etat) | translate }}
               </span>
             </div>
             <div class="flex gap-2 text-[10px] font-medium">
-              <span class="text-slate-600 dark:text-slate-400">Factures: <span class="font-bold">{{ convention.totalFactures || 0 }}</span></span>
-              <span class="text-emerald-600 dark:text-emerald-400">Payées: <span class="font-bold">{{ convention.facturesPayees || 0 }}</span></span>
+              <span class="text-slate-600 dark:text-slate-400">{{ 'Factures:' | translate }} <span class="font-bold">{{ convention.totalFactures || 0 }}</span></span>
+              <span class="text-emerald-600 dark:text-emerald-400">{{ 'Payées:' | translate }} <span class="font-bold">{{ convention.facturesPayees || 0 }}</span></span>
             </div>
           </div>
           
@@ -294,19 +294,19 @@
           
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
             <div class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-1.5 text-center">
-              <span class="text-slate-500 dark:text-slate-400 block text-[8px]">Début</span> 
+              <span class="text-slate-500 dark:text-slate-400 block text-[8px]">{{ 'Début' | translate }}</span> 
               <span class="font-semibold text-slate-900 dark:text-white text-[10px]">{{ formatDate(convention.dateDebut) }}</span>
             </div>
             <div class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-1.5 text-center">
-              <span class="text-slate-500 dark:text-slate-400 block text-[8px]">Fin</span> 
+              <span class="text-slate-500 dark:text-slate-400 block text-[8px]">{{ 'Fin' | translate }}</span> 
               <span class="font-semibold text-slate-900 dark:text-white text-[10px]">{{ formatDate(convention.dateFin) }}</span>
             </div>
             <div class="bg-blue-50 dark:bg-blue-900/20 rounded-md p-1.5 text-center">
-              <span class="text-blue-600 dark:text-blue-400 block text-[8px]">Montant</span> 
-              <span class="font-bold text-blue-700 dark:text-blue-300 text-[10px]">{{ convention.montantTTC }} TND</span>
+              <span class="text-blue-600 dark:text-blue-400 block text-[8px]">{{ 'Montant' | translate }}</span> 
+              <span class="font-bold text-blue-700 dark:text-blue-300 text-[10px]">{{ convention.montantTTC }} {{ 'TND' | translate }}</span>
             </div>
             <div class="bg-slate-50 dark:bg-slate-700/50 rounded-md p-1.5 text-center">
-              <span class="text-slate-500 dark:text-slate-400 block text-[8px]">Users</span> 
+              <span class="text-slate-500 dark:text-slate-400 block text-[8px]">{{ 'Users' | translate }}</span> 
               <span class="font-semibold text-slate-900 dark:text-white text-[10px]">{{ convention.nbUsers || '—' }}</span>
             </div>
           </div>
@@ -314,8 +314,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Chef de Projet Card - Compact -->
 
 </div>
 
@@ -326,17 +324,16 @@
   <div class="px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-slate-700/30 dark:to-slate-700/10 flex items-center justify-between">
     <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
       <i class="fas fa-user-tie text-blue-600 text-xs"></i>
-      Chef de Projet
+      {{ 'Chef de Projet' | translate }}
     </h3>
     <button *ngIf="isAdmin && !application.chefDeProjetId"
             (click)="openAssignChefModal()"
             class="px-2.5 py-1 text-[10px] font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-md hover:shadow-md transition-all">
-      <i class="fas fa-user-plus mr-1 text-[9px]"></i> Assigner
+      <i class="fas fa-user-plus mr-1 text-[9px]"></i> {{ 'Assigner' | translate }}
     </button>
   </div>
   <div class="p-4">
     <div class="flex items-center gap-3">
-      <!-- Avatar with conditional styling -->
       <div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0"
            [ngClass]="application.chefDeProjetId ? 'ring-3 ring-blue-200 dark:ring-blue-800 shadow-sm' : 'ring-2 ring-blue-400 dark:ring-blue-500 shadow-sm'">
         <ng-container *ngIf="application.chefDeProjetId; else noChefAvatar">
@@ -352,9 +349,9 @@
         </ng-template>
       </div>
       <div class="flex-1 min-w-0">
-        <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ application.chefDeProjetFullName || 'Non assigné' }}</h4>
+        <h4 class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ application.chefDeProjetFullName || ('Non assigné' | translate) }}</h4>
         <p *ngIf="application.chefDeProjetEmail" class="text-[10px] text-slate-500 dark:text-slate-400 truncate">{{ application.chefDeProjetEmail }}</p>
-        <p *ngIf="!application.chefDeProjetId" class="text-[10px] text-blue-500 dark:text-blue-400 mt-0.5">Aucun chef assigné</p>
+        <p *ngIf="!application.chefDeProjetId" class="text-[10px] text-blue-500 dark:text-blue-400 mt-0.5">{{ 'Aucun chef assigné' | translate }}</p>
       </div>
     </div>
       
@@ -362,7 +359,7 @@
         
         <div class="grid grid-cols-2 gap-2">
           <div class="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700/30 dark:to-slate-600/30 rounded-lg p-2 text-center">
-            <p class="text-[8px] text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider">Charge de travail</p>
+            <p class="text-[8px] text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider">{{ 'Charge de travail' | translate }}</p>
     <span class="text-[10px] font-bold" [ngClass]="{
               'text-emerald-600': chefWorkload.currentWorkload < 70,
               'text-amber-600': chefWorkload.currentWorkload >= 70 && chefWorkload.currentWorkload < 90,
@@ -370,7 +367,7 @@
             }">{{ chefWorkload.currentWorkload?.toFixed(0) || 0 }}%</span>
                       </div>
           <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg p-2 text-center">
-            <p class="text-[8px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">Projets actifs</p>
+            <p class="text-[8px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">{{ 'Projets actifs' | translate }}</p>
             <p class="text-sm font-bold text-emerald-700 dark:text-emerald-300">{{ chefWorkload.currentApps || 0 }}</p>
           </div>
         </div>
@@ -378,7 +375,7 @@
       
       <div *ngIf="!chefWorkload && application.chefDeProjetId" class="mt-3 text-center py-2">
         <div class="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent mx-auto"></div>
-        <p class="mt-1 text-[9px] text-slate-500">Chargement...</p>
+        <p class="mt-1 text-[9px] text-slate-500">{{ 'Chargement...' | translate }}</p>
       </div>
     </div>
   </div>
@@ -392,22 +389,22 @@
     <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-slate-700/30 dark:to-slate-700/10 flex items-center justify-between">
       <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
         <i class="fas fa-history text-blue-600 text-xs"></i>
-        Historique
+        {{ 'Historique' | translate }}
       </h3>
       <button (click)="loadApplicationHistory()" class="text-[10px] text-blue-600 hover:text-blue-700 font-medium">
-        <i class="fas fa-sync-alt mr-1"></i> Rafraîchir
+        <i class="fas fa-sync-alt mr-1"></i> {{ 'Rafraîchir' | translate }}
       </button>
     </div>
     
     <div class="p-4">
       <div *ngIf="loadingHistory" class="text-center py-4">
         <div class="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent mx-auto"></div>
-        <p class="mt-1 text-[10px] text-slate-500">Chargement...</p>
+        <p class="mt-1 text-[10px] text-slate-500">{{ 'Chargement...' | translate }}</p>
       </div>
       
       <div *ngIf="!loadingHistory && (!applicationHistory || applicationHistory.length === 0)" class="text-center py-4">
         <i class="fas fa-clock text-slate-300 text-xl mb-1"></i>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Aucun historique</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ 'Aucun historique' | translate }}</p>
       </div>
       
       <div *ngIf="!loadingHistory && groupedApplicationHistory && groupedApplicationHistory.length > 0" class="space-y-3 max-h-[400px] overflow-y-auto pr-1">
@@ -422,7 +419,7 @@
             <div *ngFor="let entry of group.entries.slice(0, 2)" class="border-l border-blue-300 dark:border-blue-700 pl-2 py-1 hover:bg-slate-50 dark:hover:bg-slate-700/30 rounded-r transition-all">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <i [class]="getHistoryIcon(entry.actionType) + ' text-[8px] text-blue-600'"></i>
-                <span class="text-[9px] font-semibold" [ngClass]="getHistoryActionClass(entry.actionType)">{{ entry.actionTypeLabel }}</span>
+                <span class="text-[9px] font-semibold" [ngClass]="getHistoryActionClass(entry.actionType)">{{ entry.actionTypeLabel | translate }}</span>
                 <span class="text-[9px] text-slate-500">{{ entry.timeFormatted }}</span>
               </div>
               <p class="text-[10px] text-slate-600 dark:text-slate-400 line-clamp-1">{{ entry.description }}</p>
@@ -432,7 +429,7 @@
         
         <div *ngIf="applicationHistory.length > 4" class="text-center pt-2">
           <button (click)="openAllHistoryModal()" class="text-[10px] font-semibold text-blue-600 hover:text-blue-700 transition-colors">
-            Voir tout ({{ applicationHistory.length }})
+            {{ 'Voir tout' | translate }} ({{ applicationHistory.length }})
           </button>
         </div>
       </div>
@@ -449,7 +446,7 @@
   <div class="bg-white dark:bg-slate-800 rounded-xl w-full max-w-lg mx-auto shadow-2xl">
     <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
       <div class="flex justify-between items-center">
-        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Assigner un Chef de Projet</h3>
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">{{ 'Assigner un Chef de Projet' | translate }}</h3>
         <button (click)="closeAssignChefModal()" class="text-slate-400 hover:text-slate-500 w-6 h-6 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
           <i class="fas fa-times text-xs"></i>
         </button>
@@ -481,11 +478,11 @@
     
     <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex gap-2">
       <button (click)="closeAssignChefModal()" 
-              class="flex-1 px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-all">Annuler</button>
+              class="flex-1 px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-all">{{ 'Annuler' | translate }}</button>
       <button (click)="assignChef()" [disabled]="!selectedChefId || assigning"
               class="flex-1 px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:shadow-md disabled:opacity-50 transition-all">
         <i *ngIf="assigning" class="fas fa-spinner fa-spin mr-1"></i>
-        Assigner
+        {{ 'Assigner' | translate }}
       </button>
     </div>
   </div>
@@ -497,7 +494,7 @@
     <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
       <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
         <i class="fas fa-history text-blue-500 text-xs"></i>
-        Historique complet
+        {{ 'Historique complet' | translate }}
       </h3>
       <button (click)="closeAllHistoryModal()" class="text-slate-400 hover:text-slate-500 w-6 h-6 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center">
         <i class="fas fa-times text-xs"></i>
@@ -519,7 +516,7 @@
               <div *ngFor="let entry of group.entries" class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-3 hover:shadow-sm transition-all">
                 <div class="flex items-center gap-1.5 flex-wrap mb-1.5">
                   <span class="text-[9px] text-slate-500 font-mono">{{ entry.timeFormatted }}</span>
-                  <span class="text-[8px] font-semibold px-1.5 py-0.5 rounded-full" [ngClass]="getHistoryActionClass(entry.actionType)">{{ entry.actionTypeLabel }}</span>
+                  <span class="text-[8px] font-semibold px-1.5 py-0.5 rounded-full" [ngClass]="getHistoryActionClass(entry.actionType)">{{ entry.actionTypeLabel | translate }}</span>
                 </div>
                 <p class="text-[11px] text-slate-700 dark:text-slate-300 mb-1.5 line-clamp-2">{{ entry.description }}</p>
                 <div *ngIf="entry.hasChanges" class="mt-1.5 space-y-1">
@@ -536,13 +533,13 @@
         
         <div *ngIf="!groupedApplicationHistory || groupedApplicationHistory.length === 0" class="text-center py-8">
           <i class="fas fa-clock text-slate-300 text-2xl mb-2"></i>
-          <p class="text-xs text-slate-500">Aucun historique disponible</p>
+          <p class="text-xs text-slate-500">{{ 'Aucun historique disponible' | translate }}</p>
         </div>
       </div>
     </div>
     
     <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700">
-      <button (click)="closeAllHistoryModal()" class="w-full px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:shadow-md transition-all">Fermer</button>
+      <button (click)="closeAllHistoryModal()" class="w-full px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:shadow-md transition-all">{{ 'Fermer' | translate }}</button>
     </div>
   </div>
 </div>
@@ -554,7 +551,7 @@
       <div class="flex justify-between items-center">
         <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <i class="fas fa-flag-checkered text-red-500 text-sm"></i>
-          Terminer l'application
+          {{ 'Terminer l\'application' | translate }}
         </h3>
         <button (click)="closeTerminateModal()" class="text-slate-400 hover:text-slate-500 w-6 h-6 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center">
           <i class="fas fa-times text-xs"></i>
@@ -569,8 +566,8 @@
         <div class="flex items-start gap-2">
           <i class="fas fa-exclamation-triangle text-amber-500 text-sm mt-0.5"></i>
           <div class="flex-1">
-            <p class="text-xs font-semibold text-amber-800 dark:text-amber-400">Action irréversible</p>
-            <p class="text-[10px] text-amber-700 dark:text-amber-300 mt-0.5">Cette action marquera l'application comme terminée. Vous ne pourrez plus modifier cette application après confirmation.</p>
+            <p class="text-xs font-semibold text-amber-800 dark:text-amber-400">{{ 'Action irréversible' | translate }}</p>
+            <p class="text-[10px] text-amber-700 dark:text-amber-300 mt-0.5">{{ 'Cette action marquera l\'application comme terminée. Vous ne pourrez plus modifier cette application après confirmation.' | translate }}</p>
           </div>
         </div>
       </div>
@@ -578,34 +575,34 @@
       <!-- Reason input -->
       <div>
         <label class="block text-[10px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-          Raison de la terminaison <span class="text-slate-400">(optionnelle)</span>
+          {{ 'Raison de la terminaison' | translate }} <span class="text-slate-400">({{ 'optionnelle' | translate }})</span>
         </label>
         <textarea 
           [(ngModel)]="terminationReason"
           rows="3"
           class="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-          placeholder="Ex: Projet livré, contrat terminé, etc..."></textarea>
+          [placeholder]="'Ex: Projet livré, contrat terminé, etc...' | translate"></textarea>
       </div>
       
       <!-- Application info summary -->
       <div class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-3 space-y-1.5">
-        <p class="text-[10px] font-semibold text-slate-600 dark:text-slate-400">Récapitulatif</p>
+        <p class="text-[10px] font-semibold text-slate-600 dark:text-slate-400">{{ 'Récapitulatif' | translate }}</p>
         <div class="flex justify-between text-[10px]">
-          <span class="text-slate-500">Statut actuel</span>
-          <span class="font-semibold" [ngClass]="getStatusClass(application?.status)">{{ getStatusLabel(application?.status) }}</span>
+          <span class="text-slate-500">{{ 'Statut actuel' | translate }}</span>
+          <span class="font-semibold" [ngClass]="getStatusClass(application?.status)">{{ getStatusLabel(application?.status) | translate }}</span>
         </div>
         <div class="flex justify-between text-[10px]">
-          <span class="text-slate-500">Date de début</span>
+          <span class="text-slate-500">{{ 'Date de début' | translate }}</span>
           <span class="font-semibold text-slate-700 dark:text-slate-300">{{ formatDate(application?.dateDebut) }}</span>
         </div>
         <div class="flex justify-between text-[10px]">
-          <span class="text-slate-500">Date de fin prévue</span>
+          <span class="text-slate-500">{{ 'Date de fin prévue' | translate }}</span>
           <span class="font-semibold text-slate-700 dark:text-slate-300">{{ formatDate(application?.dateFin) }}</span>
         </div>
         <div class="flex justify-between text-[10px]" *ngIf="application?.daysRemaining !== undefined">
-          <span class="text-slate-500">Jours restants</span>
+          <span class="text-slate-500">{{ 'Jours restants' | translate }}</span>
           <span class="font-semibold" [ngClass]="(application?.daysRemaining ?? 0) > 0 ? 'text-emerald-600' : 'text-red-600'">
-            {{ (application?.daysRemaining ?? 0) > 0 ? (application?.daysRemaining ?? 0) + ' jours' : 'Dépassé' }}
+            {{ (application?.daysRemaining ?? 0) > 0 ? (application?.daysRemaining ?? 0) + ' ' + ('jours' | translate) : ('Dépassé' | translate) }}
           </span>
         </div>
       </div>
@@ -614,14 +611,14 @@
     <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex gap-2">
       <button (click)="closeTerminateModal()" 
               class="flex-1 px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-all">
-        Annuler
+        {{ 'Annuler' | translate }}
       </button>
       <button (click)="confirmTerminate()" 
               [disabled]="terminating"
               class="flex-1 px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-red-600 rounded-lg hover:shadow-md disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
         <i *ngIf="terminating" class="fas fa-spinner fa-spin"></i>
         <i *ngIf="!terminating" class="fas fa-check text-[10px]"></i>
-        Confirmer la terminaison
+        {{ 'Confirmer la terminaison' | translate }}
       </button>
     </div>
   </div>

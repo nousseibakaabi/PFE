@@ -1,7 +1,7 @@
 <div class="p-6">
   <!-- Header -->
   <div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl font-semibold text-gray-800">Groups</h2>
+    <h2 class="text-2xl font-semibold text-gray-800">{{ 'Groups' | translate }}</h2>
     <button
       (click)="openCreateModal()"
       class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -9,7 +9,7 @@
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
       </svg>
-      New Group
+      {{ 'New Group' | translate }}
     </button>
   </div>
 
@@ -28,7 +28,7 @@
 
   <!-- System Groups Section -->
   <div *ngIf="systemGroups.length > 0 && !loading" class="mb-8">
-    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">System Groups</h3>
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">{{ 'System Groups' | translate }}</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div *ngFor="let group of systemGroups" 
            class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
@@ -41,10 +41,10 @@
             </div>
             <div>
               <h4 class="font-medium text-gray-900">{{ group.name }}</h4>
-              <p class="text-xs text-gray-500">{{ group.members.length }} members</p>
+              <p class="text-xs text-gray-500">{{ group.members.length }} {{ 'members' | translate }}</p>
             </div>
           </div>
-          <span class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">System</span>
+          <span class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">{{ 'System' | translate }}</span>
         </div>
         
         <!-- Members list -->
@@ -56,7 +56,7 @@
             </span>
             <span *ngIf="group.members.length > 5" 
                   class="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded-full">
-              +{{ group.members.length - 5 }} more
+              +{{ group.members.length - 5 }} {{ 'more' | translate }}
             </span>
           </div>
         </div>
@@ -66,7 +66,7 @@
 
   <!-- Custom Groups Section -->
   <div *ngIf="customGroups.length > 0 && !loading">
-    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">My Groups</h3>
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">{{ 'My Groups' | translate }}</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div *ngFor="let group of customGroups" 
            class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
@@ -79,47 +79,46 @@
             </div>
             <div>
               <h4 class="font-medium text-gray-900">{{ group.name }}</h4>
-              <p class="text-xs text-gray-500">{{ group.members.length }} members</p>
+              <p class="text-xs text-gray-500">{{ group.members.length }} {{ 'members' | translate }}</p>
               <p *ngIf="group.description" class="text-xs text-gray-400 mt-1">{{ group.description }}</p>
             </div>
           </div>
           
-         <!-- In the custom groups section, update the actions div -->
-<div class="flex gap-1">
-  <button (click)="openMembersModal(group)" 
-          class="p-1 hover:bg-gray-100 rounded-lg"
-          title="View members">
-    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-    </svg>
-  </button>
-  
-  <!-- Only show edit/delete buttons if user is owner -->
-  <ng-container *ngIf="isGroupOwner(group)">
-    <button (click)="openEditModal(group)" 
-            class="p-1 hover:bg-gray-100 rounded-lg"
-            title="Edit group">
-      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>
-    </button>
-    <button (click)="deleteGroup(group)" 
-            class="p-1 hover:bg-gray-100 rounded-lg"
-            title="Delete group">
-      <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-      </svg>
-    </button>
-  </ng-container>
-  
-  <!-- For non-owners, just show a view-only indicator -->
-  <span *ngIf="!isGroupOwner(group)" 
-        class="text-xs text-gray-400 px-2 py-1"
-        title="View only group">
-    
-  </span>
-</div>
+          <!-- In the custom groups section, update the actions div -->
+          <div class="flex gap-1">
+            <button (click)="openMembersModal(group)" 
+                    class="p-1 hover:bg-gray-100 rounded-lg"
+                    [title]="'View members' | translate">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+            
+            <!-- Only show edit/delete buttons if user is owner -->
+            <ng-container *ngIf="isGroupOwner(group)">
+              <button (click)="openEditModal(group)" 
+                      class="p-1 hover:bg-gray-100 rounded-lg"
+                      [title]="'Edit group' | translate">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button (click)="deleteGroup(group)" 
+                      class="p-1 hover:bg-gray-100 rounded-lg"
+                      [title]="'Delete group' | translate">
+                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </ng-container>
+            
+            <!-- For non-owners, just show a view-only indicator -->
+            <span *ngIf="!isGroupOwner(group)" 
+                  class="text-xs text-gray-400 px-2 py-1"
+                  [title]="'View only group' | translate">
+            </span>
+          </div>
         </div>
         
         <!-- Members list -->
@@ -131,7 +130,7 @@
             </span>
             <span *ngIf="group.members.length > 5" 
                   class="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded-full">
-              +{{ group.members.length - 5 }} more
+              +{{ group.members.length - 5 }} {{ 'more' | translate }}
             </span>
           </div>
         </div>
@@ -144,13 +143,13 @@
     <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
     </svg>
-    <h3 class="text-lg font-medium text-gray-900 mb-2">No groups yet</h3>
-    <p class="text-gray-500 mb-4">Create your first group to start organizing your contacts</p>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ 'No groups yet' | translate }}</h3>
+    <p class="text-gray-500 mb-4">{{ 'Create your first group to start organizing your contacts' | translate }}</p>
     <button
       (click)="openCreateModal()"
       class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
     >
-      Create Group
+      {{ 'Create Group' | translate }}
     </button>
   </div>
 </div>
@@ -159,30 +158,30 @@
 <div *ngIf="showCreateModal || showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
      (click)="closeModals()">
   <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
-    <h3 class="text-lg font-semibold mb-4">{{ showEditModal ? 'Edit Group' : 'Create New Group' }}</h3>
+    <h3 class="text-lg font-semibold mb-4">{{ showEditModal ? ('Edit Group' | translate) : ('Create New Group' | translate) }}</h3>
     
     <form (ngSubmit)="showEditModal ? updateGroup() : createGroup()">
       <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Group Name *</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'Group Name' | translate }} *</label>
         <input type="text" 
                [(ngModel)]="groupForm.name" 
                name="name"
                required
                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-               placeholder="Enter group name">
+               [placeholder]="'Enter group name' | translate">
       </div>
 
       <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'Description (optional)' | translate }}</label>
         <textarea [(ngModel)]="groupForm.description" 
                   name="description"
                   rows="2"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Group description"></textarea>
+                  [placeholder]="'Group description' | translate"></textarea>
       </div>
 
       <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Members</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'Members' | translate }}</label>
         <div class="border border-gray-300 rounded-lg p-2 max-h-60 overflow-y-auto">
           <div *ngFor="let user of availableUsers" class="flex items-center gap-2 py-1 hover:bg-gray-50">
             <input type="checkbox" 
@@ -205,12 +204,12 @@
         <button type="button" 
                 (click)="closeModals()"
                 class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm">
-          Cancel
+          {{ 'Cancel' | translate }}
         </button>
         <button type="submit"
                 [disabled]="!groupForm.name"
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm">
-          {{ showEditModal ? 'Update' : 'Create' }}
+          {{ showEditModal ? ('Update' | translate) : ('Create' | translate) }}
         </button>
       </div>
     </form>
@@ -224,7 +223,7 @@
     <div class="flex items-center justify-between mb-4">
       <div>
         <h3 class="text-lg font-semibold">{{ selectedGroup.name }}</h3>
-        <p class="text-sm text-gray-500">{{ selectedGroup.members.length }} members</p>
+        <p class="text-sm text-gray-500">{{ selectedGroup.members.length }} {{ 'members' | translate }}</p>
       </div>
       <button (click)="closeModals()" class="text-gray-400 hover:text-gray-600">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -254,7 +253,7 @@
     <div class="mt-4 flex justify-end">
       <button (click)="closeModals()" 
               class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm">
-        Close
+        {{ 'Close' | translate }}
       </button>
     </div>
   </div>

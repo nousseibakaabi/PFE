@@ -1,4 +1,6 @@
 import { Component, ViewEncapsulation } from '@angular/core';
+import { Location } from '@angular/common';
+
 
 @Component({
   selector: 'app-not-found',
@@ -9,7 +11,7 @@ import { Component, ViewEncapsulation } from '@angular/core';
 export class NotFoundComponent {
   isDarkMode = false;
 
-  constructor() {
+  constructor(private location: Location) {
     document.body.classList.add('no-navbar');
     this.checkDarkMode();
   }
@@ -33,4 +35,9 @@ export class NotFoundComponent {
   private applyDarkMode(): void {
     document.documentElement.classList.toggle('dark', this.isDarkMode);
   }
+
+
+  goBack(): void {
+  this.location.back();
+}
 }

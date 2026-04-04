@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
 import { MailService, MailGroup, GroupMember, GroupRequest } from '../../services/mail.service';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
+import { Component, OnInit, ViewChild, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
+import { DomSanitizer, SafeHtml, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-mail-group',
@@ -26,10 +27,18 @@ export class MailGroupComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  URL = window.URL;
+
+
+
+
   constructor(
     private mailService: MailService,
     private userService: UserService,
-    public authService: AuthService
+    public authService: AuthService,
+    private cdr: ChangeDetectorRef,
+    private sanitizer: DomSanitizer
+
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +75,8 @@ export class MailGroupComponent implements OnInit {
       error: (error) => console.error('Error loading users:', error)
     });
   }
+
+
 
   openCreateModal(): void {
     this.groupForm = { name: '', description: '' };
@@ -218,6 +229,9 @@ export class MailGroupComponent implements OnInit {
   this.customGroups.forEach(group => total += group.members.length);
   return total;
 }
+
+
+
 
 
 }

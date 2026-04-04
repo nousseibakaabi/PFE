@@ -6,6 +6,7 @@ import { WorkloadService } from '../../services/workload.service';
 import { Router } from '@angular/router';
 import { ApplicationService } from '../../services/application.service';
 import { ConventionService } from '../../services/convention.service';
+import { TranslationService } from '../partials/traduction/translation.service';
 
 @Component({
   selector: 'app-requests',
@@ -23,28 +24,24 @@ export class RequestsComponent implements OnInit {
   isAdmin = false;
   isChefProjet = false;
   
-  filterStatus = 'ALL'; // ALL, PENDING, APPROVED, DENIED
+  filterStatus = 'ALL';
   
-  // For response modals
   showResponseModal = false;
   selectedRequest: Request | null = null;
   responseAction: 'APPROVE' | 'DENY' = 'APPROVE';
   responseReason = '';
   recommendations = '';
   
-  // For chef recommendation (when declining)
   availableChefs: AvailableChef[] = [];
   selectedChefId: number | null = null;
   chefsWorkload: Map<number, any> = new Map();
   workloadLoading = false;
   
-  // For detailed view
   showDetailModal = false;
 
-  // Track request types for UI
   requestTypes = {
-    RENEWAL_ACCEPTANCE: 'Acceptation de renouvellement',
-    REASSIGNMENT_SUGGESTION: 'Suggestion de réassignation'
+    RENEWAL_ACCEPTANCE: this.translationService?.translate('Acceptation de renouvellement') || 'Acceptation de renouvellement',
+    REASSIGNMENT_SUGGESTION: this.translationService?.translate('Suggestion de réassignation') || 'Suggestion de réassignation'
   };
 
   constructor(
@@ -54,7 +51,8 @@ export class RequestsComponent implements OnInit {
     private workloadService: WorkloadService,
     private applicationService: ApplicationService,
     private conventionService: ConventionService,
-    private router: Router
+    private router: Router,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
@@ -81,13 +79,13 @@ export class RequestsComponent implements OnInit {
           this.requests = response.data;
           this.applyFilter();
         } else {
-          this.errorMessage = response.message || 'Failed to load requests';
+          this.errorMessage = response.message || this.translationService.translate('Failed to load requests');
         }
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading requests:', error);
-        this.errorMessage = 'Failed to load requests';
+        this.errorMessage = this.translationService.translate('Failed to load requests');
         this.loading = false;
       }
     });
@@ -111,7 +109,6 @@ export class RequestsComponent implements OnInit {
     this.selectedChefId = null;
     
     if (action === 'DENY') {
-      // For denial, load available chefs based on request type
       this.loadAvailableChefs(request);
     }
     
@@ -139,17 +136,14 @@ export class RequestsComponent implements OnInit {
   loadAvailableChefs(request: Request): void {
     this.workloadLoading = true;
     
-    // Get all chefs with ROLE_CHEF_PROJET
     this.userService.getChefsProjet().subscribe({
       next: (response) => {
         if (response.success) {
           this.availableChefs = response.data;
-          // Filter out current user if they are a chef
           if (this.currentUser) {
             this.availableChefs = this.availableChefs.filter(c => c.id !== this.currentUser.id);
           }
           
-          // If there's an application, check workloads
           if (request.applicationId) {
             this.loadChefsWorkload(request.applicationId);
           } else {
@@ -203,7 +197,7 @@ export class RequestsComponent implements OnInit {
     
     if (this.responseAction === 'DENY') {
       if (!this.responseReason.trim()) {
-        this.errorMessage = 'La raison est requise';
+        this.errorMessage = this.translationService.translate('La raison est requise');
         return;
       }
       action.reason = this.responseReason;
@@ -225,18 +219,18 @@ export class RequestsComponent implements OnInit {
         console.log('Process response:', response);
         if (response.success) {
           this.successMessage = this.responseAction === 'APPROVE' 
-            ? 'Demande approuvée avec succès' 
-            : 'Demande refusée avec succès';
+            ? this.translationService.translate('Demande approuvée avec succès')
+            : this.translationService.translate('Demande refusée avec succès');
           this.loadRequests();
           this.closeResponseModal();
         } else {
-          this.errorMessage = response.message || 'Failed to process request';
+          this.errorMessage = response.message || this.translationService.translate('Failed to process request');
         }
         this.loading = false;
       },
       error: (error) => {
         console.error('Error processing request:', error);
-        this.errorMessage = error.error?.message || 'Failed to process request';
+        this.errorMessage = error.error?.message || this.translationService.translate('Failed to process request');
         this.loading = false;
       }
     });
@@ -263,10 +257,14 @@ export class RequestsComponent implements OnInit {
 
   getRequestTypeLabel(type: string): string {
     switch (type) {
-      case 'RENEWAL_ACCEPTANCE': return 'Acceptation de renouvellement';
-      case 'REASSIGNMENT_SUGGESTION': return 'Suggestion de réassignation';
-      case 'REASSIGNMENT_REQUEST_FROM_CHEF': return 'Demande de réassignation';
-      default: return type;
+      case 'RENEWAL_ACCEPTANCE': 
+        return this.translationService.translate('Acceptation de renouvellement');
+      case 'REASSIGNMENT_SUGGESTION': 
+        return this.translationService.translate('Suggestion de réassignation');
+      case 'REASSIGNMENT_REQUEST_FROM_CHEF': 
+        return this.translationService.translate('Demande de réassignation');
+      default: 
+        return type;
     }
   }
 
@@ -296,23 +294,56 @@ export class RequestsComponent implements OnInit {
     this.successMessage = '';
   }
 
-get pendingRequests() {
-  return this.filteredRequests.filter(r => r.status === 'PENDING');
-}
+  get pendingRequests() {
+    return this.filteredRequests.filter(r => r.status === 'PENDING');
+  }
 
-get approvedRequests() {
-  return this.filteredRequests.filter(r => r.status === 'APPROVED');
-}
+  get approvedRequests() {
+    return this.filteredRequests.filter(r => r.status === 'APPROVED');
+  }
 
-get deniedRequests() {
-  return this.filteredRequests.filter(r => r.status === 'DENIED');
-}
+  get deniedRequests() {
+    return this.filteredRequests.filter(r => r.status === 'DENIED');
+  }
 
+  getChefAvatarUrl(chef: any): string {
+    if (!chef || !chef.profileImage) {
+      let initials = '?';
+      if (chef?.firstName && chef?.lastName) {
+        initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
+      } else if (chef?.firstName) {
+        initials = chef.firstName[0].toUpperCase();
+      } else if (chef?.username) {
+        initials = chef.username[0].toUpperCase();
+      }
+      return this.generateDefaultAvatar(initials);
+    }
+    
+    const profileImage = chef.profileImage;
+    if (profileImage.startsWith('http')) {
+      return profileImage;
+    }
+    if (profileImage.startsWith('/uploads/')) {
+      return 'http://localhost:8080' + profileImage;
+    }
+    if (profileImage.startsWith('data:image')) {
+      return profileImage;
+    }
+    return 'http://localhost:8080/uploads/avatars/' + profileImage;
+  }
 
-// Add these methods to your RequestsComponent class
+  generateDefaultAvatar(initials: string): string {
+    const blueColor = '#3b82f6';
+    
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+      <circle cx="50" cy="50" r="48" fill="none" stroke="${blueColor}" stroke-width="2"/>
+      <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="500" fill="${blueColor}" dominant-baseline="middle">${initials}</text>
+    </svg>`;
+    
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+  }
 
-getChefAvatarUrl(chef: any): string {
-  if (!chef || !chef.profileImage) {
+  handleChefImageErrorForUser(event: any, chef: any): void {
     let initials = '?';
     if (chef?.firstName && chef?.lastName) {
       initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
@@ -321,44 +352,7 @@ getChefAvatarUrl(chef: any): string {
     } else if (chef?.username) {
       initials = chef.username[0].toUpperCase();
     }
-    return this.generateDefaultAvatar(initials);
+    event.target.src = this.generateDefaultAvatar(initials);
+    event.target.onerror = null;
   }
-  
-  const profileImage = chef.profileImage;
-  if (profileImage.startsWith('http')) {
-    return profileImage;
-  }
-  if (profileImage.startsWith('/uploads/')) {
-    return 'http://localhost:8080' + profileImage; // Adjust base URL as needed
-  }
-  if (profileImage.startsWith('data:image')) {
-    return profileImage;
-  }
-  return 'http://localhost:8080/uploads/avatars/' + profileImage;
-}
-
-generateDefaultAvatar(initials: string): string {
-  // Blue ring with no fill and blue initials
-  const blueColor = '#3b82f6';
-  
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-    <circle cx="50" cy="50" r="48" fill="none" stroke="${blueColor}" stroke-width="2"/>
-    <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="500" fill="${blueColor}" dominant-baseline="middle">${initials}</text>
-  </svg>`;
-  
-  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-}
-
-handleChefImageErrorForUser(event: any, chef: any): void {
-  let initials = '?';
-  if (chef?.firstName && chef?.lastName) {
-    initials = (chef.firstName[0] + chef.lastName[0]).toUpperCase();
-  } else if (chef?.firstName) {
-    initials = chef.firstName[0].toUpperCase();
-  } else if (chef?.username) {
-    initials = chef.username[0].toUpperCase();
-  }
-  event.target.src = this.generateDefaultAvatar(initials);
-  event.target.onerror = null;
-}
 }

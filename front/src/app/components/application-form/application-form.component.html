@@ -1,4 +1,4 @@
-<div class="p-4 mx-auto max-w-screen-2xl md:p-7"> 
+<div class="p-4 mx-auto max-w-screen-2xl md:p-7">
 
 <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -15,14 +15,10 @@
             </svg>
         </div>
         <div>
-          <h2 class="text-[16px] font-bold text-gray-800 dark:text-white">                {{ isEditing ? 'Modifier l\'Application' : 'Nouvelle Application' }}
-
-</h2>
-          <p class="text-gray-500 dark:text-gray-400 text-[11px] mt-0.5">                           {{ isEditing ? 'Modifiez les informations de l\'application' : 'Créez une nouvelle application' }}
-</p>
+          <h2 class="text-[16px] font-bold text-gray-800 dark:text-white">{{ isEditing ? ('Modifier l\'Application' | translate) : ('Nouvelle Application' | translate) }}</h2>
+          <p class="text-gray-500 dark:text-gray-400 text-[11px] mt-0.5">{{ isEditing ? ('Modifiez les informations de l\'application' | translate) : ('Créez une nouvelle application' | translate) }}</p>
         </div>
       </div>
-   
     </div>
   </div>
 
@@ -35,7 +31,7 @@
           </svg>
         </div>
         <span class="text-green-700 dark:text-green-300 text-sm font-medium">{{ successMessage }}</span>
-        <span class="ml-2 text-xs text-green-600 dark:text-green-400">Redirection en cours...</span>
+        <span class="ml-2 text-xs text-green-600 dark:text-green-400">{{ 'Redirection en cours...' | translate }}</span>
       </div>
     </div>
 
@@ -59,10 +55,8 @@
     <!-- Loading State -->
     <div *ngIf="loading && isEditing" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
-      <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">Chargement...</p>
+      <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">{{ 'Chargement...' | translate }}</p>
     </div>
-
-   
 
 <!-- Form - Two Column Layout with Animated Separator -->
 <div *ngIf="!loading || !isEditing" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -76,7 +70,7 @@
         <!-- Code Application -->
         <div>
           <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-            Code Application <span class="text-red-500">*</span>
+            {{ 'Code Application' | translate }} <span class="text-red-500">*</span>
           </label>
           <div class="relative">
             <input
@@ -88,7 +82,7 @@
               [class.border-red-500]="codeExists && applicationForm.code"
               [class.border-green-500]="codeValid && !codeExists && applicationForm.code"
               class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
-              placeholder="APP-2024-001"
+              [placeholder]="'APP-2024-001' | translate"
             />
             <div class="absolute right-2 top-1/2 -translate-y-1/2">
               <i *ngIf="checkingCode" class="fas fa-spinner fa-spin text-gray-400 text-[10px]"></i>
@@ -102,22 +96,22 @@
           </div>
           <div *ngIf="codeInvalid && applicationForm.code && !checkingCode" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-times-circle text-[9px]"></i>
-            Format invalide (APP-AAAA-XXX)
+            {{ 'Format invalide (APP-AAAA-XXX)' | translate }}
           </div>
           <div *ngIf="codeExists && !checkingCode && applicationForm.code" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-times-circle text-[9px]"></i>
-            Ce code existe déjà
+            {{ 'Ce code existe déjà' | translate }}
           </div>
           <div *ngIf="codeValid && !codeExists && applicationForm.code && !checkingCode" class="text-green-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-check-circle text-[9px]"></i>
-            Code disponible
+            {{ 'Code disponible' | translate }}
           </div>
         </div>
 
         <!-- Nom Application -->
         <div>
           <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-            Nom de l'Application <span class="text-red-500">*</span>
+            {{ 'Nom de l\'Application' | translate }} <span class="text-red-500">*</span>
           </label>
           <div class="relative">
             <input
@@ -128,7 +122,7 @@
               [class.border-red-500]="nameInvalid && applicationForm.name"
               [class.border-green-500]="nameValid && applicationForm.name"
               class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-              placeholder="Nom de l'application"
+              [placeholder]="'Nom de l\'application' | translate"
             />
             <div class="absolute right-2 top-1/2 -translate-y-1/2">
               <i *ngIf="nameValid && applicationForm.name" class="fas fa-check-circle text-green-500 text-[10px]"></i>
@@ -137,94 +131,91 @@
           </div>
           <div *ngIf="nameInvalid && applicationForm.name" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-times-circle text-[9px]"></i>
-            Nom requis (min 3 caractères)
+            {{ 'Nom requis (min 3 caractères)' | translate }}
           </div>
           <div *ngIf="nameValid && applicationForm.name" class="text-green-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-check-circle text-[9px]"></i>
-            Nom valide
+            {{ 'Nom valide' | translate }}
           </div>
         </div>
 
         <!-- Chef de Projet -->
         <div *ngIf="shouldShowChefField()">
-  <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-    Chef de Projet
-  </label>
-  <div class="relative">
-    <button 
-      type="button"
-      (click)="toggleChefDropdown()"
-      class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white flex items-center justify-between transition-all">
-      <span *ngIf="!getSelectedChef()" class="text-gray-500 dark:text-gray-400">Sélectionner un chef de projet</span>
-      <span *ngIf="getSelectedChef() as chef" class="flex items-center gap-2">
-        <!-- Avatar with fallback to initials -->
-        <div class="h-5 w-5 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 flex-shrink-0">
-          <img *ngIf="chef.profileImage" 
-               [src]="getChefAvatarUrl(chef)" 
-               [alt]="chef.firstName"
-               class="h-full w-full object-cover"
-               (error)="handleChefImageError($event, chef)">
-          <div *ngIf="!chef.profileImage" 
-               class="w-full h-full rounded-full border border-blue-500 flex items-center justify-center bg-transparent">
-            <span class="text-[9px] font-medium text-blue-600">{{ getChefInitials(chef) }}</span>
-          </div>
-        </div>
-        <span class="text-xs">{{ chef.firstName }} {{ chef.lastName }}</span>
-        <span *ngIf="getChefWorkload(chef.id) as workload" 
-              class="px-1.5 py-0.5 text-[10px] font-medium rounded-full"
-              [ngClass]="getWorkloadClass(workload.currentWorkload)">
-          {{ workload.currentWorkload.toFixed(0) }}%
-        </span>
-      </span>
-      <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-      </svg>
-    </button>
-    
-    <!-- Dropdown menu with avatars and initials -->
-    <div *ngIf="showChefDropdown" 
-         class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-      <div (click)="selectChef(null)" 
-           class="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700">
-        <span class="text-xs text-gray-500">Non assigné</span>
-      </div>
-      <div *ngFor="let chef of chefsProjet" 
-           (click)="selectChef(chef)"
-           class="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-between"
-           [class.bg-blue-50]="applicationForm.chefDeProjetId === chef.id">
-        <div class="flex items-center gap-2">
-          <!-- Avatar with fallback to initials -->
-          <div class="h-6 w-6 rounded-full overflow-hidden bg-transparent-200 dark:bg-transparent-600 flex-shrink-0">
-            <img *ngIf="chef.profileImage" 
-                 [src]="getChefAvatarUrl(chef)" 
-                 [alt]="chef.firstName"
-                 class="h-full w-full object-cover"
-                 (error)="handleChefImageError($event, chef)">
-            <div *ngIf="!chef.profileImage" 
-                 class="w-full h-full rounded-full border border-blue-500 flex items-center justify-center bg-transparent">
-              <span class="text-[10px] font-medium text-blue-600">{{ getChefInitials(chef) }}</span>
+          <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+            {{ 'Chef de Projet' | translate }}
+          </label>
+          <div class="relative">
+            <button 
+              type="button"
+              (click)="toggleChefDropdown()"
+              class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white flex items-center justify-between transition-all">
+              <span *ngIf="!getSelectedChef()" class="text-gray-500 dark:text-gray-400">{{ 'Sélectionner un chef de projet' | translate }}</span>
+              <span *ngIf="getSelectedChef() as chef" class="flex items-center gap-2">
+                <div class="h-5 w-5 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 flex-shrink-0">
+                  <img *ngIf="chef.profileImage" 
+                       [src]="getChefAvatarUrl(chef)" 
+                       [alt]="chef.firstName"
+                       class="h-full w-full object-cover"
+                       (error)="handleChefImageError($event, chef)">
+                  <div *ngIf="!chef.profileImage" 
+                       class="w-full h-full rounded-full border border-blue-500 flex items-center justify-center bg-transparent">
+                    <span class="text-[9px] font-medium text-blue-600">{{ getChefInitials(chef) }}</span>
+                  </div>
+                </div>
+                <span class="text-xs">{{ chef.firstName }} {{ chef.lastName }}</span>
+                <span *ngIf="getChefWorkload(chef.id) as workload" 
+                      class="px-1.5 py-0.5 text-[10px] font-medium rounded-full"
+                      [ngClass]="getWorkloadClass(workload.currentWorkload)">
+                  {{ workload.currentWorkload.toFixed(0) }}%
+                </span>
+              </span>
+              <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            <div *ngIf="showChefDropdown" 
+                 class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              <div (click)="selectChef(null)" 
+                   class="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700">
+                <span class="text-xs text-gray-500">{{ 'Non assigné' | translate }}</span>
+              </div>
+              <div *ngFor="let chef of chefsProjet" 
+                   (click)="selectChef(chef)"
+                   class="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-between"
+                   [class.bg-blue-50]="applicationForm.chefDeProjetId === chef.id">
+                <div class="flex items-center gap-2">
+                  <div class="h-6 w-6 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 flex-shrink-0">
+                    <img *ngIf="chef.profileImage" 
+                         [src]="getChefAvatarUrl(chef)" 
+                         [alt]="chef.firstName"
+                         class="h-full w-full object-cover"
+                         (error)="handleChefImageError($event, chef)">
+                    <div *ngIf="!chef.profileImage" 
+                         class="w-full h-full rounded-full border border-blue-500 flex items-center justify-center bg-transparent">
+                      <span class="text-[10px] font-medium text-blue-600">{{ getChefInitials(chef) }}</span>
+                    </div>
+                  </div>
+                  <span class="text-xs">{{ chef.firstName }} {{ chef.lastName }}</span>
+                </div>
+                <span *ngIf="getChefWorkload(chef.id) as workload" 
+                      class="px-1.5 py-0.5 text-[10px] font-medium rounded-full"
+                      [ngClass]="getWorkloadClass(workload.currentWorkload)">
+                  {{ workload.currentWorkload.toFixed(0) }}%
+                </span>
+              </div>
             </div>
           </div>
-          <span class="text-xs">{{ chef.firstName }} {{ chef.lastName }}</span>
         </div>
-        <span *ngIf="getChefWorkload(chef.id) as workload" 
-              class="px-1.5 py-0.5 text-[10px] font-medium rounded-full"
-              [ngClass]="getWorkloadClass(workload.currentWorkload)">
-          {{ workload.currentWorkload.toFixed(0) }}%
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
 
         <!-- User Numbers Section -->
         <div>
           <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            Utilisateurs
+            {{ 'Utilisateurs' | translate }}
           </label>
           <div class="flex gap-4">
             <div class="flex-1">
-              <label class="block text-[9px] text-gray-500 dark:text-gray-400 mb-1">Minimum</label>
+              <label class="block text-[9px] text-gray-500 dark:text-gray-400 mb-1">{{ 'Minimum' | translate }}</label>
               <div class="flex items-center gap-1">
                 <button type="button" (click)="decrementMinUser()" 
                   class="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 transition-all">
@@ -245,7 +236,7 @@
               </div>
             </div>
             <div class="flex-1">
-              <label class="block text-[9px] text-gray-500 dark:text-gray-400 mb-1">Maximum</label>
+              <label class="block text-[9px] text-gray-500 dark:text-gray-400 mb-1">{{ 'Maximum' | translate }}</label>
               <div class="flex items-center gap-1">
                 <button type="button" (click)="decrementMaxUser()" 
                   class="w-6 h-6 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 transition-all">
@@ -290,7 +281,7 @@
         <!-- Client Name -->
         <div>
           <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-            Client <span class="text-red-500">*</span>
+            {{ 'Client' | translate }} <span class="text-red-500">*</span>
           </label>
           <div class="relative">
             <input type="text" [(ngModel)]="applicationForm.clientName" name="clientName"
@@ -298,7 +289,7 @@
               [class.border-red-500]="clientInvalid && applicationForm.clientName"
               [class.border-green-500]="clientValid && applicationForm.clientName"
               class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Nom du client" />
+              [placeholder]="'Nom du client' | translate" />
             <div class="absolute right-2 top-1/2 -translate-y-1/2">
               <i *ngIf="clientValid && applicationForm.clientName" class="fas fa-check-circle text-green-500 text-[10px]"></i>
               <i *ngIf="clientInvalid && applicationForm.clientName" class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
@@ -306,18 +297,18 @@
           </div>
           <div *ngIf="clientInvalid && applicationForm.clientName" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-times-circle text-[9px]"></i>
-            Nom du client requis
+            {{ 'Nom du client requis' | translate }}
           </div>
           <div *ngIf="clientValid && applicationForm.clientName" class="text-green-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-check-circle text-[9px]"></i>
-            Client valide
+            {{ 'Client valide' | translate }}
           </div>
         </div>
 
         <!-- Client Email -->
         <div>
           <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-            Email Client
+            {{ 'Email Client' | translate }}
           </label>
           <div class="relative">
             <input type="email" [(ngModel)]="applicationForm.clientEmail" name="clientEmail"
@@ -325,7 +316,7 @@
               [class.border-red-500]="emailInvalid && applicationForm.clientEmail"
               [class.border-green-500]="emailValid && applicationForm.clientEmail"
               class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="client@entreprise.com" />
+              [placeholder]="'client@entreprise.com' | translate" />
             <div class="absolute right-2 top-1/2 -translate-y-1/2">
               <i *ngIf="emailValid && applicationForm.clientEmail" class="fas fa-check-circle text-green-500 text-[10px]"></i>
               <i *ngIf="emailInvalid && applicationForm.clientEmail" class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
@@ -333,18 +324,18 @@
           </div>
           <div *ngIf="emailInvalid && applicationForm.clientEmail" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-times-circle text-[9px]"></i>
-            Email invalide (domain@use.tn)
+            {{ 'Email invalide (domain@use.tn)' | translate }}
           </div>
           <div *ngIf="emailValid && applicationForm.clientEmail" class="text-green-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-check-circle text-[9px]"></i>
-            Email valide
+            {{ 'Email valide' | translate }}
           </div>
         </div>
 
         <!-- Client Phone -->
         <div>
           <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-            Téléphone Client
+            {{ 'Téléphone Client' | translate }}
           </label>
           <div class="relative">
             <input type="tel" [(ngModel)]="applicationForm.clientPhone" name="clientPhone"
@@ -352,7 +343,7 @@
               [class.border-red-500]="phoneInvalid && applicationForm.clientPhone"
               [class.border-green-500]="phoneValid && applicationForm.clientPhone"
               class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="+216 71 123 456" />
+              [placeholder]="'+216 71 123 456' | translate" />
             <div class="absolute right-2 top-1/2 -translate-y-1/2">
               <i *ngIf="phoneValid && applicationForm.clientPhone" class="fas fa-check-circle text-green-500 text-[10px]"></i>
               <i *ngIf="phoneInvalid && applicationForm.clientPhone" class="fas fa-exclamation-circle text-red-500 text-[10px]"></i>
@@ -360,45 +351,40 @@
           </div>
           <div *ngIf="phoneInvalid && applicationForm.clientPhone" class="text-red-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-times-circle text-[9px]"></i>
-            Numéro invalide (8-15 chiffres)
+            {{ 'Numéro invalide (8-15 chiffres)' | translate }}
           </div>
           <div *ngIf="phoneValid && applicationForm.clientPhone" class="text-green-500 text-[10px] font-medium mt-1.5 flex items-center gap-1">
             <i class="fas fa-check-circle text-[9px]"></i>
-            Téléphone valide
+            {{ 'Téléphone valide' | translate }}
           </div>
         </div>
 
-
-         <div *ngIf="isEditing" class="mt-4">
-      <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Statut</label>
-      <div *ngIf="applicationForm.status === 'TERMINE'" class="w-full px-3 py-1.5 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-xs flex items-center">
-        <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-[10px] font-medium mr-2">Terminé</span>
-        <span class="text-[10px]">(statut final)</span>
-      </div>
-      <div *ngIf="applicationForm.status !== 'TERMINE'">
-        <select [(ngModel)]="applicationForm.status" name="status"
-          class="w-full px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
-          <option [value]="applicationForm.status">{{ applicationForm.status === 'PLANIFIE' ? 'Planifié' : 'En Cours' }}</option>
-          <option value="TERMINE">✓ Terminé</option>
-        </select>
-      </div>
-    </div>
-    
+        <div *ngIf="isEditing" class="mt-4">
+          <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{{ 'Statut' | translate }}</label>
+          <div *ngIf="applicationForm.status === 'TERMINE'" class="w-full px-3 py-1.5 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-xs flex items-center">
+            <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-[10px] font-medium mr-2">{{ 'Terminé' | translate }}</span>
+            <span class="text-[10px]">({{ 'statut final' | translate }})</span>
+          </div>
+          <div *ngIf="applicationForm.status !== 'TERMINE'">
+            <select [(ngModel)]="applicationForm.status" name="status"
+              class="w-full px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+              <option [value]="applicationForm.status">{{ applicationForm.status === 'PLANIFIE' ? ('Planifié' | translate) : ('En Cours' | translate) }}</option>
+              <option value="TERMINE">✓ {{ 'Terminé' | translate }}</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Description - Full Width at Bottom -->
     <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
       <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-        Description
+        {{ 'Description' | translate }}
       </label>
       <textarea [(ngModel)]="applicationForm.description" name="description" rows="2"
         class="w-full px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-        placeholder="Description de l'application..."></textarea>
+        [placeholder]="'Description de l\'application...' | translate"></textarea>
     </div>
-
-    <!-- Status (only for editing) -->
-   
 
     <!-- Error/Success Messages -->
     <div *ngIf="errorMessage" class="mt-4 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg text-xs text-red-600 font-medium">
@@ -412,15 +398,15 @@
     <div class="flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
       <button type="button" (click)="goBack()" 
         class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
-        Annuler
+        {{ 'Annuler' | translate }}
       </button>
       <button type="submit" [disabled]="loading || !isFormValid()" 
         class="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
         <i *ngIf="loading" class="fas fa-spinner fa-spin text-xs"></i>
         <i *ngIf="!loading" class="fas fa-save text-xs"></i>
-        {{ loading ? (isEditing ? 'Mise à jour...' : 'Création...') : (isEditing ? 'Mettre à jour' : 'Créer') }}
+        {{ loading ? (isEditing ? ('Mise à jour...' | translate) : ('Création...' | translate)) : (isEditing ? ('Mettre à jour' | translate) : ('Créer' | translate)) }}
       </button>
     </div>
   </form>
 </div>
-  </div>
+</div>

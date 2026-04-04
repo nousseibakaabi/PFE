@@ -3,6 +3,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } fr
 import { StatsService } from '../../services/stats.service';
 import { ChartService } from '../../services/chart.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { TranslationService } from '../partials/traduction/translation.service';
 
 @Component({
   selector: 'app-commercial',
@@ -10,7 +11,6 @@ import { AuthService } from 'src/app/services/auth.service';
   styleUrls: ['./commercial.component.css']
 })
 export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
-  // ViewChild references for charts
   @ViewChild('conventionStatusChart') conventionStatusChartRef!: ElementRef;
   @ViewChild('monthlyTrendsChart') monthlyTrendsChartRef!: ElementRef;
   @ViewChild('paymentStatusChart') paymentStatusChartRef!: ElementRef;
@@ -19,14 +19,12 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('structureCountsChart') structureCountsChartRef!: ElementRef;
   structureCountsChart: any = null;
   
-  // Chart instances
   conventionStatusChart: any = null;
   monthlyTrendsChart: any = null;
   paymentStatusChart: any = null;
   paymentMethodChart: any = null;
   structureTypeChart: any = null;
 
-  // Stats Data
   conventionStats: any = {};
   factureStats: any = {};
   summaryStats: any = {};
@@ -39,21 +37,17 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
   itemsPerPage: number = 5;
   totalItems: number = 0;
 
-  // Filter properties
-  priorityFilter: string = 'ALL'; // 'ALL', 'CRITIQUE', 'ÉLEVÉE', 'MOYEN'
-  sortBy: string = 'joursRetard'; // 'joursRetard', 'montant', 'dateEcheance'
-  sortDirection: string = 'desc'; // 'asc' or 'desc'
+  priorityFilter: string = 'ALL';
+  sortBy: string = 'joursRetard';
+  sortDirection: string = 'desc';
 
-  // Filtered and paginated data
   filteredOverdueInvoices: any[] = [];
-  dashboardStats: any = {}; 
+  dashboardStats: any = {};
   financialStats: any = {};
   overdueAlerts: any[] = [];
   
-  // Loading state
   isLoading = true;
 
-  // Quick stats
   quickStats = {
     totalConventions: 0,
     activeConventions: 0,
@@ -72,11 +66,11 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private statsService: StatsService,
     private chartService: ChartService,
-    private authService: AuthService
+    private authService: AuthService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
-    // Load current user from AuthService
     this.currentUser = this.authService.getCurrentUser();
     this.loadCommercialStats();
   }
@@ -92,7 +86,6 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
   updateFilteredData(): void {
     let invoices = this.getOverdueInvoices();
     
-    // Apply priority filter
     if (this.priorityFilter !== 'ALL') {
       invoices = invoices.filter(invoice => {
         const daysAgo = this.getDaysAgo(invoice.dateEcheance);
@@ -101,18 +94,12 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
     
-    // Apply sorting
     invoices = this.sortInvoices(invoices, this.sortBy, this.sortDirection);
-    
-    // Update totals
     this.totalItems = invoices.length;
-    
-    // Apply pagination
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     this.filteredOverdueInvoices = invoices.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
-  // Sort invoices
   sortInvoices(invoices: any[], sortBy: string, direction: string): any[] {
     return [...invoices].sort((a, b) => {
       let valueA, valueB;
@@ -143,26 +130,22 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // Change page
   changePage(page: number): void {
     if (page < 1 || page > this.getTotalPages()) return;
     this.currentPage = page;
     this.updateFilteredData();
   }
 
-  // Get total pages
   getTotalPages(): number {
     return Math.ceil(this.totalItems / this.itemsPerPage);
   }
 
-  // Change items per page
   changeItemsPerPage(count: number): void {
     this.itemsPerPage = count;
     this.currentPage = 1;
     this.updateFilteredData();
   }
 
-  // Reset filters
   resetFilters(): void {
     this.priorityFilter = 'ALL';
     this.sortBy = 'joursRetard';
@@ -172,7 +155,6 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   calculateQuickStats(): void {
-    // Reset quick stats
     this.quickStats = {
       totalConventions: 0,
       activeConventions: 0,
@@ -188,7 +170,6 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
       overdueToday: 0
     };
     
-    // From summary stats
     if (this.summaryStats) {
       this.quickStats.totalConventions = this.summaryStats.totalConventions || 0;
       this.quickStats.totalFactures = this.summaryStats.totalFactures || 0;
@@ -198,7 +179,6 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
       this.quickStats.overdueToday = this.summaryStats.overdueToday || 0;
     }
     
-    // From convention stats (calculate active from status distribution)
     if (this.conventionStats?.statusDistribution) {
       const activeStatuses = ['EN COURS', 'PLANIFIE'];
       this.quickStats.activeConventions = this.conventionStats.statusDistribution
@@ -206,13 +186,11 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
         .reduce((sum: number, status: any) => sum + (status.count || 0), 0);
     }
     
-    // From facture stats
     if (this.factureStats?.paymentStatus) {
       const paidStatus = this.factureStats.paymentStatus.find((p: any) => p.status === 'PAYE');
       this.quickStats.paidFactures = paidStatus?.count || 0;
     }
     
-    // From financial stats
     if (this.financialStats) {
       this.quickStats.totalRevenue = this.financialStats.totalRevenue || 0;
       this.quickStats.pendingRevenue = this.financialStats.pendingPayments || 0;
@@ -236,9 +214,7 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
     const pages: number[] = [];
     
     if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       if (current <= 4) {
         for (let i = 1; i <= 5; i++) pages.push(i);
@@ -262,14 +238,11 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
     return pages;
   }
 
-
-
   destroyCharts(): void {
     this.chartService.destroyChart(this.conventionStatusChart);
     this.chartService.destroyChart(this.monthlyTrendsChart);
     this.chartService.destroyChart(this.paymentStatusChart);
     
-    // Reset chart variables
     this.conventionStatusChart = null;
     this.monthlyTrendsChart = null;
     this.paymentStatusChart = null;
@@ -347,12 +320,12 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
         
         if (topStatus) {
           this.topStructures.push({
-            structure: this.getConventionEtatLabel(topStatus),
+            structure: this.translationService.translate(this.getConventionEtatLabel(topStatus)),
             count: this.conventionStats.statusDistribution?.find((s: any) => s.name === topStatus)?.count || 0
           });
           
           this.generatedTopPartner = {
-            structure: this.getConventionEtatLabel(topStatus),
+            structure: this.translationService.translate(this.getConventionEtatLabel(topStatus)),
             amount: topAmount
           };
         }
@@ -366,12 +339,12 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
       if (sortedStatuses.length > 0) {
         const top = sortedStatuses[0];
         this.topStructures.push({
-          structure: this.getConventionEtatLabel(top.name),
+          structure: this.translationService.translate(this.getConventionEtatLabel(top.name)),
           count: top.count
         });
         
         this.generatedTopPartner = {
-          structure: this.getConventionEtatLabel(top.name),
+          structure: this.translationService.translate(this.getConventionEtatLabel(top.name)),
           count: top.count
         };
       }
@@ -394,7 +367,7 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.topStructures.length > 0) {
       return this.topStructures[0].structure || '';
     }
-    return 'Aucun partenaire';
+    return this.translationService.translate('Aucun partenaire');
   }
 
   getPriorityLabel(days: number): string {
@@ -438,7 +411,7 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
       case 'PLANIFIE': return 'Planifié';
       case 'EN COURS': return 'En Cours';
       case 'TERMINE': return 'Terminé';
-      case 'ARCHIVE': return 'Archivé';
+      case 'ARCHIVE': return 'Archivée';
       default: return etat;
     }
   }
@@ -460,184 +433,171 @@ export class CommercialComponent implements OnInit, AfterViewInit, OnDestroy {
     }).format(value);
   }
 
+  renderCharts(): void {
+    if (this.monthlyTrendsChartRef) {
+      const conventionMonthly = this.conventionStats?.monthlyConventions || {};
+      const revenueMonthly = this.financialStats?.revenueByMonth || {};
 
-
-renderCharts(): void {
-  if (this.monthlyTrendsChartRef) {
-    const conventionMonthly = this.conventionStats?.monthlyConventions || {};
-    const revenueMonthly = this.financialStats?.revenueByMonth || {};
-
-    // Define proper French month order with all variations
-    const monthOrder: { [key: string]: number } = {
-      'janv': 0, 'jan': 0, 'janvier': 0,
-      'févr': 1, 'fév': 1, 'février': 1, 'fev': 1,
-      'mars': 2, 'mar': 2,
-      'avr': 3, 'avril': 3,
-      'mai': 4, 'may': 4,
-      'juin': 5,
-      'juil': 6, 'juillet': 6,
-      'août': 7, 'aoû': 7, 'aout': 7,
-      'sept': 8, 'sep': 8, 'septembre': 8,
-      'oct': 9, 'octobre': 9,
-      'nov': 10, 'novembre': 10,
-      'déc': 11, 'dec': 11, 'décembre': 11, 'decembre': 11
-    };
-    
-    // Get all months from both datasets
-    const allMonths = Array.from(new Set([...Object.keys(conventionMonthly), ...Object.keys(revenueMonthly)]));
-    
-    // Function to get month index from month string
-    const getMonthIndex = (monthStr: string): number => {
-      const lowerMonth = monthStr.toLowerCase().trim();
-      for (const [key, index] of Object.entries(monthOrder)) {
-        if (lowerMonth.includes(key)) {
-          return index;
+      const monthOrder: { [key: string]: number } = {
+        'janv': 0, 'jan': 0, 'janvier': 0,
+        'févr': 1, 'fév': 1, 'février': 1, 'fev': 1,
+        'mars': 2, 'mar': 2,
+        'avr': 3, 'avril': 3,
+        'mai': 4, 'may': 4,
+        'juin': 5,
+        'juil': 6, 'juillet': 6,
+        'août': 7, 'aoû': 7, 'aout': 7,
+        'sept': 8, 'sep': 8, 'septembre': 8,
+        'oct': 9, 'octobre': 9,
+        'nov': 10, 'novembre': 10,
+        'déc': 11, 'dec': 11, 'décembre': 11, 'decembre': 11
+      };
+      
+      const allMonths = Array.from(new Set([...Object.keys(conventionMonthly), ...Object.keys(revenueMonthly)]));
+      
+      const getMonthIndex = (monthStr: string): number => {
+        const lowerMonth = monthStr.toLowerCase().trim();
+        for (const [key, index] of Object.entries(monthOrder)) {
+          if (lowerMonth.includes(key)) {
+            return index;
+          }
         }
-      }
-      return -1;
-    };
-    
-    // Function to extract year
-    const getYear = (monthStr: string): number => {
-      const yearMatch = monthStr.match(/\d{4}/);
-      return yearMatch ? parseInt(yearMatch[0]) : 0;
-    };
-    
-    // Sort months: first by year, then by month index
-    const sortedMonths = [...allMonths].sort((a, b) => {
-      const yearA = getYear(a);
-      const yearB = getYear(b);
+        return -1;
+      };
       
-      // Sort by year first
-      if (yearA !== yearB) {
-        return yearA - yearB;
-      }
+      const getYear = (monthStr: string): number => {
+        const yearMatch = monthStr.match(/\d{4}/);
+        return yearMatch ? parseInt(yearMatch[0]) : 0;
+      };
       
-      // Same year, sort by month index
-      const monthA = getMonthIndex(a);
-      const monthB = getMonthIndex(b);
-      
-      if (monthA !== -1 && monthB !== -1) {
-        return monthA - monthB;
-      }
-      
-      return a.localeCompare(b);
-    });
+      const sortedMonths = [...allMonths].sort((a, b) => {
+        const yearA = getYear(a);
+        const yearB = getYear(b);
+        
+        if (yearA !== yearB) {
+          return yearA - yearB;
+        }
+        
+        const monthA = getMonthIndex(a);
+        const monthB = getMonthIndex(b);
+        
+        if (monthA !== -1 && monthB !== -1) {
+          return monthA - monthB;
+        }
+        
+        return a.localeCompare(b);
+      });
 
-    // Format month labels to short French form
-    const displayMonths = sortedMonths.map(month => {
-      const lowerMonth = month.toLowerCase();
-      if (lowerMonth.includes('janv')) return 'Jan';
-      if (lowerMonth.includes('févr')) return 'Fév';
-      if (lowerMonth.includes('mars')) return 'Mar';
-      if (lowerMonth.includes('avr')) return 'Avr';
-      if (lowerMonth.includes('mai')) return 'Mai';
-      if (lowerMonth.includes('juin')) return 'Juin';
-      if (lowerMonth.includes('juil')) return 'Juil';
-      if (lowerMonth.includes('août') || lowerMonth.includes('aoû')) return 'Aoû';
-      if (lowerMonth.includes('sept')) return 'Sep';
-      if (lowerMonth.includes('oct')) return 'Oct';
-      if (lowerMonth.includes('nov')) return 'Nov';
-      if (lowerMonth.includes('déc')) return 'Déc';
-      return month.substring(0, 3);
-    });
-    
-    const conventionData = sortedMonths.map((month: string) => Number(conventionMonthly[month] || 0));
-    const revenueData = sortedMonths.map((month: string) => Number(revenueMonthly[month] || 0));
+      const displayMonths = sortedMonths.map(month => {
+        const lowerMonth = month.toLowerCase();
+        if (lowerMonth.includes('janv')) return 'Jan';
+        if (lowerMonth.includes('févr')) return 'Fév';
+        if (lowerMonth.includes('mars')) return 'Mar';
+        if (lowerMonth.includes('avr')) return 'Avr';
+        if (lowerMonth.includes('mai')) return 'Mai';
+        if (lowerMonth.includes('juin')) return 'Juin';
+        if (lowerMonth.includes('juil')) return 'Juil';
+        if (lowerMonth.includes('août') || lowerMonth.includes('aoû')) return 'Aoû';
+        if (lowerMonth.includes('sept')) return 'Sep';
+        if (lowerMonth.includes('oct')) return 'Oct';
+        if (lowerMonth.includes('nov')) return 'Nov';
+        if (lowerMonth.includes('déc')) return 'Déc';
+        return month.substring(0, 3);
+      });
+      
+      const conventionData = sortedMonths.map((month: string) => Number(conventionMonthly[month] || 0));
+      const revenueData = sortedMonths.map((month: string) => Number(revenueMonthly[month] || 0));
 
-    if (this.monthlyTrendsChart) {
-      this.monthlyTrendsChart.destroy();
-    }
+      if (this.monthlyTrendsChart) {
+        this.monthlyTrendsChart.destroy();
+      }
 
-    this.monthlyTrendsChart = this.chartService.createChart(
-      this.monthlyTrendsChartRef.nativeElement,
-      'bar',
-      {
-        labels: displayMonths,
-        datasets: [
-          {
-            label: 'Conventions',
-            data: conventionData,
-            backgroundColor: '#3b82f6',
-            borderRadius: 4,
-            barPercentage: 0.6,
-            categoryPercentage: 0.7,
-            borderWidth: 0
-          },
-          {
-            label: 'Revenus',
-            data: revenueData,
-            backgroundColor: '#73b7eb',
-            borderRadius: 4,
-            barPercentage: 0.6,
-            categoryPercentage: 0.7,
-            borderWidth: 0
-          }
-        ]
-      },
-      {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { 
-              display: true,
-              font: { size: 8 },
-              maxRotation: 45,
-              minRotation: 45
+      this.monthlyTrendsChart = this.chartService.createChart(
+        this.monthlyTrendsChartRef.nativeElement,
+        'bar',
+        {
+          labels: displayMonths,
+          datasets: [
+            {
+              label: this.translationService.translate('Conventions'),
+              data: conventionData,
+              backgroundColor: '#3b82f6',
+              borderRadius: 4,
+              barPercentage: 0.6,
+              categoryPercentage: 0.7,
+              borderWidth: 0
             },
-            border: { display: false }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { 
-              color: '#f0f0f0',
-              drawBorder: false,
-              lineWidth: 0.5
-            },
-            ticks: { 
-              stepSize: Math.max(1, Math.ceil(Math.max(...conventionData, ...revenueData, 1) / 4)),
-              font: { size: 8 },
-              callback: (value: any) => {
-                const maxRevenue = Math.max(...revenueData, 0);
-                if (maxRevenue > 1000) {
-                  return value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
-                }
-                return value;
-              }
+            {
+              label: this.translationService.translate('Revenus'),
+              data: revenueData,
+              backgroundColor: '#76b7e8',
+              borderRadius: 4,
+              barPercentage: 0.6,
+              categoryPercentage: 0.7,
+              borderWidth: 0
             }
-          }
+          ]
         },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            titleFont: { size: 10 },
-            bodyFont: { size: 9 },
-            callbacks: {
-              label: (context: any) => {
-                const value = context.raw;
-                const label = context.dataset.label || '';
-                if (label === 'Revenus') {
-                  return `${label}: ${this.formatCurrency(value)}`;
+        {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { 
+                display: true,
+                font: { size: 8 },
+                maxRotation: 45,
+                minRotation: 45
+              },
+              border: { display: false }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { 
+                color: '#f0f0f0',
+                drawBorder: false,
+                lineWidth: 0.5
+              },
+              ticks: { 
+                stepSize: Math.max(1, Math.ceil(Math.max(...conventionData, ...revenueData, 1) / 4)),
+                font: { size: 8 },
+                callback: (value: any) => {
+                  const maxRevenue = Math.max(...revenueData, 0);
+                  if (maxRevenue > 1000) {
+                    return value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value;
+                  }
+                  return value;
                 }
-                return `${label}: ${value}`;
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              titleFont: { size: 10 },
+              bodyFont: { size: 9 },
+              callbacks: {
+                label: (context: any) => {
+                  const value = context.raw;
+                  const label = context.dataset.label || '';
+                  if (label === this.translationService.translate('Revenus')) {
+                    return `${label}: ${this.formatCurrency(value)}`;
+                  }
+                  return `${label}: ${value}`;
+                }
               }
             }
           }
         }
-      }
-    );
+      );
+    }
   }
-}
 
-
-// Helper method for short currency formatting on chart axis
-formatCurrencyShort(value: number): string {
-  if (value >= 1000) {
-    return (value / 1000).toFixed(0) + 'k';
+  formatCurrencyShort(value: number): string {
+    if (value >= 1000) {
+      return (value / 1000).toFixed(0) + 'k';
+    }
+    return value.toString();
   }
-  return value.toString();
-}
-
 }

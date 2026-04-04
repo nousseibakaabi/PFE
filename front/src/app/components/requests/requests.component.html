@@ -10,9 +10,9 @@
           </svg>
         </div>
         <div>
-          <h2 class="text-[17px] font-bold text-gray-800 dark:text-white">Demandes</h2>
+          <h2 class="text-[17px] font-bold text-gray-800 dark:text-white">{{ 'Demandes' | translate }}</h2>
           <p class="text-gray-500 dark:text-gray-400 text-[11px] mt-0.5">
-            {{ isAdmin ? 'Gérez les demandes des chefs de projet' : 'Répondez aux demandes de renouvellement' }}
+            {{ isAdmin ? ('Gérez les demandes des chefs de projet' | translate) : ('Répondez aux demandes de renouvellement' | translate) }}
           </p>
         </div>
       </div>
@@ -20,25 +20,25 @@
   <button (click)="filterStatus = 'ALL'; applyFilter()" 
           class="px-2.5 py-1 text-[11px] font-medium rounded-md transition-all"
           [class]="filterStatus === 'ALL' ? 'bg-white dark:bg-gray-800 shadow-sm text-blue-600' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
-    Toutes
+    {{ 'Toutes' | translate }}
   </button>
   <button (click)="filterStatus = 'PENDING'; applyFilter()" 
           class="px-2.5 py-1 text-[11px] font-medium rounded-md transition-all flex items-center gap-1"
           [class]="filterStatus === 'PENDING' ? 'bg-white dark:bg-gray-800 shadow-sm text-yellow-600' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
     <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
-    En attente
+    {{ 'En attente' | translate }}
   </button>
   <button (click)="filterStatus = 'APPROVED'; applyFilter()" 
           class="px-2.5 py-1 text-[11px] font-medium rounded-md transition-all flex items-center gap-1"
           [class]="filterStatus === 'APPROVED' ? 'bg-white dark:bg-gray-800 shadow-sm text-green-600' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
     <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-    Approuvées
+    {{ 'Approuvées' | translate }}
   </button>
   <button (click)="filterStatus = 'DENIED'; applyFilter()" 
           class="px-2.5 py-1 text-[11px] font-medium rounded-md transition-all flex items-center gap-1"
           [class]="filterStatus === 'DENIED' ? 'bg-white dark:bg-gray-800 shadow-sm text-red-600' : 'text-gray-600 dark:text-gray-300 hover:text-gray-800'">
     <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-    Refusées
+    {{ 'Refusées' | translate }}
   </button>
 </div>
     </div>
@@ -72,7 +72,7 @@
   <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-12">
     <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
-    <p class="mt-2 text-gray-600 text-sm">Chargement des demandes...</p>
+    <p class="mt-2 text-gray-600 text-sm">{{ 'Chargement des demandes...' | translate }}</p>
   </div>
 
 <!-- PENDING TAB -->
@@ -81,8 +81,8 @@
     <div class="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
       <i class="fas fa-clock text-amber-600 text-xl"></i>
     </div>
-    <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-0.5">Aucune demande en attente</h3>
-    <p class="text-[10px] text-gray-500 dark:text-gray-400">Toutes les demandes ont été traitées.</p>
+    <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-0.5">{{ 'Aucune demande en attente' | translate }}</h3>
+    <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ 'Toutes les demandes ont été traitées.' | translate }}</p>
   </div>
   
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -91,9 +91,9 @@
       <div class="p-3">
         <div class="flex items-center justify-between mb-2">
           <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">
-            {{ getRequestTypeLabel(request.requestType) }}
+            {{ getRequestTypeLabel(request.requestType) | translate }}
           </span>
-          <span class="text-[9px] text-gray-400">{{ request.timeAgo }}</span>
+          <span class="text-[9px] text-gray-400">{{ request.timeAgo | translate }}</span>
         </div>
         <p class="text-xs font-semibold text-gray-800 dark:text-white truncate">{{ request.applicationName }}</p>
         <p class="text-[9px] text-gray-500 mt-0.5">{{ request.conventionReference }}</p>
@@ -101,7 +101,7 @@
         <div *ngIf="request.reason" class="mt-2 p-1.5 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
           <div class="flex items-center gap-1">
             <i class="fas fa-comment text-gray-400 text-[8px]"></i>
-            <p class="text-[8px] text-gray-500 font-medium">Message</p>
+            <p class="text-[8px] text-gray-500 font-medium">{{ 'Message' | translate }}</p>
           </div>
           <p class="text-[9px] text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-2">"{{ request.reason }}"</p>
         </div>
@@ -112,26 +112,31 @@
             <button (click)="openDetailModal(request)" 
                     class="px-2 py-1 text-[8px] font-medium text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-all">
               <i class="fas fa-eye text-[7px] mr-1"></i>
+              {{ 'Voir' | translate }}
             </button>
             <ng-container *ngIf="request.status === 'PENDING'">
               <ng-container *ngIf="request.requestType === 'RENEWAL_ACCEPTANCE' && request.targetUserId === currentUser?.id">
                 <button (click)="openResponseModal(request, 'APPROVE')" 
                         class="px-2 py-1 text-[8px] font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-all">
                   <i class="fas fa-check text-[7px] mr-1"></i>
+                  {{ 'Approuver' | translate }}
                 </button>
                 <button (click)="openResponseModal(request, 'DENY')" 
                         class="px-2 py-1 text-[8px] font-medium bg-rose-500 hover:bg-rose-600 text-white rounded-md transition-all">
                   <i class="fas fa-times text-[7px] mr-1"></i>
+                  {{ 'Refuser' | translate }}
                 </button>
               </ng-container>
               <ng-container *ngIf="isAdmin && (request.requestType === 'REASSIGNMENT_SUGGESTION' || request.requestType === 'REASSIGNMENT_REQUEST_FROM_CHEF')">
                 <button (click)="openResponseModal(request, 'APPROVE')" 
                         class="px-2 py-1 text-[8px] font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-all">
                   <i class="fas fa-check text-[7px] mr-1"></i>
+                  {{ 'Approuver' | translate }}
                 </button>
                 <button (click)="openResponseModal(request, 'DENY')" 
                         class="px-2 py-1 text-[8px] font-medium bg-rose-500 hover:bg-rose-600 text-white rounded-md transition-all">
                   <i class="fas fa-times text-[7px] mr-1"></i>
+                  {{ 'Refuser' | translate }}
                 </button>
               </ng-container>
             </ng-container>
@@ -148,8 +153,8 @@
     <div class="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
       <i class="fas fa-check-circle text-emerald-600 text-xl"></i>
     </div>
-    <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-0.5">Aucune demande approuvée</h3>
-    <p class="text-[10px] text-gray-500 dark:text-gray-400">Les demandes approuvées apparaîtront ici.</p>
+    <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-0.5">{{ 'Aucune demande approuvée' | translate }}</h3>
+    <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ 'Les demandes approuvées apparaîtront ici.' | translate }}</p>
   </div>
   
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -158,9 +163,9 @@
       <div class="p-3">
         <div class="flex items-center justify-between mb-2">
           <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
-            {{ getRequestTypeLabel(request.requestType) }}
+            {{ getRequestTypeLabel(request.requestType) | translate }}
           </span>
-          <span class="text-[9px] text-gray-400">{{ request.timeAgo }}</span>
+          <span class="text-[9px] text-gray-400">{{ request.timeAgo | translate }}</span>
         </div>
         <p class="text-xs font-semibold text-gray-800 dark:text-white truncate">{{ request.applicationName }}</p>
         <p class="text-[9px] text-gray-500 mt-0.5">{{ request.conventionReference }}</p>
@@ -168,7 +173,7 @@
         <div *ngIf="request.recommendedChefName" class="mt-2 p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
           <div class="flex items-center gap-1">
             <i class="fas fa-user-check text-indigo-500 text-[8px]"></i>
-            <p class="text-[8px] text-indigo-600 dark:text-indigo-400 font-medium">Chef recommandé</p>
+            <p class="text-[8px] text-indigo-600 dark:text-indigo-400 font-medium">{{ 'Chef recommandé' | translate }}</p>
           </div>
           <p class="text-[9px] text-gray-700 dark:text-gray-300 mt-0.5 truncate">{{ request.recommendedChefName }}</p>
           <p *ngIf="request.recommendations" class="text-[8px] text-gray-500 mt-1 italic line-clamp-1">"{{ request.recommendations }}"</p>
@@ -179,6 +184,7 @@
           <button (click)="openDetailModal(request)" 
                   class="px-2 py-1 text-[8px] font-medium text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-all">
             <i class="fas fa-eye text-[7px] mr-1"></i>
+            {{ 'Voir' | translate }}
           </button>
         </div>
       </div>
@@ -192,8 +198,8 @@
     <div class="w-14 h-14 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
       <i class="fas fa-times-circle text-rose-600 text-xl"></i>
     </div>
-    <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-0.5">Aucune demande refusée</h3>
-    <p class="text-[10px] text-gray-500 dark:text-gray-400">Les demandes refusées apparaîtront ici.</p>
+    <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-0.5">{{ 'Aucune demande refusée' | translate }}</h3>
+    <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ 'Les demandes refusées apparaîtront ici.' | translate }}</p>
   </div>
   
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -202,9 +208,9 @@
       <div class="p-3">
         <div class="flex items-center justify-between mb-2">
           <span class="text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-full">
-            {{ getRequestTypeLabel(request.requestType) }}
+            {{ getRequestTypeLabel(request.requestType) | translate }}
           </span>
-          <span class="text-[9px] text-gray-400">{{ request.timeAgo }}</span>
+          <span class="text-[9px] text-gray-400">{{ request.timeAgo | translate }}</span>
         </div>
         <p class="text-xs font-semibold text-gray-800 dark:text-white truncate">{{ request.applicationName }}</p>
         <p class="text-[9px] text-gray-500 mt-0.5">{{ request.conventionReference }}</p>
@@ -212,7 +218,7 @@
         <div *ngIf="request.denialReason" class="mt-2 p-1.5 bg-rose-50 dark:bg-rose-900/20 rounded-lg">
           <div class="flex items-center gap-1">
             <i class="fas fa-ban text-rose-500 text-[8px]"></i>
-            <p class="text-[8px] text-rose-600 dark:text-rose-400 font-medium">Raison du refus</p>
+            <p class="text-[8px] text-rose-600 dark:text-rose-400 font-medium">{{ 'Raison du refus' | translate }}</p>
           </div>
           <p class="text-[9px] text-gray-700 dark:text-gray-300 mt-0.5 line-clamp-2">{{ request.denialReason }}</p>
         </div>
@@ -222,6 +228,7 @@
           <button (click)="openDetailModal(request)" 
                   class="px-2 py-1 text-[8px] font-medium text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-all">
             <i class="fas fa-eye text-[7px] mr-1"></i>
+            {{ 'Voir' | translate }}
           </button>
         </div>
       </div>
@@ -235,23 +242,23 @@
       <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
         <i class="fas fa-inbox text-blue-600 text-2xl"></i>
       </div>
-      <h3 class="text-base font-bold text-gray-800 dark:text-white mb-1">Aucune demande</h3>
-      <p class="text-xs text-gray-500 dark:text-gray-400">Vous n'avez aucune demande pour le moment.</p>
+      <h3 class="text-base font-bold text-gray-800 dark:text-white mb-1">{{ 'Aucune demande' | translate }}</h3>
+      <p class="text-xs text-gray-500 dark:text-gray-400">{{ 'Vous n\'avez aucune demande pour le moment.' | translate }}</p>
     </div>
 
     <!-- PENDING Section -->
     <div *ngIf="pendingRequests.length > 0" class="mb-6">
       <div class="mb-3 flex items-center gap-2">
         <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
-        <h3 class="text-xs font-bold text-gray-800 dark:text-white">En attente ({{ pendingRequests.length }})</h3>
+        <h3 class="text-xs font-bold text-gray-800 dark:text-white">{{ 'En attente' | translate }} ({{ pendingRequests.length }})</h3>
         <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         <div *ngFor="let request of pendingRequests" class="bg-white dark:bg-slate-800 rounded-xl border border-yellow-200 dark:border-yellow-800/50 hover:shadow-md transition-all">
           <div class="p-3">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-0.5 rounded-full">{{ getRequestTypeLabel(request.requestType) }}</span>
-              <span class="text-[10px] text-gray-400">{{ request.timeAgo }}</span>
+              <span class="text-xs font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-0.5 rounded-full">{{ getRequestTypeLabel(request.requestType) | translate }}</span>
+              <span class="text-[10px] text-gray-400">{{ request.timeAgo | translate}}</span>
             </div>
             <p class="text-xs font-semibold text-gray-800 dark:text-white truncate">{{ request.applicationName }}</p>
             <p class="text-[10px] text-gray-500 mt-0.5">{{ request.conventionReference }}</p>
@@ -264,7 +271,7 @@
   <button (click)="openDetailModal(request)" 
           class="px-2 py-1 text-[9px] font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all">
                 <i class="fas fa-eye text-[7px] mr-1"></i>
-
+                {{ 'Voir' | translate }}
   </button>
   
   <!-- Action buttons - only for pending requests -->
@@ -274,20 +281,21 @@
       <button (click)="openResponseModal(request, 'APPROVE')" 
               class="px-2 py-1 text-[9px] font-medium bg-green-500 hover:bg-green-600 text-white rounded-md transition-all">
                   <i class="fas fa-check text-[7px] mr-1"></i>
+                  {{ 'Approuver' | translate }}
       </button>
       <button (click)="openResponseModal(request, 'DENY')" 
               class="px-2 py-1 text-[9px] font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition-all">
-<i class="fas fa-times text-[7px] mr-1"></i>      </button>
+<i class="fas fa-times text-[7px] mr-1"></i>{{ 'Refuser' | translate }}      </button>
     </ng-container>
     
     <!-- For admin: reassignment suggestions (both types) -->
     <ng-container *ngIf="isAdmin && (request.requestType === 'REASSIGNMENT_SUGGESTION' || request.requestType === 'REASSIGNMENT_REQUEST_FROM_CHEF')">
       <button (click)="openResponseModal(request, 'APPROVE')" 
               class="px-2 py-1 text-[9px] font-medium bg-green-500 hover:bg-green-600 text-white rounded-md transition-all">
-<i class="fas fa-check text-[7px] mr-1"></i>      </button>
+<i class="fas fa-check text-[7px] mr-1"></i>{{ 'Approuver' | translate }}      </button>
       <button (click)="openResponseModal(request, 'DENY')" 
               class="px-2 py-1 text-[9px] font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition-all">
-<i class="fas fa-times text-[7px] mr-1"></i>      </button>
+<i class="fas fa-times text-[7px] mr-1"></i>{{ 'Refuser' | translate }}      </button>
     </ng-container>
   </ng-container>
 </div>
@@ -298,24 +306,23 @@
     </div>
 
     <!-- APPROVED Section -->
-<!-- APPROVED Section -->
 <div *ngIf="approvedRequests.length > 0" class="mb-6">
   <div class="mb-3 flex items-center gap-2">
     <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
-    <h3 class="text-xs font-bold text-gray-800 dark:text-white">Approuvées ({{ approvedRequests.length }})</h3>
+    <h3 class="text-xs font-bold text-gray-800 dark:text-white">{{ 'Approuvées' | translate }} ({{ approvedRequests.length }})</h3>
     <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
   </div>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
     <div *ngFor="let request of approvedRequests" class="bg-white dark:bg-slate-800 rounded-xl border border-emerald-200 dark:border-emerald-800/50 hover:shadow-md transition-all">
       <div class="p-3">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">{{ getRequestTypeLabel(request.requestType) }}</span>
-          <span class="text-[10px] text-gray-400">{{ request.timeAgo }}</span>
+          <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">{{ getRequestTypeLabel(request.requestType) | translate }}</span>
+          <span class="text-[10px] text-gray-400">{{ request.timeAgo | translate }}</span>
         </div>
         <p class="text-xs font-semibold text-gray-800 dark:text-white truncate">{{ request.applicationName }}</p>
         <p class="text-[10px] text-gray-500 mt-0.5">{{ request.conventionReference }}</p>
         <div *ngIf="request.recommendedChefName" class="mt-2 p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-          <p class="text-[9px] text-indigo-600 dark:text-indigo-400 font-medium">Chef recommandé</p>
+          <p class="text-[9px] text-indigo-600 dark:text-indigo-400 font-medium">{{ 'Chef recommandé' | translate }}</p>
           <p class="text-[10px] text-gray-700 dark:text-gray-300 truncate">{{ request.recommendedChefName }}</p>
         </div>
         <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
@@ -323,7 +330,7 @@
           <div class="flex gap-1">
             <button (click)="openDetailModal(request)" 
                     class="px-2 py-1 text-[9px] font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all">
-            <i class="fas fa-eye text-[7px] mr-1"></i>            </button>
+            <i class="fas fa-eye text-[7px] mr-1"></i>{{ 'Voir' | translate }}            </button>
           </div>
         </div>
       </div>
@@ -335,20 +342,20 @@
 <div *ngIf="deniedRequests.length > 0">
   <div class="mb-3 flex items-center gap-2">
     <div class="w-2 h-2 bg-rose-500 rounded-full"></div>
-    <h3 class="text-xs font-bold text-gray-800 dark:text-white">Refusées ({{ deniedRequests.length }})</h3>
+    <h3 class="text-xs font-bold text-gray-800 dark:text-white">{{ 'Refusées' | translate }} ({{ deniedRequests.length }})</h3>
     <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
   </div>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
     <div *ngFor="let request of deniedRequests" class="bg-white dark:bg-slate-800 rounded-xl border border-rose-200 dark:border-rose-800/50 hover:shadow-md transition-all">
       <div class="p-3">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-full">{{ getRequestTypeLabel(request.requestType) }}</span>
-          <span class="text-[10px] text-gray-400">{{ request.timeAgo }}</span>
+          <span class="text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-full">{{ getRequestTypeLabel(request.requestType) | translate }}</span>
+          <span class="text-[10px] text-gray-400">{{ request.timeAgo  | translate}}</span>
         </div>
         <p class="text-xs font-semibold text-gray-800 dark:text-white truncate">{{ request.applicationName }}</p>
         <p class="text-[10px] text-gray-500 mt-0.5">{{ request.conventionReference }}</p>
         <div *ngIf="request.denialReason" class="mt-2 p-1.5 bg-rose-50 dark:bg-rose-900/20 rounded-lg">
-          <p class="text-[9px] text-rose-600 dark:text-rose-400 font-medium">Raison du refus</p>
+          <p class="text-[9px] text-rose-600 dark:text-rose-400 font-medium">{{ 'Raison du refus' | translate }}</p>
           <p class="text-[10px] text-gray-700 dark:text-gray-300 line-clamp-2">{{ request.denialReason }}</p>
         </div>
         <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
@@ -356,7 +363,7 @@
           <div class="flex gap-1">
             <button (click)="openDetailModal(request)" 
                     class="px-2 py-1 text-[9px] font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all">
-            <i class="fas fa-eye text-[7px] mr-1"></i>            </button>
+            <i class="fas fa-eye text-[7px] mr-1"></i>{{ 'Voir' | translate }}            </button>
           </div>
         </div>
       </div>
@@ -367,9 +374,6 @@
 </div>
 
 <!-- Response Modal - Horizontal Split Layout -->
-
-
-<!-- Response Modal - Horizontal Split Layout with FULL Functionality -->
 <div *ngIf="showResponseModal && selectedRequest" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeResponseModal()">
   <div class="bg-white dark:bg-slate-800 rounded-xl w-full max-w-3xl mx-auto shadow-2xl overflow-hidden" (click)="$event.stopPropagation()">
     <div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 dark:border-slate-700">
@@ -377,19 +381,19 @@
         <div [class]="responseAction === 'APPROVE' ? 'w-6 h-6 bg-emerald-100 rounded-lg flex items-center justify-center' : 'w-6 h-6 bg-rose-100 rounded-lg flex items-center justify-center'">
           <i [class]="responseAction === 'APPROVE' ? 'fas fa-check text-emerald-600 text-[10px]' : 'fas fa-times text-rose-600 text-[10px]'"></i>
         </div>
-        <div><h3 class="text-sm font-bold text-slate-800 dark:text-white">{{ responseAction === 'APPROVE' ? 'Approuver' : 'Refuser' }} la demande</h3><p class="text-[9px] text-slate-500">{{ getRequestTypeLabel(selectedRequest.requestType) }}</p></div>
+        <div><h3 class="text-sm font-bold text-slate-800 dark:text-white">{{ responseAction === 'APPROVE' ? ('Approuver' | translate) : ('Refuser' | translate) }} {{ 'la demande' | translate }}</h3><p class="text-[9px] text-slate-500">{{ getRequestTypeLabel(selectedRequest.requestType) | translate }}</p></div>
       </div>
       <button (click)="closeResponseModal()" class="text-slate-400 hover:text-slate-500 w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center"><i class="fas fa-times text-xs"></i></button>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-slate-700">
       <div class="p-4 space-y-3">
-        <div class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2"><div class="flex justify-between text-[10px]"><span class="text-slate-500">Application</span><span class="font-medium">{{ selectedRequest.applicationName }}</span></div><div class="flex justify-between text-[10px] mt-1"><span class="text-slate-500">Convention</span><span>{{ selectedRequest.conventionReference }}</span></div></div>
-        <div><label class="block text-[9px] font-medium text-slate-600 mb-1">{{ responseAction === 'APPROVE' ? 'Message (optionnel)' : 'Raison du refus' }} <span *ngIf="responseAction === 'DENY'" class="text-rose-500">*</span></label><textarea [(ngModel)]="responseReason" rows="2" class="w-full px-2 py-1.5 text-[10px] border rounded-lg focus:ring-1 focus:ring-indigo-500" [placeholder]="responseAction === 'APPROVE' ? 'Ajoutez un commentaire...' : 'Expliquez pourquoi...'"></textarea></div>
-        <div *ngIf="responseAction === 'DENY'"><label class="block text-[9px] font-medium text-slate-600 mb-1">Recommandations (optionnel)</label><textarea [(ngModel)]="recommendations" rows="1" class="w-full px-2 py-1.5 text-[10px] border rounded-lg" placeholder="Suggestions..."></textarea></div>
+        <div class="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2"><div class="flex justify-between text-[10px]"><span class="text-slate-500">{{ 'Application' | translate }}</span><span class="font-medium">{{ selectedRequest.applicationName }}</span></div><div class="flex justify-between text-[10px] mt-1"><span class="text-slate-500">{{ 'Convention' | translate }}</span><span>{{ selectedRequest.conventionReference }}</span></div></div>
+        <div><label class="block text-[9px] font-medium text-slate-600 mb-1">{{ responseAction === 'APPROVE' ? ('Message (optionnel)' | translate) : ('Raison du refus' | translate) }} <span *ngIf="responseAction === 'DENY'" class="text-rose-500">*</span></label><textarea [(ngModel)]="responseReason" rows="2" class="w-full px-2 py-1.5 text-[10px] border rounded-lg focus:ring-1 focus:ring-indigo-500" [placeholder]="responseAction === 'APPROVE' ? ('Ajoutez un commentaire...' | translate) : ('Expliquez pourquoi...' | translate)"></textarea></div>
+        <div *ngIf="responseAction === 'DENY'"><label class="block text-[9px] font-medium text-slate-600 mb-1">{{ 'Recommandations (optionnel)' | translate }}</label><textarea [(ngModel)]="recommendations" rows="1" class="w-full px-2 py-1.5 text-[10px] border rounded-lg" [placeholder]="'Suggestions...' | translate"></textarea></div>
       </div>
       <div class="p-4">
         <div *ngIf="responseAction === 'DENY' && selectedRequest.requestType === 'RENEWAL_ACCEPTANCE' && isChefProjet">
-          <label class="block text-[9px] font-medium text-slate-600 mb-1.5">Recommander un chef</label>
+          <label class="block text-[9px] font-medium text-slate-600 mb-1.5">{{ 'Recommander un chef' | translate }}</label>
           <div *ngIf="workloadLoading" class="text-center py-3"><div class="animate-spin rounded-full h-5 w-5 border-2 border-indigo-500 border-t-transparent mx-auto"></div></div>
           <div *ngIf="!workloadLoading" class="space-y-1.5 max-h-48 overflow-y-auto">
             <div *ngFor="let chef of availableChefs" (click)="selectedChefId = chef.id" class="flex items-center gap-2 p-1.5 border rounded-lg cursor-pointer hover:border-indigo-300" [class]="selectedChefId === chef.id ? 'bg-indigo-50 border-indigo-300' : 'border-slate-200'">
@@ -399,12 +403,12 @@
             </div>
           </div>
         </div>
-        <div *ngIf="responseAction === 'APPROVE' && selectedRequest.requestType === 'REASSIGNMENT_SUGGESTION' && isAdmin" class="p-2 bg-indigo-50 rounded-lg text-center"><i class="fas fa-user-check text-indigo-500 text-lg mb-1"></i><p class="text-[10px] font-medium">Confirmer le chef recommandé</p><p class="text-[9px] mt-0.5">{{ selectedRequest.recommendedChefName }}</p></div>
-        <div *ngIf="responseAction === 'APPROVE' && !(selectedRequest.requestType === 'REASSIGNMENT_SUGGESTION' && isAdmin)" class="flex items-center justify-center h-full min-h-[120px]"><div class="text-center"><i class="fas fa-check-circle text-emerald-500 text-2xl mb-1"></i><p class="text-[10px] text-slate-500">Confirmez l'approbation</p></div></div>
-        <div *ngIf="responseAction === 'DENY' && !(selectedRequest.requestType === 'RENEWAL_ACCEPTANCE' && isChefProjet)" class="flex items-center justify-center h-full min-h-[120px]"><div class="text-center"><i class="fas fa-info-circle text-indigo-500 text-2xl mb-1"></i><p class="text-[10px] text-slate-500">Fournissez une raison</p></div></div>
+        <div *ngIf="responseAction === 'APPROVE' && selectedRequest.requestType === 'REASSIGNMENT_SUGGESTION' && isAdmin" class="p-2 bg-indigo-50 rounded-lg text-center"><i class="fas fa-user-check text-indigo-500 text-lg mb-1"></i><p class="text-[10px] font-medium">{{ 'Confirmer le chef recommandé' | translate }}</p><p class="text-[9px] mt-0.5">{{ selectedRequest.recommendedChefName }}</p></div>
+        <div *ngIf="responseAction === 'APPROVE' && !(selectedRequest.requestType === 'REASSIGNMENT_SUGGESTION' && isAdmin)" class="flex items-center justify-center h-full min-h-[120px]"><div class="text-center"><i class="fas fa-check-circle text-emerald-500 text-2xl mb-1"></i><p class="text-[10px] text-slate-500">{{ 'Confirmez l\'approbation' | translate }}</p></div></div>
+        <div *ngIf="responseAction === 'DENY' && !(selectedRequest.requestType === 'RENEWAL_ACCEPTANCE' && isChefProjet)" class="flex items-center justify-center h-full min-h-[120px]"><div class="text-center"><i class="fas fa-info-circle text-indigo-500 text-2xl mb-1"></i><p class="text-[10px] text-slate-500">{{ 'Fournissez une raison' | translate }}</p></div></div>
       </div>
     </div>
-    <div class="px-4 py-2.5 border-t border-slate-200 flex justify-end gap-2"><button (click)="closeResponseModal()" class="px-3 py-1 text-[10px] font-medium text-slate-600 border rounded-lg hover:bg-slate-50">Annuler</button><button (click)="submitResponse()" [disabled]="loading || (responseAction === 'DENY' && !responseReason.trim())" [class]="responseAction === 'APPROVE' ? 'px-3 py-1 text-[10px] font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600' : 'px-3 py-1 text-[10px] font-medium text-white bg-rose-500 rounded-lg hover:bg-rose-600'"><span *ngIf="!loading">{{ responseAction === 'APPROVE' ? 'Approuver' : 'Refuser' }}</span><span *ngIf="loading" class="flex items-center gap-1"><i class="fas fa-spinner fa-spin"></i> Traitement...</span></button></div>
+    <div class="px-4 py-2.5 border-t border-slate-200 flex justify-end gap-2"><button (click)="closeResponseModal()" class="px-3 py-1 text-[10px] font-medium text-slate-600 border rounded-lg hover:bg-slate-50">{{ 'Annuler' | translate }}</button><button (click)="submitResponse()" [disabled]="loading || (responseAction === 'DENY' && !responseReason.trim())" [class]="responseAction === 'APPROVE' ? 'px-3 py-1 text-[10px] font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600' : 'px-3 py-1 text-[10px] font-medium text-white bg-rose-500 rounded-lg hover:bg-rose-600'"><span *ngIf="!loading">{{ responseAction === 'APPROVE' ? ('Approuver' | translate) : ('Refuser' | translate) }}</span><span *ngIf="loading" class="flex items-center gap-1"><i class="fas fa-spinner fa-spin"></i> {{ 'Traitement...' | translate }}</span></button></div>
   </div>
 </div>
 
@@ -412,26 +416,25 @@
 <div *ngIf="showDetailModal && selectedRequest" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeDetailModal()">
   <div class="bg-white dark:bg-slate-800 rounded-xl w-full max-w-3xl mx-auto max-h-[80vh] overflow-hidden shadow-2xl" (click)="$event.stopPropagation()">
     <div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-200">
-      <div class="flex items-center gap-2"><span class="text-lg">{{ selectedRequest.statusIcon }}</span><div><h3 class="text-sm font-bold">Détails de la demande</h3><span [class]="'px-2 py-0.5 text-[9px] font-medium rounded-full ' + selectedRequest.statusColor">{{ selectedRequest.status === 'PENDING' ? 'En attente' : selectedRequest.status === 'APPROVED' ? 'Approuvée' : 'Refusée' }}</span></div></div>
+      <div class="flex items-center gap-2"><span class="text-lg">{{ selectedRequest.statusIcon }}</span><div><h3 class="text-sm font-bold">{{ 'Détails de la demande' | translate }}</h3><span [class]="'px-2 py-0.5 text-[9px] font-medium rounded-full ' + selectedRequest.statusColor">{{ selectedRequest.status === 'PENDING' ? ('En attente' | translate) : selectedRequest.status === 'APPROVED' ? ('Approuvée' | translate) : ('Refusée' | translate) }}</span></div></div>
       <button (click)="closeDetailModal()" class="text-slate-400 hover:text-slate-500 w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center"><i class="fas fa-times text-xs"></i></button>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 overflow-y-auto" style="max-height: calc(80vh - 55px);">
       <div class="p-4 space-y-3">
-        <div class="grid grid-cols-2 gap-2"><div><p class="text-[9px] text-slate-500">Type</p><p class="text-[10px] font-medium">{{ getRequestTypeLabel(selectedRequest.requestType) }}</p></div><div><p class="text-[9px] text-slate-500">Créée le</p><p class="text-[10px]">{{ formatDate(selectedRequest.createdAt) }}</p></div></div>
-        <div><p class="text-[9px] text-slate-500">Demandeur</p><p class="text-[10px] font-medium">{{ selectedRequest.requesterName }}</p><p class="text-[8px] text-slate-500">{{ selectedRequest.requesterEmail }}</p></div>
-        <div *ngIf="selectedRequest.targetUserName"><p class="text-[9px] text-slate-500">Destinataire</p><p class="text-[10px] font-medium">{{ selectedRequest.targetUserName }}</p></div>
-        <div><p class="text-[9px] text-slate-500">Application</p><p class="text-[10px] font-medium text-indigo-600 cursor-pointer" (click)="viewApplication(selectedRequest.applicationId!)">{{ selectedRequest.applicationName }}</p><p class="text-[8px] text-slate-500">{{ selectedRequest.applicationCode }}</p></div>
-        <div><p class="text-[9px] text-slate-500">Convention</p><p class="text-[10px] font-medium text-indigo-600 cursor-pointer" (click)="viewConvention(selectedRequest.conventionId!)">{{ selectedRequest.conventionReference }}</p></div>
-        <div *ngIf="selectedRequest.oldConventionReference"><p class="text-[9px] text-slate-500">Ancienne convention</p><p class="text-[10px]">{{ selectedRequest.oldConventionReference }}</p></div>
+        <div class="grid grid-cols-2 gap-2"><div><p class="text-[9px] text-slate-500">{{ 'Type' | translate }}</p><p class="text-[10px] font-medium">{{ getRequestTypeLabel(selectedRequest.requestType) | translate }}</p></div><div><p class="text-[9px] text-slate-500">{{ 'Créée le' | translate }}</p><p class="text-[10px]">{{ formatDate(selectedRequest.createdAt) }}</p></div></div>
+        <div><p class="text-[9px] text-slate-500">{{ 'Demandeur' | translate }}</p><p class="text-[10px] font-medium">{{ selectedRequest.requesterName }}</p><p class="text-[8px] text-slate-500">{{ selectedRequest.requesterEmail }}</p></div>
+        <div *ngIf="selectedRequest.targetUserName"><p class="text-[9px] text-slate-500">{{ 'Destinataire' | translate }}</p><p class="text-[10px] font-medium">{{ selectedRequest.targetUserName }}</p></div>
+        <div><p class="text-[9px] text-slate-500">{{ 'Application' | translate }}</p><p class="text-[10px] font-medium text-indigo-600 cursor-pointer" (click)="viewApplication(selectedRequest.applicationId!)">{{ selectedRequest.applicationName }}</p><p class="text-[8px] text-slate-500">{{ selectedRequest.applicationCode }}</p></div>
+        <div><p class="text-[9px] text-slate-500">{{ 'Convention' | translate }}</p><p class="text-[10px] font-medium text-indigo-600 cursor-pointer" (click)="viewConvention(selectedRequest.conventionId!)">{{ selectedRequest.conventionReference }}</p></div>
+        <div *ngIf="selectedRequest.oldConventionReference"><p class="text-[9px] text-slate-500">{{ 'Ancienne convention' | translate }}</p><p class="text-[10px]">{{ selectedRequest.oldConventionReference }}</p></div>
       </div>
       <div class="p-4 space-y-3">
-        <div *ngIf="selectedRequest.reason"><p class="text-[9px] text-slate-500">Message</p><div class="bg-amber-50 p-2 rounded-lg"><p class="text-[10px] italic">"{{ selectedRequest.reason }}"</p></div></div>
-        <div *ngIf="selectedRequest.recommendations"><p class="text-[9px] text-slate-500">Recommandations</p><div class="bg-indigo-50 p-2 rounded-lg"><p class="text-[10px]">{{ selectedRequest.recommendations }}</p></div></div>
-        <div *ngIf="selectedRequest.recommendedChefName"><p class="text-[9px] text-slate-500">Chef recommandé</p><div class="bg-purple-50 p-2 rounded-lg flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-purple-400 flex items-center justify-center"><i class="fas fa-user text-white text-[10px]"></i></div><div><p class="text-[10px] font-medium">{{ selectedRequest.recommendedChefName }}</p><p class="text-[8px] text-slate-500">{{ selectedRequest.recommendedChefEmail }}</p></div></div></div>
-        <div *ngIf="selectedRequest.denialReason"><p class="text-[9px] text-slate-500">Raison du refus</p><div class="bg-rose-50 p-2 rounded-lg"><p class="text-[10px] text-rose-600">{{ selectedRequest.denialReason }}</p></div></div>
+        <div *ngIf="selectedRequest.reason"><p class="text-[9px] text-slate-500">{{ 'Message' | translate }}</p><div class="bg-amber-50 p-2 rounded-lg"><p class="text-[10px] italic">"{{ selectedRequest.reason }}"</p></div></div>
+        <div *ngIf="selectedRequest.recommendations"><p class="text-[9px] text-slate-500">{{ 'Recommandations' | translate }}</p><div class="bg-indigo-50 p-2 rounded-lg"><p class="text-[10px]">{{ selectedRequest.recommendations }}</p></div></div>
+        <div *ngIf="selectedRequest.recommendedChefName"><p class="text-[9px] text-slate-500">{{ 'Chef recommandé' | translate }}</p><div class="bg-purple-50 p-2 rounded-lg flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-purple-400 flex items-center justify-center"><i class="fas fa-user text-white text-[10px]"></i></div><div><p class="text-[10px] font-medium">{{ selectedRequest.recommendedChefName }}</p><p class="text-[8px] text-slate-500">{{ selectedRequest.recommendedChefEmail }}</p></div></div></div>
+        <div *ngIf="selectedRequest.denialReason"><p class="text-[9px] text-slate-500">{{ 'Raison du refus' | translate }}</p><div class="bg-rose-50 p-2 rounded-lg"><p class="text-[10px] text-rose-600">{{ selectedRequest.denialReason }}</p></div></div>
       </div>
     </div>
-    <div class="px-4 py-2.5 border-t border-slate-200"><button (click)="closeDetailModal()" class="w-full py-1.5 text-[10px] font-medium text-white bg-indigo-500 rounded-lg hover:bg-indigo-600">Fermer</button></div>
+    <div class="px-4 py-2.5 border-t border-slate-200"><button (click)="closeDetailModal()" class="w-full py-1.5 text-[10px] font-medium text-white bg-indigo-500 rounded-lg hover:bg-indigo-600">{{ 'Fermer' | translate }}</button></div>
   </div>
 </div>
-

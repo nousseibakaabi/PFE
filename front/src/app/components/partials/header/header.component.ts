@@ -95,39 +95,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   // ============= NOTIFICATION METHODS =============
 
-  /**
-   * Load notifications
-   */
-  loadNotifications(reset: boolean = false): void {
-    if (reset) {
-      this.notificationPage = 0;
-      this.notifications = [];
-      this.hasMoreNotifications = true;
-    }
 
-    if (!this.hasMoreNotifications || this.isLoadingNotifications) {
-      return;
-    }
-
-    this.isLoadingNotifications = true;
-    
-    this.notificationService.getNotifications(this.notificationPage, 10).subscribe({
-      next: (response) => {
-        if (response.data && response.data.length > 0) {
-          this.notifications = [...this.notifications, ...response.data];
-          this.notificationPage++;
-          this.hasMoreNotifications = this.notificationPage < response.totalPages;
-        } else {
-          this.hasMoreNotifications = false;
-        }
-        this.isLoadingNotifications = false;
-      },
-      error: (error) => {
-        console.error('Failed to load notifications', error);
-        this.isLoadingNotifications = false;
-      }
-    });
-  }
 
   /**
    * Load unread count
@@ -175,62 +143,143 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Mark notification as read
-   */
-  markAsRead(notification: Notification, event?: Event): void {
-    if (event) {
-      event.stopPropagation();
+
+
+
+  // Update the getDaysStatusText method - NO PARAMETERS version
+getDaysStatusText(daysUntilDue?: number): string {
+  const translate = (key: string) => this.translationService.translate(key);
+  
+  if (daysUntilDue === undefined || daysUntilDue === null) return '';
+  
+  if (daysUntilDue > 0) {
+    if (daysUntilDue === 1) {
+      return translate('Demain');
+    } else {
+      // Replace placeholder manually since translate doesn't accept params
+      return translate('Dans X jours').replace('X', daysUntilDue.toString());
     }
-    
-    if (!notification.isRead) {
-      this.notificationService.markAsRead(notification.id).subscribe({
-        next: () => {
-          notification.isRead = true;
-          this.isNotifying = this.notifications.some(n => !n.isRead);
-        },
-        error: (error) => console.error('Failed to mark notification as read', error)
-      });
-    }
+  } else if (daysUntilDue === 0) {
+    return translate('Aujourd\'hui');
+  } else {
+    return translate('X jours en retard').replace('X', Math.abs(daysUntilDue).toString());
+  }
+}
+
+// Update the formatTime method - NO PARAMETERS version
+formatTime(createdAt: string): string {
+  const translate = (key: string) => this.translationService.translate(key);
+  const date = new Date(createdAt);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return translate('À l\'instant');
+  if (diffMins < 60) {
+    return translate('Il y a X minutes').replace('X', diffMins.toString());
+  }
+  if (diffHours < 24) {
+    return translate('Il y a X heures').replace('X', diffHours.toString());
+  }
+  if (diffDays < 7) {
+    return translate('Il y a X jours').replace('X', diffDays.toString());
+  }
+  
+  const lang = this.translationService.getCurrentLanguage();
+  return date.toLocaleDateString(lang === 'ar' ? 'ar' : 'fr-FR', { 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+// Console error messages - NO PARAMETERS version
+loadNotifications(reset: boolean = false): void {
+  const translate = (key: string) => this.translationService.translate(key);
+  
+  if (reset) {
+    this.notificationPage = 0;
+    this.notifications = [];
+    this.hasMoreNotifications = true;
   }
 
-  /**
-   * Mark all notifications as read
-   */
-  markAllAsRead(): void {
-    const unreadIds = this.notifications
-      .filter(n => !n.isRead)
-      .map(n => n.id);
-    
-    if (unreadIds.length === 0) return;
-
-    this.notificationService.markAllAsRead().subscribe({
-      next: () => {
-        this.notifications.forEach(n => n.isRead = true);
-        this.isNotifying = false;
-      },
-      error: (error) => console.error('Failed to mark all as read', error)
-    });
+  if (!this.hasMoreNotifications || this.isLoadingNotifications) {
+    return;
   }
 
-  /**
-   * Delete notification
-   */
-  deleteNotification(notification: Notification, event: Event): void {
+  this.isLoadingNotifications = true;
+  
+  this.notificationService.getNotifications(this.notificationPage, 10).subscribe({
+    next: (response) => {
+      if (response.data && response.data.length > 0) {
+        this.notifications = [...this.notifications, ...response.data];
+        this.notificationPage++;
+        this.hasMoreNotifications = this.notificationPage < response.totalPages;
+      } else {
+        this.hasMoreNotifications = false;
+      }
+      this.isLoadingNotifications = false;
+    },
+    error: (error) => {
+      console.error(translate('Échec du chargement des notifications'), error);
+      this.isLoadingNotifications = false;
+    }
+  });
+}
+
+markAsRead(notification: Notification, event?: Event): void {
+  const translate = (key: string) => this.translationService.translate(key);
+  
+  if (event) {
     event.stopPropagation();
-    
-    this.notificationService.deleteNotification(notification.id).subscribe({
+  }
+  
+  if (!notification.isRead) {
+    this.notificationService.markAsRead(notification.id).subscribe({
       next: () => {
-        const index = this.notifications.findIndex(n => n.id === notification.id);
-        if (index !== -1) {
-          this.notifications.splice(index, 1);
-        }
+        notification.isRead = true;
         this.isNotifying = this.notifications.some(n => !n.isRead);
       },
-      error: (error) => console.error('Failed to delete notification', error)
+      error: (error) => console.error(translate('Échec du marquage de la notification comme lue'), error)
     });
   }
+}
 
+markAllAsRead(): void {
+  const translate = (key: string) => this.translationService.translate(key);
+  const unreadIds = this.notifications
+    .filter(n => !n.isRead)
+    .map(n => n.id);
+  
+  if (unreadIds.length === 0) return;
+
+  this.notificationService.markAllAsRead().subscribe({
+    next: () => {
+      this.notifications.forEach(n => n.isRead = true);
+      this.isNotifying = false;
+    },
+    error: (error) => console.error(translate('Échec du marquage de toutes les notifications comme lues'), error)
+  });
+}
+
+deleteNotification(notification: Notification, event: Event): void {
+  const translate = (key: string) => this.translationService.translate(key);
+  event.stopPropagation();
+  
+  this.notificationService.deleteNotification(notification.id).subscribe({
+    next: () => {
+      const index = this.notifications.findIndex(n => n.id === notification.id);
+      if (index !== -1) {
+        this.notifications.splice(index, 1);
+      }
+      this.isNotifying = this.notifications.some(n => !n.isRead);
+    },
+    error: (error) => console.error(translate('Échec de la suppression de la notification'), error)
+  });
+}
   /**
    * Navigate to related entity when notification is clicked
    */
@@ -270,18 +319,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
 // Add these methods to your HeaderComponent class
 
-// Get days status text
-getDaysStatusText(daysUntilDue?: number): string {
-  if (daysUntilDue === undefined || daysUntilDue === null) return '';
-  
-  if (daysUntilDue > 0) {
-    return daysUntilDue === 1 ? 'Tomorrow' : `In ${daysUntilDue} days`;
-  } else if (daysUntilDue === 0) {
-    return 'Today';
-  } else {
-    return `${Math.abs(daysUntilDue)} days overdue`;
-  }
-}
 
 // Get notification icon based on type
 getNotificationIcon(type: string): string {
@@ -305,27 +342,6 @@ getNotificationColor(type: string): string {
   }
 }
 
-// Format notification time
-formatTime(createdAt: string): string {
-  const date = new Date(createdAt);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins} min${diffMins === 1 ? '' : 's'} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-  
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
 
   // ============= EXISTING METHODS =============
 

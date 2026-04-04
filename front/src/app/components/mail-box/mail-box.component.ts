@@ -1,9 +1,11 @@
 import { MailService, Mail, MailStats, MailFolder, MailRequest, MailActionRequest, MailDraft , MailGroup } from '../../services/mail.service';
 import { AuthService } from '../../services/auth.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
-import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+
+import { Component, OnInit, ViewChild, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
+import { DomSanitizer, SafeHtml, SafeResourceUrl } from '@angular/platform-browser';
+
 @Component({
   selector: 'app-mail-box',
   templateUrl: './mail-box.component.html',
@@ -28,6 +30,8 @@ export class MailBoxComponent implements OnInit {
   systemGroups: MailGroup[] = [];
   customGroups: MailGroup[] = [];
 
+  textContent = 'Loading text content...';
+textContentLoading = false;
 
   
   // Pagination
@@ -69,24 +73,31 @@ export class MailBoxComponent implements OnInit {
 showGroupsDropdown: boolean = false;
 
   showAttachmentModal: boolean = false;
+
 selectedAttachment: {
   id: number;
   fileName: string;
   fileType: string;
   fileSize: number;
   downloadUrl: string;
-  blob?: Blob; // For storing the actual file data
+  blob?: Blob;
+  blobUrl?: string; // Add this for storing PDF blob URL
 } | null = null;
+
+
 attachmentLoading: boolean = false;
 
 URL = window.URL;
 textContentCache = new Map<number, string>();
 
+
   constructor(
     public mailService: MailService,
     public authService: AuthService,
     private fb: FormBuilder,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+        private cdr: ChangeDetectorRef,
+    
   ) {
     this.composeForm = this.fb.group({
       to: ['', [Validators.required]],
@@ -498,12 +509,43 @@ sendMail(): void {
 
 
 
-  onPageChange(page: number): void {
-    this.currentPage = page;
-    this.refreshCurrentView();
+onPageChange(page: number): void {
+  this.currentPage = page;
+  this.loadCurrentViewData();
+}
+
+
+
+loadCurrentViewData(): void {
+  switch (this.currentView) {
+    case 'inbox':
+      this.loadInbox();
+      break;
+    case 'sent':
+      this.loadSent();
+      break;
+    case 'starred':
+      this.loadStarred();
+      break;
+    case 'archived':
+      this.loadArchived();
+      break;
+    case 'trash':
+      this.loadDeleted();
+      break;
+    case 'drafts':
+      this.loadDrafts();
+      break;
+    case 'group-mails':
+      if (this.currentGroup) {
+        this.loadGroupMails(this.currentGroup);
+      }
+      break;
+    default:
+      this.loadInbox();
+      break;
   }
-
-
+}
 
 
 
@@ -911,41 +953,72 @@ getDraftAttachmentsCount(item: any): number {
 // Add this method to open attachment in modal
 openAttachment(attachment: any, event?: Event): void {
   if (event) {
-    event.stopPropagation(); // Prevent triggering the mail click
+    event.stopPropagation();
   }
   
   this.attachmentLoading = true;
+  this.textContentLoading = true;
+  this.textContent = 'Loading text content...';
   this.showAttachmentModal = true;
   this.selectedAttachment = attachment;
   
-  // If it's a draft attachment (no downloadUrl), we need to handle differently
   if (!attachment.downloadUrl && attachment.id) {
-    // For draft attachments, you might need to fetch the file
     this.loadAttachmentContent(attachment.id);
   } else {
-    // For regular mail attachments, we can fetch the content
     this.fetchAttachmentContent(attachment.id, attachment.fileName, attachment.fileType);
   }
 }
-
 // Fetch attachment content from server
 fetchAttachmentContent(attachmentId: number, fileName: string, fileType: string): void {
   this.mailService.downloadAttachment(attachmentId).subscribe({
     next: (blob: Blob) => {
       if (this.selectedAttachment) {
         this.selectedAttachment.blob = blob;
+        
+        // For PDF files, create the blob URL and store it
+        if (fileType === 'application/pdf') {
+          // Revoke old URL if exists
+          if (this.selectedAttachment.blobUrl) {
+            URL.revokeObjectURL(this.selectedAttachment.blobUrl);
+          }
+          // Create new blob URL
+          this.selectedAttachment.blobUrl = URL.createObjectURL(blob);
+          this.cdr.detectChanges();
+        }
+        
+        // In fetchAttachmentContent, add this for images as well:
+if (fileType?.startsWith('image/')) {
+  if (this.selectedAttachment.blobUrl) {
+    URL.revokeObjectURL(this.selectedAttachment.blobUrl);
+  }
+  this.selectedAttachment.blobUrl = URL.createObjectURL(blob);
+}
+
+        // If it's a text file, read the content
+        if (fileType?.startsWith('text/')) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.textContent = e.target?.result as string;
+            this.textContentLoading = false;
+            this.cdr.detectChanges();
+          };
+          reader.readAsText(blob);
+        } else {
+          this.textContentLoading = false;
+        }
       }
       this.attachmentLoading = false;
+      this.cdr.detectChanges();
     },
     error: (error) => {
       console.error('Error loading attachment:', error);
       this.errorMessage = 'Failed to load attachment';
       this.attachmentLoading = false;
+      this.textContentLoading = false;
       this.closeAttachmentModal();
     }
   });
 }
-
 // For draft attachments (if needed)
 loadAttachmentContent(attachmentId: number): void {
   // Implement this if you have a separate endpoint for draft attachments
@@ -953,10 +1026,15 @@ loadAttachmentContent(attachmentId: number): void {
   this.attachmentLoading = false;
 }
 
-// Close modal
 closeAttachmentModal(): void {
+  // Clean up blob URL to prevent memory leaks
+  if (this.selectedAttachment?.blobUrl) {
+    URL.revokeObjectURL(this.selectedAttachment.blobUrl);
+  }
   this.showAttachmentModal = false;
   this.selectedAttachment = null;
+  this.textContent = 'Loading text content...';
+  this.textContentLoading = false;
 }
 
 // Download the attachment
@@ -980,30 +1058,57 @@ downloadAttachment(attachment: any, event?: Event): void {
 }
 
 
-getTextContent(blob: Blob): string {
-  if (!blob) return '';
+// Add this method for safe URLs
+getSafeUrl(url: string): SafeResourceUrl {
+  if (!url) return '';
+  return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+}
+
+
+async getTextContent(blob: Blob | undefined): Promise<string> {
+  if (!blob) return 'No content available';
   
-  // Use a unique identifier (you might want to use attachment id)
   const key = this.selectedAttachment?.id || 0;
   
-  // Return cached content if available
   if (this.textContentCache.has(key)) {
     return this.textContentCache.get(key) || '';
   }
   
-  // Read the blob and cache it
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const content = e.target?.result as string;
+  try {
+    const content = await blob.text();
     this.textContentCache.set(key, content);
-    // Trigger change detection
-    this.textContentCache = new Map(this.textContentCache);
-  };
-  reader.readAsText(blob);
-  
-  return 'Loading text content...';
+    this.cdr.detectChanges();
+    return content;
+  } catch (error) {
+    console.error('Error reading text file:', error);
+    return 'Unable to load text content';
+  }
 }
 
+// Add a method to actually load text content
+loadTextContent(blob: Blob | undefined): Promise<string> {
+  return new Promise((resolve) => {
+    if (!blob) {
+      resolve('No content available');
+      return;
+    }
+    
+    const key = this.selectedAttachment?.id || 0;
+    
+    if (this.textContentCache.has(key)) {
+      resolve(this.textContentCache.get(key) || '');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      this.textContentCache.set(key, content);
+      resolve(content);
+    };
+    reader.readAsText(blob);
+  });
+}
 
 openFolder(folder: string): void {
   this.currentFolder = folder;
@@ -1178,7 +1283,7 @@ loadGroupMails(group: MailGroup): void {
 
 // Also update the refreshCurrentView method to reload groups when needed
 refreshCurrentView(): void {
-  this.currentPage = 0;
+  // Don't reset currentPage here - preserve it
   switch (this.currentView) {
     case 'inbox':
       this.loadInbox();
