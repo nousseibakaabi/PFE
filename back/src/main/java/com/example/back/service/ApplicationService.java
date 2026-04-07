@@ -24,6 +24,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ApplicationService {
 
+
+    @Autowired
+    private EntitySyncService entitySyncService;
+
+
     @Autowired
     private ApplicationRepository applicationRepository;
 
@@ -240,6 +245,16 @@ public class ApplicationService {
 
             Application updatedApplication = applicationRepository.save(application);
             log.info("Application updated successfully: {}", updatedApplication.getCode());
+
+
+            // ===== SYNC: Propagate changes to all related entities =====
+            try {
+                entitySyncService.syncApplicationChanges(oldApplication, updatedApplication);
+                log.info("✅ Successfully synced application changes to related entities");
+            } catch (Exception e) {
+                log.error("Failed to sync application changes: {}", e.getMessage(), e);
+                // Don't throw - the main update succeeded
+            }
 
             // LOG HISTORY: Application update
             User currentUser = getCurrentUser();

@@ -1,12 +1,10 @@
 <aside
-  [class]="isSidebarOpen ? 'translate-x-0 lg:w-[260px]' : '-translate-x-full lg:w-[90px] lg:translate-x-0'"
+  [class]="isSidebarOpen ? 'translate-x-0 lg:w-[260px]' : (isRtl ? 'translate-x-full lg:w-[90px] lg:translate-x-0' : '-translate-x-full lg:w-[90px] lg:translate-x-0')"
   [class.ltr]="!isRtl"
   [class.rtl]="isRtl"
-  class="sidebar group fixed top-0 z-[99999] flex h-screen flex-col overflow-hidden border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800/80 backdrop-blur-sm lg:static lg:hover:w-[260px] transition-all duration-300 ease-in-out"
+  class="sidebar group fixed top-0 z-[99999] flex h-screen flex-col overflow-hidden bg-white dark:bg-gray-800/80 backdrop-blur-sm lg:static lg:hover:w-[260px] transition-all duration-300 ease-in-out"
   [class.left-0]="!isRtl"
   [class.right-0]="isRtl"
-  [class.lg:left-0]="!isRtl"
-  [class.lg:right-0]="isRtl"
   [class.border-r]="!isRtl"
   [class.border-l]="isRtl"
   [class.border-gray-200]="!isRtl"
@@ -16,751 +14,352 @@
   (mouseenter)="onSidebarHover($event)"
   (mouseleave)="onSidebarHover($event)"
 >
-
-<!-- SIDEBAR HEADER WITH LOGO -->
-<div class="flex items-center justify-center mt-2 h-16 border-b border-gray-100 dark:border-gray-800">
-  <a routerLink="/" class="flex items-center">
-    <!-- Light Mode - Sidebar Closed & Not Hovering (logo-light-round.png) -->
-    <img 
-      *ngIf="!isSidebarOpen && !isHovering && !isDarkMode"
-      class="h-8 w-auto block lg:group-hover:hidden" 
-      src="assets/logo-light-roun.png" 
-      alt="Logo" 
-    />
-    
-    <!-- Light Mode - Sidebar Open OR Hovering (logo-light.png) - NOW BIGGER -->
-    <img 
-      *ngIf="(isSidebarOpen || isHovering) && !isDarkMode"
-      class="h-16 w-auto block" 
-      src="assets/logo-ligh.png" 
-      alt="Logo" 
-    />
-    
-    <!-- Dark Mode - Sidebar Closed & Not Hovering (logo-dark-round.png) -->
-    <img 
-      *ngIf="!isSidebarOpen && !isHovering && isDarkMode"
-      class="h-8 w-auto hidden dark:block lg:group-hover:hidden" 
-      src="assets/logo-dark-round.png" 
-      alt="Logo" 
-    />
-    
-    <!-- Dark Mode - Sidebar Open OR Hovering (logo-dark.png) - NOW BIGGER -->
-    <img 
-      *ngIf="(isSidebarOpen || isHovering) && isDarkMode"
-      class="h-16 w-auto hidden dark:block" 
-      src="assets/logo-dark.png" 
-      alt="Logo" 
-    />
-  </a>
-</div>
-  
-  <!-- SIDEBAR CONTENT (NON-SCROLLABLE) -->
-<div class="flex-1 flex flex-col px-3 py-3 ml-2 mt-5"> 
-      <!-- Menu sections will go here -->
-  <nav *ngIf="isAdminUser()">
-    <div> 
-      <ul class="flex flex-col gap-1 mb-2">          
-    
-    <li>
-            <a
-            
-              (click)="navigateAndClose('/admin', 'admin')"
-
-              class="menu-item group cursor-pointer py-2"
-              [class]="currentPage === 'admin' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-              <svg
-                [class]="currentPage === 'admin' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M12.7071 2.29289C12.3166 1.90237 11.6834 1.90237 11.2929 2.29289L3.29289 10.2929C3.10536 10.4804 3 10.7348 3 11V20C3 20.5523 3.44772 21 4 21H8C8.55228 21 9 20.5523 9 20V16C9 15.4477 9.44772 15 10 15H14C14.5523 15 15 15.4477 15 16V20C15 20.5523 15.4477 21 16 21H20C20.5523 21 21 20.5523 21 20V11C21 10.7348 20.8946 10.4804 20.7071 10.2929L12.7071 2.29289ZM5 11.4142L12 4.41421L19 11.4142V19H17V16C17 14.3431 15.6569 13 14 13H10C8.34315 13 7 14.3431 7 16V19H5V11.4142Z"
-                  fill="currentColor"
-                />
-              </svg>
-
-              <span
-                class="min-text"
-                [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-              >
-                {{ 'Tableau de bord' | translate }}
-              </span>
-            </a>
-          </li>
-
-          <li>
-            <a
-             
-                                (click)="navigateAndClose('/admin/users', 'Users')"
-
-              class="menu-item group cursor-pointer py-2"
-              [class]="currentPage === 'Users' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-              <svg
-                [class]="currentPage === 'Users' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M3 6C3 4.34315 4.34315 3 6 3H8C9.65685 3 11 4.34315 11 6V8C11 9.65685 9.65685 11 8 11H6C4.34315 11 3 9.65685 3 8V6Z"
-                  fill="currentColor"
-                />
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M13 6C13 4.34315 14.3431 3 16 3H18C19.6569 3 21 4.34315 21 6V8C21 9.65685 19.6569 11 18 11H16C14.3431 11 13 9.65685 13 8V6Z"
-                  fill="currentColor"
-                />
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M3 16C3 14.3431 4.34315 13 6 13H8C9.65685 13 11 14.3431 11 16V18C11 19.6569 9.65685 21 8 21H6C4.34315 21 3 19.6569 3 18V16Z"
-                  fill="currentColor"
-                />
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M13 16C13 14.3431 14.3431 13 16 13H18C19.6569 13 21 14.3431 21 16V18C21 19.6569 19.6569 21 18 21H16C14.3431 21 13 19.6569 13 18V16Z"
-                  fill="currentColor"
-                />
-              </svg>
-
-              <span
-                class="min-text"
-                [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-              >
-                {{ 'Gestion des utilisateurs' | translate }}
-              </span>
-            </a>
-          </li>
-
-          <li>
-            <a
-              
-                                (click)="navigateAndClose('/admin/nomenclatures', 'Nomenclatures')"
-
-              class="menu-item group cursor-pointer py-2"
-              [class]="currentPage === 'Nomenclatures' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-              <svg
-                [class]="currentPage === 'Nomenclatures' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7v-2zm5 5h5v2h-5v-2zm0-10h5v2h-5V6z"
-                  fill="currentColor"
-                />
-              </svg>
-
-              <span
-                class="min-text"
-                [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-              >
-                {{ 'Nomenclatures' | translate }}
-              </span>
-            </a>
-          </li>
-          
-          <li >
-            <a
-             
-                                (click)="navigateAndClose('/applications', 'applications')"
-
-              class="menu-item group cursor-pointer py-2"
-              [class]="currentPage === 'applications' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-              <svg
-                [class]="currentPage === 'applications' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M3 3C2.44772 3 2 3.44772 2 4V20C2 20.5523 2.44772 21 3 21H21C21.5523 21 22 20.5523 22 20V4C22 3.44772 21.5523 3 21 3H3ZM4 19V5H20V19H4ZM7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H14V17H7V15Z"
-                  fill="currentColor"
-                />
-              </svg>
-              <span
-                class="min-text"
-                [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-              >
-                {{ 'Applications' | translate }}
-              </span>
-            </a>
-          </li>
-
-
-           <li >
-            <a
-             
-                                (click)="navigateAndClose('/requests', 'requests')"
-
-              class="menu-item group cursor-pointer py-2"
-              [class]="currentPage === 'requests' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-      <svg
-  [class]="currentPage === 'requests' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-  width="19"
-  height="19"
-  viewBox="0 0 24 24"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <path
-    fill-rule="evenodd"
-    clip-rule="evenodd"
-    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.5"
-  />
-</svg>
-              <span
-                class="min-text"
-                [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-              >
-                {{ 'Demandes' | translate }}
-              </span>
-            </a>
-          </li>
-          
-      </ul>
-    </div>
-  </nav>
-
-<nav *ngIf="isCommercialUser()">
-  <div>
-    <ul class="flex flex-col gap-2 mb-4">
-      <!-- Tableau de bord -->
-      <li>
-        <a
-          (click)="navigateAndClose('/commercial', 'commercial')"
-          class="menu-item group cursor-pointer py-2"
-          [class]="currentPage === 'commercial' ? 'menu-item-active' : 'menu-item-inactive'"
-          [class.flex-row-reverse]="isRtl"
-        >
-          <svg
-            [class]="currentPage === 'commercial' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-            width="19"
-            height="19"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M12.7071 2.29289C12.3166 1.90237 11.6834 1.90237 11.2929 2.29289L3.29289 10.2929C3.10536 10.4804 3 10.7348 3 11V20C3 20.5523 3.44772 21 4 21H8C8.55228 21 9 20.5523 9 20V16C9 15.4477 9.44772 15 10 15H14C14.5523 15 15 15.4477 15 16V20C15 20.5523 15.4477 21 16 21H20C20.5523 21 21 20.5523 21 20V11C21 10.7348 20.8946 10.4804 20.7071 10.2929L12.7071 2.29289ZM5 11.4142L12 4.41421L19 11.4142V19H17V16C17 14.3431 15.6569 13 14 13H10C8.34315 13 7 14.3431 7 16V19H5V11.4142Z"
-              fill="currentColor"
-            />
-          </svg>
-
-          <span
-            class="min-text"
-            [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-          >
-            {{ 'Tableau de bord' | translate }}
-          </span>
-        </a>
-      </li>
-
-      <!-- Conventions -->
-      <li>
-        <a
-          (click)="navigateAndClose('/conventions', 'conventions')"
-          class="menu-item group cursor-pointer py-2"
-          [class]="currentPage === 'conventions' ? 'menu-item-active' : 'menu-item-inactive'"
-          [class.flex-row-reverse]="isRtl"
-        >
-          <svg
-            [class]="currentPage === 'conventions' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-            width="19"
-            height="19"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M4 4C2.89543 4 2 4.89543 2 6V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V8C22 6.89543 21.1046 6 20 6H11L9 4H4ZM4 6H9.82843L11.8284 8H20V18H4V6ZM7 10H17V12H7V10ZM7 14H13V16H7V14Z"
-              fill="currentColor"
-            />
-          </svg>
-
-          <span
-            class="min-text"
-            [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-          >
-            {{ 'Conventions' | translate }}
-          </span>
-        </a>
-      </li>
-
-      <!-- Factures -->
-      <li>
-        <a
-          (click)="navigateAndClose('/factures', 'factures')"
-          class="menu-item group cursor-pointer py-2"
-          [class]="currentPage === 'factures' ? 'menu-item-active' : 'menu-item-inactive'"
-          [class.flex-row-reverse]="isRtl"
-        >
-          <svg
-            [class]="currentPage === 'factures' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-            width="19"
-            height="19"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M5 3C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3H5ZM5 5H19V19H5V5ZM7 7V17H17V7H7ZM9 9H15V15H9V9ZM11 11V13H13V11H11Z"
-              fill="currentColor"
-            />
-          </svg>
-
-          <span
-            class="min-text"
-            [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-          >
-            {{ 'Factures' | translate }}
-          </span>
-        </a>
-      </li>
-
-      <!-- Archives -->
-      <li>
-        <a
-          (click)="navigateAndClose('/conventions/archives', 'conventions/archives')"
-          class="menu-item group cursor-pointer py-2"
-          [class]="currentPage === 'conventions/archives' ? 'menu-item-active' : 'menu-item-inactive'"
-          [class.flex-row-reverse]="isRtl"
-        >
-          <svg
-            [class]="currentPage === 'conventions/archives' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-            width="19"
-            height="19"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor" 
-            stroke-width="2"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-              fill="none"
-            />
-          </svg>
-          <span
-            class="min-text"
-            [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-          >
-            {{ 'Archives' | translate }}
-          </span>
-        </a>
-      </li>
-
-      <!-- Calendrier -->
-      <li>
-        <a
-          (click)="navigateAndClose('/commercial/calendar', 'commercial/calendar')"
-          class="menu-item group cursor-pointer py-2"
-          [class]="currentPage === 'commercial/calendar' ? 'menu-item-active' : 'menu-item-inactive'"
-          [class.flex-row-reverse]="isRtl"
-        >
-          <svg
-            [class]="currentPage === 'commercial/calendar' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-            width="19"
-            height="19"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M8 2C8.55228 2 9 2.44772 9 3V5H15V3C15 2.44772 15.4477 2 16 2C16.5523 2 17 2.44772 17 3V5H19C20.6569 5 22 6.34315 22 8V19C22 20.6569 20.6569 22 19 22H5C3.34315 22 2 20.6569 2 19V8C2 6.34315 3.34315 5 5 5H7V3C7 2.44772 7.44772 2 8 2ZM7 7H5C4.44772 7 4 7.44772 4 8V19C4 19.5523 4.44772 20 5 20H19C19.5523 20 20 19.5523 20 19V8C20 7.44772 19.5523 7 19 7H17V8C17 8.55228 16.5523 9 16 9C15.4477 9 15 8.55228 15 8V7H9V8C9 8.55228 8.55228 9 8 9C7.44772 9 7 8.55228 7 8V7Z"
-              fill="currentColor"
-            />
-          </svg>
-
-          <span
-            class="min-text"
-            [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-          >
-            {{ 'Calendrier' | translate }}
-          </span>
-        </a>
-      </li>
-    </ul>
+  <!-- SIDEBAR HEADER WITH LOGO -->
+  <div class="flex items-center justify-center mt-2 h-16 border-b border-gray-100 dark:border-gray-800"
+       [class.border-r]="!isRtl"
+       [class.border-l]="isRtl">
+    <a routerLink="/" class="flex items-center">
+      <!-- Light Mode - Sidebar Closed & Not Hovering -->
+      <img 
+        *ngIf="!isSidebarOpen && !isHovering && !isDarkMode"
+        class="h-8 w-auto block lg:group-hover:hidden" 
+        src="assets/logo-light-roun.png" 
+        alt="Logo" 
+      />
+      
+      <!-- Light Mode - Sidebar Open OR Hovering -->
+      <img 
+        *ngIf="(isSidebarOpen || isHovering) && !isDarkMode"
+        class="h-16 w-auto block" 
+        src="assets/logo-ligh.png" 
+        alt="Logo" 
+      />
+      
+      <!-- Dark Mode - Sidebar Closed & Not Hovering -->
+      <img 
+        *ngIf="!isSidebarOpen && !isHovering && isDarkMode"
+        class="h-8 w-auto hidden dark:block lg:group-hover:hidden" 
+        src="assets/logo-dark-round.png" 
+        alt="Logo" 
+      />
+      
+      <!-- Dark Mode - Sidebar Open OR Hovering -->
+      <img 
+        *ngIf="(isSidebarOpen || isHovering) && isDarkMode"
+        class="h-16 w-auto hidden dark:block" 
+        src="assets/logo-dark.png" 
+        alt="Logo" 
+      />
+    </a>
   </div>
-</nav>
-  <nav *ngIf="isChefProjetUser()">
-    <div>   
-      <ul class="flex flex-col gap-2 mb-4">
-          <li>
-            <a
-             
-                  (click)="navigateAndClose('/chef', 'chef')"
-
-              class="menu-item group cursor-pointer py-2"
-              [class]="currentPage === 'chef' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-              <svg
-                [class]="currentPage === 'chef' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M12.7071 2.29289C12.3166 1.90237 11.6834 1.90237 11.2929 2.29289L3.29289 10.2929C3.10536 10.4804 3 10.7348 3 11V20C3 20.5523 3.44772 21 4 21H8C8.55228 21 9 20.5523 9 20V16C9 15.4477 9.44772 15 10 15H14C14.5523 15 15 15.4477 15 16V20C15 20.5523 15.4477 21 16 21H20C20.5523 21 21 20.5523 21 20V11C21 10.7348 20.8946 10.4804 20.7071 10.2929L12.7071 2.29289ZM5 11.4142L12 4.41421L19 11.4142V19H17V16C17 14.3431 15.6569 13 14 13H10C8.34315 13 7 14.3431 7 16V19H5V11.4142Z"
-                  fill="currentColor"
-                />
-              </svg>
-
-              <span
-                class="min-text"
-                [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-              >
-                {{ 'Tableau de bord' | translate }}
-              </span>
-            </a>
-          </li>
-
-          <li >
-            <a
-            
-                  (click)="navigateAndClose('/applications', 'applications')"
-
-              class="menu-item group cursor-pointer py-2"
-              [class]="currentPage === 'applications' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-              <svg
-                [class]="currentPage === 'applications' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M3 3C2.44772 3 2 3.44772 2 4V20C2 20.5523 2.44772 21 3 21H21C21.5523 21 22 20.5523 22 20V4C22 3.44772 21.5523 3 21 3H3ZM4 19V5H20V19H4ZM7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H14V17H7V15Z"
-                  fill="currentColor"
-                />
-              </svg>
-              <span
-                class="min-text"
-                [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-              >
-                {{ 'Applications' | translate }}
-              </span>
-            </a>
-          </li>
-
-
-          
-           <li >
-            <a
-             
-                                (click)="navigateAndClose('/archives/applications', 'archives/applications')"
-
-              class="menu-item group cursor-pointer py-2"
-              [class]="currentPage === 'archives/applications' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-             
-       
-
-  <svg
-  [class]="currentPage === 'archives/applications' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-  width="19"
-  height="19"
-  viewBox="0 0 24 24"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <path
-    fill-rule="evenodd"
-    clip-rule="evenodd"
-    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.5"
-  />
-</svg>
-              <span
-                class="min-text"
-                [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-              >
-                {{ 'Archives' | translate }}
-              </span>
-            </a>
-          </li>
-
-           <li >
-            <a
-             
-                                (click)="navigateAndClose('/requests', 'requests')"
-
-              class="menu-item group cursor-pointer py-2"
-              [class]="currentPage === 'requests' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-        
-
-   <svg
-  [class]="currentPage === 'requests' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-  width="19"
-  height="19"
-  viewBox="0 0 24 24"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <path
-    fill-rule="evenodd"
-    clip-rule="evenodd"
-    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.5"
-  />
-</svg>
-              <span
-                class="min-text"
-                [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-              >
-                {{ 'Demandes' | translate }}
-              </span>
-            </a>
-          </li>
-
-
-
-
-
-      </ul>
-    </div>
-  </nav>
-
-  <nav *ngIf="isDecideurUser()">
-    <div>
-      <ul class="flex flex-col gap-2 mb-4">
-          <li>
-            <a
-              
-              
-                  (click)="navigateAndClose('/decideur', 'decideur')"
-
-              class="menu-item group cursor-pointer py-2"
-              [class]="currentPage === 'decideur' ? 'menu-item-active' : 'menu-item-inactive'"
-            >
-              <svg
-                [class]="currentPage === 'decideur' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M12.7071 2.29289C12.3166 1.90237 11.6834 1.90237 11.2929 2.29289L3.29289 10.2929C3.10536 10.4804 3 10.7348 3 11V20C3 20.5523 3.44772 21 4 21H8C8.55228 21 9 20.5523 9 20V16C9 15.4477 9.44772 15 10 15H14C14.5523 15 15 15.4477 15 16V20C15 20.5523 15.4477 21 16 21H20C20.5523 21 21 20.5523 21 20V11C21 10.7348 20.8946 10.4804 20.7071 10.2929L12.7071 2.29289ZM5 11.4142L12 4.41421L19 11.4142V19H17V16C17 14.3431 15.6569 13 14 13H10C8.34315 13 7 14.3431 7 16V19H5V11.4142Z"
-                  fill="currentColor"
-                />
-              </svg>
-
-              <span
-                class="min-text"
-                [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'"
-              >
-                {{ 'Tableau de bord' | translate }}
-              </span>
-            </a>
-          </li>
-      </ul>
-    </div>
-  </nav>
+  
+  <!-- SIDEBAR CONTENT (SCROLLABLE) -->
+  <div class="flex-1 flex flex-col px-3 py-3 overflow-y-auto"
+       [class.ml-2]="!isRtl"
+       [class.mr-2]="isRtl">
     
+    <!-- ADMIN MENU -->
+    <nav *ngIf="isAdminUser()">
+      <div>
+        <ul class="flex flex-col gap-1 mb-2">
+          <li>
+            <a (click)="navigateWithLang('/admin')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'admin' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'admin' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12.7071 2.29289C12.3166 1.90237 11.6834 1.90237 11.2929 2.29289L3.29289 10.2929C3.10536 10.4804 3 10.7348 3 11V20C3 20.5523 3.44772 21 4 21H8C8.55228 21 9 20.5523 9 20V16C9 15.4477 9.44772 15 10 15H14C14.5523 15 15 15.4477 15 16V20C15 20.5523 15.4477 21 16 21H20C20.5523 21 21 20.5523 21 20V11C21 10.7348 20.8946 10.4804 20.7071 10.2929L12.7071 2.29289ZM5 11.4142L12 4.41421L19 11.4142V19H17V16C17 14.3431 15.6569 13 14 13H10C8.34315 13 7 14.3431 7 16V19H5V11.4142Z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Tableau de bord' | translate }}</span>
+            </a>
+          </li>
 
-   
+          <li>
+            <a (click)="navigateWithLang('/admin/users')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'Users' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'Users' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M3 6C3 4.34315 4.34315 3 6 3H8C9.65685 3 11 4.34315 11 6V8C11 9.65685 9.65685 11 8 11H6C4.34315 11 3 9.65685 3 8V6Z" fill="currentColor"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M13 6C13 4.34315 14.3431 3 16 3H18C19.6569 3 21 4.34315 21 6V8C21 9.65685 19.6569 11 18 11H16C14.3431 11 13 9.65685 13 8V6Z" fill="currentColor"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M3 16C3 14.3431 4.34315 13 6 13H8C9.65685 13 11 14.3431 11 16V18C11 19.6569 9.65685 21 8 21H6C4.34315 21 3 19.6569 3 18V16Z" fill="currentColor"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M13 16C13 14.3431 14.3431 13 16 13H18C19.6569 13 21 14.3431 21 16V18C21 19.6569 19.6569 21 18 21H16C14.3431 21 13 19.6569 13 18V16Z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Gestion des utilisateurs' | translate }}</span>
+            </a>
+          </li>
+
+          <li>
+            <a (click)="navigateWithLang('/admin/nomenclatures')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'Nomenclatures' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'Nomenclatures' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7v-2zm5 5h5v2h-5v-2zm0-10h5v2h-5V6z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Nomenclatures' | translate }}</span>
+            </a>
+          </li>
+          
+          <li>
+            <a (click)="navigateWithLang('/applications')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'applications' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'applications' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M3 3C2.44772 3 2 3.44772 2 4V20C2 20.5523 2.44772 21 3 21H21C21.5523 21 22 20.5523 22 20V4C22 3.44772 21.5523 3 21 3H3ZM4 19V5H20V19H4ZM7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H14V17H7V15Z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Applications' | translate }}</span>
+            </a>
+          </li>
+
+          <li>
+            <a (click)="navigateWithLang('/requests')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'requests' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'requests' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Demandes' | translate }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- COMMERCIAL MENU -->
+    <nav *ngIf="isCommercialUser()">
+      <div>
+        <ul class="flex flex-col gap-1 mb-2">
+          <li>
+            <a (click)="navigateWithLang('/commercial')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'commercial' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'commercial' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12.7071 2.29289C12.3166 1.90237 11.6834 1.90237 11.2929 2.29289L3.29289 10.2929C3.10536 10.4804 3 10.7348 3 11V20C3 20.5523 3.44772 21 4 21H8C8.55228 21 9 20.5523 9 20V16C9 15.4477 9.44772 15 10 15H14C14.5523 15 15 15.4477 15 16V20C15 20.5523 15.4477 21 16 21H20C20.5523 21 21 20.5523 21 20V11C21 10.7348 20.8946 10.4804 20.7071 10.2929L12.7071 2.29289ZM5 11.4142L12 4.41421L19 11.4142V19H17V16C17 14.3431 15.6569 13 14 13H10C8.34315 13 7 14.3431 7 16V19H5V11.4142Z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Tableau de bord' | translate }}</span>
+            </a>
+          </li>
+
+          <li>
+            <a (click)="navigateWithLang('/conventions')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'conventions' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'conventions' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M4 4C2.89543 4 2 4.89543 2 6V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V8C22 6.89543 21.1046 6 20 6H11L9 4H4ZM4 6H9.82843L11.8284 8H20V18H4V6ZM7 10H17V12H7V10ZM7 14H13V16H7V14Z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Conventions' | translate }}</span>
+            </a>
+          </li>
+
+          <li>
+            <a (click)="navigateWithLang('/factures')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'factures' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'factures' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M5 3C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3H5ZM5 5H19V19H5V5ZM7 7V17H17V7H7ZM9 9H15V15H9V9ZM11 11V13H13V11H11Z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Factures' | translate }}</span>
+            </a>
+          </li>
+
+         
+          <li>
+            <a (click)="navigateWithLang('/conventions/archives')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'conventions/archives' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'conventions/archives' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" fill="none"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Archives' | translate }}</span>
+            </a>
+          </li>
+
+          <li>
+            <a (click)="navigateWithLang('/planFacturation')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'planFacturation' ? 'menu-item-active' : 'menu-item-inactive'">
+<svg 
+  [class]="currentPage === 'planFacturation' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" 
+  width="19" 
+  height="19" 
+  viewBox="0 0 24 24" 
+  fill="none" 
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Receipt / invoice with euro symbol -->
+  <path 
+    d="M5 3H19C20.1 3 21 3.9 21 5V19C21 20.1 20.1 21 19 21H5C3.9 21 3 20.1 3 19V5C3 3.9 3.9 3 5 3Z" 
+    stroke="currentColor" 
+    stroke-width="1.5" 
+    fill="none"
+  />
+  <path 
+    d="M7 7H17M7 11H14M7 15H10" 
+    stroke="currentColor" 
+    stroke-width="1.5" 
+    stroke-linecap="round" 
+    fill="none"
+  />
+  <path 
+    d="M17 14L19 16L17 18M19 14L17 16L19 18" 
+    stroke="currentColor" 
+    stroke-width="1.5" 
+    stroke-linecap="round" 
+    stroke-linejoin="round" 
+    fill="none"
+  />
+</svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Plan de Facturation' | translate }}</span>
+            </a>
+          </li>
+
+          <li>
+            <a (click)="navigateWithLang('/commercial/calendar')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'commercial/calendar' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'commercial/calendar' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M8 2C8.55228 2 9 2.44772 9 3V5H15V3C15 2.44772 15.4477 2 16 2C16.5523 2 17 2.44772 17 3V5H19C20.6569 5 22 6.34315 22 8V19C22 20.6569 20.6569 22 19 22H5C3.34315 22 2 20.6569 2 19V8C2 6.34315 3.34315 5 5 5H7V3C7 2.44772 7.44772 2 8 2ZM7 7H5C4.44772 7 4 7.44772 4 8V19C4 19.5523 4.44772 20 5 20H19C19.5523 20 20 19.5523 20 19V8C20 7.44772 19.5523 7 19 7H17V8C17 8.55228 16.5523 9 16 9C15.4477 9 15 8.55228 15 8V7H9V8C9 8.55228 8.55228 9 8 9C7.44772 9 7 8.55228 7 8V7Z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Calendrier' | translate }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- CHEF PROJET MENU -->
+    <nav *ngIf="isChefProjetUser()">
+      <div>
+        <ul class="flex flex-col gap-1 mb-2">
+          <li>
+            <a (click)="navigateWithLang('/chef')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'chef' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'chef' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12.7071 2.29289C12.3166 1.90237 11.6834 1.90237 11.2929 2.29289L3.29289 10.2929C3.10536 10.4804 3 10.7348 3 11V20C3 20.5523 3.44772 21 4 21H8C8.55228 21 9 20.5523 9 20V16C9 15.4477 9.44772 15 10 15H14C14.5523 15 15 15.4477 15 16V20C15 20.5523 15.4477 21 16 21H20C20.5523 21 21 20.5523 21 20V11C21 10.7348 20.8946 10.4804 20.7071 10.2929L12.7071 2.29289ZM5 11.4142L12 4.41421L19 11.4142V19H17V16C17 14.3431 15.6569 13 14 13H10C8.34315 13 7 14.3431 7 16V19H5V11.4142Z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Tableau de bord' | translate }}</span>
+            </a>
+          </li>
+
+          <li>
+            <a (click)="navigateWithLang('/applications')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'applications' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'applications' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M3 3C2.44772 3 2 3.44772 2 4V20C2 20.5523 2.44772 21 3 21H21C21.5523 21 22 20.5523 22 20V4C22 3.44772 21.5523 3 21 3H3ZM4 19V5H20V19H4ZM7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H14V17H7V15Z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Applications' | translate }}</span>
+            </a>
+          </li>
+
+          <li>
+            <a (click)="navigateWithLang('/archives/applications')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'archives/applications' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'archives/applications' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Archives' | translate }}</span>
+            </a>
+          </li>
+
+          <li>
+            <a (click)="navigateWithLang('/requests')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'requests' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'requests' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Demandes' | translate }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- DECIDEUR MENU -->
+    <nav *ngIf="isDecideurUser()">
+      <div>
+        <ul class="flex flex-col gap-1 mb-2">
+          <li>
+            <a (click)="navigateWithLang('/decideur')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'decideur' ? 'menu-item-active' : 'menu-item-inactive'">
+              <svg [class]="currentPage === 'decideur' ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" width="19" height="19" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12.7071 2.29289C12.3166 1.90237 11.6834 1.90237 11.2929 2.29289L3.29289 10.2929C3.10536 10.4804 3 10.7348 3 11V20C3 20.5523 3.44772 21 4 21H8C8.55228 21 9 20.5523 9 20V16C9 15.4477 9.44772 15 10 15H14C14.5523 15 15 15.4477 15 16V20C15 20.5523 15.4477 21 16 21H20C20.5523 21 21 20.5523 21 20V11C21 10.7348 20.8946 10.4804 20.7071 10.2929L12.7071 2.29289ZM5 11.4142L12 4.41421L19 11.4142V19H17V16C17 14.3431 15.6569 13 14 13H10C8.34315 13 7 14.3431 7 16V19H5V11.4142Z" fill="currentColor"/>
+              </svg>
+              <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Tableau de bord' | translate }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
     <!-- Spacer to push user info to bottom -->
     <div class="flex-grow"></div>
   </div>
 
-<!-- USER INFO SECTION AT BOTTOM - Smaller and more compact -->
+<!-- USER INFO SECTION AT BOTTOM -->
 <div class="border-t border-gray-200 dark:border-gray-700 px-3 py-2">
-<div class="flex items-center" [class.flex-row-reverse]="isRtl">
-  <!-- User Avatar -->
-  <div class="h-8 w-8 rounded-md overflow-hidden flex-shrink-0"
-       [class.ml-5]="!isRtl"
-       [class.mr-5]="isRtl">
-  <img 
-    *ngIf="getAvatarUrl()"
-    [src]="getAvatarUrl()" 
-    [alt]="getUserFullName()"
-    class="h-full w-full object-cover"
-    (error)="handleImageError($event)"
-  />
-  <!-- Fallback initials if image fails to load -->
-  <div *ngIf="!getAvatarUrl()" 
-       class="h-full w-full flex items-center justify-center text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-md bg-transparent">
-    {{ getUserInitials() }}
-  </div>
-</div>
+  <div class="flex items-center justify-between">
     
-    <!-- User Info - Show when sidebar is open OR on hover -->
-<div class="flex-1 min-w-0" 
-     [class.ml-2]="!isRtl" 
-     [class.mr-2]="isRtl">
-           <p class="text-[14px] font-medium text-gray-800 dark:text-white truncate"
+    <!-- Avatar - Will be on LEFT in LTR, on RIGHT in RTL -->
+    <div class="h-8 w-8 rounded-md overflow-hidden flex-shrink-0 order-1 lg:order-1 ml-5 mr-3"
+         [class.lg:order-1]="!isRtl"
+         [class.lg:order-3]="isRtl">
+      <img *ngIf="getAvatarUrl()" 
+           [src]="getAvatarUrl()" 
+           [alt]="getUserFullName()" 
+           class="h-full w-full object-cover" 
+           (error)="handleImageError($event)"/>
+      <div *ngIf="!getAvatarUrl()" 
+           class="h-full w-full flex items-center justify-center text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-md bg-transparent">
+        {{ getUserInitials() }}
+      </div>
+    </div>
+
+    <!-- User Info (centered) -->
+    <div class="flex-1 min-w-0 order-2">
+      <p class="text-[14px] font-medium text-gray-800 dark:text-white truncate" 
          [class]="!isDesktop ? '' : (isSidebarOpen ? '' : 'hidden lg:group-hover:block')">
         {{ getUserFullName() }}
       </p>
-      <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate"
+      <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate" 
          [class]="!isDesktop ? '' : (isSidebarOpen ? '' : 'hidden lg:group-hover:block')">
         {{ getUserEmail() }}
       </p>
     </div>
 
-    <!-- Three dots menu (the code from above goes here) -->
-    <div class="relative ml-auto" [class.user-dropdown-container]="showUserDropdown">
-<div class="relative" [class.user-dropdown-container]="showUserDropdown">
-  <!-- Button with user-menu-button class -->
-  <button
-    #userMenuButton
-    class="user-menu-button flex items-center justify-center h-7 w-7 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors"
-    [class]="!isDesktop ? '' : (isSidebarOpen ? '' : 'hidden lg:group-hover:block')"
-    (click)="toggleUserDropdown($event)"
-  >
-    <svg 
-      width="14" 
-      height="14" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path 
-        d="M12 13C12.5523 13 13 12.5523 13 12C13 11.4477 12.5523 11 12 11C11.4477 11 11 11.4477 11 12C11 12.5523 11.4477 13 12 13Z" 
-        fill="currentColor" 
-        stroke="currentColor" 
-        stroke-width="2" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-      />
-      <path 
-        d="M19 13C19.5523 13 20 12.5523 20 12C20 11.4477 19.5523 11 19 11C18.4477 11 18 11.4477 18 12C18 12.5523 18.4477 13 19 13Z" 
-        fill="currentColor" 
-        stroke="currentColor" 
-        stroke-width="2" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-      />
-      <path 
-        d="M5 13C5.55228 13 6 12.5523 6 12C6 11.4477 5.55228 11 5 11C4.44772 11 4 11.4477 4 12C4 12.5523 4.44772 13 5 13Z" 
-        fill="currentColor" 
-        stroke="currentColor" 
-        stroke-width="2" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-      />
-    </svg>
-  </button>
-
-  <!-- SMALLER DROPDOWN MENU - Without initials avatar -->
-<div 
-  *ngIf="showUserDropdown" 
-  class="absolute bottom-full mb-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 z-50 overflow-hidden"
-  [class.right-0]="!isRtl"
-  [class.left-0]="isRtl"
->
-    <!-- User info header - Just name and email, no avatar since you already have one -->
-     
-    <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-      <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">
-        {{ getUserFullName() }}
-      </p>
-      <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
-        {{ getUserEmail() }}
-      </p>
-    </div>
-    
-    <!-- Menu items - Smaller and more compact -->
-    <div class="py-1">
-   
-      <a
-  routerLink="/profile"
-  (click)="toggleUserDropdown($event)"
-  class="flex items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/50 transition-colors"
-  [class.flex-row-reverse]="isRtl"
->
-  <svg class="w-3.5 h-3.5 text-gray-500" 
-       [class.mr-3]="!isRtl" 
-       [class.ml-3]="isRtl" 
-       fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-  <span>{{ 'Profil' | translate }}</span>
-</a>
-      <a
-        routerLink="/mailBox"
-        (click)="toggleUserDropdown($event)"            
-        class="flex items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/50 transition-colors"
-      >
-        <svg class="w-3.5 h-3.5 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    <!-- Three dots menu - Will be on RIGHT in LTR, on LEFT in RTL -->
+    <div class="relative order-3 lg:order-3"
+         [class.lg:order-3]="!isRtl"
+         [class.lg:order-1]="isRtl"
+         [class.user-dropdown-container]="showUserDropdown">
+      <button #userMenuButton 
+              class="user-menu-button flex items-center justify-center h-7 w-7 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white transition-colors" 
+              [class]="!isDesktop ? '' : (isSidebarOpen ? '' : 'hidden lg:group-hover:block')" 
+              (click)="toggleUserDropdown($event)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 13C12.5523 13 13 12.5523 13 12C13 11.4477 12.5523 11 12 11C11.4477 11 11 11.4477 11 12C11 12.5523 11.4477 13 12 13Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19 13C19.5523 13 20 12.5523 20 12C20 11.4477 19.5523 11 19 11C18.4477 11 18 11.4477 18 12C18 12.5523 18.4477 13 19 13Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 13C5.55228 13 6 12.5523 6 12C6 11.4477 5.55228 11 5 11C4.44772 11 4 11.4477 4 12C4 12.5523 4.44772 13 5 13Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>                {{ 'Boite Mail' | translate }}
-</span>
-      </a>
-
-      <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
-      
-      <button
-        (click)="logout(); toggleUserDropdown($event)"
-        class="flex w-full items-center px-4 py-2 text-xs text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-colors"
-      >
-        <svg class="w-3.5 h-3.5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
-        <span>{{ 'Déconnexion' | translate }}</span>
       </button>
+
+      <!-- DROPDOWN MENU -->
+      <div *ngIf="showUserDropdown" 
+           class="absolute bottom-full mb-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 z-50 overflow-hidden" 
+           [class.right-0]="!isRtl" 
+           [class.left-0]="isRtl">
+        <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+          <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ getUserFullName() }}</p>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ getUserEmail() }}</p>
+        </div>
+        <div class="py-1">
+          <a routerLink="/profile" (click)="toggleUserDropdown($event)" 
+             class="flex items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/50 transition-colors" 
+             [class.flex-row-reverse]="isRtl">
+            <svg class="w-3.5 h-3.5 text-gray-500" [class.mr-3]="!isRtl" [class.ml-3]="isRtl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>{{ 'Profil' | translate }}</span>
+          </a>
+          <a routerLink="/mailBox" (click)="toggleUserDropdown($event)" 
+             class="flex items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/50 transition-colors" 
+             [class.flex-row-reverse]="isRtl">
+            <svg class="w-3.5 h-3.5 text-gray-500" [class.mr-3]="!isRtl" [class.ml-3]="isRtl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span>{{ 'Boite Mail' | translate }}</span>
+          </a>
+          <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+          <button (click)="logout(); toggleUserDropdown($event)" 
+                  class="flex w-full items-center px-4 py-2 text-xs text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-colors" 
+                  [class.flex-row-reverse]="isRtl">
+            <svg class="w-3.5 h-3.5 text-red-500" [class.mr-3]="!isRtl" [class.ml-3]="isRtl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>{{ 'Déconnexion' | translate }}</span>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>    </div>
+    
   </div>
 </div>
+
+
 
 </aside>
 
+<!-- Overlay for mobile -->
 <div
   *ngIf="isSidebarOpen"
   (click)="layoutService.setSidebarOpen(false)"

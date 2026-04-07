@@ -24,6 +24,8 @@ export class SidebarComponent implements OnInit {
   isDarkMode = false;
   isHovering = false;
 
+    isRtl: boolean = false;
+
   constructor(
     private router: Router,
     public layoutService: LayoutService,
@@ -32,12 +34,17 @@ export class SidebarComponent implements OnInit {
   ) {}
 
 
-  isRtl: boolean = false;
 
 // Add this method
-checkRtlState(): void {
-  this.isRtl = document.documentElement.dir === 'rtl';
-}
+  checkRtlState(): void {
+    this.isRtl = this.translationService.isRtl();
+    // Update sidebar position based on RTL
+    if (this.isRtl) {
+      document.documentElement.style.setProperty('--sidebar-position', 'right');
+    } else {
+      document.documentElement.style.setProperty('--sidebar-position', 'left');
+    }
+  }
 
 
   ngOnInit(): void {
@@ -73,6 +80,12 @@ checkRtlState(): void {
     // Listen for dark mode changes
     this.listenForDarkModeChanges();
 
+    this.checkRtlState();
+    
+    // Listen for language changes
+    this.translationService.getLanguageChangeObservable().subscribe(() => {
+      this.checkRtlState();
+    });
     
   }
 
@@ -83,7 +96,7 @@ checkRtlState(): void {
 
 navigateWithLang(route: string): void {
   const currentLang = localStorage.getItem('appLanguage') || 'fr';
-  this.router.navigate([`/${currentLang}${route}`]);
+  this.router.navigate([`/${route}`]);
 }
 
   listenForDarkModeChanges(): void {
@@ -121,15 +134,8 @@ navigateWithLang(route: string): void {
     console.log('Current user loaded:', this.user);
   }
 
-  navigateAndClose(route: string, pageName: string): void {
-    this.toggleSelected(pageName);
-    this.router.navigate([route]);
-    
-    if (!this.isDesktop) {
-      this.layoutService.setSidebarOpen(false);
-    }
-  }
 
+  
   updateCurrentPage(): void {
     const url = this.router.url;
     
@@ -150,6 +156,8 @@ navigateWithLang(route: string): void {
       { path: 'chef', page: 'chef' },
       { path: 'requests', page: 'requests' },
       { path: 'profile', page: 'profile' },
+      { path: 'planFacturation', page: 'planFacturation' }
+
     ];
     
     const matchedRoute = routeMapping.find(route => url.includes(route.path));
@@ -185,14 +193,7 @@ navigateWithLang(route: string): void {
     });
   }
 
-  toggleSelected(item: string): void {
-    if (this.selected === item) {
-      this.selected = '';
-    } else {
-      this.selected = item;
-    }
-    localStorage.setItem('sidebarSelected', this.selected);
-  }
+
 
   isAdminOrChefProjet(): boolean {
     return this.isAdminUser() || this.isChefProjetUser();

@@ -22,4 +22,8 @@ public interface StructureRepository extends JpaRepository<Structure, Long> {
 
     List<Structure> findByZoneGeographiqueId(Long zoneId);
 
+    // In StructureRepository.java - Add this method
+
+    List<Structure> findByNameContaining(String name);
+
 }

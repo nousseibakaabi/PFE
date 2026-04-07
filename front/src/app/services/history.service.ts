@@ -36,6 +36,7 @@ export interface HistoryEntry {
   
   ipAddress: string;
   userAgent: string;
+  
 }
 
 @Injectable({

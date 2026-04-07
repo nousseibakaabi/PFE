@@ -1,15 +1,15 @@
-<div class="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+<!-- app.component.html -->
+<div class="flex min-h-screen bg-gray-50 dark:bg-gray-900" [class.rtl]="isRtl" [class.ltr]="!isRtl">
   <app-preloader></app-preloader>
   
   <!-- Show sidebar only on dashboard/profile routes -->
   <app-sidebar *ngIf="showLayout()" [isSidebarOpen]="isSidebarOpen"></app-sidebar>
   
-  <!-- MAIN CONTENT AREA - Add margin-left that changes based on sidebar state -->
+  <!-- MAIN CONTENT AREA - margin changes based on sidebar state and RTL -->
   <div 
     class="flex w-full flex-col transition-all duration-300 ease-in-out"
-    [class]="showLayout() ? (isSidebarOpen ? 'lg:ml-[260px]' : 'lg:ml-[90px]') : ''"
+    [class]="showLayout() ? (isSidebarOpen ? (isRtl ? 'lg:mr-[260px]' : 'lg:ml-[260px]') : (isRtl ? 'lg:mr-[90px]' : 'lg:ml-[90px]')) : ''"
   >
-    <!-- Show header only on dashboard/profile routes -->
     <app-header *ngIf="showLayout()"></app-header>
     
     <app-overlay 
@@ -18,7 +18,6 @@
       (overlayClick)="toggleSidebar()">
     </app-overlay>
     
-    <!-- Make this the scrollable container -->
     <main 
       [class]="showLayout() ? 'flex-1 overflow-y-auto' : 'w-full'"
       [style.height]="showLayout() ? 'calc(100vh - 64px)' : 'auto'"

@@ -1,12 +1,19 @@
-import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+
+import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { Subject } from 'rxjs';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class TranslationService {
-  private currentLang = new BehaviorSubject<string>('fr');
-  public currentLang$ = this.currentLang.asObservable();
+
+
+  private renderer: Renderer2;
+  private currentLang: string = 'fr';
+  private currentLangSubject = new BehaviorSubject<string>('fr');
+  public currentLang$: Observable<string> = this.currentLangSubject.asObservable();
 
   private translations: { [key: string]: { [key: string]: string } } = {
     fr: {
@@ -1789,17 +1796,6 @@ export class TranslationService {
 
 
     },
-
-
-
-
-
-
-
-
-
-
-
     ar: {
       'Chef Projet' : 'مدير المشروع',
       'Admin' : 'مدير النظام',
@@ -3097,33 +3093,65 @@ export class TranslationService {
 }
   };
 
-  constructor() {
-    const savedLang = localStorage.getItem('appLanguage') || 'fr';
-    this.setLanguage(savedLang);
+  constructor(rendererFactory: RendererFactory2) {
+    this.renderer = rendererFactory.createRenderer(null, null);
+    this.loadInitialLanguage();
+  }
+
+  private loadInitialLanguage(): void {
+    const savedLang = localStorage.getItem('appLanguage');
+    if (savedLang && this.translations[savedLang]) {
+      this.currentLang = savedLang;
+    } else {
+      this.currentLang = 'fr';
+    }
+    this.currentLangSubject.next(this.currentLang);
+    this.setHtmlDirection();
+  }
+
+  setLanguage(langCode: string): void {
+    if (this.translations[langCode]) {
+      this.currentLang = langCode;
+      localStorage.setItem('appLanguage', langCode);
+      this.currentLangSubject.next(langCode);
+      this.setHtmlDirection();
+    }
+  }
+
+  getCurrentLanguage(): string {
+    return this.currentLang;
+  }
+
+  isRtl(): boolean {
+    return this.currentLang === 'ar';
+  }
+
+  getLanguageChangeObservable(): Observable<string> {
+    return this.currentLang$;
+  }
+
+  private setHtmlDirection(): void {
+    const isRtl = this.currentLang === 'ar';
+    const htmlElement = document.documentElement;
+    
+    if (isRtl) {
+      this.renderer.setAttribute(htmlElement, 'dir', 'rtl');
+      this.renderer.setAttribute(htmlElement, 'lang', 'ar');
+      this.renderer.addClass(htmlElement, 'rtl');
+      this.renderer.removeClass(htmlElement, 'ltr');
+    } else {
+      this.renderer.setAttribute(htmlElement, 'dir', 'ltr');
+      this.renderer.setAttribute(htmlElement, 'lang', this.currentLang);
+      this.renderer.addClass(htmlElement, 'ltr');
+      this.renderer.removeClass(htmlElement, 'rtl');
+    }
   }
 
   translate(key: string): string {
-    const lang = this.currentLang.value;
-    if (this.translations[lang] && this.translations[lang][key]) {
-      return this.translations[lang][key];
-    }
-    return key; // Return original if no translation found
+    return this.translations[this.currentLang]?.[key] || key;
   }
 
-setLanguage(lang: string): void {
-  if (this.translations[lang]) {
-    this.currentLang.next(lang);
-    localStorage.setItem('appLanguage', lang);
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = lang;
-  }
-}
-
-  getCurrentLanguage(): string {
-    return this.currentLang.value;
-  }
-
-  getLanguages() {
+  getLanguages(): any[] {
     return [
       { code: 'fr', name: 'Français', flag: '🇫🇷' },
       { code: 'en', name: 'English', flag: '🇬🇧' },

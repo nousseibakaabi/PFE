@@ -151,7 +151,7 @@
               class="w-full px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white flex items-center justify-between transition-all">
               <span *ngIf="!getSelectedChef()" class="text-gray-500 dark:text-gray-400">{{ 'Sélectionner un chef de projet' | translate }}</span>
               <span *ngIf="getSelectedChef() as chef" class="flex items-center gap-2">
-                <div class="h-5 w-5 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-600 flex-shrink-0">
+                <div class="h-5 w-5 rounded-full overflow-hidden bg-transparent dark:bg-transparent flex-shrink-0">
                   <img *ngIf="chef.profileImage" 
                        [src]="getChefAvatarUrl(chef)" 
                        [alt]="chef.firstName"

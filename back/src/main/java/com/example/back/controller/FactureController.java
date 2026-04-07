@@ -4,6 +4,7 @@ package com.example.back.controller;
 import com.example.back.entity.*;
 import com.example.back.payload.request.FactureRequest;
 import com.example.back.payload.request.PaiementRequest;
+import com.example.back.payload.request.SendEmailRequest;
 import com.example.back.payload.response.FactureResponse;
 import com.example.back.repository.*;
 import com.example.back.service.*;
@@ -29,6 +30,10 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasAnyRole('COMMERCIAL_METIER')")
 @Slf4j
 public class FactureController {
+
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private FactureRepository factureRepository;
@@ -353,7 +358,6 @@ public class FactureController {
     @PreAuthorize("hasAnyRole('COMMERCIAL_METIER')")
     public ResponseEntity<?> generateFacture(@Valid @RequestBody FactureRequest request) {
         try {
-            // Get current user
             User currentUser = userContextService.getCurrentUser();
 
             Optional<Convention> convention = conventionRepository.findById(request.getConventionId());
@@ -362,17 +366,14 @@ public class FactureController {
                         .body(createErrorResponse("Convention not found"));
             }
 
-            // Check access to the convention
             if (!canAccessConvention(request.getConventionId(), currentUser)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(createErrorResponse("Access denied to create invoice for this convention"));
             }
 
-            // Generate invoice number
             String invoiceNumber = "FACT-" + LocalDate.now().getYear() + "-" +
                     String.format("%06d", factureRepository.count() + 1);
 
-            // Create new invoice
             Facture facture = new Facture();
             facture.setNumeroFacture(invoiceNumber);
             facture.setConvention(convention.get());
@@ -384,7 +385,6 @@ public class FactureController {
             facture.setNotes(request.getNotes());
             facture.setStatutPaiement("NON_PAYE");
 
-            // Calculate TTC
             if (request.getMontantHT() != null && facture.getTva() != null) {
                 BigDecimal tvaMontant = request.getMontantHT()
                         .multiply(facture.getTva())
@@ -399,7 +399,6 @@ public class FactureController {
             // LOG HISTORY: Facture creation
             historyService.logFactureCreate(saved, currentUser);
 
-            // Update convention status
             conventionService.updateConventionStatusRealTime(saved.getConvention().getId());
 
             FactureResponse response = factureMapper.toResponse(saved);
@@ -751,6 +750,178 @@ public class FactureController {
         return response;
     }
 
+
+
+    // Add to FactureController.java
+
+// Add to FactureController.java
+
+    @PostMapping("/send-email")
+    @PreAuthorize("hasAnyRole('COMMERCIAL_METIER')")
+    public ResponseEntity<?> sendFactureEmail(@Valid @RequestBody SendEmailRequest request) {
+        try {
+            User currentUser = userContextService.getCurrentUser();
+
+            Optional<Facture> factureOpt = factureRepository.findById(request.getFactureId());
+            if (factureOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body(createErrorResponse("Facture non trouvée"));
+            }
+
+            Facture facture = factureOpt.get();
+
+            // Check access
+            if (!canAccessFacture(request.getFactureId(), currentUser)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(createErrorResponse("Accès non autorisé"));
+            }
+
+            // Get client email from application
+            Application application = facture.getConvention().getApplication();
+            String clientEmail = application.getClientEmail();
+
+            if (clientEmail == null || clientEmail.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse("Aucun email client trouvé pour cette facture"));
+            }
+
+            // Calculate days until due or overdue
+            LocalDate today = LocalDate.now();
+            long daysDifference = ChronoUnit.DAYS.between(today, facture.getDateEcheance());
+
+            String emailSubject;
+            String emailBody;
+
+            if (request.isReminder()) {
+                // Reminder email
+                if (daysDifference < 0) {
+                    long daysLate = Math.abs(daysDifference);
+                    emailSubject = "⚠️ RELANCE DE PAIEMENT - Facture en retard de " + daysLate + " jours";
+                    emailBody = buildReminderEmailBody(facture, daysLate, true);
+                } else if (daysDifference == 0) {
+                    emailSubject = "⚠️ RELANCE DE PAIEMENT - Échéance aujourd'hui";
+                    emailBody = buildReminderEmailBody(facture, 0, false);
+                } else {
+                    emailSubject = "📅 RELANCE DE PAIEMENT - Échéance dans " + daysDifference + " jours";
+                    emailBody = buildReminderEmailBody(facture, daysDifference, false);
+                }
+            } else {
+                // Simple email with PDF
+                emailSubject = "📄 Votre facture " + facture.getNumeroFacture();
+                emailBody = buildSimpleEmailBody(facture);
+            }
+
+            // Send email with PDF attachment
+            emailService.sendEmailWithAttachment(
+                    clientEmail,
+                    emailSubject,
+                    emailBody,
+                    request.getPdfBase64(),
+                    "facture_" + facture.getNumeroFacture().replace("/", "-") + ".pdf"
+            );
+
+            // Log history
+            historyService.logFactureEmailSent(facture, currentUser, clientEmail, request.isReminder());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", request.isReminder() ?
+                    "Relance envoyée avec succès à " + clientEmail :
+                    "Email envoyé avec succès à " + clientEmail);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error sending email: ", e);
+            return ResponseEntity.badRequest().body(createErrorResponse("Erreur lors de l'envoi de l'email: " + e.getMessage()));
+        }
+    }
+
+    private String buildReminderEmailBody(Facture facture, long days, boolean isOverdue) {
+        StringBuilder body = new StringBuilder();
+        body.append("<!DOCTYPE html>");
+        body.append("<html><head><meta charset='UTF-8'><style>");
+        body.append("body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }");
+        body.append(".container { max-width: 600px; margin: 0 auto; padding: 20px; }");
+        body.append(".header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center; }");
+        body.append(".content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }");
+        body.append(".warning { background: #fff3f3; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; border-radius: 8px; }");
+        body.append(".info { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; margin: 20px 0; border-radius: 8px; }");
+        body.append(".amount { font-size: 24px; font-weight: bold; color: #667eea; text-align: center; margin: 20px 0; }");
+        body.append(".button { display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 20px; }");
+        body.append("</style></head><body>");
+        body.append("<div class='container'>");
+        body.append("<div class='header'>");
+        body.append("<h2>📋 RELANCE DE PAIEMENT</h2>");
+        body.append("</div>");
+        body.append("<div class='content'>");
+
+        if (isOverdue) {
+            body.append("<div class='warning'>");
+            body.append("<h3 style='color: #ef4444; margin-top: 0;'>⚠️ FACTURE EN RETARD</h3>");
+            body.append("<p>Cette facture est en retard de <strong>").append(days).append(" jour").append(days > 1 ? "s" : "").append("</strong>.</p>");
+            body.append("</div>");
+        } else if (days == 0) {
+            body.append("<div class='warning'>");
+            body.append("<h3 style='color: #f59e0b; margin-top: 0;'>⚠️ ÉCHÉANCE AUJOURD'HUI</h3>");
+            body.append("<p>Cette facture arrive à échéance aujourd'hui.</p>");
+            body.append("</div>");
+        } else {
+            body.append("<div class='info'>");
+            body.append("<h3 style='color: #22c55e; margin-top: 0;'>📅 RELANCE DE PAIEMENT</h3>");
+            body.append("<p>Cette facture sera due dans <strong>").append(days).append(" jour").append(days > 1 ? "s" : "").append("</strong>.</p>");
+            body.append("</div>");
+        }
+
+        body.append("<h3>Détails de la facture :</h3>");
+        body.append("<ul>");
+        body.append("<li><strong>N° Facture :</strong> ").append(facture.getNumeroFacture()).append("</li>");
+        body.append("<li><strong>Date d'échéance :</strong> ").append(facture.getDateEcheance()).append("</li>");
+        body.append("<li><strong>Montant TTC :</strong> ").append(facture.getMontantTTC()).append(" TND</li>");
+        body.append("</ul>");
+
+        body.append("<div class='amount'>");
+        body.append("Montant à payer : ").append(facture.getMontantTTC()).append(" TND");
+        body.append("</div>");
+
+        body.append("<p>Veuillez trouver ci-joint la facture détaillée.</p>");
+        body.append("<p>Pour tout règlement, veuillez utiliser la référence de paiement mentionnée sur la facture.</p>");
+
+        body.append("<p style='margin-top: 30px;'>Cordialement,<br><strong>Service Comptabilité - CNI</strong></p>");
+        body.append("</div>");
+        body.append("</div>");
+        body.append("</body></html>");
+
+        return body.toString();
+    }
+
+    private String buildSimpleEmailBody(Facture facture) {
+        StringBuilder body = new StringBuilder();
+        body.append("<!DOCTYPE html>");
+        body.append("<html><head><meta charset='UTF-8'><style>");
+        body.append("body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }");
+        body.append(".container { max-width: 600px; margin: 0 auto; padding: 20px; }");
+        body.append(".header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center; }");
+        body.append(".content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }");
+        body.append("</style></head><body>");
+        body.append("<div class='container'>");
+        body.append("<div class='header'>");
+        body.append("<h2>📄 Votre facture</h2>");
+        body.append("</div>");
+        body.append("<div class='content'>");
+        body.append("<p>Bonjour,</p>");
+        body.append("<p>Veuillez trouver ci-joint votre facture <strong>").append(facture.getNumeroFacture()).append("</strong>.</p>");
+        body.append("<h3>Récapitulatif :</h3>");
+        body.append("<ul>");
+        body.append("<li><strong>Date d'émission :</strong> ").append(facture.getDateFacturation()).append("</li>");
+        body.append("<li><strong>Date d'échéance :</strong> ").append(facture.getDateEcheance()).append("</li>");
+        body.append("<li><strong>Montant TTC :</strong> ").append(facture.getMontantTTC()).append(" TND</li>");
+        body.append("</ul>");
+        body.append("<p>Cordialement,<br><strong>Service Comptabilité - CNI</strong></p>");
+        body.append("</div>");
+        body.append("</div>");
+        body.append("</body></html>");
+
+        return body.toString();
+    }
 
 
 

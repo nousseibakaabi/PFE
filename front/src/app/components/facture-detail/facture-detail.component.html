@@ -309,6 +309,184 @@
       </div>
     </div>
   </div>
+
+  <!-- Add this after the closing div of the invoice card (before the final closing div) -->
+
+<!-- HISTORY TIMELINE SECTION -->
+<div class="mt-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    
+    <!-- Header -->
+    <div class="px-5 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/10 dark:to-indigo-900/10">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-white">{{ 'Historique' | translate }}</h3>
+          <p class="text-[9px] text-gray-500">{{ 'Suivi des actions sur cette facture' | translate }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loadingHistory" class="p-8 text-center">
+      <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-purple-500 border-t-transparent"></div>
+      <p class="mt-2 text-xs text-gray-400">{{ 'Chargement de l\'historique...' | translate }}</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loadingHistory && groupedFactureHistory.length === 0" class="p-8 text-center">
+      <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
+        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4m12 4l4-4-4-4m-8 8L4 12l4-4" />
+        </svg>
+      </div>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ 'Aucun historique disponible' | translate }}</p>
+      <p class="text-xs text-gray-400 mt-1">{{ 'Les actions sur cette facture apparaîtront ici' | translate }}</p>
+    </div>
+
+    <!-- Timeline Content -->
+    <div *ngIf="!loadingHistory && groupedFactureHistory.length > 0" class="divide-y divide-gray-100 dark:divide-gray-700">
+      
+      <!-- Loop through grouped by date -->
+      <div *ngFor="let group of groupedFactureHistory" class="p-4">
+        
+        <!-- Date Header -->
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-6 h-6 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+            <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">{{ group.date }}</span>
+          <span class="text-[9px] text-gray-400">({{ group.entries.length }} {{ 'actions' | translate }})</span>
+        </div>
+
+        <!-- Timeline entries for this date -->
+        <div class="relative pl-4 ml-2 border-l-2 border-gray-200 dark:border-gray-700 space-y-3">
+          
+          <div *ngFor="let entry of group.entries" class="relative pb-2">
+            
+        
+
+            <!-- Entry content -->
+            <div class="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-3 ml-2">
+              
+              <!-- Header with time and action -->
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <!-- Icon -->
+                  <div class="w-5 h-5 rounded flex items-center justify-center"
+                       [ngClass]="{
+                         'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400': entry.actionType === 'CREATE',
+                         'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400': entry.actionType === 'UPDATE',
+                         'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400': entry.actionType === 'DELETE' || entry.actionType === 'OVERDUE',
+                         'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400': entry.actionType === 'PAYMENT',
+                         'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400': entry.actionType === 'STATUS_CHANGE',
+                         'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400': entry.actionType === 'EMAIL_SENT' || entry.actionType === 'REMINDER_SENT',
+                         'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400': true
+                       }">
+                    <i [class]="getHistoryIcon(entry.actionType) + ' text-[9px]'"></i>
+                  </div>
+                  
+                  <!-- Action label -->
+                  <span class="text-xs font-medium"
+                        [ngClass]="{
+                          'text-green-700 dark:text-green-300': entry.actionType === 'CREATE',
+                          'text-blue-700 dark:text-blue-300': entry.actionType === 'UPDATE',
+                          'text-red-700 dark:text-red-300': entry.actionType === 'DELETE' || entry.actionType === 'OVERDUE',
+                          'text-emerald-700 dark:text-emerald-300': entry.actionType === 'PAYMENT',
+                          'text-orange-700 dark:text-orange-300': entry.actionType === 'STATUS_CHANGE',
+                          'text-purple-700 dark:text-purple-300': entry.actionType === 'EMAIL_SENT' || entry.actionType === 'REMINDER_SENT',
+                          'text-gray-700 dark:text-gray-300': true
+                        }">
+                    {{ getActionTypeLabel(entry.actionType) | translate }}
+                  </span>
+                </div>
+                
+                <!-- Time -->
+                <span class="text-[9px] text-gray-400">{{ entry.timeFormatted || (entry.timestamp | date:'HH:mm') }}</span>
+              </div>
+
+              <!-- Description -->
+              <p *ngIf="entry.actionType !== 'UPDATE' && entry.actionType !== 'CREATE'" class="text-xs text-gray-600 dark:text-gray-400 mb-2">{{ entry.description }}</p>
+
+              <!-- Changes details (for UPDATE actions) -->
+              <div *ngIf="entry.actionType === 'UPDATE' && entry.hasChanges && entry.changedFieldsCount > 0" 
+                   class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-1 mb-1.5">
+                  <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-[9px] font-medium text-gray-500">{{ 'Changements' | translate }} ({{ entry.changedFieldsCount }})</span>
+                </div>
+                <div class="space-y-1">
+                  <div *ngFor="let change of getChangedFieldsArray(entry)" 
+                       class="text-[9px] grid grid-cols-3 gap-2">
+                    <span class="font-medium text-gray-500">{{ change.field }}:</span>
+                    <span class="text-red-500 line-through truncate">{{ formatChangeValue(change.old) }}</span>
+                    <span class="text-green-600 truncate">{{ formatChangeValue(change.new) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payment details (for PAYMENT actions) -->
+              <div *ngIf="entry.actionType === 'PAYMENT' && entry.newValues" 
+                   class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-2 text-[9px]">
+                  <span class="font-medium text-gray-500">{{ 'Référence:' | translate }}</span>
+                  <span class="text-gray-700 dark:text-gray-300">{{ entry.newValues?.referencePaiement || '-' }}</span>
+                  <span class="text-gray-300">•</span>
+                  <span class="font-medium text-gray-500">{{ 'Date:' | translate }}</span>
+                  <span class="text-gray-700 dark:text-gray-300">{{ entry.newValues?.datePaiement || '-' }}</span>
+                </div>
+              </div>
+
+              <!-- Email details (for EMAIL_SENT / REMINDER_SENT actions) -->
+              <div *ngIf="entry.actionType === 'EMAIL_SENT' || entry.actionType === 'REMINDER_SENT'" 
+                   class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-2 text-[9px]">
+                  <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span class="text-gray-500">{{ entry.actionType === 'REMINDER_SENT' ? 'Relance envoyée à' : 'Email envoyé' }}</span>
+                </div>
+              </div>
+
+              <!-- Status change details -->
+              <div *ngIf="entry.actionType === 'STATUS_CHANGE' && entry.oldValues?.statutPaiement && entry.newValues?.statutPaiement" 
+                   class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-2 text-[9px]">
+                  <span class="font-medium text-gray-500">{{ 'Statut:' | translate }}</span>
+                  <span class="text-red-500 line-through">{{ getStatutLabel(entry.oldValues.statutPaiement) }}</span>
+                  <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                  <span class="text-green-600">{{ getStatutLabel(entry.newValues.statutPaiement) }}</span>
+                </div>
+              </div>
+
+              <!-- Overdue details -->
+              <div *ngIf="entry.actionType === 'OVERDUE' && entry.newValues?.joursRetard" 
+                   class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-2 text-[9px] text-red-600">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{{ 'Retard de' | translate }} {{ entry.newValues.joursRetard }} {{ 'jours' | translate }}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 
 <!-- Payment Modal - A Little Bigger -->

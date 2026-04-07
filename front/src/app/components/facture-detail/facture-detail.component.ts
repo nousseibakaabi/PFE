@@ -19,15 +19,17 @@ import html2canvas from 'html2canvas';
   standalone: false
 })
 export class FactureDetailComponent implements OnInit {
+
+  // Add these properties to FactureDetailComponent
+factureHistory: HistoryEntry[] = [];
+loadingHistory = false;
+groupedFactureHistory: { date: string, entries: HistoryEntry[] }[] = [];
   factureId!: number;
   facture: Facture | null = null;
   loading = true;
   errorMessage = '';
   successMessage = '';
-  factureHistory: HistoryEntry[] = [];
-  loadingHistory = false;
-  groupedFactureHistory: { date: string, entries: HistoryEntry[] }[] = [];
-  
+
   // For payment modal
   showPaymentModal = false;
   paymentData = {
@@ -81,8 +83,6 @@ export class FactureDetailComponent implements OnInit {
       this.factureId = +params['id'];
       this.loadFacture();
     });
-
-    this.loadFactureHistory();
   }
 
 
@@ -100,88 +100,15 @@ getInvoiceHistoryActionClass(actionType: string): string {
   }
 }
 
-getHistoryIcon(actionType: string): string {
-  return this.historyService.getActionIcon(actionType);
-}
-
-formatChangeValue(value: any): string {
-  if (value === null || value === undefined) return '-';
-  if (typeof value === 'object') return JSON.stringify(value);
-  if (typeof value === 'number') return value.toString();
-  if (value instanceof Date) return value.toLocaleDateString();
-  return value.toString();
-}
 
 
 
-loadFactureHistory(): void {
-  if (!this.facture) return;
-  
-  this.loadingHistory = true;
-  this.historyService.getHistoryByEntity('FACTURE', this.factureId).subscribe({
-    next: (response) => {
-      if (response.success) {
-        this.factureHistory = response.data;
-        this.groupFactureHistory();
-      }
-      this.loadingHistory = false;
-    },
-    error: (error) => {
-      console.error('Error loading facture history:', error);
-      this.loadingHistory = false;
-    }
-  });
-}
 
-groupFactureHistory(): void {
-  const groups: { [key: string]: HistoryEntry[] } = {};
-  
-  this.factureHistory.forEach(entry => {
-    if (!groups[entry.dateFormatted]) {
-      groups[entry.dateFormatted] = [];
-    }
-    groups[entry.dateFormatted].push(entry);
-  });
-  
-  this.groupedFactureHistory = Object.keys(groups)
-    .sort((a, b) => {
-      const [aDay, aMonth, aYear] = a.split('/');
-      const [bDay, bMonth, bYear] = b.split('/');
-      const dateA = new Date(`${aYear}-${aMonth}-${aDay}`);
-      const dateB = new Date(`${bYear}-${bMonth}-${bDay}`);
-      return dateB.getTime() - dateA.getTime();
-    })
-    .map(date => ({
-      date,
-      entries: groups[date].sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      )
-    }));
-}
 
-getChangedFieldsArray(entry: HistoryEntry): { field: string, old: any, new: any }[] {
-  const changes = this.historyService.getChangedFields(entry.oldValues, entry.newValues);
-  return Object.keys(changes).map(key => ({
-    field: this.formatFieldName(key),
-    old: changes[key].old,
-    new: changes[key].new
-  }));
-}
 
-formatFieldName(field: string): string {
-  const fieldMap: { [key: string]: string } = {
-    'numeroFacture': 'Numéro',
-    'dateFacturation': 'Date facturation',
-    'dateEcheance': 'Date échéance',
-    'montantHT': 'Montant HT',
-    'montantTTC': 'Montant TTC',
-    'tva': 'TVA',
-    'statutPaiement': 'Statut',
-    'referencePaiement': 'Référence paiement',
-    'notes': 'Notes'
-  };
-  return fieldMap[field] || field;
-}
+
+
+
 
 getFactureHistoryActionClass(actionType: string): string {
   switch (actionType) {
@@ -195,7 +122,7 @@ getFactureHistoryActionClass(actionType: string): string {
   }
 }
 
-  loadFacture(): void {
+loadFacture(): void {
   this.loading = true;
   this.factureService.getFacture(this.factureId).subscribe({
     next: (response) => {
@@ -203,16 +130,14 @@ getFactureHistoryActionClass(actionType: string): string {
         this.facture = response.data;
         console.log('Facture loaded:', this.facture);
         
-        // After loading facture, load the structure details
         this.loadStructureDetails();
         
-        // Load convention details if conventionId exists
         if (this.facture?.conventionId) {
           this.loadConventionDetails(this.facture.conventionId);
         }
-
-        this.loadFactureHistory(); // Add this line
-
+        
+        // Load history AFTER facture is loaded
+        this.loadFactureHistory();
       } else {
         this.errorMessage = 'Facture non trouvée';
       }
@@ -320,29 +245,30 @@ viewConventionDetails(conventionId: number | undefined | null): void {
     this.showPaymentModal = false;
   }
 
-  registerPayment(): void {
-    if (!this.paymentData.referencePaiement.trim()) {
-      this.errorMessage = 'La référence de paiement est requise';
-      return;
-    }
-
-    this.loading = true;
-    this.factureService.registerPayment(this.paymentData).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.successMessage = 'Paiement enregistré avec succès';
-          this.loadFacture(); // Reload to get updated status
-          this.closePaymentModal();
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error registering payment:', error);
-        this.errorMessage = error.error?.message || 'Erreur lors de l\'enregistrement du paiement';
-        this.loading = false;
-      }
-    });
+registerPayment(): void {
+  if (!this.paymentData.referencePaiement.trim()) {
+    this.errorMessage = 'La référence de paiement est requise';
+    return;
   }
+
+  this.loading = true;
+  this.factureService.registerPayment(this.paymentData).subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.successMessage = 'Paiement enregistré avec succès';
+        this.loadFacture(); // Reload to get updated status
+        this.refreshHistory(); // Refresh history to show payment log
+        this.closePaymentModal();
+      }
+      this.loading = false;
+    },
+    error: (error) => {
+      console.error('Error registering payment:', error);
+      this.errorMessage = error.error?.message || 'Erreur lors de l\'enregistrement du paiement';
+      this.loading = false;
+    }
+  });
+}
 
   // Edit methods
   openEditModal(): void {
@@ -1110,6 +1036,133 @@ public getPaymentStatusDetails(facture: Facture): { type: string; days: number; 
       };
     }
   }
+}
+
+
+
+getActionTypeLabel(actionType: string): string {
+  const labels: { [key: string]: string } = {
+    'CREATE': 'Création',
+    'UPDATE': 'Modification',
+    'DELETE': 'Suppression',
+    'PAYMENT': 'Paiement',
+    'STATUS_CHANGE': 'Changement de statut',
+    'OVERDUE': 'Facture en retard',
+    'EMAIL_SENT': 'Email envoyé',
+    'REMINDER_SENT': 'Relance envoyée'
+  };
+  return labels[actionType] || actionType;
+}
+
+// Format change value for display
+formatChangeValue(value: any): string {
+  if (value === null || value === undefined) return '-';
+  if (typeof value === 'object') {
+    if (value.datePaiement) return this.formatDate(value.datePaiement);
+    if (value.montantHT || value.montantTTC) {
+      const num = value.montantHT || value.montantTTC;
+      return this.formatMontant(num);
+    }
+    return JSON.stringify(value);
+  }
+  if (typeof value === 'number') {
+    if (value.toString().includes('.')) {
+      return this.formatMontant(value);
+    }
+    return value.toString();
+  }
+  if (value instanceof Date) return this.formatDate(value.toISOString());
+  if (typeof value === 'boolean') return value ? 'Oui' : 'Non';
+  return value.toString();
+}
+
+// Helper to get history icon
+getHistoryIcon(actionType: string): string {
+  return this.historyService.getActionIcon(actionType);
+}
+
+// Helper to get changed fields array
+getChangedFieldsArray(entry: HistoryEntry): { field: string, old: any, new: any }[] {
+  const changes = this.historyService.getChangedFields(entry.oldValues, entry.newValues);
+  return Object.keys(changes).map(key => ({
+    field: this.formatFieldName(key),
+    old: changes[key].old,
+    new: changes[key].new
+  }));
+}
+
+// Format field name for display
+formatFieldName(field: string): string {
+  const fieldMap: { [key: string]: string } = {
+    'numeroFacture': 'N° Facture',
+    'dateFacturation': 'Date facturation',
+    'dateEcheance': 'Date échéance',
+    'montantHT': 'Montant HT',
+    'montantTTC': 'Montant TTC',
+    'tva': 'TVA',
+    'statutPaiement': 'Statut',
+    'referencePaiement': 'Réf. paiement',
+    'datePaiement': 'Date paiement',
+    'notes': 'Notes',
+    'montantTotal': 'Montant total',
+    'nbUsers': 'Nb utilisateurs',
+    'periodicite': 'Périodicité',
+    'referenceConvention': 'Réf. convention',
+    'libelle': 'Libellé'
+  };
+  return fieldMap[field] || field;
+}
+
+// Make sure loadFactureHistory is called after facture loads
+loadFactureHistory(): void {
+  if (!this.facture) return;
+  
+  this.loadingHistory = true;
+  this.historyService.getHistoryByEntity('FACTURE', this.factureId).subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.factureHistory = response.data;
+        this.groupFactureHistory();
+      }
+      this.loadingHistory = false;
+    },
+    error: (error) => {
+      console.error('Error loading facture history:', error);
+      this.loadingHistory = false;
+    }
+  });
+}
+
+// Group history by date
+groupFactureHistory(): void {
+  const groups: { [key: string]: HistoryEntry[] } = {};
+  
+  this.factureHistory.forEach(entry => {
+    if (!groups[entry.dateFormatted]) {
+      groups[entry.dateFormatted] = [];
+    }
+    groups[entry.dateFormatted].push(entry);
+  });
+  
+  this.groupedFactureHistory = Object.keys(groups)
+    .sort((a, b) => {
+      const [aDay, aMonth, aYear] = a.split('/');
+      const [bDay, bMonth, bYear] = b.split('/');
+      const dateA = new Date(`${aYear}-${aMonth}-${aDay}`);
+      const dateB = new Date(`${bYear}-${bMonth}-${bDay}`);
+      return dateB.getTime() - dateA.getTime();
+    })
+    .map(date => ({
+      date,
+      entries: groups[date].sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      )
+    }));
+}
+
+
+refreshHistory(): void {
+  this.loadFactureHistory();
 }
 
 }

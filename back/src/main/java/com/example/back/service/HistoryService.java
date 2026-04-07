@@ -135,6 +135,7 @@ public class HistoryService {
         data.setNotes(facture.getNotes());
         data.setArchived(facture.getArchived());
 
+        // Only set convention data if needed (for CREATE actions)
         if (facture.getConvention() != null) {
             data.setConventionId(facture.getConvention().getId());
             data.setConventionReference(facture.getConvention().getReferenceConvention());
@@ -142,6 +143,30 @@ public class HistoryService {
 
         return data;
     }
+
+
+
+    private FactureHistoryData convertToHistoryDataForUpdate(Facture facture) {
+        if (facture == null) return null;
+
+        FactureHistoryData data = new FactureHistoryData();
+        data.setId(facture.getId());
+        data.setNumeroFacture(facture.getNumeroFacture());
+        data.setDateFacturation(facture.getDateFacturation());
+        data.setDateEcheance(facture.getDateEcheance());
+        data.setMontantHT(facture.getMontantHT());
+        data.setTva(facture.getTva());
+        data.setMontantTTC(facture.getMontantTTC());
+        data.setStatutPaiement(facture.getStatutPaiement());
+        data.setDatePaiement(facture.getDatePaiement());
+        data.setReferencePaiement(facture.getReferencePaiement());
+        data.setNotes(facture.getNotes());
+        data.setArchived(facture.getArchived());
+        // Intentionally NOT setting conventionId or conventionReference
+
+        return data;
+    }
+
 
     private UserHistoryData convertToHistoryData(User user) {
         if (user == null) return null;
@@ -582,36 +607,157 @@ public class HistoryService {
 
     // ==================== FACTURE HISTORY METHODS ====================
 
+
+    // Add/Update these methods in HistoryService.java
+
+    // Make sure this method exists and is called when facture is created
     public void logFactureCreate(Facture facture, User createdBy) {
         try {
             FactureHistoryData data = convertToHistoryData(facture);
-            String description = String.format("Création de la facture %s pour la convention %s par %s %s - Montant: %s TND",
+
+            // Calculate amount for description
+            String amountStr = facture.getMontantTTC() != null ?
+                    String.format("%.2f TND", facture.getMontantTTC()) : "0 TND";
+
+            // Description without user info
+            String description = String.format("Création de la facture %s - Montant: %s - Échéance: %s",
                     facture.getNumeroFacture(),
-                    facture.getConvention().getReferenceConvention(),
-                    createdBy.getFirstName(), createdBy.getLastName(),
-                    facture.getMontantTTC() != null ? facture.getMontantTTC().toString() : "0");
-            createHistory("CREATE", "FACTURE", facture.getId(), facture.getNumeroFacture(),
-                    "Facture " + facture.getNumeroFacture(), description, null, data, createdBy);
+                    amountStr,
+                    facture.getDateEcheance() != null ?
+                            facture.getDateEcheance().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "Non définie");
+
+            createHistory(
+                    "CREATE",
+                    "FACTURE",
+                    facture.getId(),
+                    facture.getNumeroFacture(),
+                    "Facture " + facture.getNumeroFacture(),
+                    description,
+                    null,
+                    data,
+                    null  // User is still passed for the user info field, but not in description
+            );
+
+            log.info("✅ Facture creation history logged for {}", facture.getNumeroFacture());
         } catch (Exception e) {
-            log.error("Failed to log facture creation: {}", e.getMessage());
+            log.error("Failed to log facture creation: {}", e.getMessage(), e);
         }
     }
 
+    // Make sure update is properly logged
     public void logFactureUpdate(Facture oldFacture, Facture newFacture, User updatedBy) {
         try {
-            FactureHistoryData oldData = convertToHistoryData(oldFacture);
-            FactureHistoryData newData = convertToHistoryData(newFacture);
+            // Use filtered versions without convention data
+            FactureHistoryData oldData = convertToHistoryDataForUpdate(oldFacture);
+            FactureHistoryData newData = convertToHistoryDataForUpdate(newFacture);
 
-            String description = String.format("Mise à jour de la facture %s par %s %s",
+            // Build description with only invoice-relevant changes (no user info)
+            StringBuilder changes = new StringBuilder();
+
+            if (!oldFacture.getNumeroFacture().equals(newFacture.getNumeroFacture())) {
+                changes.append(String.format(" N°: %s→%s", oldFacture.getNumeroFacture(), newFacture.getNumeroFacture()));
+            }
+            if (!oldFacture.getMontantTTC().equals(newFacture.getMontantTTC())) {
+                changes.append(String.format(" Montant: %.2f→%.2f TND",
+                        oldFacture.getMontantTTC(), newFacture.getMontantTTC()));
+            }
+            if (!oldFacture.getMontantHT().equals(newFacture.getMontantHT())) {
+                changes.append(String.format(" HT: %.2f→%.2f TND",
+                        oldFacture.getMontantHT(), newFacture.getMontantHT()));
+            }
+            if (!oldFacture.getTva().equals(newFacture.getTva())) {
+                changes.append(String.format(" TVA: %.0f%%→%.0f%%",
+                        oldFacture.getTva(), newFacture.getTva()));
+            }
+            if (!oldFacture.getDateEcheance().equals(newFacture.getDateEcheance())) {
+                changes.append(String.format(" Échéance: %s→%s",
+                        oldFacture.getDateEcheance().format(DateTimeFormatter.ofPattern("dd/MM/yy")),
+                        newFacture.getDateEcheance().format(DateTimeFormatter.ofPattern("dd/MM/yy"))));
+            }
+            if (!oldFacture.getDateFacturation().equals(newFacture.getDateFacturation())) {
+                changes.append(String.format(" Date facturation: %s→%s",
+                        oldFacture.getDateFacturation().format(DateTimeFormatter.ofPattern("dd/MM/yy")),
+                        newFacture.getDateFacturation().format(DateTimeFormatter.ofPattern("dd/MM/yy"))));
+            }
+            if (!Objects.equals(oldFacture.getReferencePaiement(), newFacture.getReferencePaiement())) {
+                changes.append(String.format(" Réf paiement: %s→%s",
+                        oldFacture.getReferencePaiement(), newFacture.getReferencePaiement()));
+            }
+            if (!Objects.equals(oldFacture.getNotes(), newFacture.getNotes())) {
+                changes.append(" Notes modifiées");
+            }
+
+            // Description without user info - just the facture and changes
+            String description = String.format("Mise à jour de la facture %s%s",
                     newFacture.getNumeroFacture(),
-                    updatedBy.getFirstName(), updatedBy.getLastName());
-            createHistory("UPDATE", "FACTURE", newFacture.getId(), newFacture.getNumeroFacture(),
-                    "Facture " + newFacture.getNumeroFacture(), description, oldData, newData, updatedBy);
+                    changes.toString());
+
+            createHistory(
+                    "UPDATE",
+                    "FACTURE",
+                    newFacture.getId(),
+                    newFacture.getNumeroFacture(),
+                    "Facture " + newFacture.getNumeroFacture(),
+                    description,
+                    oldData,
+                    newData,
+                    null  // User is still passed for the user info field, but not in description
+            );
+
+            log.info("✅ Facture update history logged for {}", newFacture.getNumeroFacture());
         } catch (Exception e) {
-            log.error("Failed to log facture update: {}", e.getMessage());
+            log.error("Failed to log facture update: {}", e.getMessage(), e);
         }
     }
 
+    // Add this method to log when facture is automatically created from convention
+    public void logFactureAutoCreate(Facture facture, String conventionName) {
+        try {
+            FactureHistoryData data = convertToHistoryData(facture);
+
+            // Calculate amount for description
+            String amountStr = facture.getMontantTTC() != null ?
+                    String.format("%.2f TND", facture.getMontantTTC()) : "0 TND";
+
+            // Clean description without user info - just the fact and convention
+            String description = String.format("Facture %s générée automatiquement - Convention: %s - Montant: %s - Échéance: %s",
+                    facture.getNumeroFacture(),
+                    conventionName,
+                    amountStr,
+                    facture.getDateEcheance() != null ?
+                            facture.getDateEcheance().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "Non définie");
+
+            // Get system user for the user field (not shown in description)
+            User systemUser = getCurrentUser();
+            if (systemUser == null) {
+                systemUser = userRepository.findByUsername("system").orElse(null);
+            }
+
+            // If still null, create a placeholder (this won't be shown in description anyway)
+            if (systemUser == null) {
+                systemUser = new User();
+                systemUser.setUsername("system");
+                systemUser.setFirstName("Système");
+                systemUser.setLastName("CNI");
+            }
+
+            createHistory(
+                    "CREATE",
+                    "FACTURE",
+                    facture.getId(),
+                    facture.getNumeroFacture(),
+                    "Facture " + facture.getNumeroFacture(),
+                    description,
+                    null,
+                    data,
+                    systemUser
+            );
+
+            log.info("✅ Auto-creation history logged for {}", facture.getNumeroFacture());
+        } catch (Exception e) {
+            log.error("Failed to log auto-creation: {}", e.getMessage(), e);
+        }
+    }
     public void logFactureDelete(Facture facture, User deletedBy) {
         try {
             FactureHistoryData data = convertToHistoryData(facture);
@@ -627,31 +773,51 @@ public class HistoryService {
 
     public void logFacturePayment(Facture facture, User registeredBy, String referencePaiement) {
         try {
-            FactureHistoryData oldData = new FactureHistoryData();
-            oldData.setStatutPaiement("NON_PAYE");
+            // Calculate payment timing
+            String paymentTiming = "";
+            if (facture.getDatePaiement() != null && facture.getDateEcheance() != null) {
+                long daysDiff = java.time.temporal.ChronoUnit.DAYS.between(
+                        facture.getDateEcheance(), facture.getDatePaiement());
 
-            FactureHistoryData newData = convertToHistoryData(facture);
+                if (daysDiff < 0) {
+                    paymentTiming = String.format(" (Anticipé de %d jours)", Math.abs(daysDiff));
+                } else if (daysDiff > 0) {
+                    paymentTiming = String.format(" (En retard de %d jours)", daysDiff);
+                } else {
+                    paymentTiming = " (À temps)";
+                }
+            }
 
-            String paymentStatus = facture.getDatePaiement() != null &&
-                    facture.getDateEcheance() != null &&
-                    facture.getDatePaiement().isAfter(facture.getDateEcheance()) ?
-                    "en retard de " + getDaysBetween(facture.getDateEcheance(), facture.getDatePaiement()) + " jours" :
-                    "à temps";
-
-            String description = String.format("Enregistrement du paiement de la facture %s par %s %s - Réf: %s - Payé %s",
+            // Description without user info
+            String description = String.format("Paiement enregistré pour la facture %s - Réf: %s - Montant: %.2f TND%s",
                     facture.getNumeroFacture(),
-                    registeredBy.getFirstName(), registeredBy.getLastName(),
-                    referencePaiement, paymentStatus);
+                    referencePaiement,
+                    facture.getMontantTTC(),
+                    paymentTiming);
 
-            createHistory("PAYMENT", "FACTURE", facture.getId(), facture.getNumeroFacture(),
-                    "Facture " + facture.getNumeroFacture(), description, oldData, newData, registeredBy);
+            Map<String, Object> paymentDetails = new HashMap<>();
+            paymentDetails.put("referencePaiement", referencePaiement);
+            paymentDetails.put("datePaiement", facture.getDatePaiement().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            paymentDetails.put("montantPaye", facture.getMontantTTC());
+            paymentDetails.put("paymentTiming", paymentTiming);
 
-            log.info("Facture payment history logged for {}", facture.getNumeroFacture());
+            createHistory(
+                    "PAYMENT",
+                    "FACTURE",
+                    facture.getId(),
+                    facture.getNumeroFacture(),
+                    "Facture " + facture.getNumeroFacture(),
+                    description,
+                    null,
+                    paymentDetails,
+                    null  // User is still passed for the user info field, but not in description
+            );
+
+            log.info("✅ Facture payment history logged for {}", facture.getNumeroFacture());
         } catch (Exception e) {
             log.error("Failed to log facture payment: {}", e.getMessage(), e);
         }
     }
-
     public void logFactureStatusChange(Facture facture, String oldStatus, String newStatus) {
         try {
             User currentUser = getCurrentUser();
@@ -1021,5 +1187,65 @@ public class HistoryService {
         }
     }
 
+
+
+    // Add to HistoryService.java
+
+   /* public void logFactureEmailSent(Facture facture, User user, String recipientEmail, boolean isReminder) {
+        History history = new History();
+        history.setTimestamp(LocalDateTime.now());
+        history.setActionType(isReminder ? "REMINDER_SENT" : "EMAIL_SENT");
+        history.setEntityType("FACTURE");
+        history.setEntityId(facture.getId());
+        history.setEntityCode(facture.getNumeroFacture());
+        history.setUser(user);
+
+        String description = isReminder ?
+                String.format("Relance de paiement envoyée à %s", recipientEmail) :
+                String.format("Facture envoyée par email à %s", recipientEmail);
+        history.setDescription(description);
+
+        Map<String, Object> details = new HashMap<>();
+        details.put("recipientEmail", recipientEmail);
+        details.put("isReminder", isReminder);
+        details.put("factureNumber", facture.getNumeroFacture());
+
+        history.setNewValues(details.toString());
+
+        historyRepository.save(history);
+    }
+
+    */
+
+
+    // Add to HistoryService.java - make sure logFactureEmailSent is implemented
+    public void logFactureEmailSent(Facture facture, User user, String recipientEmail, boolean isReminder) {
+        try {
+            Map<String, Object> details = new HashMap<>();
+            details.put("recipientEmail", recipientEmail);
+            details.put("isReminder", isReminder);
+            details.put("factureNumber", facture.getNumeroFacture());
+
+            String description = isReminder ?
+                    String.format("Relance de paiement envoyée à %s", recipientEmail) :
+                    String.format("Facture envoyée par email à %s", recipientEmail);
+
+            createHistory(
+                    isReminder ? "REMINDER_SENT" : "EMAIL_SENT",
+                    "FACTURE",
+                    facture.getId(),
+                    facture.getNumeroFacture(),
+                    "Facture " + facture.getNumeroFacture(),
+                    description,
+                    null,
+                    details,
+                    user
+            );
+
+            log.info("Email sent history logged for facture {}", facture.getNumeroFacture());
+        } catch (Exception e) {
+            log.error("Failed to log email sent: {}", e.getMessage(), e);
+        }
+    }
 
 }

@@ -3,6 +3,7 @@ package com.example.back.service;
 import jakarta.mail.internet.InternetAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -443,6 +444,33 @@ public class EmailService {
         helper.setTo(to);
         helper.setSubject("✨ " + subject);
         helper.setText(htmlContent, true);
+
+        mailSender.send(message);
+    }
+
+
+
+    // Add to EmailService.java
+
+    public void sendEmailWithAttachment(String to, String subject, String htmlContent,
+                                        String pdfBase64, String pdfFileName) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        try {
+            helper.setFrom(new InternetAddress(fromEmail, "CNI 💙"));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+
+        // Attach PDF if provided
+        if (pdfBase64 != null && !pdfBase64.isEmpty()) {
+            byte[] pdfBytes = java.util.Base64.getDecoder().decode(pdfBase64);
+            helper.addAttachment(pdfFileName, new ByteArrayResource(pdfBytes), "application/pdf");
+        }
 
         mailSender.send(message);
     }

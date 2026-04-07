@@ -108,6 +108,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Integer> findUsedSequencesByYear(@Param("year") String year);
 
 
+    List<Application> findByClientName(String clientName);
+
     /**
      * Find all applications that have no conventions
      */

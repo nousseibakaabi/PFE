@@ -16,6 +16,14 @@ import java.util.Optional;
 public interface ConventionRepository extends JpaRepository<Convention, Long> {
 
 
+// In ConventionRepository.java - Add these methods
+
+    @Query("SELECT c FROM Convention c WHERE c.structureResponsable.id = :structureId")
+    List<Convention> findByStructureResponsableId(@Param("structureId") Long structureId);
+
+    @Query("SELECT c FROM Convention c WHERE c.structureBeneficiel.id = :structureId")
+    List<Convention> findByStructureBeneficielId(@Param("structureId") Long structureId);
+
     // Find conventions that need status update
     @Query("SELECT c FROM Convention c WHERE c.archived = false AND c.etat IS NOT NULL")
     List<Convention> findAllActiveConventions();
@@ -53,9 +61,6 @@ public interface ConventionRepository extends JpaRepository<Convention, Long> {
     // Remove or replace this method since it doesn't exist anymore
     // List<Convention> findByStructureId(Long structureId);
 
-    // Add new methods to find by structure interne or externe
-    List<Convention> findByStructureResponsableId(Long structureResponsableId);
-    List<Convention> findByStructureBeneficielId(Long structureBeneficielId);
 
     // Find conventions by either structure
     @Query("SELECT c FROM Convention c WHERE c.structureResponsable.id = :structureId OR c.structureBeneficiel.id = :structureId")

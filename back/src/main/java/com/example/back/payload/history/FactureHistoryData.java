@@ -1,3 +1,4 @@
+// Update FactureHistoryData.java
 package com.example.back.payload.history;
 
 import lombok.AllArgsConstructor;
@@ -24,7 +25,13 @@ public class FactureHistoryData implements HistoryData {
     private String notes;
     private Boolean archived;
 
-    // Only store IDs to avoid recursion
+    // Make convention fields optional - they won't be included in update logs
     private Long conventionId;
     private String conventionReference;
+
+    // Add a method to clear convention data for update logs
+    public void clearConventionData() {
+        this.conventionId = null;
+        this.conventionReference = null;
+    }
 }

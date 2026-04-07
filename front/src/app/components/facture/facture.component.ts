@@ -1,7 +1,6 @@
 import { Component, OnInit ,HostListener } from '@angular/core';
 import { FactureService, Facture, FactureRequest, PaiementRequest } from '../../services/facture.service';
 import { ConventionService } from '../../services/convention.service';
-import { NomenclatureService } from '../../services/nomenclature.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
@@ -9,6 +8,9 @@ import { TimeFormatService } from '../../services/time-format.service';
 import { ApplicationService } from '../../services/application.service';
 import { Router } from '@angular/router';
 import jsPDF from 'jspdf';
+
+import { EmailPdfService } from '../../services/email-pdf.service';
+import { NomenclatureService, Structure } from '../../services/nomenclature.service';
 
 @Component({
   selector: 'app-facture',
@@ -78,7 +80,8 @@ printFactureConvention: any = null;
     private authService: AuthService,
     private timeFormat: TimeFormatService,
     private applicationService: ApplicationService,
-    private router:Router
+    private router:Router,
+    private emailPdfService: EmailPdfService,
 
   ) {}
 
@@ -637,19 +640,127 @@ onWindowScroll(): void {
   this.activeActionMenu = null;
 }
 
-// Add these placeholder methods for your actions
-sendReminder(factureId: number): void {
-  console.log('Sending reminder for facture:', factureId);
-  // Implement your logic
+
+// Send reminder email
+async sendReminder(factureId: number): Promise<void> {
+  this.loading = true;
   this.activeActionMenu = null;
+  
+  try {
+    // Get the facture details
+    const facture = this.factures.find(f => f.id === factureId);
+    if (!facture) {
+      this.errorMessage = 'Facture non trouvée';
+      return;
+    }
+    
+    // Get structure details for PDF generation
+    let structureBeneficiel: Structure | null = null;
+    if (facture.structureBeneficielName) {
+      const structures = await this.nomenclatureService.getStructures().toPromise();
+      if (structures) {
+        structureBeneficiel = structures.find(s => s.name === facture.structureBeneficielName) || null;
+      }
+    }
+    
+    // Generate PDF
+    const pdfBlob = await this.emailPdfService.generatePDFBlob(facture, structureBeneficiel, true);
+    
+    // Convert to base64
+    const pdfBase64 = await this.blobToBase64(pdfBlob);
+    
+    // Send email
+    const emailRequest = {
+      factureId: factureId,
+      to: '', // Will be taken from application
+      subject: '',
+      message: '',
+      pdfBase64: pdfBase64,
+      isReminder: true
+    };
+    
+    const response = await this.emailPdfService.sendEmailWithPDF(emailRequest).toPromise();
+    
+    if (response.success) {
+      this.successMessage = response.message;
+      setTimeout(() => this.successMessage = '', 3000);
+    } else {
+      this.errorMessage = response.message || 'Erreur lors de l\'envoi de la relance';
+    }
+    
+  } catch (error: any) {
+    console.error('Error sending reminder:', error);
+    this.errorMessage = error.error?.message || 'Erreur lors de l\'envoi de la relance';
+  } finally {
+    this.loading = false;
+  }
 }
 
-
-emailPDF(factureId: number): void {
-  console.log('Emailing PDF for facture:', factureId);
-  // Implement your logic
+// Send simple email with PDF
+async emailPDF(factureId: number): Promise<void> {
+  this.loading = true;
   this.activeActionMenu = null;
+  
+  try {
+    const facture = this.factures.find(f => f.id === factureId);
+    if (!facture) {
+      this.errorMessage = 'Facture non trouvée';
+      return;
+    }
+    
+    // Get structure details for PDF generation
+    let structureBeneficiel: Structure | null = null;
+    if (facture.structureBeneficielName) {
+      const structures = await this.nomenclatureService.getStructures().toPromise();
+      if (structures) {
+        structureBeneficiel = structures.find(s => s.name === facture.structureBeneficielName) || null;
+      }
+    }
+    
+    // Generate PDF
+    const pdfBlob = await this.emailPdfService.generatePDFBlob(facture, structureBeneficiel, false);
+    const pdfBase64 = await this.blobToBase64(pdfBlob);
+    
+    // Send email
+    const emailRequest = {
+      factureId: factureId,
+      to: '',
+      subject: '',
+      message: '',
+      pdfBase64: pdfBase64,
+      isReminder: false
+    };
+    
+    const response = await this.emailPdfService.sendEmailWithPDF(emailRequest).toPromise();
+    
+    if (response.success) {
+      this.successMessage = response.message;
+      setTimeout(() => this.successMessage = '', 3000);
+    } else {
+      this.errorMessage = response.message || 'Erreur lors de l\'envoi de l\'email';
+    }
+    
+  } catch (error: any) {
+    console.error('Error sending email:', error);
+    this.errorMessage = error.error?.message || 'Erreur lors de l\'envoi de l\'email';
+  } finally {
+    this.loading = false;
+  }
 }
+
+// Helper: Convert Blob to Base64
+private blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = (reader.result as string).split(',')[1];
+      resolve(base64String);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 
 
 }

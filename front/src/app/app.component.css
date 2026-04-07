@@ -1,0 +1,64 @@
+/* styles.css - Add these RTL styles */
+
+/* RTL Support */
+html.rtl {
+  direction: rtl;
+}
+
+html.ltr {
+  direction: ltr;
+}
+
+/* Sidebar positioning for RTL */
+html.rtl .sidebar {
+  right: 0;
+  left: auto;
+  border-right: none;
+  border-left: 1px solid;
+}
+
+/* Adjust menu item spacing for RTL */
+html.rtl .menu-item svg {
+  margin-right: 0;
+  margin-left: 0.75rem;
+}
+
+html.rtl .menu-item span {
+  text-align: right;
+}
+
+/* Adjust dropdowns for RTL */
+html.rtl .absolute.right-0 {
+  right: auto;
+  left: 0;
+}
+
+/* Fix for RTL margins */
+html.rtl .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+html.rtl .mr-2 {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+html.rtl .ml-2 {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+/* Fix for flex direction in RTL */
+html.rtl .flex-row {
+  flex-direction: row-reverse;
+}
+
+/* Keep content properly aligned */
+html.rtl .text-left {
+  text-align: right;
+}
+
+html.rtl .text-right {
+  text-align: left;
+}

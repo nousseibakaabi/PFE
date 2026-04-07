@@ -54,6 +54,8 @@ import { TranslateComponent } from './components/translate/translate.component';
 import { CreateReassignmentRequestComponent } from './components/create-reassignment-request/create-reassignment-request.component';
 import { ConventionVersionsComponent } from './components/convention-versions/convention-versions.component';
 import { TwoFactorSetupComponent } from './components/two-factor-setup/two-factor-setup.component';
+import { PlanFacturationComponent } from './components/plan-facturation/plan-facturation.component';
+import { PlanNewComponent } from './components/plan-new/plan-new.component';
 
 @NgModule({
   declarations: [
@@ -97,7 +99,9 @@ import { TwoFactorSetupComponent } from './components/two-factor-setup/two-facto
     TranslateComponent,
     CreateReassignmentRequestComponent,
     ConventionVersionsComponent,
-    TwoFactorSetupComponent
+    TwoFactorSetupComponent,
+    PlanFacturationComponent,
+    PlanNewComponent
     ],
   imports: [
     BrowserModule,

@@ -4,6 +4,7 @@ import com.example.back.entity.*;
 import com.example.back.payload.request.NomenclatureRequest;
 import com.example.back.payload.request.StructureRequest;
 import com.example.back.repository.*;
+import com.example.back.service.EntitySyncService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ import java.util.Optional;
 @PreAuthorize("hasRole('ADMIN')")
 @Slf4j
 public class NomenclatureController {
+
+    @Autowired
+    private EntitySyncService entitySyncService;
 
     @Autowired
     private ApplicationRepository applicationRepository;
@@ -329,6 +333,7 @@ public class NomenclatureController {
                 return ResponseEntity.notFound().build();
             }
 
+            Structure oldStructure = cloneStructure(existing.get());
             Structure structure = existing.get();
 
             if (!structure.getCode().equals(request.getCode()) &&
@@ -366,6 +371,13 @@ public class NomenclatureController {
 
             Structure updated = structureRepository.save(structure);
 
+            try {
+                entitySyncService.syncStructureChanges(oldStructure, updated);
+                log.info("✅ Successfully synced structure changes to related entities");
+            } catch (Exception e) {
+                log.error("Failed to sync structure changes: {}", e.getMessage(), e);
+            }
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Structure updated successfully");
@@ -377,6 +389,18 @@ public class NomenclatureController {
     }
 
 
+    private Structure cloneStructure(Structure structure) {
+        Structure clone = new Structure();
+        clone.setId(structure.getId());
+        clone.setCode(structure.getCode());
+        clone.setName(structure.getName());
+        clone.setDescription(structure.getDescription());
+        clone.setPhone(structure.getPhone());
+        clone.setEmail(structure.getEmail());
+        clone.setTypeStructure(structure.getTypeStructure());
+        clone.setZoneGeographique(structure.getZoneGeographique());
+        return clone;
+    }
 
     @GetMapping("/structures/zone/{zoneId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER', 'DECIDEUR', 'CHEF_PROJET')")
