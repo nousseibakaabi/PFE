@@ -30,7 +30,7 @@ import { ConventionHistoryComponent } from './components/convention-history/conv
 import { RequestsComponent } from './components/requests/requests.component';
 import { ApplicationArchiveComponent } from './components/application-archive/application-archive.component';
 import { ConventionVersionsComponent } from './components/convention-versions/convention-versions.component';
-import { PlanFacturationComponent } from './components/plan-facturation/plan-facturation.component';
+import { ChatFullPageComponent } from './components/chat-full-page/chat-full-page.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -150,12 +150,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { roles: ['ROLE_COMMERCIAL_METIER'] } 
   },
-    { 
-    path: 'planFacturation', 
-    component: PlanFacturationComponent, 
-    canActivate: [AuthGuard],
-    data: { roles: ['ROLE_COMMERCIAL_METIER'] } 
-  },
+
   { 
     path: 'decideur', 
     component: DecideurComponent, 
@@ -201,9 +196,11 @@ data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHE
 },
 
 
+  { path: 'chat-full', component: ChatFullPageComponent, canActivate: [AuthGuard] },
 
   { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },
   { path: 'mailBox', component: MailBoxComponent, canActivate: [AuthGuard] },
+
   { path: '**', component: NotFoundComponent } 
 ];
 

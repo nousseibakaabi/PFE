@@ -1,0 +1,167 @@
+<div class="chat-ai-container" [class.full-page]="isFullPage">
+  <!-- Bouton flottant (cache en mode page entière) -->
+  <button *ngIf="!isFullPage" 
+    class="chat-toggle-btn"
+    (click)="toggleChat()"
+    [class.open]="isOpen"
+  >
+    <div class="toggle-icon" *ngIf="!isOpen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span class="notification-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+    </div>
+    <svg *ngIf="isOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M18 6L6 18M6 6l12 12"/>
+    </svg>
+  </button>
+
+  <!-- Fenêtre de chat -->
+  <div class="chat-window" *ngIf="isOpen || isFullPage" [class.minimized]="isMinimized" [class.full-page-window]="isFullPage">
+    
+    <!-- En-tête -->
+    <div class="chat-header">
+      <div class="header-left">
+        <button class="back-btn" (click)="isFullPage ? closeFullPage() : toggleChat()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="avatar">
+          <div class="avatar-placeholder">🤖</div>
+        </div>
+        <div class="header-info">
+          <h3>Assistant IA CNI</h3>
+          <p class="status">
+            <span class="status-dot"></span>
+            En ligne
+          </p>
+        </div>
+      </div>
+      <div class="header-right">
+        <button *ngIf="!isFullPage" class="fullscreen-btn" (click)="openFullPage()" title="Plein écran">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+        </button>
+        <button *ngIf="!isFullPage" class="minimize-btn" (click)="toggleMinimize()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 12H4"/>
+          </svg>
+        </button>
+        <button class="close-btn" (click)="isFullPage ? closeFullPage() : toggleChat()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" #chatMessages>
+      <div class="messages-container">
+        <!-- Message de bienvenue si aucun message -->
+        <div *ngIf="messages.length === 0 && !isLoading" class="welcome-message">
+          <div class="welcome-avatar">🤖</div>
+          <div class="welcome-text">
+            <h4>Bonjour ! 👋</h4>
+            <p>Je suis votre assistant IA. Posez-moi vos questions sur :</p>
+            <ul>
+              <li>📋 Les conventions</li>
+              <li>📄 Les factures</li>
+              <li>📱 Les applications</li>
+              <li>💰 Les statistiques financières</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Messages existants -->
+        <div *ngFor="let message of messages" 
+             class="message-wrapper"
+             [class.user]="message.isUser"
+             [class.bot]="!message.isUser">
+          
+          <div class="message-avatar" *ngIf="!message.isUser">
+            <div class="avatar-small">🤖</div>
+          </div>
+          
+          <div class="message-content">
+            <div class="message-bubble">
+              <div class="message-text">{{ message.text }}</div>
+              <div class="message-info">
+                <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+                <span class="message-status" *ngIf="message.isUser && message.isSent">
+                  ✓✓
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Indicateur de frappe -->
+        <div class="typing-indicator-wrapper" *ngIf="isLoading">
+          <div class="avatar-small">🤖</div>
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suggestions -->
+    <div class="suggestions-area" *ngIf="messages.length === 0 && !isLoading">
+      <div class="suggestions-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M12 8v4l3 3M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+        </svg>
+        <span>Suggestions</span>
+      </div>
+      <div class="suggestions-grid">
+        <button *ngFor="let q of exampleQuestions.slice(0, 4)" 
+                (click)="useExampleQuestion(q.question)"
+                class="suggestion-chip">
+          <span class="chip-icon">{{ q.icon || '💡' }}</span>
+          <span class="chip-text">{{ q.question.length > 35 ? (q.question | slice:0:35) + '...' : q.question }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Zone de saisie -->
+    <div class="chat-input-area">
+      <div class="input-container">
+        <button class="attach-btn" (click)="openAttachMenu()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14m-7-7h14"/>
+          </svg>
+        </button>
+        
+        <div class="input-wrapper">
+          <textarea 
+            #messageInput
+            [(ngModel)]="currentMessage"
+            (keydown.enter)="sendMessage(); $event.preventDefault()"
+            placeholder="Écrivez votre message..."
+            rows="1"
+            class="chat-input"
+            [disabled]="isLoading"
+            (input)="autoResize($event)"
+          ></textarea>
+        </div>
+        
+        <button class="send-btn" 
+                [class.active]="currentMessage.trim() !== ''"
+                (click)="sendMessage()"
+                [disabled]="currentMessage.trim() === '' || isLoading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="input-footer" *ngIf="showTypingHint">
+        <span>Appuyez sur Entrée pour envoyer</span>
+      </div>
+    </div>
+  </div>
+</div>

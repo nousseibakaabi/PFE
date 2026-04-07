@@ -155,9 +155,7 @@ navigateWithLang(route: string): void {
       { path: 'chef/calendar', page: 'chef/calendar' },
       { path: 'chef', page: 'chef' },
       { path: 'requests', page: 'requests' },
-      { path: 'profile', page: 'profile' },
-      { path: 'planFacturation', page: 'planFacturation' }
-
+      { path: 'profile', page: 'profile' }
     ];
     
     const matchedRoute = routeMapping.find(route => url.includes(route.path));

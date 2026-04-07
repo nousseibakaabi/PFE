@@ -54,8 +54,9 @@ import { TranslateComponent } from './components/translate/translate.component';
 import { CreateReassignmentRequestComponent } from './components/create-reassignment-request/create-reassignment-request.component';
 import { ConventionVersionsComponent } from './components/convention-versions/convention-versions.component';
 import { TwoFactorSetupComponent } from './components/two-factor-setup/two-factor-setup.component';
-import { PlanFacturationComponent } from './components/plan-facturation/plan-facturation.component';
-import { PlanNewComponent } from './components/plan-new/plan-new.component';
+import { ChatAiComponent } from './components/chat-ai/chat-ai.component';
+import { Nl2brPipe } from './services/nl2br.pipe';
+import { ChatFullPageComponent } from './components/chat-full-page/chat-full-page.component';
 
 @NgModule({
   declarations: [
@@ -100,8 +101,9 @@ import { PlanNewComponent } from './components/plan-new/plan-new.component';
     CreateReassignmentRequestComponent,
     ConventionVersionsComponent,
     TwoFactorSetupComponent,
-    PlanFacturationComponent,
-    PlanNewComponent
+    ChatAiComponent,
+      Nl2brPipe,
+      ChatFullPageComponent,
     ],
   imports: [
     BrowserModule,
@@ -119,7 +121,7 @@ import { PlanNewComponent } from './components/plan-new/plan-new.component';
   ],
   exports: [
     TranslatePipe,
-    TwoFactorSetupComponent
+    TwoFactorSetupComponent,
   ],
   providers: [
     LayoutService,
@@ -130,7 +132,8 @@ import { PlanNewComponent } from './components/plan-new/plan-new.component';
       multi: true
     },
     StatsService,
-    DatePipe
+    DatePipe,
+    Nl2brPipe
   ],
   bootstrap: [AppComponent]
 })
