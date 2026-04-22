@@ -396,12 +396,20 @@
           <label class="block text-[9px] font-medium text-slate-600 mb-1.5">{{ 'Recommander un chef' | translate }}</label>
           <div *ngIf="workloadLoading" class="text-center py-3"><div class="animate-spin rounded-full h-5 w-5 border-2 border-indigo-500 border-t-transparent mx-auto"></div></div>
           <div *ngIf="!workloadLoading" class="space-y-1.5 max-h-48 overflow-y-auto">
-            <div *ngFor="let chef of availableChefs" (click)="selectedChefId = chef.id" class="flex items-center gap-2 p-1.5 border rounded-lg cursor-pointer hover:border-indigo-300" [class]="selectedChefId === chef.id ? 'bg-indigo-50 border-indigo-300' : 'border-slate-200'">
-              <input type="radio" [checked]="selectedChefId === chef.id" (change)="selectedChefId = chef.id" class="h-3 w-3 text-indigo-600">
-              <div class="flex-1"><p class="text-[10px] font-medium truncate">{{ chef.firstName }} {{ chef.lastName }}</p><p class="text-[8px] text-slate-500 truncate">{{ chef.email }}</p></div>
-              <span *ngIf="getChefWorkload(chef.id) as workload" class="text-[8px] px-1.5 py-0.5 rounded-full" [style.background]="getWorkloadColor(workload.currentWorkload) + '20'" [style.color]="getWorkloadColor(workload.currentWorkload)">{{ workload.currentWorkload?.toFixed(0) || 0 }}%</span>
-            </div>
-          </div>
+  <div *ngFor="let chef of availableChefs" (click)="selectedChefId = chef.id" class="flex items-center gap-2 p-1.5 border rounded-lg cursor-pointer hover:border-indigo-300" [class]="selectedChefId === chef.id ? 'bg-indigo-50 border-indigo-300' : 'border-slate-200'">
+    <input type="radio" [checked]="selectedChefId === chef.id" (change)="selectedChefId = chef.id" class="h-3 w-3 text-indigo-600">
+    <!-- Avatar with blue border and initials -->
+    <img [src]="getChefAvatarUrl(chef)" 
+         (error)="handleChefImageErrorForUser($event, chef)"
+         class="w-8 h-8 rounded-full object-cover border border-blue-500 bg-transparent"
+         alt="Avatar">
+    <div class="flex-1">
+      <p class="text-[10px] font-medium truncate">{{ chef.firstName }} {{ chef.lastName }}</p>
+      <p class="text-[8px] text-slate-500 truncate">{{ chef.email }}</p>
+    </div>
+    <span *ngIf="getChefWorkload(chef.id) as workload" class="text-[8px] px-1.5 py-0.5 rounded-full" [style.background]="getWorkloadColor(workload.currentWorkload) + '20'" [style.color]="getWorkloadColor(workload.currentWorkload)">{{ workload.currentWorkload?.toFixed(0) || 0 }}%</span>
+  </div>
+</div>
         </div>
         <div *ngIf="responseAction === 'APPROVE' && selectedRequest.requestType === 'REASSIGNMENT_SUGGESTION' && isAdmin" class="p-2 bg-indigo-50 rounded-lg text-center"><i class="fas fa-user-check text-indigo-500 text-lg mb-1"></i><p class="text-[10px] font-medium">{{ 'Confirmer le chef recommandé' | translate }}</p><p class="text-[9px] mt-0.5">{{ selectedRequest.recommendedChefName }}</p></div>
         <div *ngIf="responseAction === 'APPROVE' && !(selectedRequest.requestType === 'REASSIGNMENT_SUGGESTION' && isAdmin)" class="flex items-center justify-center h-full min-h-[120px]"><div class="text-center"><i class="fas fa-check-circle text-emerald-500 text-2xl mb-1"></i><p class="text-[10px] text-slate-500">{{ 'Confirmez l\'approbation' | translate }}</p></div></div>
@@ -431,8 +439,22 @@
       <div class="p-4 space-y-3">
         <div *ngIf="selectedRequest.reason"><p class="text-[9px] text-slate-500">{{ 'Message' | translate }}</p><div class="bg-amber-50 p-2 rounded-lg"><p class="text-[10px] italic">"{{ selectedRequest.reason }}"</p></div></div>
         <div *ngIf="selectedRequest.recommendations"><p class="text-[9px] text-slate-500">{{ 'Recommandations' | translate }}</p><div class="bg-indigo-50 p-2 rounded-lg"><p class="text-[10px]">{{ selectedRequest.recommendations }}</p></div></div>
-        <div *ngIf="selectedRequest.recommendedChefName"><p class="text-[9px] text-slate-500">{{ 'Chef recommandé' | translate }}</p><div class="bg-purple-50 p-2 rounded-lg flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-purple-400 flex items-center justify-center"><i class="fas fa-user text-white text-[10px]"></i></div><div><p class="text-[10px] font-medium">{{ selectedRequest.recommendedChefName }}</p><p class="text-[8px] text-slate-500">{{ selectedRequest.recommendedChefEmail }}</p></div></div></div>
-        <div *ngIf="selectedRequest.denialReason"><p class="text-[9px] text-slate-500">{{ 'Raison du refus' | translate }}</p><div class="bg-rose-50 p-2 rounded-lg"><p class="text-[10px] text-rose-600">{{ selectedRequest.denialReason }}</p></div></div>
+<div *ngIf="selectedRequest.recommendedChefName">
+  <p class="text-[9px] text-slate-500">{{ 'Chef recommandé' | translate }}</p>
+  <div class="bg-purple-50 p-2 rounded-lg flex items-center gap-2">
+    <!-- Avatar with blue border and initials -->
+    <img [src]="getChefAvatarUrlFromName(selectedRequest.recommendedChefName, selectedRequest.recommendedChefEmail || '')" 
+         class="w-8 h-8 rounded-full object-cover border border-blue-500 bg-transparent"
+         alt="Avatar">
+    <div>
+      <p class="text-[10px] font-medium">{{ selectedRequest.recommendedChefName }}</p>
+      <p class="text-[8px] text-slate-500">{{ selectedRequest.recommendedChefEmail }}</p>
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="selectedRequest.denialReason"><p class="text-[9px] text-slate-500">{{ 'Raison du refus' | translate }}</p><div class="bg-rose-50 p-2 rounded-lg"><p class="text-[10px] text-rose-600">{{ selectedRequest.denialReason }}</p></div></div>
       </div>
     </div>
     <div class="px-4 py-2.5 border-t border-slate-200"><button (click)="closeDetailModal()" class="w-full py-1.5 text-[10px] font-medium text-white bg-indigo-500 rounded-lg hover:bg-indigo-600">{{ 'Fermer' | translate }}</button></div>

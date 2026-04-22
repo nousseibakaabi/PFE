@@ -37,86 +37,66 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-private handleError(error: HttpErrorResponse): Observable<never> {
-  console.log('🔴 HANDLE ERROR called with:', error);
-  
-  let errorMessage = 'An error occurred';
-  let remainingAttempts: number | undefined;
-  let lockType: string | undefined;
-  let lockUntil: string | undefined;
-  let isLastAttempt: boolean = false;
-  
-  if (error.error) {
-    console.log('error.error:', error.error);
-    const backendError = error.error;
+  // FIXED: Pass through the original error instead of creating a new one
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    console.log('🔴 HANDLE ERROR called with:', error);
     
-    // Try to get the error message from different places
-    if (backendError.message) {
-      errorMessage = backendError.message;
-      console.log('Found message in backendError.message:', errorMessage);
-    } else if (backendError.error && typeof backendError.error === 'string') {
-      errorMessage = backendError.error;
-      console.log('Found message in backendError.error (string):', errorMessage);
-    } else if (typeof backendError === 'string') {
-      errorMessage = backendError;
-      console.log('Backend error is string:', errorMessage);
-    }
-    
-    // Get other properties
-    if (backendError.remainingAttempts !== undefined) {
-      remainingAttempts = backendError.remainingAttempts;
-    }
-    if (backendError.lockType) {
-      lockType = backendError.lockType;
-    }
-    if (backendError.lockUntil) {
-      lockUntil = backendError.lockUntil;
-    }
-    if (backendError.isLastAttempt !== undefined || backendError.error === 'LastAttemptWarning') {
-      isLastAttempt = true;
-    }
-  } else if (error.message) {
-    errorMessage = error.message;
-    console.log('Found message in error.message:', errorMessage);
+    // IMPORTANT: Throw the original error object to preserve all backend data
+    // This allows the component to access error.error.lockUntil, error.error.minutesRemaining, etc.
+    return throwError(() => error);
   }
-  
-  console.log('Final error message:', errorMessage);
-  
-  // Create a custom error object with all the information
-  const customError = new Error(errorMessage);
-  (customError as any).remainingAttempts = remainingAttempts;
-  (customError as any).lockType = lockType;
-  (customError as any).lockUntil = lockUntil;
-  (customError as any).isLastAttempt = isLastAttempt;
-  (customError as any).errorCode = error.error?.error;
-  (customError as any).status = error.status;
-  (customError as any).statusText = error.statusText;
-  
-  console.log('Throwing custom error:', customError);
-  return throwError(() => customError);
-}
 
-
-
-login(loginRequest: LoginRequest): Observable<AuthResponse> {
-  console.log('🚀 AuthService.login called');
-  return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, loginRequest)
-    .pipe(
-      map(response => {
-        console.log('📦 Login response:', response);
-        
-        // Vérifier si la 2FA est requise
-        if (response.requiresTwoFactor) {
-          console.log('🔐 2FA required, tempToken:', response.tempToken);
-          // Stocker le token temporaire et attendre la vérification 2FA
-          if (response.tempToken) {
-            sessionStorage.setItem('2fa_temp_token', response.tempToken);
+  login(loginRequest: LoginRequest): Observable<AuthResponse> {
+    console.log('🚀 AuthService.login called');
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, loginRequest)
+      .pipe(
+        map(response => {
+          console.log('📦 Login response:', response);
+          
+          // Vérifier si la 2FA est requise
+          if (response.requiresTwoFactor) {
+            console.log('🔐 2FA required, tempToken:', response.tempToken);
+            // Stocker le token temporaire et attendre la vérification 2FA
+            if (response.tempToken) {
+              sessionStorage.setItem('2fa_temp_token', response.tempToken);
+            }
+            sessionStorage.setItem('2fa_required', 'true');
+            return response;
           }
-          sessionStorage.setItem('2fa_required', 'true');
+          
+          // Sinon, procéder normalement
+          if (response.token) {
+            localStorage.setItem('token', response.token);
+          }
+          const user: User = {
+            id: response.id!,
+            username: response.username!,
+            email: response.email!,
+            firstName: response.firstName!,
+            lastName: response.lastName!,
+            roles: response.roles!
+          };
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          this.currentUserSubject.next(user);
           return response;
-        }
-        
-        // Sinon, procéder normalement
+        }),
+        catchError((error: HttpErrorResponse) => {
+          console.error('❌ Login error:', error);
+          // Pass through the original error
+          return throwError(() => error);
+        })
+      );
+  }
+
+  verifyTwoFactor(code: string, tempToken: string): Observable<AuthResponse> {
+    console.log('🔐 verifyTwoFactor called with code:', code, 'tempToken:', tempToken);
+    
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/verify-2fa`, {
+      tempToken: tempToken,
+      code: code
+    }).pipe(
+      map(response => {
+        console.log('✅ verifyTwoFactor response:', response);
         if (response.token) {
           localStorage.setItem('token', response.token);
         }
@@ -130,54 +110,21 @@ login(loginRequest: LoginRequest): Observable<AuthResponse> {
         };
         localStorage.setItem('currentUser', JSON.stringify(user));
         this.currentUserSubject.next(user);
+        
+        // Clean up temporary data
+        sessionStorage.removeItem('2fa_temp_token');
+        sessionStorage.removeItem('2fa_required');
+        sessionStorage.removeItem('2fa_code');
+        sessionStorage.removeItem('2fa_backup_code');
+        
         return response;
       }),
       catchError((error: HttpErrorResponse) => {
-        console.error('❌ Login error:', error);
-        return this.handleError(error);
+        console.log('❌ verifyTwoFactor error caught:', error);
+        return throwError(() => error);
       })
     );
-}
-
-
-verifyTwoFactor(code: string, tempToken: string): Observable<AuthResponse> {
-  console.log('🔐 verifyTwoFactor called with code:', code, 'tempToken:', tempToken);
-  
-  return this.http.post<AuthResponse>(`${this.apiUrl}/auth/verify-2fa`, {
-    tempToken: tempToken,
-    code: code
-  }).pipe(
-    map(response => {
-      console.log('✅ verifyTwoFactor response:', response);
-      if (response.token) {
-        localStorage.setItem('token', response.token);
-      }
-      const user: User = {
-        id: response.id!,
-        username: response.username!,
-        email: response.email!,
-        firstName: response.firstName!,
-        lastName: response.lastName!,
-        roles: response.roles!
-      };
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      this.currentUserSubject.next(user);
-      
-      // Clean up temporary data
-      sessionStorage.removeItem('2fa_temp_token');
-      sessionStorage.removeItem('2fa_required');
-      sessionStorage.removeItem('2fa_code');
-      sessionStorage.removeItem('2fa_backup_code');
-      
-      return response;
-    }),
-    catchError((error: HttpErrorResponse) => {
-      console.log('❌ verifyTwoFactor error caught:', error);
-      return this.handleError(error);
-    })
-  );
-}
-
+  }
 
   updateCurrentUser(updates: Partial<User>): void {
     const currentUser = this.currentUserValue;
@@ -199,12 +146,11 @@ verifyTwoFactor(code: string, tempToken: string): Observable<AuthResponse> {
     
     return this.http.get<User>(`${this.apiUrl}/profile/me`, { headers }).pipe(
       tap(user => {
-        // Update current user with full profile data including profileImage and notifMode
         const updatedUser = { ...user };
         localStorage.setItem('currentUser', JSON.stringify(updatedUser));
         this.currentUserSubject.next(updatedUser);
       }),
-      catchError(this.handleError.bind(this))
+      catchError((error: HttpErrorResponse) => throwError(() => error))
     );
   }
 
@@ -215,16 +161,14 @@ verifyTwoFactor(code: string, tempToken: string): Observable<AuthResponse> {
     
     return this.http.get<User>(`${this.apiUrl}/profile/me`, { headers }).pipe(
       tap(user => {
-        // Update current user when profile is fetched
         const updatedUser = { ...user };
         localStorage.setItem('currentUser', JSON.stringify(updatedUser));
         this.currentUserSubject.next(updatedUser);
       }),
-      catchError(this.handleError.bind(this))
+      catchError((error: HttpErrorResponse) => throwError(() => error))
     );
   }
 
-  // UPDATE THIS METHOD to handle avatar updates
   changePassword(currentPassword: string, newPassword: string, confirmPassword: string): Observable<any> {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${this.token}`
@@ -236,27 +180,16 @@ verifyTwoFactor(code: string, tempToken: string): Observable<AuthResponse> {
       confirmPassword
     }, { headers }).pipe(
       tap(() => {
-        // Optionally refresh user data after password change
         this.refreshUser().subscribe();
       }),
-      catchError(this.handleError.bind(this))
+      catchError((error: HttpErrorResponse) => throwError(() => error))
     );
   }
 
   forgotPassword(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/auth/forgot-password`, { email })
       .pipe(
-        catchError((error: HttpErrorResponse) => {
-          let errorMessage = 'Failed to send reset link. Please try again.';
-          if (error.error && error.error.message) {
-            errorMessage = error.error.message;
-          } else if (error.status === 400) {
-            errorMessage = 'Invalid email address.';
-          } else if (error.status === 404) {
-            errorMessage = 'No account found with this email address.';
-          }
-          return throwError(() => new Error(errorMessage));
-        })
+        catchError((error: HttpErrorResponse) => throwError(() => error))
       );
   }
 
@@ -301,7 +234,7 @@ verifyTwoFactor(code: string, tempToken: string): Observable<AuthResponse> {
       map(() => {
         this.clearLocalStorage();
       }),
-      catchError(this.handleError.bind(this))
+      catchError((error: HttpErrorResponse) => throwError(() => error))
     );
   }
 

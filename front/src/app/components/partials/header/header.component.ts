@@ -286,24 +286,7 @@ deleteNotification(notification: Notification, event: Event): void {
   navigateToNotification(notification: Notification): void {
     // Mark as read first
     this.markAsRead(notification);
-    
-    // Navigate based on reference type
-    switch (notification.referenceType) {
-      case 'FACTURE':
-        this.router.navigate(['/factures', notification.referenceId]);
-        break;
-      case 'CONVENTION':
-        this.router.navigate(['/conventions', notification.referenceId]);
-        break;
-      case 'APPLICATION':
-        this.router.navigate(['/applications', notification.referenceId]);
-        break;
-      default:
-        // Do nothing or navigate to a general notifications page
-        break;
-    }
-    
-    // Close dropdown
+    this.router.navigate(['/notifications']);
     this.isNotificationsOpen = false;
   }
 

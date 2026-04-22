@@ -31,6 +31,10 @@ import { RequestsComponent } from './components/requests/requests.component';
 import { ApplicationArchiveComponent } from './components/application-archive/application-archive.component';
 import { ConventionVersionsComponent } from './components/convention-versions/convention-versions.component';
 import { ChatFullPageComponent } from './components/chat-full-page/chat-full-page.component';
+import { ClientListComponent } from './components/client-list/client-list.component';
+import { ClientDetailComponent } from './components/client-detail/client-detail.component';
+import { BilanRevenueComponent } from './components/bilan-revenue/bilan-revenue.component';
+import { BilanOneComponent } from './components/bilan-one/bilan-one.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -196,8 +200,15 @@ data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHE
 },
 
 
-  { path: 'chat-full', component: ChatFullPageComponent, canActivate: [AuthGuard] },
+  { path: 'chat', component: ChatFullPageComponent, canActivate: [AuthGuard] },
 
+   { path: 'client-bilan', component: ClientListComponent ,canActivate: [AuthGuard] },
+  { path: 'client-bilan/:id', component: ClientDetailComponent ,canActivate: [AuthGuard]},
+
+     { path: 'revenu-bilan', component: BilanRevenueComponent ,canActivate: [AuthGuard] },
+     { path: 'revenu-bilan/convention/:id', component: BilanOneComponent ,canActivate: [AuthGuard] },
+
+  
   { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },
   { path: 'mailBox', component: MailBoxComponent, canActivate: [AuthGuard] },
 

@@ -57,6 +57,10 @@ import { TwoFactorSetupComponent } from './components/two-factor-setup/two-facto
 import { ChatAiComponent } from './components/chat-ai/chat-ai.component';
 import { Nl2brPipe } from './services/nl2br.pipe';
 import { ChatFullPageComponent } from './components/chat-full-page/chat-full-page.component';
+import { ClientListComponent } from './components/client-list/client-list.component';
+import { ClientDetailComponent } from './components/client-detail/client-detail.component';
+import { BilanRevenueComponent } from './components/bilan-revenue/bilan-revenue.component';
+import { BilanOneComponent } from './components/bilan-one/bilan-one.component';
 
 @NgModule({
   declarations: [
@@ -104,6 +108,10 @@ import { ChatFullPageComponent } from './components/chat-full-page/chat-full-pag
     ChatAiComponent,
       Nl2brPipe,
       ChatFullPageComponent,
+      ClientListComponent,
+      ClientDetailComponent,
+      BilanRevenueComponent,
+      BilanOneComponent,
     ],
   imports: [
     BrowserModule,

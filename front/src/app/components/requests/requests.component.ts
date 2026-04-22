@@ -355,4 +355,20 @@ export class RequestsComponent implements OnInit {
     event.target.src = this.generateDefaultAvatar(initials);
     event.target.onerror = null;
   }
+
+  // Alternative if you don't have the full chef object
+getChefAvatarUrlFromName(chefName: string, chefEmail: string): string {
+  let initials = '?';
+  if (chefName) {
+    const names = chefName.split(' ');
+    if (names.length >= 2) {
+      initials = (names[0][0] + names[1][0]).toUpperCase();
+    } else if (names[0]) {
+      initials = names[0][0].toUpperCase();
+    }
+  } else if (chefEmail) {
+    initials = chefEmail[0].toUpperCase();
+  }
+  return this.generateDefaultAvatar(initials);
+}
 }

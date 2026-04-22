@@ -2,6 +2,7 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { StatsService } from '../../services/stats.service';
 import { ChartService } from '../../services/chart.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-decideur',
@@ -30,20 +31,31 @@ export class DecideurComponent implements OnInit, AfterViewInit, OnDestroy {
   summaryStats: any = {};
   overdueAlerts: any[] = [];
 
+  // Alert carousel pagination
+  currentAlertSlide = 0;
+  alertsPerPage = 3;
+  autoSlideInterval: any;
+
+  // Current user
+  currentUser: any = null;
+
   // Loading state
   isLoading = true;
 
   constructor(
     private statsService: StatsService,
-    private chartService: ChartService
+    private chartService: ChartService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.currentUser = this.authService.currentUserValue;
     this.loadDecideurStats();
   }
 
   ngAfterViewInit(): void {
     setTimeout(() => this.renderCharts(), 100);
+    this.initAutoSlideAlerts();
   }
 
   loadDecideurStats(): void {
@@ -70,6 +82,52 @@ export class DecideurComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  // Alert carousel methods
+  initAutoSlideAlerts(): void {
+    if (this.overdueAlerts.length === 0) return;
+    
+    this.autoSlideInterval = setInterval(() => {
+      const totalSlides = Math.ceil(this.overdueAlerts.length / this.alertsPerPage);
+      if (this.currentAlertSlide < totalSlides - 1) {
+        this.currentAlertSlide++;
+      } else {
+        this.currentAlertSlide = 0;
+      }
+    }, 2000);
+  }
+
+  nextAlertSlide(): void {
+    const totalSlides = Math.ceil(this.overdueAlerts.length / this.alertsPerPage);
+    if (this.currentAlertSlide < totalSlides - 1) {
+      this.currentAlertSlide++;
+    } else {
+      this.currentAlertSlide = 0;
+    }
+  }
+
+  previousAlertSlide(): void {
+    const totalSlides = Math.ceil(this.overdueAlerts.length / this.alertsPerPage);
+    if (this.currentAlertSlide > 0) {
+      this.currentAlertSlide--;
+    } else {
+      this.currentAlertSlide = totalSlides - 1;
+    }
+  }
+
+  goToAlertSlide(index: number): void {
+    this.currentAlertSlide = index;
+  }
+
+  getTotalAlertSlides(): number {
+    return Math.ceil(this.overdueAlerts.length / this.alertsPerPage);
+  }
+
+  getPaginatedAlerts(): any[] {
+    const startIndex = this.currentAlertSlide * this.alertsPerPage;
+    const endIndex = startIndex + this.alertsPerPage;
+    return this.overdueAlerts.slice(startIndex, endIndex);
+  }
+
   renderCharts(): void {
     // Convention Status Chart
     if (this.conventionStatusChartRef && this.conventionStats?.statusDistribution) {
@@ -83,7 +141,7 @@ export class DecideurComponent implements OnInit, AfterViewInit, OnDestroy {
           labels: labels,
           datasets: [{
             data: data,
-            backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#607D8B']
+            backgroundColor: ['#AED6F1', '#85C1E9', '#5DADE2', '#3498DB', '#2E86C1', '#2874A6']
           }]
         },
         {
@@ -110,7 +168,7 @@ export class DecideurComponent implements OnInit, AfterViewInit, OnDestroy {
           labels: labels,
           datasets: [{
             data: data,
-            backgroundColor: ['#4CAF50', '#FF9800', '#F44336']
+            backgroundColor: ['#4CAF50', '#66BB6A', '#81C784']
           }]
         },
         {
@@ -138,7 +196,7 @@ export class DecideurComponent implements OnInit, AfterViewInit, OnDestroy {
           datasets: [{
             label: 'Applications',
             data: data,
-            backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0']
+            backgroundColor: ['#009688', '#4DB6AC', '#80CBC4', '#B2DFDB']
           }]
         },
         {
@@ -169,8 +227,8 @@ export class DecideurComponent implements OnInit, AfterViewInit, OnDestroy {
           datasets: [{
             label: 'Revenus',
             data: data,
-            backgroundColor: 'rgba(16, 185, 129, 0.2)',
-            borderColor: '#10B981',
+            backgroundColor: 'rgba(156, 39, 176, 0.2)',
+            borderColor: '#9C27B0',
             borderWidth: 2,
             tension: 0.4,
             fill: true
@@ -242,5 +300,8 @@ export class DecideurComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyCharts();
+    if (this.autoSlideInterval) {
+      clearInterval(this.autoSlideInterval);
+    }
   }
 }

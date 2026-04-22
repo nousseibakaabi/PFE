@@ -503,89 +503,152 @@ tempToken: string = '';
     this.emailScrollMax = this.loginEmail.nativeElement.scrollWidth;
   }
 
-  onSubmit(): void {
-    this.submitted = true;
-    this.error = '';
+onSubmit(): void {
+  this.submitted = true;
+  this.error = '';
 
-    if (this.loginForm.invalid) {
-      return;
-    }
-
-    this.loading = true;
-    this.cdr.markForCheck();
-
-    this.authService.login({
-      usernameOrEmail: this.f['usernameOrEmail'].value,
-      password: this.f['password'].value
-    }).subscribe({
-      next: (response) => {
-        console.log('📥 Login response in component:', response);
-        
-        if (response.requiresTwoFactor) {
-          console.log('🔐 2FA required - showing modal');
-          this.tempToken = response.tempToken || '';
-          this.showTwoFactorModal = true;
-          this.loading = false;
-          // Reset 2FA inputs
-          this.resetCodeInputs();
-          setTimeout(() => {
-            const firstInput = document.querySelector('input[name="code-0"]') as HTMLInputElement;
-            if (firstInput) {
-              firstInput.focus();
-            }
-          }, 100);
-          this.cdr.detectChanges();
-        } else {
-          console.log('✅ Login successful - redirecting');
-          this.celebrateLogin();
-          this.redirectAfterLogin();
-        }
-      },
-      error: (error: any) => {
-        console.log('Login error details:', error);
-        
-        const backendError = error.error || error;
-        const remainingAttempts = backendError.remainingAttempts;
-        const errorType = backendError.error;
-        
-        this.error = '';
-        
-        if (errorType === 'AccountTemporarilyLocked') {
-          if (backendError.lockUntil) {
-            const lockUntilDate = new Date(backendError.lockUntil);
-            const now = new Date();
-            const minutesRemaining = Math.ceil((lockUntilDate.getTime() - now.getTime()) / (1000 * 60));
-            if (minutesRemaining > 0) {
-              this.error = `Account locked for ${minutesRemaining} minute(s) due to too many failed attempts`;
-            } else {
-              this.error = 'Account was temporarily locked. Please try again.';
-            }
-          } else {
-            this.error = 'Account locked for 15 minutes due to too many failed attempts';
-          }
-        } else if (errorType === 'LastAttemptWarning' || backendError.isLastAttempt === true) {
-          this.error = 'WARNING: One more failed attempt will lock your account for 15 minutes!';
-        } else if (errorType === 'BadCredentials' || errorType === 'InvalidCredentials') {
-          if (remainingAttempts === 2) {
-            this.error = 'Invalid credentials. 2 attempts remaining';
-          } else if (remainingAttempts === 1) {
-            this.error = 'Invalid credentials. 1 attempt remaining';
-          } else {
-            this.error = 'Invalid credentials';
-          }
-        } else if (errorType === 'AccountLocked' && backendError.lockType === 'ADMIN') {
-          this.error = 'Account locked by administrator. Contact admin to unlock.';
-        } else if (backendError.userMessage) {
-          this.error = backendError.userMessage;
-        } else {
-          this.error = backendError.message || 'Login failed. Please try again.';
-        }
-        
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
-    });
+  if (this.loginForm.invalid) {
+    return;
   }
+
+  this.loading = true;
+  this.cdr.markForCheck();
+
+  this.authService.login({
+    usernameOrEmail: this.f['usernameOrEmail'].value,
+    password: this.f['password'].value
+  }).subscribe({
+    next: (response) => {
+      console.log('📥 Réponse de connexion dans le composant:', response);
+      
+      if (response.requiresTwoFactor) {
+        console.log('🔐 2FA requis - affichage du modal');
+        this.tempToken = response.tempToken || '';
+        this.showTwoFactorModal = true;
+        this.loading = false;
+        this.resetCodeInputs();
+        setTimeout(() => {
+          const firstInput = document.querySelector('input[name="code-0"]') as HTMLInputElement;
+          if (firstInput) {
+            firstInput.focus();
+          }
+        }, 100);
+        this.cdr.detectChanges();
+      } else {
+        console.log('✅ Connexion réussie - redirection');
+        this.celebrateLogin();
+        this.redirectAfterLogin();
+      }
+    },
+    error: (error: any) => {
+      console.log('=== ERREUR DE CONNEXION DÉTAILLÉE ===');
+      console.log('Error object:', error);
+      console.log('Error status:', error.status);
+      console.log('Error error property:', error.error);
+      
+      const backendError = error.error;
+      console.log('Backend error type:', backendError?.error);
+      console.log('Backend lockUntil:', backendError?.lockUntil);
+      console.log('Backend minutesRemaining:', backendError?.minutesRemaining);
+      console.log('Backend message:', backendError?.message);
+      
+      const errorType = backendError?.error;
+      const remainingAttempts = backendError?.remainingAttempts;
+      const lockUntil = backendError?.lockUntil;
+      const minutesRemaining = backendError?.minutesRemaining;
+      
+      this.error = '';
+      
+      // Check for temporary lock
+      if (errorType === 'AccountTemporarilyLocked') {
+        console.log('Processing temporary lock...');
+        
+        if (lockUntil) {
+          const lockUntilDate = new Date(lockUntil);
+          const now = new Date();
+          const diffMs = lockUntilDate.getTime() - now.getTime();
+          
+          console.log('lockUntilDate:', lockUntilDate);
+          console.log('now:', now);
+          console.log('diffMs:', diffMs);
+          
+          if (diffMs > 0) {
+            const minutes = Math.floor(diffMs / (1000 * 60));
+            const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+            
+            if (minutes > 0) {
+              this.error = `🔒 Compte verrouillé pour ${minutes} minute${minutes > 1 ? 's' : ''} et ${seconds} seconde${seconds > 1 ? 's' : ''}`;
+            } else {
+              this.error = `🔒 Compte verrouillé pour ${seconds} seconde${seconds > 1 ? 's' : ''}`;
+            }
+          } else {
+            this.error = '🔒 Le compte a été temporairement verrouillé. Veuillez réessayer.';
+          }
+        } else if (minutesRemaining && minutesRemaining > 0) {
+          if (minutesRemaining === 1) {
+            this.error = `🔒 Compte verrouillé pour ${minutesRemaining} minute`;
+          } else {
+            this.error = `🔒 Compte verrouillé pour ${minutesRemaining} minutes`;
+          }
+        } else {
+          this.error = '🔒 Compte verrouillé pour 15 minutes en raison de trop de tentatives échouées';
+        }
+      } 
+      // Check for last attempt warning
+      else if (errorType === 'LastAttemptWarning' || backendError?.isLastAttempt === true) {
+        this.error = '⚠️ ATTENTION : Une tentative supplémentaire échouée verrouillera votre compte pour 15 minutes !';
+      } 
+      // Check for bad credentials
+      else if (errorType === 'BadCredentials' || errorType === 'InvalidCredentials') {
+        if (remainingAttempts === 2) {
+          this.error = `❌ Identifiants invalides. ${remainingAttempts} tentatives restantes`;
+        } else if (remainingAttempts === 1) {
+          this.error = `❌ Identifiants invalides. ${remainingAttempts} tentative restante`;
+        } else {
+          this.error = '❌ Identifiants invalides';
+        }
+      } 
+      // Check for admin lock
+      else if (errorType === 'AccountLocked' && backendError?.lockType === 'ADMIN') {
+        this.error = '🔒 Compte verrouillé par l\'administrateur. Contactez l\'admin pour déverrouiller.';
+      } 
+      // Use userMessage if available
+      else if (backendError?.userMessage) {
+        this.error = backendError.userMessage;
+      } 
+      // Default error message
+      else {
+        this.error = backendError?.message || 'Échec de la connexion. Veuillez réessayer.';
+      }
+      
+      console.log('Final error message:', this.error);
+      
+      this.loading = false;
+      this.cdr.markForCheck();
+    }
+  });
+}
+
+
+
+formatLockTime(lockUntil: string): string {
+  const lockUntilDate = new Date(lockUntil);
+  const now = new Date();
+  const diffMs = lockUntilDate.getTime() - now.getTime();
+  
+  if (diffMs <= 0) {
+    return 'Le verrouillage a expiré';
+  }
+  
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+  
+  if (minutes > 0) {
+    return `🔒 Compte verrouillé pour ${minutes} minute${minutes > 1 ? 's' : ''} et ${seconds} seconde${seconds > 1 ? 's' : ''}`;
+  } else {
+    return `🔒 Compte verrouillé pour ${seconds} seconde${seconds > 1 ? 's' : ''}`;
+  }
+}
 
   private celebrateLogin(): void {
     gsap.to(this.mouth.nativeElement, { duration: 0.2, y: -10, ease: "power2.out" });

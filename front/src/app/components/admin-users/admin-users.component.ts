@@ -562,27 +562,7 @@ private toTitleCase(str: string): string {
 
 
 
-// openEditRoleModal(user: AdminUser): void {
-//   this.selectedUser = user;
-  
-//   // Debug: See what we're working with
-//   console.log('User display roles:', user.roles);
-//   console.log('Available roles:', this.availableRoles);
-  
-//   // Map user's display roles to available role values
-//   const formRoleValues = user.roles.map(displayRole => {
-//     // Find which available role has this display name
-//     const availableRole = this.availableRoles.find(ar => ar.label === displayRole);
-//     return availableRole ? availableRole.value : displayRole;
-//   });
-  
-//   console.log('Form role values to set:', formRoleValues);
-  
-//   this.editRoleForm.patchValue({
-//     roles: formRoleValues
-//   });
-//   this.showEditRoleModal = true;
-// }
+
 
 openEditRoleModal(user: AdminUser): void {
   this.selectedUser = user;
@@ -828,14 +808,6 @@ onRoleRadioChange(event: any, roleValue: string): void {
 }
 
 
-// onRoleRadio(roleValue: string): void {
-//   // For radio buttons, set the form value to an array with just this role
-//   this.editRoleForm.patchValue({
-//     roles: [roleValue] // Single role in array
-//   });
-//   this.editRoleForm.get('roles')?.updateValueAndValidity();
-// }
-
 
 // Add this method to your AdminUsersComponent class
 getTotalSelectedBudget(): number {
@@ -936,10 +908,10 @@ generateAvatarUrl(user: AdminUser): string {
     initials = user.username.charAt(0).toUpperCase();
   }
   
-  // Simple SVG with initials as fallback
+  // SVG with transparent background, blue border, and blue initials
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <circle cx="50" cy="50" r="48" fill="#e9d709"/>
-    <text x="50" y="58" text-anchor="middle" font-family="Arial" font-size="38" fill="white">${initials}</text>
+    <circle cx="50" cy="50" r="45" fill="none" stroke="#2572EE" stroke-width="3"/>
+    <text x="50" y="62" text-anchor="middle" font-family="Arial, sans-serif" font-size="35" font-weight="500" fill="#2572EE">${initials}</text>
   </svg>`;
   
   return 'data:image/svg+xml;base64,' + btoa(svg);
@@ -1216,6 +1188,8 @@ getActionClass(actionType: string): string {
     case 'UNLOCK': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
     case 'ROLE_CHANGE': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
     case 'DEPARTMENT_CHANGE': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+    case 'PAYMENT': return 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300';
+    case 'BILAN_GENERATION': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300';
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
   }
 }

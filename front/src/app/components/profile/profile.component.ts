@@ -144,7 +144,7 @@ generateDefaultAvatar(): string {
   const blueColor = '#2B72DF';
   
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-    <circle cx="50" cy="50" r="48" fill="white" stroke="${blueColor}" stroke-width="2"/>
+    <circle cx="50" cy="50" r="48" fill="transparent" stroke="${blueColor}" stroke-width="2"/>
     <text x="50" y="58" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" 
           font-size="38" font-weight="500" fill="${blueColor}" dominant-baseline="middle">
       ${initials}

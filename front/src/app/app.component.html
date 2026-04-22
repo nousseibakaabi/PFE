@@ -24,7 +24,7 @@
     >
       <router-outlet></router-outlet>
 
-      <app-chat-ai></app-chat-ai>
+      <app-chat-ai *ngIf="router.url !== '/chat' && isAuthenticated"></app-chat-ai>
 
     </main>
   </div>

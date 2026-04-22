@@ -30,7 +30,7 @@ export class AuthInterceptor implements HttpInterceptor {
     let authRequest = request;
     
     // Ajouter le header Authorization
-    if (token) {
+    if (token && !request.url.includes('/auth/forgot-password') && !request.url.includes('/auth/reset-password')) {
       console.log('✅ Adding Authorization header to request');
       authRequest = request.clone({
         setHeaders: {
@@ -44,7 +44,7 @@ export class AuthInterceptor implements HttpInterceptor {
         console.log(`  ${key}: ${authRequest.headers.get(key)?.substring(0, 50)}...`);
       });
     } else {
-      console.warn('⚠️ No token found, sending request without Authorization header');
+      console.warn('⚠️ No token found or skipping auth for this endpoint, sending request without Authorization header');
     }
 
     // 2FA: Ajouter les headers 2FA UNIQUEMENT s'ils existent et sont valides

@@ -1,0 +1,221 @@
+.active-tab {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white !important;
+  border-color: transparent !important;
+}
+
+/* Better checkbox styling */
+input[type="checkbox"] {
+  accent-color: #667eea;
+  cursor: pointer;
+}
+
+input[type="checkbox"]:hover {
+  transform: scale(1.05);
+}
+
+/* Date input styling */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.6;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+
+/* Animated Separator */
+.animated-separator {
+  width: 1px;
+  height: 30px;
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    #e5e7eb 20%, 
+    #e5e7eb 80%, 
+    transparent 100%);
+  margin: 0 2px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.dark .animated-separator {
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    #4b5563 20%, 
+    #4b5563 80%, 
+    transparent 100%);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scaleY(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* Alternative animated separator with gradient shine */
+.animated-separator-shine {
+  width: 2px;
+  height: 32px;
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    #667eea 30%, 
+    #764ba2 50%, 
+    #667eea 70%, 
+    transparent 100%);
+  margin: 0 4px;
+  border-radius: 2px;
+  animation: shine 2s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.animated-separator-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.4), 
+    transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes shine {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scaleY(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.1);
+  }
+}
+
+/* Active tab styling */
+.active-tab {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  accent-color: #667eea;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+input[type="checkbox"]:hover {
+  transform: scale(1.05);
+}
+
+/* Date input styling */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.6;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Select dropdown styling */
+select {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+select:hover {
+  border-color: #667eea;
+}
+
+/* Dark mode adjustments */
+.dark .animated-separator {
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    #4b5563 20%, 
+    #4b5563 80%, 
+    transparent 100%);
+}
+
+
+/* Add to your component CSS or global styles */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+/* Hover effect for badges */
+.inline-flex {
+  transition: all 0.2s ease;
+}
+
+.inline-flex:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+
+@keyframes modal-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-modal-slide-up {
+  animation: modal-slide-up 0.2s ease-out;
+}

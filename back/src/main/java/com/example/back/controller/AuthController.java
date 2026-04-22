@@ -1,6 +1,5 @@
 package com.example.back.controller;
 
-
 import com.example.back.entity.User;
 import com.example.back.payload.request.LoginRequest;
 import com.example.back.payload.response.JwtResponse;
@@ -60,10 +59,8 @@ public class AuthController {
     @Autowired
     private HistoryService historyService;
 
-
     @Autowired
     private TwoFactorService twoFactorService;
-
 
     private static final int MAX_FAILED_ATTEMPTS = 3;
 
@@ -76,46 +73,55 @@ public class AuthController {
 
             if (existingUser != null) {
 
-                System.out.println("=== LOGIN DEBUG ===");
-                System.out.println("User: " + existingUser.getUsername());
-                System.out.println("Enabled: " + existingUser.getEnabled());
-                System.out.println("LockedByAdmin: " + existingUser.getLockedByAdmin());
-                System.out.println("AccountNonLocked: " + existingUser.getAccountNonLocked());
-                System.out.println("AccountLockedUntil: " + existingUser.getAccountLockedUntil());
-                System.out.println("TwoFactorEnabled: " + existingUser.getTwoFactorEnabled());
-                System.out.println("==================");
+                System.out.println("=== DEBUG CONNEXION ===");
+                System.out.println("Utilisateur: " + existingUser.getUsername());
+                System.out.println("Activé: " + existingUser.getEnabled());
+                System.out.println("Verrouillé par admin: " + existingUser.getLockedByAdmin());
+                System.out.println("Compte non verrouillé: " + existingUser.getAccountNonLocked());
+                System.out.println("Compte verrouillé jusqu'au: " + existingUser.getAccountLockedUntil());
+                System.out.println("2FA activée: " + existingUser.getTwoFactorEnabled());
+                System.out.println("=======================");
 
-                // Check if locked by admin
+                // Vérifier si verrouillé par l'administrateur
                 if (existingUser.getLockedByAdmin()) {
                     Map<String, Object> response = new HashMap<>();
                     response.put("success", false);
-                    response.put("message", "Account locked by administrator. Contact admin to unlock.");
+                    response.put("message", "Compte verrouillé par l'administrateur. Contactez l'admin pour déverrouiller.");
                     response.put("error", "AccountLocked");
                     response.put("lockType", "ADMIN");
                     return ResponseEntity.status(401).body(response);
                 }
 
-                // Check if temporarily locked
+// Vérifier si temporairement verrouillé
                 if (existingUser.getAccountLockedUntil() != null &&
                         existingUser.getAccountLockedUntil().isAfter(LocalDateTime.now())) {
                     Map<String, Object> response = new HashMap<>();
                     response.put("success", false);
-                    response.put("message", "Account is temporarily locked due to too many failed attempts");
+                    response.put("message", "Le compte est temporairement verrouillé en raison de trop de tentatives échouées");
                     response.put("error", "AccountTemporarilyLocked");
                     response.put("remainingAttempts", 0);
                     response.put("lockType", "TEMPORARY");
-                    response.put("lockUntil", existingUser.getAccountLockedUntil());
+                    response.put("lockUntil", existingUser.getAccountLockedUntil().toString());
+
+                    // Calculate remaining time
+                    long minutesRemaining = java.time.Duration.between(
+                            LocalDateTime.now(),
+                            existingUser.getAccountLockedUntil()
+                    ).toMinutes();
+                    response.put("minutesRemaining", minutesRemaining);
+
                     return ResponseEntity.status(401).body(response);
                 }
+
             }
 
-            // Get remaining attempts before authentication
+            // Obtenir les tentatives restantes avant l'authentification
             int remainingAttempts = loginAttemptService.getRemainingAttempts(loginRequest.getUsernameOrEmail());
 
             if (remainingAttempts <= 0) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", false);
-                response.put("message", "Account is temporarily locked due to too many failed attempts");
+                response.put("message", "Le compte est temporairement verrouillé en raison de trop de tentatives échouées");
                 response.put("error", "AccountTemporarilyLocked");
                 response.put("remainingAttempts", 0);
                 return ResponseEntity.status(401).body(response);
@@ -146,7 +152,7 @@ public class AuthController {
                     response.put("success", true);
                     response.put("requiresTwoFactor", true);
                     response.put("tempToken", tempToken);
-                    response.put("message", "2FA verification required");
+                    response.put("message", "Vérification 2FA requise");
 
                     return ResponseEntity.ok(response);
 
@@ -161,7 +167,7 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsernameOrEmail(),
                             loginRequest.getPassword()));
 
-            // Login successful - reset attempts
+            // Connexion réussie - réinitialiser les tentatives
             loginAttemptService.loginSuccess(loginRequest.getUsernameOrEmail());
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -172,12 +178,12 @@ public class AuthController {
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
 
-            // Update last login time
+            // Mettre à jour la dernière connexion
             User user = userRepository.findById(userDetails.getId()).orElseThrow();
             user.setLastLogin(LocalDateTime.now());
             userRepository.save(user);
 
-            // LOG HISTORY: User login
+            // HISTORIQUE: Connexion utilisateur
             historyService.logUserLogin(user);
 
             return ResponseEntity.ok(new JwtResponse(jwt,
@@ -194,111 +200,143 @@ public class AuthController {
         } catch (DisabledException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("message", "Account is disabled");
+            response.put("message", "Le compte est désactivé");
             response.put("error", "AccountDisabled");
             return ResponseEntity.status(401).body(response);
 
-        } catch (LockedException e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Account is locked");
-            response.put("error", "AccountLocked");
+        }catch (LockedException e) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Le compte est verrouillé");
+                response.put("error", "AccountLocked");
 
-            // Check if locked by admin or by failed attempts
-            User user = userRepository.findByUsernameOrEmail(loginRequest.getUsernameOrEmail()).orElse(null);
-            if (user != null) {
-                if (user.getLockedByAdmin()) {
-                    response.put("lockType", "ADMIN");
-                    response.put("message", "Account locked by administrator. Contact admin to unlock.");
+                User user = userRepository.findByUsernameOrEmail(loginRequest.getUsernameOrEmail()).orElse(null);
+                if (user != null) {
+                    if (user.getLockedByAdmin()) {
+                        response.put("lockType", "ADMIN");
+                        response.put("message", "Compte verrouillé par l'administrateur. Contactez l'admin pour déverrouiller.");
 
-                    // Send email for admin lock
-                    try {
-                        emailService.sendAccountLockedByAdminEmail(user.getEmail(), user.getUsername());
-                    } catch (Exception emailEx) {
-                        response.put("Failed to send admin lock email: {}", emailEx.getMessage());
-                    }
-                } else if (user.getAccountLockedUntil() != null) {
-                    response.put("lockType", "TEMPORARY");
-                    response.put("lockUntil", user.getAccountLockedUntil());
+                        try {
+                            System.out.println("Tentative d'envoi d'email de verrouillage admin à: " + user.getEmail());
+                            emailService.sendAccountLockedByAdminEmail(user.getEmail(), user.getUsername());
+                            System.out.println("Email de verrouillage admin envoyé avec succès");
+                        } catch (Exception emailEx) {
+                            System.err.println("Échec d'envoi de l'email de verrouillage admin: " + emailEx.getMessage());
+                            emailEx.printStackTrace();
+                            response.put("emailError", "Échec d'envoi de l'email de verrouillage admin: " + emailEx.getMessage());
+                        }
+                    } else if (user.getAccountLockedUntil() != null &&
+                            user.getAccountLockedUntil().isAfter(LocalDateTime.now())) {
+                        response.put("lockType", "TEMPORARY");
+                        response.put("lockUntil", user.getAccountLockedUntil().toString());
 
-                    // Calculate remaining time
-                    long minutesRemaining = java.time.Duration.between(
-                            LocalDateTime.now(),
-                            user.getAccountLockedUntil()
-                    ).toMinutes();
+                        long minutesRemaining = java.time.Duration.between(
+                                LocalDateTime.now(),
+                                user.getAccountLockedUntil()
+                        ).toMinutes();
 
-                    response.put("message", "Account temporarily locked. Try again in " + minutesRemaining + " minutes.");
+                        response.put("minutesRemaining", minutesRemaining);
+                        response.put("message", "Compte temporairement verrouillé. Réessayez dans " + minutesRemaining + " minutes.");
 
-                    // Send email for temporary lock
-                    try {
-                        emailService.sendAccountTemporarilyLockedEmail(
-                                user.getEmail(),
-                                user.getUsername(),
-                                minutesRemaining
-                        );
-                    } catch (Exception emailEx) {
-                        response.put("Failed to send temporary lock email: {}", emailEx.getMessage());
+                        try {
+                            emailService.sendAccountTemporarilyLockedEmail(
+                                    user.getEmail(),
+                                    user.getUsername(),
+                                    minutesRemaining
+                            );
+                        } catch (Exception emailEx) {
+                            System.err.println("Échec d'envoi de l'email de verrouillage temporaire: " + emailEx.getMessage());
+                            emailEx.printStackTrace();
+                        }
                     }
                 }
-            }
 
-            return ResponseEntity.status(401).body(response);
+                return ResponseEntity.status(401).body(response);
 
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("message", "Authentication failed");
+            response.put("message", "Échec de l'authentification");
             response.put("error", e.getMessage());
             return ResponseEntity.status(401).body(response);
         }
     }
 
+
     // Méthode helper pour gérer les erreurs de mot de passe
     private ResponseEntity<?> handleBadCredentials(LoginRequest loginRequest) {
-        // Login failed - increment attempts
+        // Échec de connexion - incrémenter les tentatives
         loginAttemptService.loginFailed(loginRequest.getUsernameOrEmail());
 
         User user = userRepository.findByUsernameOrEmail(loginRequest.getUsernameOrEmail()).orElse(null);
+
+        // Get fresh user data after loginFailed (to get updated lockUntil)
+        if (user != null) {
+            user = userRepository.findByUsernameOrEmail(loginRequest.getUsernameOrEmail()).orElse(null);
+        }
+
         int failedAttempts = user != null ? (user.getFailedLoginAttempts() != null ? user.getFailedLoginAttempts() : 0) : 0;
         int remainingAttempts = MAX_FAILED_ATTEMPTS - failedAttempts;
 
         Map<String, Object> response = new HashMap<>();
 
         if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
-            // Account should be locked now
+            // Account is locked
             response.put("success", false);
-            response.put("message", "Account locked for 15 minutes due to too many failed attempts");
+            response.put("message", "Compte verrouillé pour 15 minutes en raison de trop de tentatives échouées");
             response.put("error", "AccountTemporarilyLocked");
             response.put("remainingAttempts", 0);
             response.put("lockType", "TEMPORARY");
+
             if (user != null && user.getAccountLockedUntil() != null) {
-                response.put("lockUntil", user.getAccountLockedUntil());
+                // Send lockUntil as string
+                response.put("lockUntil", user.getAccountLockedUntil().toString());
+
+                // Calculate remaining time
+                long minutesRemaining = java.time.Duration.between(
+                        LocalDateTime.now(),
+                        user.getAccountLockedUntil()
+                ).toMinutes();
+
+                long secondsRemaining = java.time.Duration.between(
+                        LocalDateTime.now(),
+                        user.getAccountLockedUntil()
+                ).getSeconds();
+
+                response.put("minutesRemaining", minutesRemaining);
+                response.put("secondsRemaining", secondsRemaining);
+
+                System.out.println("=== ACCOUNT LOCKED ===");
+                System.out.println("User: " + user.getUsername());
+                System.out.println("Locked until: " + user.getAccountLockedUntil());
+                System.out.println("Minutes remaining: " + minutesRemaining);
+                System.out.println("Seconds remaining: " + secondsRemaining);
+                System.out.println("======================");
             }
         } else if (failedAttempts == MAX_FAILED_ATTEMPTS - 1) {
-            // This is the last attempt before lock (2nd failed attempt)
+            // Last attempt before lock (2nd failed attempt)
             response.put("success", false);
-            response.put("message", "One more failed attempt will lock your account for 15 minutes");
+            response.put("message", "⚠️ ATTENTION : Une tentative supplémentaire échouée verrouillera votre compte pour 15 minutes !");
             response.put("error", "LastAttemptWarning");
             response.put("remainingAttempts", 1);
             response.put("isLastAttempt", true);
         } else {
             // Normal failed attempt
             response.put("success", false);
-            response.put("message", "Invalid username/email or password");
+            response.put("message", "❌ Nom d'utilisateur/email ou mot de passe invalide");
             response.put("error", "BadCredentials");
             response.put("remainingAttempts", remainingAttempts);
 
-            // Add specific messages
+            // Add specific messages based on remaining attempts
             if (remainingAttempts == 2) {
-                response.put("userMessage", "Invalid credentials. 2 attempts remaining");
+                response.put("userMessage", "❌ Identifiants invalides. 2 tentatives restantes");
             } else if (remainingAttempts == 1) {
-                response.put("userMessage", "Invalid credentials. 1 attempt remaining");
+                response.put("userMessage", "❌ Identifiants invalides. 1 tentative restante");
             }
         }
 
         return ResponseEntity.status(401).body(response);
     }
-
 
     @PostMapping("/verify-2fa")
     public ResponseEntity<?> verifyTwoFactor(@RequestBody Map<String, String> request) {
@@ -309,13 +347,13 @@ public class AuthController {
         Long userId = sessionCache.get(tempToken);
         if (userId == null) {
             return ResponseEntity.badRequest()
-                    .body(new MessageResponse("Invalid or expired session"));
+                    .body(new MessageResponse("Session invalide ou expirée"));
         }
 
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return ResponseEntity.badRequest()
-                    .body(new MessageResponse("User not found"));
+                    .body(new MessageResponse("Utilisateur non trouvé"));
         }
 
         // Vérifier le code 2FA
@@ -324,7 +362,7 @@ public class AuthController {
             verificationCode = Integer.parseInt(code);
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest()
-                    .body(new MessageResponse("Invalid code format"));
+                    .body(new MessageResponse("Format de code invalide"));
         }
 
         if (twoFactorService.verifyCode(user.getTwoFactorSecret(), verificationCode)) {
@@ -340,11 +378,11 @@ public class AuthController {
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
 
-            // Update last login time
+            // Mettre à jour la dernière connexion
             user.setLastLogin(LocalDateTime.now());
             userRepository.save(user);
 
-            // LOG HISTORY
+            // HISTORIQUE
             historyService.logUserLogin(user);
 
             // Supprimer le token temporaire
@@ -359,13 +397,12 @@ public class AuthController {
                     roles));
         } else {
             return ResponseEntity.badRequest()
-                    .body(new MessageResponse("Invalid 2FA code"));
+                    .body(new MessageResponse("Code 2FA invalide"));
         }
     }
 
     // Cache simple pour stocker les tokens temporaires (à remplacer par Redis en production)
     private final Map<String, Long> sessionCache = new ConcurrentHashMap<>();
-
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -379,7 +416,7 @@ public class AuthController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", false);
-        response.put("message", "Validation failed");
+        response.put("message", "Échec de la validation");
         response.put("errors", errors);
 
         return ResponseEntity.badRequest().body(response);
@@ -387,15 +424,15 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
-        // Get current user for history
+        // Récupérer l'utilisateur actuel pour l'historique
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
             userRepository.findByUsername(auth.getName()).ifPresent(user -> {
-                // LOG HISTORY: User logout
+                // HISTORIQUE: Déconnexion utilisateur
                 historyService.logUserLogout(user);
             });
         }
 
-        return ResponseEntity.ok(new MessageResponse("Logout successful"));
+        return ResponseEntity.ok(new MessageResponse("Déconnexion réussie"));
     }
 }

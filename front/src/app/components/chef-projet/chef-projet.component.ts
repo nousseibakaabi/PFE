@@ -45,6 +45,9 @@ workloadChart: any = null;
 
   Math = Math;
 
+  // Pagination properties
+  conventionCurrentPage: number = 1;
+  conventionItemsPerPage: number = 4;
 
   currentSlide = 0;
 slidesPerView = 1;
@@ -342,7 +345,36 @@ loadMyWorkload() {
     this.errorMessage = '';
   }
 
+  // Pagination methods for conventions
+  getPaginatedConventions(): any[] {
+    const startIndex = (this.conventionCurrentPage - 1) * this.conventionItemsPerPage;
+    const endIndex = startIndex + this.conventionItemsPerPage;
+    return this.myConventions.slice(startIndex, endIndex);
+  }
 
+  getTotalConventionPages(): number {
+    return Math.ceil(this.myConventions.length / this.conventionItemsPerPage);
+  }
+
+  goToConventionPage(page: number): void {
+    const totalPages = this.getTotalConventionPages();
+    if (page >= 1 && page <= totalPages) {
+      this.conventionCurrentPage = page;
+    }
+  }
+
+  previousConventionPage(): void {
+    if (this.conventionCurrentPage > 1) {
+      this.conventionCurrentPage--;
+    }
+  }
+
+  nextConventionPage(): void {
+    const totalPages = this.getTotalConventionPages();
+    if (this.conventionCurrentPage < totalPages) {
+      this.conventionCurrentPage++;
+    }
+  }
 
 
 updateSlidesPerView() {

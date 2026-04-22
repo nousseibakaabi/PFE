@@ -1,9 +1,11 @@
 package com.example.back.service;
 
 import jakarta.mail.internet.InternetAddress;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -27,328 +29,794 @@ public class EmailService {
     @Value("${frontend.url:http://localhost:4200}")
     private String frontendUrl;
 
-    private final String PRIMARY_COLOR = "#6EB9D5";
-    private final String DARK_BLUE = "#4A8AA5";
+
+
+    private String PRIMARY_COLOR = "#6EB9D5";
+    private String DARK_BLUE = "#2C5F8A";
     private final String SUCCESS_COLOR = "#10b981";
     private final String WARNING_COLOR = "#f59e0b";
     private final String ERROR_COLOR = "#ef4444";
 
-    // Send simple text email
-    public void sendSimpleMessage(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
+
+
+    private String getLogoBase64() {
+        try {
+            ClassPathResource resource = new ClassPathResource("images/logo.png");
+            System.out.println("Logo file exists: " + resource.exists());
+            System.out.println("Logo file path: " + resource.getPath());
+
+            byte[] fileBytes = resource.getInputStream().readAllBytes();
+            System.out.println("Logo file size: " + fileBytes.length + " bytes");
+
+            String base64 = Base64.encodeBase64String(fileBytes);
+            System.out.println("Base64 length: " + base64.length());
+
+            return base64;
+        } catch (Exception e) {
+            System.err.println("ERROR loading logo: " + e.getMessage());
+            e.printStackTrace();
+            return ""; // Return empty if logo not found
+        }
     }
 
-    // Send HTML email for password reset
-// Send HTML email for password reset
-// Send HTML email for password reset
     public void sendPasswordResetEmail(String to, String resetToken, String username) throws MessagingException {
         String resetLink = frontendUrl + "/reset-password?token=" + resetToken;
-
         String subject = "🔐 Réinitialisation de votre mot de passe";
-        String htmlContent = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-                .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-                .header { background: linear-gradient(135deg, """ + PRIMARY_COLOR +
-                """ 
-                        0%, """ + DARK_BLUE +
-                """ 
-                100%); padding: 30px; text-align: center; }
-                .icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-                .icon svg { width: 40px; height: 40px; fill: white; }
-                .content { padding: 40px; background: #ffffff; }
-                .button { display: inline-block; background: """ + PRIMARY_COLOR +
-                """
-                ; color: white; padding: 14px 32px; text-decoration: none; border-radius: 50px; font-weight: 600; margin: 20px 0; box-shadow: 0 4px 15px rgba(110, 185, 213, 0.3); transition: all 0.3s ease; }
-                .button:hover { background: """ + DARK_BLUE +
-                """
-                ; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(110, 185, 213, 0.4); }
-                .info-box { background: #f8fafc; border-radius: 16px; padding: 20px; margin: 20px 0; border: 1px solid #e2e8f0; }
-                .footer { padding: 30px; text-align: center; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
-                .signature { margin-top: 20px; padding-top: 20px; border-top: 2px dashed """ + PRIMARY_COLOR +
-                """
-                ; }
-                .emoji { font-size: 20px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <div class="icon">
-                        <svg viewBox="0 0 24 24" fill="white">
-                            <path d="M12 2C8.13 2 5 5.13 5 9v3c0 .5.3.9.7 1.2l-1.4 1.4C3.5 13.9 3 13 3 12V9c0-5 4-9 9-9s9 4 9 9v3c0 .5-.3.9-.7 1.2l-1.4-1.4c.4-.3.7-.7.7-1.2V9c0-3.87-3.13-7-7-7z"/>
-                            <path d="M12 22c-2.2 0-4-1.8-4-4v-1h8v1c0 2.2-1.8 4-4 4z"/>
-                            <circle cx="12" cy="10" r="2"/>
-                        </svg>
-                    </div>
-                    <h1 style="color: white; margin: 0; font-size: 28px;">Réinitialisation du mot de passe</h1>
-                </div>
-                <div class="content">
-                    <p style="font-size: 18px; color: """ + PRIMARY_COLOR +
-                """
-                        ;">Bonjour """ + username +
-                    """
-                    ,</p>
-                    <p>Nous avons reçu une demande de réinitialisation de votre mot de passe.</p>
-                    
-                    <div class="info-box">
-                        <p style="margin: 0;"><span class="emoji">⏰</span> Ce lien expire dans <strong>24 heures</strong></p>
-                        <p style="margin: 10px 0 0;"><span class="emoji">🔒</span> Pour votre sécurité, ne partagez jamais ce lien</p>
-                    </div>
-                    
-                    <div style="text-align: center;">
-                        <a href=\"""" + resetLink +
-                    """
-                    \" class="button">🔑 Réinitialiser mon mot de passe</a>
-                    </div>
-                    
-                    <p style="color: #64748b; font-size: 14px; text-align: center;">Ou copiez ce lien :</p>
-                    <p style="background: #f1f5f9; padding: 12px; border-radius: 8px; word-break: break-all; font-size: 12px;">""" + resetLink +
-                    """
-                    </p>
-                    
-                    <div class="signature">
-                        <p style="margin: 10px 0 0;">À très vite sur CNI !</p>
-                        <p style="margin: 20px 0 0; font-weight: 600; color: """ + PRIMARY_COLOR +
-                    """
-                    ;">L'équipe CNI</p>
-                    </div>
-                </div>
-                <div class="footer">
-                    <p>© 2026 CNI. Tous droits réservés.</p>
-                    <p style="margin: 5px 0 0;">Cet email a été envoyé à 
-                    """
-                + to +
-                """
-                </p>
-                </div>
+
+        String htmlContent = String.format("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Réinitialisation mot de passe</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6; 
+                background: #f0f4f8;
+                margin: 0; 
+                padding: 20px; 
+            }
+            .container { 
+                max-width: 550px; 
+                margin: 0 auto; 
+                background: #ffffff;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            }
+            /* Small blue gradient bar */
+            .gradient-bar {
+                background: linear-gradient(135deg, %s 0%%, %s 100%%);
+                padding: 20px;
+                text-align: center;
+            }
+            .gradient-bar h2 {
+                color: white;
+                font-size: 18px;
+                font-weight: 600;
+                margin: 0;
+                letter-spacing: 0.5px;
+            }
+            /* Content area */
+            .content {
+                padding: 35px 30px;
+            }
+            /* Message text */
+            .message-text {
+                color: #4a5568;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 30px;
+            }
+            .message-text .greeting {
+                font-weight: 600;
+                color: %s;
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+            /* Transparent button with blue border */
+            .button-container {
+                text-align: center;
+                margin: 30px 0;
+            }
+            .btn-outline {
+                display: inline-block;
+                background: transparent;
+                color: %s !important;
+                padding: 12px 32px;
+                text-decoration: none;
+                border-radius: 50px;
+                font-weight: 600;
+                font-size: 15px;
+                border: 2px solid %s;
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            /* Info text as simple list */
+            .info-list {
+                margin: 30px 0 25px 0;
+                padding: 0;
+                list-style: none;
+            }
+            .info-list li {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 0;
+                color: #4a5568;
+                font-size: 14px;
+                border-bottom: 1px solid #eef2f6;
+            }
+            .info-list li:last-child {
+                border-bottom: none;
+            }
+            .info-emoji {
+                font-size: 20px;
+                min-width: 32px;
+            }
+            .info-text {
+                flex: 1;
+            }
+            .info-text strong {
+                color: %s;
+            }
+            /* Alternative link */
+            .alt-link {
+                background: #f8fafc;
+                border-radius: 12px;
+                padding: 15px;
+                margin: 25px 0;
+                border: 1px solid #e2e8f0;
+            }
+            .alt-label {
+                color: #64748b;
+                font-size: 12px;
+                text-align: center;
+                margin-bottom: 10px;
+                font-weight: 500;
+            }
+            .alt-url {
+                background: white;
+                padding: 10px 12px;
+                border-radius: 8px;
+                word-break: break-all;
+                font-size: 11px;
+                font-family: 'Courier New', monospace;
+                color: %s;
+                border: 1px solid #e2e8f0;
+                text-align: center;
+            }
+            /* Footer */
+            .footer {
+                padding: 20px 30px;
+                text-align: center;
+                background: #f8fafc;
+                border-top: 1px solid #e2e8f0;
+            }
+            .footer p {
+                color: #94a3b8;
+                font-size: 11px;
+                margin: 5px 0;
+            }
+            .auto-message {
+                margin-top: 8px;
+                font-size: 10px;
+                color: #cbd5e1;
+            }
+            @media (max-width: 500px) {
+                .content { padding: 25px 20px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Small blue gradient bar -->
+            <div class="gradient-bar">
+                <h2>🔐 RÉINITIALISATION DU MOT DE PASSE</h2>
             </div>
-        </body>
-        </html>
-        """;
+            
+            <!-- Content -->
+            <div class="content">
+                <!-- Message text -->
+                <div class="message-text">
+                    <div class="greeting">Bonjour %s,</div>
+                    <p style="margin: 0;">Nous avons reçu une demande de réinitialisation de votre mot de passe. Cliquez sur le bouton ci-dessous pour en créer un nouveau :</p>
+                </div>
+                
+                <!-- Transparent button with blue border -->
+                <div class="button-container">
+                    <a href="%s" class="btn-outline">🔑 Réinitialiser mon mot de passe</a>
+                </div>
+                
+                <!-- Alternative link -->
+                <div class="alt-link">
+                    <div class="alt-label">⚠️ Si le bouton ne fonctionne pas, copiez ce lien :</div>
+                    <div class="alt-url">%s</div>
+                </div>
+                
+                <!-- Info as text list under the link -->
+           <p style="margin: 20px 0 15px 0; font-size: 12px; color: #64748b; text-align: center;">
+                                                            ⏰ 24h • 🔒 Ne pas partager • 🛡️ SSL
+                                                        </p>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <p>© 2026 CNI. Tous droits réservés.</p>
+                <div class="auto-message">Cet email est automatique - merci de ne pas répondre</div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """,
+                PRIMARY_COLOR, DARK_BLUE,  // gradient bar colors
+                PRIMARY_COLOR,              // greeting color
+                PRIMARY_COLOR,              // button text color
+                PRIMARY_COLOR,              // button border color
+                PRIMARY_COLOR,              // strong text color in info list
+                PRIMARY_COLOR,              // alt url color
+                username,                   // greeting username
+                resetLink,                  // button link
+                resetLink                   // fallback link
+        );
 
         sendHtmlEmail(to, subject, htmlContent);
     }
-    // Send password reset confirmation email
+
     public void sendPasswordResetConfirmation(String to, String username) throws MessagingException {
         String subject = "✓ Mot de passe modifié avec succès";
-        String htmlContent = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-                    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-                    .header { background: linear-gradient(135deg, %s 0%, %s 100%); padding: 30px; text-align: center; }
-                    .icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
-                    .icon svg { width: 40px; height: 40px; fill: white; }
-                    .content { padding: 40px; background: #ffffff; }
-                    .success-badge { background: %s; color: white; padding: 12px 24px; border-radius: 50px; display: inline-block; font-weight: 600; margin-bottom: 20px; }
-                    .tips { background: #f8fafc; border-radius: 16px; padding: 20px; margin: 20px 0; }
-                    .footer { padding: 30px; text-align: center; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <div class="icon">
-                            <svg viewBox="0 0 24 24" fill="white">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                            </svg>
-                        </div>
-                        <h1 style="color: white; margin: 0; font-size: 28px;">Mot de passe modifié !</h1>
-                    </div>
-                    <div class="content">
-                        <div style="text-align: center;">
-                            <div class="success-badge">✓ Opération réussie</div>
-                        </div>
-                        
-                        <p style="font-size: 18px; color: %s;">Bonjour %s,</p>
-                        <p>Votre mot de passe a été modifié avec succès. Votre compte est maintenant sécurisé avec votre nouveau mot de passe.</p>
-                        
-                        <div class="tips">
-                            <h3 style="color: %s; margin-top: 0;">💡 Petits rappels de sécurité :</h3>
-                            <ul style="padding-left: 20px;">
-                                <li>Utilisez un mot de passe unique et fort</li>
-                                <li>Ne le partagez jamais avec personne</li>
-                                <li>Changez-le régulièrement</li>
-                                <li>Activez la double authentification si disponible</li>
-                            </ul>
-                        </div>
-                        
-                        <p style="text-align: center; margin: 30px 0 0;">
-                            <span class="emoji" style="font-size: 24px;">🔐</span>
-                        </p>
-                        
-                        <p style="margin: 20px 0 0;">Si vous n'êtes pas à l'origine de ce changement, contactez-nous immédiatement !</p>
-                        
-                        <p style="margin: 30px 0 0; font-weight: 600; color: %s;">L'équipe CNI</p>
-                    </div>
-                    <div class="footer">
-                        <p>© 2026 CNI. Tous droits réservés.</p>
-                        <p>Email envoyé à %s</p>
-                    </div>
+
+        String htmlContent = String.format("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mot de passe modifié</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6; 
+                background: #f0f4f8;
+                margin: 0; 
+                padding: 20px; 
+            }
+            .container { 
+                max-width: 550px; 
+                margin: 0 auto; 
+                background: #ffffff;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            }
+            /* Small green gradient bar */
+            .gradient-bar {
+                background: linear-gradient(135deg, %s 0%%, %s 100%%);
+                padding: 20px;
+                text-align: center;
+            }
+            .gradient-bar h2 {
+                color: white;
+                font-size: 18px;
+                font-weight: 600;
+                margin: 0;
+                letter-spacing: 0.5px;
+            }
+            /* Content area */
+            .content {
+                padding: 35px 30px;
+            }
+            /* Message text */
+            .message-text {
+                color: #4a5568;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 25px;
+            }
+            .message-text .greeting {
+                font-weight: 600;
+                color: %s;
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+            /* Success badge */
+            .success-badge {
+                text-align: center;
+                margin: 20px 0;
+            }
+            .badge {
+                display: inline-block;
+                background: %s;
+                color: white;
+                padding: 8px 20px;
+                border-radius: 50px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            /* Security tips as compact list */
+            .tips-list {
+                margin: 25px 0;
+                padding: 0;
+                list-style: none;
+            }
+            .tips-list li {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 0;
+                font-size: 13px;
+                color: #4a5568;
+                border-bottom: 1px solid #eef2f6;
+            }
+            .tips-list li:last-child {
+                border-bottom: none;
+            }
+            .tips-list .emoji {
+                font-size: 16px;
+                min-width: 28px;
+            }
+            /* Footer */
+            .footer {
+                padding: 20px 30px;
+                text-align: center;
+                background: #f8fafc;
+                border-top: 1px solid #e2e8f0;
+            }
+            .footer p {
+                color: #94a3b8;
+                font-size: 11px;
+                margin: 5px 0;
+            }
+            .auto-message {
+                margin-top: 8px;
+                font-size: 10px;
+                color: #cbd5e1;
+            }
+            @media (max-width: 500px) {
+                .content { padding: 25px 20px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Green gradient bar -->
+            <div class="gradient-bar">
+                <h2>✓ MOT DE PASSE MODIFIÉ</h2>
+            </div>
+            
+            <!-- Content -->
+            <div class="content">
+                <!-- Success badge -->
+                <div class="success-badge">
+                    <div class="badge">✓ Opération réussie</div>
                 </div>
-            </body>
-            </html>
-            """.formatted(
-                SUCCESS_COLOR, "#0f9e6a",
-                SUCCESS_COLOR,
-                SUCCESS_COLOR, username,
-                SUCCESS_COLOR,
-                PRIMARY_COLOR, to
+                
+                <!-- Message text -->
+                <div class="message-text">
+                    <div class="greeting">Bonjour %s,</div>
+                    <p style="margin: 0;">Votre mot de passe a été modifié avec succès. Votre compte est maintenant sécurisé avec votre nouveau mot de passe.</p>
+                </div>
+                
+                <!-- Security tips as compact list -->
+                <ul class="tips-list">
+                    <li>
+                        <span class="emoji">🔐</span>
+                        <span>Utilisez un mot de passe <strong style="color: %s;">unique et fort</strong></span>
+                    </li>
+                    <li>
+                        <span class="emoji">🚫</span>
+                        <span>Ne le <strong style="color: %s;">partagez jamais</strong> avec personne</span>
+                    </li>
+                    <li>
+                        <span class="emoji">🔄</span>
+                        <span>Changez-le <strong style="color: %s;">régulièrement</strong></span>
+                    </li>
+                    <li>
+                        <span class="emoji">🔑</span>
+                        <span>Activez la <strong style="color: %s;">double authentification</strong></span>
+                    </li>
+                </ul>
+                
+                <!-- Warning message -->
+                <p style="margin: 20px 0 0; font-size: 12px; color: #ef4444; text-align: center;">
+                    ⚠️ Si vous n'êtes pas à l'origine de ce changement, contactez-nous immédiatement !
+                </p>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <p>© 2026 CNI. Tous droits réservés.</p>
+                <div class="auto-message">Cet email est automatique - merci de ne pas répondre</div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """,
+                SUCCESS_COLOR, "#0f9e6a",  // gradient bar colors
+                SUCCESS_COLOR,              // greeting color
+                SUCCESS_COLOR,              // badge color
+                username,                   // greeting username
+                SUCCESS_COLOR,              // strong text color (unique et fort)
+                SUCCESS_COLOR,              // strong text color (partagez jamais)
+                SUCCESS_COLOR,              // strong text color (régulièrement)
+                SUCCESS_COLOR,              // strong text color (double authentification)
+                PRIMARY_COLOR,              // team name color
+                to                          // email recipient in footer
         );
 
         sendHtmlEmail(to, subject, htmlContent);
     }
 
-    // Send email when account is locked by admin
     public void sendAccountLockedByAdminEmail(String to, String username) throws MessagingException {
         String subject = "🔒 Compte verrouillé par l'administrateur";
-        String htmlContent = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-                    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-                    .header { background: linear-gradient(135deg, %s 0%, %s 100%); padding: 30px; text-align: center; }
-                    .icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
-                    .icon svg { width: 40px; height: 40px; fill: white; }
-                    .content { padding: 40px; background: #ffffff; }
-                    .warning-box { background: #fff3f3; border-left: 4px solid %s; padding: 20px; margin: 20px 0; border-radius: 8px; }
-                    .footer { padding: 30px; text-align: center; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <div class="icon">
-                            <svg viewBox="0 0 24 24" fill="white">
-                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                            </svg>
-                        </div>
-                        <h1 style="color: white; margin: 0; font-size: 28px;">Compte verrouillé</h1>
-                    </div>
-                    <div class="content">
-                        <p style="font-size: 18px; color: %s;">Bonjour %s,</p>
-                        
-                        <div class="warning-box">
-                            <p style="margin: 0; font-weight: 600; color: %s;">⚠️ Action administrative</p>
-                            <p style="margin: 10px 0 0;">Votre compte a été verrouillé par un administrateur.</p>
-                        </div>
-                        
-                        <p><strong>📋 Détails :</strong></p>
-                        <ul>
-                            <li><strong>Date :</strong> %s</li>
-                            <li><strong>Type :</strong> Verrouillage administratif</li>
-                            <li><strong>Statut :</strong> Compte inaccessible</li>
-                        </ul>
-                        
-                        <div style="background: #f8fafc; border-radius: 12px; padding: 15px; margin: 20px 0;">
-                            <p style="margin: 0;"><span class="emoji">🔍</span> <strong>Que faire ?</strong></p>
-                            <p style="margin: 10px 0 0;">Contactez l'équipe administrative pour plus d'informations.</p>
-                        </div>
-                        
-                        <p style="margin: 30px 0 0;">Si vous pensez qu'il s'agit d'une erreur, répondez à cet email.</p>
-                        
-                        <p style="margin: 20px 0 0; font-weight: 600; color: %s;">L'équipe CNI</p>
-                    </div>
-                    <div class="footer">
-                        <p>© 2026 CNI. Tous droits réservés.</p>
-                        <p>Notification de sécurité envoyée à %s</p>
-                    </div>
+
+        String htmlContent = String.format("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Compte verrouillé</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6; 
+                background: #f0f4f8;
+                margin: 0; 
+                padding: 20px; 
+            }
+            .container { 
+                max-width: 550px; 
+                margin: 0 auto; 
+                background: #ffffff;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            }
+            /* Red gradient bar */
+            .gradient-bar {
+                background: linear-gradient(135deg, %s 0%%, %s 100%%);
+                padding: 20px;
+                text-align: center;
+            }
+            .gradient-bar h2 {
+                color: white;
+                font-size: 18px;
+                font-weight: 600;
+                margin: 0;
+                letter-spacing: 0.5px;
+            }
+            /* Content area */
+            .content {
+                padding: 35px 30px;
+            }
+            /* Message text */
+            .message-text {
+                color: #4a5568;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 25px;
+            }
+            .message-text .greeting {
+                font-weight: 600;
+                color: %s;
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+            /* Warning badge */
+            .warning-badge {
+                text-align: center;
+                margin: 20px 0;
+            }
+            .badge {
+                display: inline-block;
+                background: %s;
+                color: white;
+                padding: 8px 20px;
+                border-radius: 50px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            /* Details list */
+            .details-list {
+                margin: 25px 0;
+                padding: 0;
+                list-style: none;
+                background: #fef2f2;
+                border-radius: 12px;
+                padding: 15px 20px;
+            }
+            .details-list li {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 0;
+                font-size: 13px;
+                color: #4a5568;
+                border-bottom: 1px solid #fecaca;
+            }
+            .details-list li:last-child {
+                border-bottom: none;
+            }
+            .details-list .emoji {
+                font-size: 16px;
+                min-width: 28px;
+            }
+            /* Action box */
+            .action-box {
+                background: #f8fafc;
+                border-radius: 12px;
+                padding: 15px;
+                margin: 20px 0;
+                text-align: center;
+            }
+            .action-box p {
+                margin: 5px 0;
+                font-size: 13px;
+                color: #4a5568;
+            }
+            /* Footer */
+            .footer {
+                padding: 20px 30px;
+                text-align: center;
+                background: #f8fafc;
+                border-top: 1px solid #e2e8f0;
+            }
+            .footer p {
+                color: #94a3b8;
+                font-size: 11px;
+                margin: 5px 0;
+            }
+            .auto-message {
+                margin-top: 8px;
+                font-size: 10px;
+                color: #cbd5e1;
+            }
+            @media (max-width: 500px) {
+                .content { padding: 25px 20px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Red gradient bar -->
+            <div class="gradient-bar">
+                <h2>🔒 COMPTE VERROUILLÉ</h2>
+            </div>
+            
+            <!-- Content -->
+            <div class="content">
+                <!-- Warning badge -->
+                <div class="warning-badge">
+                    <div class="badge">⚠️ Action administrative</div>
                 </div>
-            </body>
-            </html>
-            """.formatted(
-                ERROR_COLOR, "#b91c1c",
-                ERROR_COLOR,
-                ERROR_COLOR, username,
-                ERROR_COLOR,
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
-                PRIMARY_COLOR, to
+                
+                <!-- Message text -->
+                <div class="message-text">
+                    <div class="greeting">Bonjour %s,</div>
+                    <p style="margin: 0;">Votre compte a été verrouillé par un administrateur.</p>
+                </div>
+                
+                <!-- Details list -->
+                <ul class="details-list">
+                    <li>
+                        <span class="emoji">📅</span>
+                        <span><strong>Date :</strong> %s</span>
+                    </li>
+                    <li>
+                        <span class="emoji">🏷️</span>
+                        <span><strong>Type :</strong> Verrouillage administratif</span>
+                    </li>
+                    <li>
+                        <span class="emoji">🔒</span>
+                        <span><strong>Statut :</strong> Compte inaccessible</span>
+                    </li>
+                </ul>
+                
+                <!-- Action box -->
+                <div class="action-box">
+                    <p>🔍 <strong>Que faire ?</strong></p>
+                    <p>Contactez l'équipe administrative pour plus d'informations.</p>
+                </div>
+                
+                <!-- Warning message -->
+                <p style="margin: 20px 0 0; font-size: 12px; color: #ef4444; text-align: center;">
+                    ⚠️ Si vous pensez qu'il s'agit d'une erreur, répondez à cet email.
+                </p>
+                
+             
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <p>© 2026 CNI. Tous droits réservés.</p>
+                <div class="auto-message">Cet email est automatique - merci de ne pas répondre</div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """,
+                ERROR_COLOR, "#b91c1c",      // gradient bar colors
+                ERROR_COLOR,                 // greeting color
+                ERROR_COLOR,                 // badge color
+                username,                    // greeting username
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), // date
+                PRIMARY_COLOR,               // team name color
+                to                           // email recipient in footer
         );
 
         sendHtmlEmail(to, subject, htmlContent);
     }
 
-    // Send email when account is unlocked by admin
     public void sendAccountUnlockedByAdminEmail(String to, String username) throws MessagingException {
         String subject = "🔓 Compte déverrouillé";
-        String htmlContent = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-                    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-                    .header { background: linear-gradient(135deg, %s 0%, %s 100%); padding: 30px; text-align: center; }
-                    .icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
-                    .icon svg { width: 40px; height: 40px; fill: white; }
-                    .content { padding: 40px; background: #ffffff; }
-                    .success-box { background: #f0fdf4; border-left: 4px solid %s; padding: 20px; margin: 20px 0; border-radius: 8px; }
-                    .footer { padding: 30px; text-align: center; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <div class="icon">
-                            <svg viewBox="0 0 24 24" fill="white">
-                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" transform="translate(0, 5)"/>
-                            </svg>
-                        </div>
-                        <h1 style="color: white; margin: 0; font-size: 28px;">Compte déverrouillé</h1>
-                    </div>
-                    <div class="content">
-                        <p style="font-size: 18px; color: %s;">Bonjour %s,</p>
-                        
-                        <div class="success-box">
-                            <p style="margin: 0; font-weight: 600; color: %s;">✅ Bonne nouvelle !</p>
-                            <p style="margin: 10px 0 0;">Votre compte a été déverrouillé par un administrateur.</p>
-                        </div>
-                        
-                        <p><strong>📋 Détails :</strong></p>
-                        <ul>
-                            <li><strong>Date :</strong> %s</li>
-                            <li><strong>Action :</strong> Réactivation du compte</li>
-                            <li><strong>Statut :</strong> Compte actif</li>
-                        </ul>
-                        
-                        <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
-                            <p style="margin: 0; font-size: 18px;">🎉 Vous pouvez maintenant vous connecter !</p>
-                        </div>
-                        
-                        <p style="margin: 20px 0 0; font-weight: 600; color: %s;">L'équipe CNI</p>
-                    </div>
-                    <div class="footer">
-                        <p>© 2026 CNI. Tous droits réservés.</p>
-                        <p>Notification envoyée à %s</p>
-                    </div>
+
+        String htmlContent = String.format("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Compte déverrouillé</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6; 
+                background: #f0f4f8;
+                margin: 0; 
+                padding: 20px; 
+            }
+            .container { 
+                max-width: 550px; 
+                margin: 0 auto; 
+                background: #ffffff;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            }
+            .gradient-bar {
+                background: linear-gradient(135deg, %s 0%%, %s 100%%);
+                padding: 20px;
+                text-align: center;
+            }
+            .gradient-bar h2 {
+                color: white;
+                font-size: 18px;
+                font-weight: 600;
+                margin: 0;
+                letter-spacing: 0.5px;
+            }
+            .content {
+                padding: 35px 30px;
+            }
+            .message-text {
+                color: #4a5568;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 25px;
+            }
+            .message-text .greeting {
+                font-weight: 600;
+                color: %s;
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+            .success-badge {
+                text-align: center;
+                margin: 20px 0;
+            }
+            .badge {
+                display: inline-block;
+                background: %s;
+                color: white;
+                padding: 8px 20px;
+                border-radius: 50px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            .details-list {
+                margin: 25px 0;
+                padding: 0;
+                list-style: none;
+                background: #f0fdf4;
+                border-radius: 12px;
+                padding: 15px 20px;
+            }
+            .details-list li {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 0;
+                font-size: 13px;
+                color: #4a5568;
+                border-bottom: 1px solid #dcfce7;
+            }
+            .details-list li:last-child {
+                border-bottom: none;
+            }
+            .details-list .emoji {
+                font-size: 16px;
+                min-width: 28px;
+            }
+            .footer {
+                padding: 20px 30px;
+                text-align: center;
+                background: #f8fafc;
+                border-top: 1px solid #e2e8f0;
+            }
+            .footer p {
+                color: #94a3b8;
+                font-size: 11px;
+                margin: 5px 0;
+            }
+            .auto-message {
+                margin-top: 8px;
+                font-size: 10px;
+                color: #cbd5e1;
+            }
+            @media (max-width: 500px) {
+                .content { padding: 25px 20px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="gradient-bar">
+                <h2>🔓 COMPTE DÉVERROUILLÉ</h2>
+            </div>
+            
+            <div class="content">
+                <div class="success-badge">
+                    <div class="badge">✅ Compte réactivé</div>
                 </div>
-            </body>
-            </html>
-            """.formatted(
-                SUCCESS_COLOR, "#0f9e6a",
-                SUCCESS_COLOR,
-                SUCCESS_COLOR, username,
-                SUCCESS_COLOR,
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
-                PRIMARY_COLOR, to
+                
+                <div class="message-text">
+                    <div class="greeting">Bonjour %s,</div>
+                    <p style="margin: 0;">Votre compte a été déverrouillé par un administrateur.</p>
+                </div>
+                
+                <ul class="details-list">
+                    <li>
+                        <span class="emoji">📅</span>
+                        <span><strong>Date :</strong> %s</span>
+                    </li>
+                    <li>
+                        <span class="emoji">🔓</span>
+                        <span><strong>Action :</strong> Réactivation du compte</span>
+                    </li>
+                    <li>
+                        <span class="emoji">✅</span>
+                        <span><strong>Statut :</strong> Compte actif</span>
+                    </li>
+                </ul>
+                
+                <p style="margin: 20px 0 0; font-size: 12px; text-align: center;">
+                    🎉 Vous pouvez maintenant vous connecter !
+                </p>
+               
+            </div>
+            
+            <div class="footer">
+                <p>© 2026 CNI. Tous droits réservés.</p>
+                <div class="auto-message">Cet email est automatique - merci de ne pas répondre</div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """,
+                SUCCESS_COLOR, "#0f9e6a",  // gradient bar colors
+                SUCCESS_COLOR,              // greeting color
+                SUCCESS_COLOR,              // badge color
+                username,                   // greeting username
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), // date
+                PRIMARY_COLOR,              // team name color
+                to                          // email recipient in footer
         );
 
         sendHtmlEmail(to, subject, htmlContent);
@@ -356,80 +824,210 @@ public class EmailService {
 
     // Send email when account is temporarily locked due to failed attempts
     public void sendAccountTemporarilyLockedEmail(String to, String username, long minutesRemaining) throws MessagingException {
+        System.out.println("=== SENDING TEMPORARY LOCK EMAIL ===");
+        System.out.println("To: " + to);
+        System.out.println("Username: " + username);
+        System.out.println("Minutes remaining: " + minutesRemaining);
+
         String subject = "⏳ Compte temporairement verrouillé";
-        String htmlContent = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-                    .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-                    .header { background: linear-gradient(135deg, %s 0%, %s 100%); padding: 30px; text-align: center; }
-                    .icon { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; }
-                    .icon svg { width: 40px; height: 40px; fill: white; }
-                    .content { padding: 40px; background: #ffffff; }
-                    .timer-box { background: #fff7ed; border-left: 4px solid %s; padding: 20px; margin: 20px 0; border-radius: 8px; }
-                    .timer { font-size: 36px; font-weight: bold; color: %s; text-align: center; margin: 20px 0; }
-                    .footer { padding: 30px; text-align: center; background: #f8fafc; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <div class="icon">
-                            <svg viewBox="0 0 24 24" fill="white">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12 6 12 12 16 14"/>
-                                <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M6.4 6.4L4.2 4.2M17.6 17.6l2.2 2.2"/>
-                            </svg>
-                        </div>
-                        <h1 style="color: white; margin: 0; font-size: 28px;">Verrouillage temporaire</h1>
-                    </div>
-                    <div class="content">
-                        <p style="font-size: 18px; color: %s;">Bonjour %s,</p>
-                        
-                        <div class="timer-box">
-                            <p style="margin: 0; font-weight: 600; color: %s;">⚠️ Trop de tentatives échouées</p>
-                            <p style="margin: 10px 0 0;">Pour votre sécurité, votre compte est temporairement verrouillé.</p>
-                            
-                            <div class="timer">
-                                ⏱️ %d minutes
-                            </div>
-                            
-                            <p style="text-align: center; margin: 0;">Temps restant avant déverrouillage automatique</p>
-                        </div>
-                        
-                        <p><strong>💡 Conseils :</strong></p>
-                        <ul>
-                            <li>Attendez la fin du délai de %d minutes</li>
-                            <li>Utilisez "Mot de passe oublié" si nécessaire</li>
-                            <li>Vérifiez vos identifiants</li>
-                        </ul>
-                        
-                        <p style="margin: 20px 0 0;">Besoin d'aide ? Contactez notre support.</p>
-                        
-                        <p style="margin: 20px 0 0; font-weight: 600; color: %s;">L'équipe CNI</p>
-                    </div>
-                    <div class="footer">
-                        <p>© 2026 CNI. Tous droits réservés.</p>
-                        <p>Notification de sécurité envoyée à %s</p>
-                    </div>
+
+        String htmlContent = String.format("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Compte temporairement verrouillé</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6; 
+                background: #f0f4f8;
+                margin: 0; 
+                padding: 20px; 
+            }
+            .container { 
+                max-width: 550px; 
+                margin: 0 auto; 
+                background: #ffffff;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            }
+            .gradient-bar {
+                background: linear-gradient(135deg, %s 0%%, %s 100%%);
+                padding: 20px;
+                text-align: center;
+            }
+            .gradient-bar h2 {
+                color: white;
+                font-size: 18px;
+                font-weight: 600;
+                margin: 0;
+                letter-spacing: 0.5px;
+            }
+            .content {
+                padding: 35px 30px;
+            }
+            .message-text {
+                color: #4a5568;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 25px;
+            }
+            .message-text .greeting {
+                font-weight: 600;
+                color: %s;
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+            .warning-badge {
+                text-align: center;
+                margin: 20px 0;
+            }
+            .badge {
+                display: inline-block;
+                background: %s;
+                color: white;
+                padding: 8px 20px;
+                border-radius: 50px;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            .timer-display {
+                background: #fff7ed;
+                border-radius: 16px;
+                padding: 20px;
+                margin: 25px 0;
+                text-align: center;
+                border: 1px solid #fed7aa;
+            }
+            .timer {
+                font-size: 42px;
+                font-weight: bold;
+                color: %s;
+                margin: 15px 0;
+                letter-spacing: 2px;
+            }
+            .timer-label {
+                font-size: 12px;
+                color: #64748b;
+            }
+            .tips-list {
+                margin: 25px 0;
+                padding: 0;
+                list-style: none;
+                background: #f8fafc;
+                border-radius: 12px;
+                padding: 15px 20px;
+            }
+            .tips-list li {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 0;
+                font-size: 13px;
+                color: #4a5568;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            .tips-list li:last-child {
+                border-bottom: none;
+            }
+            .tips-list .emoji {
+                font-size: 16px;
+                min-width: 28px;
+            }
+            .footer {
+                padding: 20px 30px;
+                text-align: center;
+                background: #f8fafc;
+                border-top: 1px solid #e2e8f0;
+            }
+            .footer p {
+                color: #94a3b8;
+                font-size: 11px;
+                margin: 5px 0;
+            }
+            .auto-message {
+                margin-top: 8px;
+                font-size: 10px;
+                color: #cbd5e1;
+            }
+            @media (max-width: 500px) {
+                .content { padding: 25px 20px; }
+                .timer { font-size: 32px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="gradient-bar">
+                <h2>⏳ VERROUILLAGE TEMPORAIRE</h2>
+            </div>
+            
+            <div class="content">
+                <div class="warning-badge">
+                    <div class="badge">⚠️ Trop de tentatives échouées</div>
                 </div>
-            </body>
-            </html>
-            """.formatted(
-                WARNING_COLOR, "#d97706",
-                WARNING_COLOR, WARNING_COLOR,
-                WARNING_COLOR, username,
-                WARNING_COLOR,
-                minutesRemaining,
-                minutesRemaining,
-                PRIMARY_COLOR, to
+                
+                <div class="message-text">
+                    <div class="greeting">Bonjour %s,</div>
+                    <p style="margin: 0;">Pour votre sécurité, votre compte est temporairement verrouillé.</p>
+                </div>
+                
+                <div class="timer-display">
+                    <div class="timer">⏱️ %d</div>
+                    <div class="timer-label">minutes restantes avant déverrouillage automatique</div>
+                </div>
+                
+                <ul class="tips-list">
+                    <li>
+                        <span class="emoji">⏰</span>
+                        <span>Attendez la fin du délai de <strong>%d minutes</strong></span>
+                    </li>
+                    <li>
+                        <span class="emoji">🔑</span>
+                        <span>Utilisez <strong>"Mot de passe oublié"</strong> si nécessaire</span>
+                    </li>
+                    <li>
+                        <span class="emoji">✅</span>
+                        <span><strong>Vérifiez vos identifiants</strong> avant de réessayer</span>
+                    </li>
+                </ul>
+                
+                <p style="margin: 20px 0 0; font-size: 13px; color: #4a5568; text-align: center;">
+                    💬 Besoin d'aide ? Contactez notre support
+                </p>
+                
+               
+            </div>
+            
+            <div class="footer">
+                <p>© 2026 CNI. Tous droits réservés.</p>
+                <div class="auto-message">Cet email est automatique - merci de ne pas répondre</div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """,
+                WARNING_COLOR, "#d97706",    // gradient bar colors
+                WARNING_COLOR,               // greeting color
+                WARNING_COLOR,               // badge color
+                WARNING_COLOR,               // timer color
+                username,                    // greeting username
+                minutesRemaining,            // timer minutes
+                minutesRemaining,            // tips minutes
+                PRIMARY_COLOR,               // team name color
+                to                           // email recipient in footer
         );
 
+        System.out.println("HTML content length: " + htmlContent.length());
+        System.out.println("About to send email...");
         sendHtmlEmail(to, subject, htmlContent);
+        System.out.println("Email sent successfully!");
     }
+
 
     // Helper method to send HTML emails
     private void sendHtmlEmail(String to, String subject, String htmlContent) throws MessagingException {
@@ -448,9 +1046,6 @@ public class EmailService {
         mailSender.send(message);
     }
 
-
-
-    // Add to EmailService.java
 
     public void sendEmailWithAttachment(String to, String subject, String htmlContent,
                                         String pdfBase64, String pdfFileName) throws MessagingException {

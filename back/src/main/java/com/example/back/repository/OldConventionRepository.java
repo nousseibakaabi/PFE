@@ -18,8 +18,6 @@ public interface OldConventionRepository extends JpaRepository<OldConvention, Lo
     @Query("SELECT MAX(oc.renewalVersion) FROM OldConvention oc WHERE oc.currentConvention = :convention")
     Integer findMaxRenewalVersion(@Param("convention") Convention convention);
 
-    
-    // ADD THIS METHOD - with Pageable support
     Page<OldConvention> findByCurrentConventionOrderByRenewalVersionDesc(Convention currentConvention, Pageable pageable);
 
     

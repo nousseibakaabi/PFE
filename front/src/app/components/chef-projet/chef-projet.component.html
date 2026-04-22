@@ -291,7 +291,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100">
-                <tr *ngFor="let conv of myConventions.slice(0, 8)" class="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition">
+                <tr *ngFor="let conv of getPaginatedConventions()" class="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition">
                   <td class="px-4 py-2.5 whitespace-nowrap font-mono text-xs font-medium text-gray-900">{{ conv.referenceConvention }}</td>
                   <td class="px-4 py-2.5 whitespace-nowrap text-xs text-gray-600">{{ conv.applicationName || conv.application?.name }}</td>
                   <td class="px-4 py-2.5 whitespace-nowrap text-xs text-gray-500 hidden md:table-cell">{{ conv.structureBeneficielName || conv.structureBeneficiel?.name }}</td>
@@ -313,6 +313,50 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          
+          <!-- Pagination Controls (Styled Small) -->
+          <div *ngIf="myConventions.length > 0" class="px-5 py-3 border-t border-gray-100 dark:border-gray-700/30 flex items-center justify-between">
+            <div class="text-[11px] text-gray-600 dark:text-gray-400">
+              Affichage {{ (conventionCurrentPage - 1) * conventionItemsPerPage + 1 }}-{{ Math.min(conventionCurrentPage * conventionItemsPerPage, myConventions.length) }} sur {{ myConventions.length }}
+            </div>
+            <div class="flex items-center gap-1">
+              <!-- Previous Button -->
+              <button 
+                (click)="previousConventionPage()" 
+                [disabled]="conventionCurrentPage === 1"
+                class="px-2 py-1 text-[10px] rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              
+              <!-- Page Numbers -->
+              <div class="flex items-center gap-0.5">
+                <button 
+                  *ngFor="let page of [].constructor(getTotalConventionPages()); let i = index"
+                  (click)="goToConventionPage(i + 1)"
+                  [class.bg-blue-500]="conventionCurrentPage === i + 1"
+                  [class.text-white]="conventionCurrentPage === i + 1"
+                  [class.text-gray-700]="conventionCurrentPage !== i + 1"
+                  [class.dark:text-gray-300]="conventionCurrentPage !== i + 1"
+                  [class.hover:bg-gray-100]="conventionCurrentPage !== i + 1"
+                  [class.dark:hover:bg-gray-700-30]="conventionCurrentPage !== i + 1"
+                  class="px-2 py-1 text-[10px] font-medium rounded-md border border-transparent hover:border-gray-300 dark:hover:border-gray-600 transition-all">
+                  {{ i + 1 }}
+                </button>
+              </div>
+              
+              <!-- Next Button -->
+              <button 
+                (click)="nextConventionPage()" 
+                [disabled]="conventionCurrentPage === getTotalConventionPages()"
+                class="px-2 py-1 text-[10px] rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>

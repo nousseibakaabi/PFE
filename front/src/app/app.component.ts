@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { LayoutService } from '../app/components/partials/services/layout.service';
 import { UtilityService } from '../app/components/partials/services/utility.service';
 import { TranslationService } from '../app/components/partials/traduction/translation.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -19,8 +20,9 @@ export class AppComponent implements OnInit {
   constructor(
     private layoutService: LayoutService,
     private utilityService: UtilityService,
-    private router: Router,
-    private translationService: TranslationService
+    public router: Router,
+    private translationService: TranslationService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -48,9 +50,13 @@ export class AppComponent implements OnInit {
   toggleSidebar(): void {
     this.layoutService.toggleSidebar();
   }
+
+  get isAuthenticated(): boolean {
+    return this.authService.isLoggedIn();
+  }
   
   showLayout(): boolean {
-    const layoutRoutes = ['/profile','/admin','/conventions','/factures','/commercial','/decideur','/chef' ,'/calendar' ,'/mailBox','/application','/notifications','/requests','/planFacturation'];
+    const layoutRoutes = ['/profile','/admin','/conventions','/factures','/commercial','/decideur','/chef' ,'/calendar' ,'/mailBox','/application','/notifications','/requests','/planFacturation', '/chat' ,'/client-bilan','/revenu-bilan'];
     return layoutRoutes.some(route => this.currentRoute.includes(route));
   }
 }

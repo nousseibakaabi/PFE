@@ -1,0 +1,434 @@
+<div class="p-4 mx-auto max-w-screen-2xl md:p-6">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-12">
+    <div class="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+    <p class="mt-3 text-xs text-gray-500">{{'Chargement du bilan...' | translate}}</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="mb-4 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-xl">
+    <div class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span class="text-xs text-red-700 dark:text-red-300">{{ error }}</span>
+    </div>
+  </div>
+
+  <!-- Bilan Content -->
+  <div *ngIf="bilanData && !loading && bilanData.items && bilanData.items.length > 0">
+    <!-- Convention Info Card -->
+    <div class="mb-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+      <div class="px-4 py-3 bg-gradient-to-r from-blue-500/10 to-indigo-500/5 border-b border-gray-100 dark:border-gray-800">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <button (click)="goBack()" 
+            class="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium bg-transparent dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors">
+<svg class="w-3.5 h-3.5 stroke-blue-400" fill="none" viewBox="0 0 24 24">        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+    </button>
+            <div class="ml-2">
+              <h2 class="text-sm font-bold text-gray-800 dark:text-white">{{'Bilan de la Convention :' | translate}} {{ bilanData.items[0].reference }}</h2>
+              <p class="text-[10px] text-gray-500">{{ bilanData.items[0].libelle }}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="ml-4 inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium" [class]="getEtatClass(bilanData.items[0].etat)">
+              {{ getEtatText(bilanData.items[0].etat) | translate }}
+            </span>
+            <span *ngIf="bilanData.items[0].renewalVersion > 0" 
+                  class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+              v{{ bilanData.items[0].renewalVersion }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p-3">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-[11px]">
+          <div>
+            <div class="text-[9px] text-gray-500 mb-0.5">{{'Période' | translate}}</div>
+            <div class="font-medium text-gray-800 dark:text-white">{{ formatDateShort(bilanData.items[0].startDate) }} → {{ formatDateShort(bilanData.items[0].endDate) }}</div>
+          </div>
+          <div>
+            <div class="text-[9px] text-gray-500 mb-0.5">{{'Périodicité' | translate}}</div>
+<div class="font-medium text-gray-800 dark:text-white">
+  {{ getPeriodiciteText(bilanData.items[0].periodicite) }}
+</div>          </div>
+          <div>
+            <div class="text-[9px] text-gray-500 mb-0.5">{{'Utilisateurs' | translate}}</div>
+            <div class="font-medium text-gray-800 dark:text-white">{{ bilanData.items[0].nbUsers || 'N/A' }}</div>
+          </div>
+          <div>
+            <div class="text-[9px] text-gray-500 mb-0.5">{{'Structure Resp.' | translate}}</div>
+            <div class="font-medium text-gray-800 dark:text-white truncate max-w-[120px]" title="{{ bilanData.items[0].structureResponsable }}">{{ bilanData.items[0].structureResponsable || 'N/A' }}</div>
+          </div>
+          <div>
+            <div class="text-[9px] text-gray-500 mb-0.5">{{'Structure Bén.' | translate}}</div>
+            <div class="font-medium text-gray-800 dark:text-white truncate max-w-[120px]" title="{{ bilanData.items[0].structureBeneficiel }}">{{ bilanData.items[0].structureBeneficiel || 'N/A' }}</div>
+          </div>
+          <div>
+            <div class="text-[9px] text-gray-500 mb-0.5">{{'Application' | translate}}</div>
+            <div class="font-medium text-gray-800 dark:text-white truncate max-w-[120px]" title="{{ bilanData.items[0].applicationName }}">{{ bilanData.items[0].applicationName || 'N/A' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <!-- Financial Summary - Compact Card -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+        <div class="px-3 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 border-b border-gray-100 dark:border-gray-800">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{'RÉCAPITULATIF FINANCIER' | translate}}</span>
+          </div>
+        </div>
+        <div class="p-3">
+          <div class="grid grid-cols-2 gap-2 text-[11px]">
+            <div class="flex justify-between items-center py-1 px-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50">
+              <span class="text-gray-500">{{'Montant HT' | translate}}</span>
+              <span class="font-medium text-gray-900 dark:text-white">{{ bilanData.summary.totalMontantHT }} {{'TND' | translate}}</span>
+            </div>
+            <div class="flex justify-between items-center py-1 px-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50">
+              <span class="text-gray-500">{{'TVA' | translate}}</span>
+              <span class="font-medium text-gray-900 dark:text-white">{{bilanData.summary.totalTVA }} {{'TND' | translate}}</span>
+            </div>
+            <div class="flex justify-between items-center py-1 px-2 rounded bg-blue-50 dark:bg-blue-900/10 col-span-2">
+              <span class="text-blue-600 dark:text-blue-400 font-medium">{{'Montant TTC' | translate}}</span>
+              <span class="font-bold text-blue-600 dark:text-blue-400">{{bilanData.summary.totalMontantTTC }} {{'TND' | translate}}</span>
+            </div>
+          </div>
+          <div class="border-t border-gray-100 dark:border-gray-800 my-2"></div>
+          <div class="grid grid-cols-2 gap-2 text-[11px]">
+            <div class="flex justify-between items-center py-1 px-2 rounded bg-emerald-50 dark:bg-emerald-900/10">
+              <span class="text-emerald-600 dark:text-emerald-400">{{'Payé' | translate}}</span>
+              <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ bilanData.summary.totalPaid }} {{'TND' | translate}}</span>
+            </div>
+            <div class="flex justify-between items-center py-1 px-2 rounded bg-orange-50 dark:bg-orange-900/10">
+              <span class="text-orange-600 dark:text-orange-400">{{'Impayé' | translate}}</span>
+              <span class="font-semibold text-orange-600 dark:text-orange-400">{{ bilanData.summary.totalUnpaid }} {{'TND' | translate}}</span>
+            </div>
+          </div>
+          <div class="mt-3 pt-2">
+            <div class="flex justify-between text-[9px] text-gray-500 mb-1">
+              <span>{{'Taux de recouvrement' | translate}}</span>
+              <span class="font-semibold">{{ formatPercentage(bilanData.summary.paymentRate) }}</span>
+            </div>
+            <div class="h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div class="h-1 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all" [style.width.%]="bilanData.summary.paymentRate"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoices Summary - Compact Card -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+        <div class="px-3 py-2 bg-gradient-to-r from-purple-500/10 to-purple-600/5 border-b border-gray-100 dark:border-gray-800">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-lg bg-purple-500/15 text-purple-600 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{'RÉCAPITULATIF DES FACTURES' | translate}}</span>
+          </div>
+        </div>
+        <div class="p-3">
+          <div class="text-center mb-3">
+            <div class="text-2xl font-bold text-gray-800 dark:text-white">{{ bilanData.summary.totalInvoices }}</div>
+            <div class="text-[9px] text-gray-500">{{'Total factures' | translate}}</div>
+          </div>
+          <div class="grid grid-cols-3 gap-1 text-center text-[10px]">
+            <div class="p-1.5 rounded-lg bg-green-50 dark:bg-green-900/10">
+              <div class="font-bold text-green-600 dark:text-green-400">{{ bilanData.summary.paidInvoices }}</div>
+              <div class="text-gray-500">{{'Payées' | translate}}</div>
+            </div>
+            <div class="p-1.5 rounded-lg bg-orange-50 dark:bg-orange-900/10">
+              <div class="font-bold text-orange-600 dark:text-orange-400">{{ bilanData.summary.unpaidInvoices }}</div>
+              <div class="text-gray-500">{{'Impayées' | translate}}</div>
+            </div>
+            <div class="p-1.5 rounded-lg bg-red-50 dark:bg-red-900/10">
+              <div class="font-bold text-red-600 dark:text-red-400">{{ bilanData.summary.overdueInvoices }}</div>
+              <div class="text-gray-500">{{'Retard' | translate}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
+   <div class="px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 flex items-center gap-2">
+  <div class="w-6 h-6 rounded-lg bg-blue-100 dark:bg-indigo-900/30 flex items-center justify-center">
+       <svg 
+      width="14" 
+      height="14" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      class="transition-colors duration-200"
+    >
+      <path 
+        d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15" 
+        stroke="currentColor" 
+        stroke-width="1.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        class="text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200"
+      />
+      <path 
+        d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5C15 6.10457 14.1046 7 13 7H11C9.89543 7 9 6.10457 9 5Z" 
+        stroke="currentColor" 
+        stroke-width="1.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        class="text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200"
+      />
+      <path 
+        d="M8 12H16M8 16H13" 
+        stroke="currentColor" 
+        stroke-width="1.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        class="text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200"
+      />
+    </svg>
+  </div>
+  <h3 class="text-[11px] font-semibold text-gray-700 dark:text-gray-300">{{ 'Détail des Factures' | translate }}</h3>
+</div>
+      <div class="overflow-x-auto">
+        <ng-container *ngIf="bilanData.items[0] as convention">
+          <table class="w-full text-[11px]">
+            <thead class="bg-gray-50 dark:bg-gray-800/30">
+              <tr>
+                <th class="px-2 py-1.5 text-left font-medium text-gray-500 dark:text-gray-400">{{'N° Facture' | translate}}</th>
+                <th class="px-2 py-1.5 text-left font-medium text-gray-500 dark:text-gray-400">{{'Date fact.' | translate}}</th>
+                <th class="px-2 py-1.5 text-left font-medium text-gray-500 dark:text-gray-400">{{'Échéance' | translate}}</th>
+                <th class="px-2 py-1.5 text-right font-medium text-gray-500 dark:text-gray-400">{{'HT' | translate}}</th>
+                <th class="px-2 py-1.5 text-center font-medium text-gray-500 dark:text-gray-400">{{'TVA' | translate}}</th>
+                <th class="px-2 py-1.5 text-right font-medium text-gray-500 dark:text-gray-400">{{'TTC' | translate}}</th>
+                <th class="px-2 py-1.5 text-left font-medium text-gray-500 dark:text-gray-400">{{'Statut' | translate}}</th>
+                <th class="px-2 py-1.5 text-left font-medium text-gray-500 dark:text-gray-400">{{'Date paiement' | translate}}</th>
+                <th class="px-2 py-1.5 text-left font-medium text-gray-500 dark:text-gray-400">{{'Réf. paiement' | translate}}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              <tr *ngFor="let invoice of convention.invoices" 
+                  [class.bg-red-50 dark:bg-red-900-5]="invoice.overdue"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                <td class="px-2 py-1.5 font-mono text-gray-800 dark:text-gray-200">{{ invoice.numeroFacture }}</td>
+                <td class="px-2 py-1.5 text-gray-600 dark:text-gray-400">{{ formatDateShort(invoice.dateFacturation) }}</td>
+                <td class="px-2 py-1.5" [class.text-red-600]="invoice.overdue">
+                  {{ formatDateShort(invoice.dateEcheance) }}
+                </td>
+                <td class="px-2 py-1.5 text-right font-mono text-gray-600">{{ formatCurrencyShort(invoice.montantHT) }}</td>
+                <td class="px-2 py-1.5 text-center font-mono">{{ invoice.tva || 19 }}%</td>
+                <td class="px-2 py-1.5 text-right font-mono font-semibold text-blue-600">{{ formatCurrencyShort(invoice.montantTTC) }}</td>
+                <td class="px-2 py-1.5">
+                  <span class="inline-flex px-1.5 py-0.5 rounded-full text-[9px] font-medium"
+                        [class]="getStatutPaiementClass(invoice.statutPaiement)">
+                    {{ getPaiementIcon(invoice.statutPaiement)  | translate }}
+                  </span>
+                </td>
+                <td class="px-2 py-1.5">
+                  <span class="text-gray-600 text-[10px]">{{ invoice.datePaiement ? formatDateShort(invoice.datePaiement) : '-' }}</span>
+                </td>
+                <td class="px-2 py-1.5">
+                  <span class="text-[10px] text-gray-500">{{ invoice.referencePaiement || '-' }}</span>
+                </td>
+              </tr>
+              <tr *ngIf="convention.invoices.length === 0">
+                <td colspan="9" class="px-3 py-8 text-center text-gray-500 text-[11px]">
+                  {{'Aucune facture pour cette convention' | translate}}
+                 </td>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="convention.invoices.length > 0" class="bg-gray-50 dark:bg-gray-800/30">
+              <tr class="border-t border-gray-200 dark:border-gray-800">
+                <td colspan="5" class="px-2 py-1.5 text-right font-semibold text-gray-700">{{'Total TTC' | translate}} :</td>
+                <td class="px-2 py-1.5 text-right font-bold text-blue-600">{{ convention.invoiceSummary.totalAmount }} {{'TND' | translate}}</td>
+                <td colspan="3"></td>
+               </tr>
+               <tr class="bg-emerald-50 dark:bg-emerald-900/10">
+                <td colspan="5" class="px-2 py-1.5 text-right font-semibold text-emerald-700">{{'Payé' | translate}} :</td>
+                <td class="px-2 py-1.5 text-right font-bold text-emerald-600">{{convention.invoiceSummary.paidAmount }} {{'TND' | translate}}</td>
+                <td colspan="3"></td>
+               </tr>
+               <tr class="bg-orange-50 dark:bg-orange-900/10">
+                <td colspan="5" class="px-2 py-1.5 text-right font-semibold text-orange-700">{{'Impayé' | translate}} :</td>
+                <td class="px-2 py-1.5 text-right font-bold text-orange-600">{{convention.invoiceSummary.unpaidAmount }} {{'TND' | translate  }}</td>
+                <td colspan="3"></td>
+               </tr>
+            </tfoot>
+          </table>
+        </ng-container>
+      </div>
+    </div>
+
+<div class="mt-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm" *ngIf="bilanData.items[0]?.invoices?.length">
+  <!-- Header with gradient -->
+  <div class="px-4 py-2.5 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border-b border-gray-200 dark:border-gray-800">
+    <div class="flex items-center gap-2">
+      <div class="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+        <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <h3 class="text-[11px] font-semibold text-gray-700 dark:text-gray-300">{{'Chronologie des Paiements' | translate}}</h3>
+      <span class="ml-auto text-[9px] text-gray-400">{{ bilanData.items[0].invoices.length }} {{'facture(s)' | translate}}</span>
+    </div>
+  </div>
+  
+  <div class="p-4">
+    <div class="relative">
+      <!-- Vertical timeline line with gradient -->
+      <div class="absolute left-[11px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-indigo-400 via-purple-400 to-indigo-400 dark:from-indigo-600 dark:via-purple-600 dark:to-indigo-600 rounded-full"></div>
+      
+      <div class="space-y-4">
+        <div *ngFor="let invoice of bilanData.items[0].invoices; let i = index" class="relative group">
+          <!-- Timeline dot with animation -->
+          <div class="absolute left-0 top-0.5 w-5 h-5 rounded-full bg-white dark:bg-gray-900 border-2 flex items-center justify-center shadow-sm transition-all duration-300 group-hover:scale-110"
+               [class.border-green-500]="invoice.statutPaiement === 'PAYE'"
+               [class.border-orange-500]="invoice.statutPaiement === 'NON_PAYE'"
+               [class.border-red-500]="invoice.overdue"
+               [class.border-gray-400]="invoice.statutPaiement !== 'PAYE' && !invoice.overdue">
+            <div class="w-2 h-2 rounded-full"
+                 [class.bg-green-500]="invoice.statutPaiement === 'PAYE'"
+                 [class.bg-orange-500]="invoice.statutPaiement === 'NON_PAYE'"
+                 [class.bg-red-500]="invoice.overdue"
+                 [class.bg-gray-400]="invoice.statutPaiement !== 'PAYE' && !invoice.overdue"></div>
+          </div>
+          
+          <!-- Timeline content -->
+          <div class="ml-8 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-700/50 transition-all duration-300 group-hover:shadow-md group-hover:border-indigo-200 dark:group-hover:border-indigo-800/50">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <!-- Left side: Invoice info -->
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="font-mono font-semibold text-gray-800 dark:text-white text-[11px]">{{ invoice.numeroFacture }}</span>
+                </div>
+                <div class="w-px h-3 bg-gray-300 dark:bg-gray-600"></div>
+                <div class="flex items-center gap-1">
+                  <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                    <polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                  <span class="text-gray-500 text-[10px]">{{'Échéance' | translate}} :</span>
+                  <span class="font-medium text-gray-700 dark:text-gray-300 text-[10px]" 
+                        [class.text-red-500]="invoice.overdue"
+                        [class.text-orange-500]="!invoice.overdue && invoice.statutPaiement !== 'PAYE'">
+                    {{ formatDateShort(invoice.dateEcheance) }}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Right side: Amount and status -->
+              <div class="flex items-center gap-3">
+                <!-- Amount card -->
+                <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                  <span class="font-bold text-blue-600 dark:text-blue-400 text-[11px]">
+                    {{ formatCurrencyShort(invoice.montantTTC) }} {{'TND' | translate}}
+                  </span>
+                </div>
+                
+                <!-- Status badge with icon -->
+                <span class="inline-flex items-center gap-1.5 px-0.5 py-0.5 rounded-full text-[9px] font-medium shadow-sm transition-all duration-200 group-hover:scale-105"
+                      [class]="getPaiementTypeClass(invoice.paiementType)">
+
+                     <span *ngIf="invoice.paiementType" class="text-[10px] text-gray-400">
+<td class="px-2 py-1.5">
+  <div class="flex items-center gap-1" *ngIf="invoice.paiementType">
+    <!-- AVANCE -->
+    <ng-container *ngIf="invoice.paiementType === 'AVANCE'">
+      <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <span class="text-[10px] text-green-700">{{'Avance' | translate}}</span>
+    </ng-container>
+    
+    <!-- RETARD -->
+    <ng-container *ngIf="invoice.paiementType === 'RETARD'">
+      <svg class="w-3 h-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span class="text-[10px] text-orange-700">{{'Retard' | translate}}</span>
+    </ng-container>
+    
+    <!-- PONCTUEL -->
+    <ng-container *ngIf="invoice.paiementType === 'PONCTUEL'">
+      <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span class="text-[10px] text-blue-700">{{'À temps' | translate}}</span>
+    </ng-container>
+    
+    <!-- EN_ATTENTE -->
+    <ng-container *ngIf="invoice.paiementType === 'EN_ATTENTE'">
+      <svg class="w-3 h-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+        <polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      <span class="text-[10px] text-yellow-700">{{'En attente' | translate}}</span>
+    </ng-container>
+    
+    <!-- EN_RETARD -->
+    <ng-container *ngIf="invoice.paiementType === 'EN_RETARD'">
+      <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span class="text-[10px] text-red-700">{{'En retard' | translate}}</span>
+    </ng-container>
+  </div>
+</td>              </span>
+                </span>
+              </div>
+            </div>
+            
+            <!-- Payment info if paid -->
+            <div *ngIf="invoice.datePaiement" class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/50 flex items-center gap-2">
+              <svg class="w-2.5 h-2.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span class="text-[9px] text-gray-500">{{'Payée le' | translate}} {{ formatDateShort(invoice.datePaiement) }}</span>
+              <span *ngIf="invoice.referencePaiement" class="text-[9px] text-gray-400">• {{'Réf. paiement' | translate}} : {{ invoice.referencePaiement }}</span>
+            </div>
+            
+            <!-- Overdue warning -->
+            <div *ngIf="invoice.overdue && invoice.statutPaiement !== 'PAYE'" class="mt-2 pt-2 border-t border-red-100 dark:border-red-900/30 flex items-center gap-2">
+              <svg class="w-2.5 h-2.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span class="text-[9px] text-red-600 dark:text-red-400 font-medium">⚠️ {{'Facture en retard' | translate}}</span>
+              <span *ngIf="invoice.joursRetard" class="text-[9px] text-red-500">({{ invoice.joursRetard }} {{'jour' | translate}}{{ invoice.joursRetard > 1 ? 's' : '' }} {{'de retard' | translate}})</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
+
+  <!-- No Data State -->
+  <div *ngIf="bilanData && !loading && (!bilanData.items || bilanData.items.length === 0)" 
+       class="flex flex-col items-center justify-center py-12 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+    <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
+      <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    </div>
+    <p class="text-sm text-gray-500">Aucune donnée trouvée pour cette convention</p>
+  </div>
+</div>

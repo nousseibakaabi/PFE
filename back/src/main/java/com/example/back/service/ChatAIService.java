@@ -1,20 +1,31 @@
 package com.example.back.service;
 
+import com.example.back.entity.User;
+import com.example.back.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.annotation.PostConstruct;
+
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +36,14 @@ public class ChatAIService {
     @Value("${gemini.api.key:}")
     private String apiKey;
 
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserContextService userContextService; // Si vous avez un service pour le contexte utilisateur
+
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -32,6 +51,14 @@ public class ChatAIService {
     private ObjectMapper objectMapper;
 
     private String currentModel = "gemini-2.0-flash";
+
+
+    private final Semaphore rateLimiter = new Semaphore(3);
+
+
+    private final Map<String, Long> lastRequestTime = new ConcurrentHashMap<>();
+    private final long MIN_INTERVAL_MS = 500; // Minimum 500ms between requests
+
 
     // Cache pour les requêtes SQL (clé = question, valeur = SQL généré)
     private final Map<String, String> sqlCache = new ConcurrentHashMap<>();
@@ -46,7 +73,8 @@ public class ChatAIService {
             "gemini-2.0-flash",
             "gemini-2.0-flash-lite",
             "gemini-flash-latest",
-            "gemini-1.5-flash"
+            "gemini-1.5-flash",
+            "gemini-1.5-pro"
     );
 
     @PostConstruct
@@ -69,9 +97,17 @@ public class ChatAIService {
         log.info("====================================================");
     }
 
-    /**
-     * Appelle l'API Gemini avec fallback sur d'autres modèles
-     */
+
+    private boolean canMakeRequest(String model) {
+        long now = System.currentTimeMillis();
+        Long lastTime = lastRequestTime.get(model);
+        if (lastTime == null || (now - lastTime) >= MIN_INTERVAL_MS) {
+            lastRequestTime.put(model, now);
+            return true;
+        }
+        return false;
+    }
+
     private String callGeminiWithFallback(String prompt) {
         if (apiKey == null || apiKey.isEmpty()) {
             log.warn("No API key, cannot call Gemini");
@@ -85,7 +121,15 @@ public class ChatAIService {
         Set<String> uniqueModels = new LinkedHashSet<>(modelsToTry);
 
         for (String model : uniqueModels) {
+            // Check rate limit
+            if (!canMakeRequest(model)) {
+                log.warn("⏳ Rate limited for model: {}", model);
+                continue;
+            }
+
             try {
+
+                rateLimiter.acquire();
                 String url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey;
 
                 Map<String, Object> requestBody = new LinkedHashMap<>();
@@ -101,7 +145,7 @@ public class ChatAIService {
 
                 Map<String, Object> generationConfig = new LinkedHashMap<>();
                 generationConfig.put("temperature", 0.0);
-                generationConfig.put("maxOutputTokens", 500);
+                generationConfig.put("maxOutputTokens", 1500);
                 requestBody.put("generationConfig", generationConfig);
 
                 HttpHeaders headers = new HttpHeaders();
@@ -127,19 +171,14 @@ public class ChatAIService {
                 } else {
                     log.warn("Model {} failed: {}", model, errorMsg);
                 }
-            }
+         } finally {
+            rateLimiter.release();
+        }
         }
 
         log.warn("⚠️ All Gemini models unavailable");
         return null;
     }
-
-    /**
-     * Génère une requête SQL avec l'API Gemini (VRAIE IA)
-     */
-    /**
-     * Génère une requête SQL avec l'API Gemini (VRAIE IA)
-     */
     /*
     private String generateSQLWithGemini(String userQuestion) {
         // Vérifier le cache SQL
@@ -253,11 +292,8 @@ public class ChatAIService {
 
      */
 
-    /**
-     * Génère une requête SQL avec l'API Gemini (VRAIE IA)
-     */
+
     private String generateSQLWithGemini(String userQuestion) {
-        // Vérifier le cache SQL
         String cacheKey = normalizeQuestion(userQuestion);
         if (sqlCache.containsKey(cacheKey)) {
             log.info("📦 [SQL CACHE HIT] Using cached SQL for: {}", userQuestion);
@@ -265,32 +301,62 @@ public class ChatAIService {
         }
 
         String prompt = String.format("""
-            Tu es un expert SQL PostgreSQL. Voici le schéma:
-            
-            TABLE conventions (
-                reference_convention VARCHAR(50),
-                libelle VARCHAR(255),
-                date_debut DATE,
-                date_fin DATE,
-                montant_ttc DECIMAL(15,2),
-                etat VARCHAR(20),
-                archived BOOLEAN DEFAULT false
-            );
-            
-            DATE AUJOURD'HUI: %s
-            
-            QUESTION: "%s"
-            
-            RÈGLES:
-            1. Réponds UNIQUEMENT avec la requête SQL
-            2. Toujours ajouter WHERE archived = false
-            3. Pour le minimum, utilise ORDER BY montant_ttc ASC LIMIT 1
-            4. Pour le maximum, utilise ORDER BY montant_ttc DESC LIMIT 1
-            5. Exemple pour "montant le plus faible": 
-               SELECT * FROM conventions WHERE archived = false ORDER BY montant_ttc ASC LIMIT 1
-            
-            REQUÊTE SQL:
-            """, LocalDate.now(), userQuestion);
+                Tu es un expert SQL PostgreSQL. Voici le schéma COMPLET:
+                
+                TABLE conventions (
+                    id BIGINT PRIMARY KEY,
+                    reference_convention VARCHAR(50) UNIQUE,
+                    libelle VARCHAR(255) NOT NULL,
+                    date_debut DATE NOT NULL,
+                    date_fin DATE,
+                    montant_ttc DECIMAL(15,2),
+                    etat VARCHAR(20) CHECK (etat IN ('PLANIFIE', 'EN_COURS', 'TERMINE', 'ARCHIVE')),
+                    archived BOOLEAN DEFAULT false
+                );
+                
+                TABLE factures (
+                    id BIGINT PRIMARY KEY,
+                    numero_facture VARCHAR(50) UNIQUE,
+                    date_echeance DATE,
+                    montant_ttc DECIMAL(15,2),
+                    statut_paiement VARCHAR(20) CHECK (statut_paiement IN ('PAYE', 'NON_PAYE', 'EN_RETARD')),
+                    archived BOOLEAN DEFAULT false
+                );
+                
+                TABLE applications (
+                    id BIGINT PRIMARY KEY,
+                    code VARCHAR(50) UNIQUE,
+                    name VARCHAR(255),
+                    client_name VARCHAR(255),
+                    date_debut DATE,
+                    date_fin DATE,
+                    status VARCHAR(20) CHECK (status IN ('PLANIFIE', 'EN_COURS', 'TERMINE')),
+                    chef_de_projet_id BIGINT,
+                    archived BOOLEAN DEFAULT false
+                );
+                
+                TABLE users (
+                    id BIGINT PRIMARY KEY,
+                    username VARCHAR(50) UNIQUE,
+                    email VARCHAR(100) UNIQUE,
+                    first_name VARCHAR(50),
+                    last_name VARCHAR(50)
+                );
+                
+                DATE AUJOURD'HUI: %s
+                
+                QUESTION: "%s"
+                
+                RÈGLES IMPORTANTES:
+                1. Réponds UNIQUEMENT avec la requête SQL complète
+                2. TOUJOURS ajouter WHERE archived = false
+                3. Utiliser TO_CHAR(date, 'DD/MM/YYYY') pour les dates
+                4. Pour le minimum, utiliser ORDER BY montant_ttc ASC LIMIT 1
+                5. Pour le maximum, utiliser ORDER BY montant_ttc DESC LIMIT 1
+                6. La requête doit être complète et se terminer par un point-virgule
+                
+                REQUÊTE SQL COMPLÈTE:
+                """, LocalDate.now(), userQuestion);
 
         String responseBody = callGeminiWithFallback(prompt);
 
@@ -352,16 +418,47 @@ public class ChatAIService {
     }
 
 
-    /**
-     * Normalise la question pour le cache (minuscules, trim, suppression espaces multiples)
-     */
+    private boolean isValidSQL(String sqlQuery) {
+        if (sqlQuery == null || sqlQuery.trim().isEmpty()) {
+            return false;
+        }
+
+        String sqlUpper = sqlQuery.toUpperCase().trim();
+
+        // Must start with SELECT
+        if (!sqlUpper.startsWith("SELECT")) {
+            return false;
+        }
+
+        // Must contain FROM
+        if (!sqlUpper.contains(" FROM ")) {
+            return false;
+        }
+
+        // Must end properly (not with incomplete clause)
+        if (sqlUpper.endsWith("_") || sqlUpper.endsWith(",") ||
+                sqlUpper.endsWith("WHERE") || sqlUpper.endsWith("AND") ||
+                sqlUpper.endsWith("OR")) {
+            return false;
+        }
+
+        // Check for balanced parentheses
+        int parentheses = 0;
+        for (char c : sqlQuery.toCharArray()) {
+            if (c == '(') parentheses++;
+            if (c == ')') parentheses--;
+            if (parentheses < 0) return false;
+        }
+
+        return parentheses == 0;
+    }
+
+
     private String normalizeQuestion(String question) {
         return question.toLowerCase().trim().replaceAll("\\s+", " ");
     }
 
-    /**
-     * Vérifie si la réponse est déjà dans le cache
-     */
+
     private String getCachedAnswer(String question) {
         String cacheKey = normalizeQuestion(question);
         if (answerCache.containsKey(cacheKey)) {
@@ -371,18 +468,13 @@ public class ChatAIService {
         return null;
     }
 
-    /**
-     * Met en cache la réponse
-     */
     private void cacheAnswer(String question, String answer) {
         String cacheKey = normalizeQuestion(question);
         answerCache.put(cacheKey, answer);
         log.info("💾 Answer cached for question: {}", question);
     }
 
-    /**
-     * Vérifie si le résultat de la requête est déjà en cache
-     */
+
     private List<Map<String, Object>> getCachedQueryResult(String sqlQuery) {
         String cacheKey = String.valueOf(sqlQuery.hashCode());
         if (queryResultCache.containsKey(cacheKey)) {
@@ -392,98 +484,77 @@ public class ChatAIService {
         return null;
     }
 
-    /**
-     * Met en cache le résultat de la requête
-     */
+
     private void cacheQueryResult(String sqlQuery, List<Map<String, Object>> results) {
         String cacheKey = String.valueOf(sqlQuery.hashCode());
         queryResultCache.put(cacheKey, results);
         log.info("💾 Query results cached for SQL hash: {}", cacheKey);
     }
 
-    /**
-     * Génération SQL basée sur des patterns (FALLBACK uniquement)
-     */
     private String generatePatternSQL(String userQuestion) {
         String q = userQuestion.toLowerCase();
 
-        log.info("🔍 [FALLBACK] Pattern matching for: {}", q);
+        // Expanded pattern matching for common questions
+        Map<String, String> patterns = new HashMap<>();
 
-        // ============ CONVENTIONS ============
-        if (q.contains("convention") || q.contains("conventions")) {
-
-            if ((q.contains("montant") && (q.contains("min") || q.contains("faible") || q.contains("petit"))) ||
-                    (q.contains("convention") && (q.contains("moins cher") || q.contains("faible")))) {
-                return "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE archived = false ORDER BY montant_ttc ASC LIMIT 1";
-            }
-
-            if (q.contains("termin") || q.contains("fini")) {
-                return "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE etat = 'TERMINE' AND archived = false ORDER BY date_fin DESC";
-            }
-            if (q.contains("en cours")) {
-                return "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE etat = 'EN COURS' AND archived = false ORDER BY date_debut DESC";
-            }
-            if (q.contains("expire") || q.contains("bientôt")) {
-                return "SELECT reference_convention, libelle, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc FROM conventions WHERE date_fin BETWEEN CURRENT_DATE AND CURRENT_DATE + 30 AND archived = false ORDER BY date_fin ASC";
-            }
-            Pattern convPattern = Pattern.compile("CONV-\\d{4}-\\d{3}");
-            Matcher convMatcher = convPattern.matcher(userQuestion);
-            if (convMatcher.find()) {
-                String ref = convMatcher.group();
-                return String.format("SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, periodicite, etat, nb_users FROM conventions WHERE reference_convention = '%s' AND archived = false", ref);
-            }
+        if ((q.contains("facture") || q.contains("factures")) &&
+                (q.contains("plus faible") || q.contains("minimum") || q.contains("min"))) {
+            return "SELECT numero_facture, TO_CHAR(date_echeance, 'DD/MM/YYYY') as date_echeance, montant_ttc, statut_paiement FROM factures WHERE archived = false ORDER BY montant_ttc ASC LIMIT 1";
         }
+        // Conventions
+        patterns.put(".*(convention|conventions).*(termin|fini).*",
+                "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE etat = 'TERMINE' AND archived = false ORDER BY date_fin DESC");
 
-        // ============ FACTURES ============
-        if (q.contains("facture") || q.contains("factures")) {
-            if (q.contains("impay") || q.contains("non pay")) {
-                return "SELECT numero_facture, TO_CHAR(date_echeance, 'DD/MM/YYYY') as date_echeance, montant_ttc, statut_paiement FROM factures WHERE statut_paiement IN ('NON_PAYE', 'EN_RETARD') AND archived = false ORDER BY date_echeance ASC";
-            }
-            if (q.contains("ca") || q.contains("chiffre") || q.contains("revenu")) {
-                return "SELECT COALESCE(SUM(montant_ttc), 0) as chiffre_affaires FROM factures WHERE statut_paiement = 'PAYE'";
-            }
-            Pattern facturePattern = Pattern.compile("FACT-\\d{4}-CONV-\\d{4}-\\d{3}-\\d{3}");
-            Matcher factureMatcher = facturePattern.matcher(userQuestion);
-            if (factureMatcher.find()) {
-                String numero = factureMatcher.group();
-                return String.format("SELECT numero_facture, TO_CHAR(date_facturation, 'DD/MM/YYYY') as date_facturation, TO_CHAR(date_echeance, 'DD/MM/YYYY') as date_echeance, montant_ttc, statut_paiement FROM factures WHERE numero_facture = '%s' AND archived = false", numero);
-            }
-        }
+        patterns.put(".*(convention|conventions).*(en cours|actif).*",
+                "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE etat = 'EN_COURS' AND archived = false ORDER BY date_debut DESC");
 
-        // ============ APPLICATIONS ============
-        if (q.contains("application") || q.contains("applications")) {
-            if (q.contains("en cours")) {
-                return "SELECT code, name, client_name, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, status FROM applications WHERE status = 'EN_COURS' AND archived = false ORDER BY created_at DESC";
-            }
-            if (q.contains("chef")) {
-                return "SELECT a.code, a.name, a.client_name, a.status, COALESCE(CONCAT(u.first_name, ' ', u.last_name), 'Non assigné') as chef_de_projet FROM applications a LEFT JOIN users u ON a.chef_de_projet_id = u.id WHERE a.archived = false ORDER BY a.created_at DESC";
+        patterns.put(".*(convention|conventions).*(montant|prix|coût).*(min|faible|petit).*",
+                "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE archived = false ORDER BY montant_ttc ASC LIMIT 1");
+
+        patterns.put(".*(convention|conventions).*(montant|prix|coût).*(max|élevé|grand).*",
+                "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE archived = false ORDER BY montant_ttc DESC LIMIT 1");
+
+        // Factures
+        patterns.put(".*(facture|factures).*(impay|non pay).*",
+                "SELECT numero_facture, TO_CHAR(date_echeance, 'DD/MM/YYYY') as date_echeance, montant_ttc, statut_paiement FROM factures WHERE statut_paiement IN ('NON_PAYE', 'EN_RETARD') AND archived = false ORDER BY date_echeance ASC");
+
+        patterns.put(".*(ca|chiffre|revenu).*",
+                "SELECT COALESCE(SUM(montant_ttc), 0) as chiffre_affaires FROM factures WHERE statut_paiement = 'PAYE' AND archived = false");
+
+        // Match pattern
+        for (Map.Entry<String, String> entry : patterns.entrySet()) {
+            if (q.matches(entry.getKey())) {
+                log.info("✅ Pattern matched: {}", entry.getKey());
+                return entry.getValue();
             }
         }
 
         return null;
     }
 
-    /**
-     * Message d'aide quand rien ne correspond
-     */
     private String getHelpMessage() {
         return """
-            🤖 **Assistant IA - Ce que je peux faire :**
-            
-            📋 **Conventions :**
-            • "Montre-moi les conventions terminées"
-            • "Quelles sont les conventions en cours ?"
-            • "Conventions qui expirent bientôt"
-            
-            📄 **Factures :**
-            • "Factures impayées"
-            • "Factures payées"
-            • "Quel est le chiffre d'affaires ?"
-            
-            📱 **Applications :**
-            • "Applications en cours"
-            • "Applications avec leurs chefs de projet"
-            """;
+        🤖 Assistant IA - Ce que je peux faire :
+        
+        📋 Conventions :
+        • "Montre-moi les conventions terminées"
+        • "Quelles sont les conventions en cours ?"
+        • "Conventions qui expirent bientôt"
+        • "Quelle est la convention avec le montant le plus faible ?"
+        
+        📄 Factures :
+        • "Factures impayées"
+        • "Factures payées"
+        • "Quel est le chiffre d'affaires ?"
+        • "Quelle est la facture avec le montant le plus faible ?"
+        • "Quelle est la facture avec le montant le plus élevé ?"
+        
+        📱 Applications :
+        • "Applications en cours"
+        • "Applications avec leurs chefs de projet"
+        
+        💡 Si ma réponse ne correspond pas à votre question, essayez de reformuler.
+        """;
     }
 
     private List<Map<String, Object>> executeSQL(String sqlQuery) {
@@ -513,27 +584,160 @@ public class ChatAIService {
             return "📭 Aucun résultat trouvé pour votre question.";
         }
 
-        StringBuilder sb = new StringBuilder();
+        String q = question.toLowerCase();
 
-        if (results.size() == 1 && results.get(0).size() == 1) {
-            Object value = results.get(0).values().iterator().next();
-            sb.append(formatValue(value));
-        } else {
-            int count = 0;
-            for (Map<String, Object> row : results) {
-                count++;
-                sb.append(count).append(". ");
-                for (Map.Entry<String, Object> entry : row.entrySet()) {
-                    String key = formatKey(entry.getKey());
-                    String value = formatValue(entry.getValue());
-                    sb.append("**").append(key).append("** : ").append(value).append(" | ");
+        // ============ CONVENTIONS QUI EXPIREENT ============
+        if ((q.contains("convention") || q.contains("conventions")) &&
+                (q.contains("expire") || q.contains("bientôt") || q.contains("ce mois"))) {
+
+            int count = results.size();
+            if (count == 1) {
+                Map<String, Object> row = results.get(0);
+                String ref = getStringValue(row, "reference_convention");
+                String libelle = getStringValue(row, "libelle");
+                String dateFin = getStringValue(row, "date_fin");
+                String montant = getFormattedMontant(row, "montant_ttc");
+
+                return String.format(
+                        "📋 Il y a une convention qui expire ce mois-ci :\n\n" +
+                                "La convention %s (%s) expire le %s avec un montant de %s TND.",
+                        ref, libelle, dateFin, montant
+                );
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.append(String.format("📋 Il y a %d conventions qui expirent ce mois-ci :\n\n", count));
+                for (int i = 0; i < results.size(); i++) {
+                    Map<String, Object> row = results.get(i);
+                    String ref = getStringValue(row, "reference_convention");
+                    String libelle = getStringValue(row, "libelle");
+                    String dateFin = getStringValue(row, "date_fin");
+                    String montant = getFormattedMontant(row, "montant_ttc");
+                    sb.append(String.format("%d. La convention %s (%s) expire le %s (Montant: %s TND)\n",
+                            i + 1, ref, libelle, dateFin, montant));
                 }
-                sb.append("\n");
+                return sb.toString();
             }
         }
 
-        return sb.toString();
+        // ============ CONVENTIONS TERMINÉES ============
+        if ((q.contains("convention") || q.contains("conventions")) &&
+                (q.contains("termin") || q.contains("fini"))) {
+
+            int count = results.size();
+            if (count == 1) {
+                Map<String, Object> row = results.get(0);
+                String ref = getStringValue(row, "reference_convention");
+                String libelle = getStringValue(row, "libelle");
+                String dateFin = getStringValue(row, "date_fin");
+                String montant = getFormattedMontant(row, "montant_ttc");
+
+                return String.format(
+                        "✅ Une convention terminée :\n\nLa convention %s (%s) s'est terminée le %s avec un montant de %s TND.",
+                        ref, libelle, dateFin, montant
+                );
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.append(String.format("✅ %d conventions terminées :\n\n", count));
+                for (int i = 0; i < results.size(); i++) {
+                    Map<String, Object> row = results.get(i);
+                    String ref = getStringValue(row, "reference_convention");
+                    String libelle = getStringValue(row, "libelle");
+                    String dateFin = getStringValue(row, "date_fin");
+                    String montant = getFormattedMontant(row, "montant_ttc");
+                    sb.append(String.format("%d. %s - %s (Terminée le %s, %s TND)\n",
+                            i + 1, ref, libelle, dateFin, montant));
+                }
+                return sb.toString();
+            }
+        }
+
+        // ============ FACTURES IMPAYÉES ============
+        if ((q.contains("facture") || q.contains("factures")) &&
+                (q.contains("impay") || q.contains("non pay"))) {
+
+            int count = results.size();
+            if (count == 0) {
+                return "✅ Toutes les factures sont payées ! Aucune facture impayée.";
+            }
+
+            BigDecimal totalMontant = BigDecimal.ZERO;
+            for (Map<String, Object> row : results) {
+                Object montant = row.get("montant_ttc");
+                if (montant instanceof Number) {
+                    totalMontant = totalMontant.add(BigDecimal.valueOf(((Number) montant).doubleValue()));
+                }
+            }
+
+            if (count == 1) {
+                Map<String, Object> row = results.get(0);
+                String numero = getStringValue(row, "numero_facture");
+                String dateEcheance = getStringValue(row, "date_echeance");
+                String montant = getFormattedMontant(row, "montant_ttc");
+
+                return String.format(
+                        "⚠️ Une facture impayée :\n\nLa facture %s est due le %s pour un montant de %s TND.",
+                        numero, dateEcheance, montant
+                );
+            } else {
+                return String.format(
+                        "⚠️ %d factures impayées pour un montant total de %.2f TND.\n\n" +
+                                "💡 Pensez à les régler avant la date d'échéance.",
+                        count, totalMontant
+                );
+            }
+        }
+
+        // ============ CHIFFRE D'AFFAIRES ============
+        if (q.contains("ca") || q.contains("chiffre") || q.contains("revenu")) {
+            Map<String, Object> row = results.get(0);
+            Object ca = row.get("chiffre_affaires");
+            double valeur = ca instanceof Number ? ((Number) ca).doubleValue() : 0;
+            return String.format("💵 Le chiffre d'affaires total est de %.2f TND.", valeur);
+        }
+
+        // ============ CONVENTIONS EN COURS ============
+        if ((q.contains("convention") || q.contains("conventions")) && q.contains("en cours")) {
+            int count = results.size();
+            if (count == 0) {
+                return "📭 Aucune convention en cours pour le moment.";
+            }
+            return String.format("📋 Il y a actuellement %d convention(s) en cours.", count);
+        }
+
+        // ============ APPLICATIONS EN COURS ============
+        if ((q.contains("application") || q.contains("applications")) && q.contains("en cours")) {
+            int count = results.size();
+            if (count == 0) {
+                return "📭 Aucune application en cours pour le moment.";
+            }
+            return String.format("📱 Il y a actuellement %d application(s) en cours.", count);
+        }
+
+        // ============ FORMAT PAR DÉFAUT POUR LES AUTRES QUESTIONS ============
+        if (results.size() == 1) {
+            Map<String, Object> row = results.get(0);
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, Object> entry : row.entrySet()) {
+                String key = formatKey(entry.getKey());
+                String value = formatValue(entry.getValue());
+                sb.append(key).append(" : ").append(value).append("\n");
+            }
+            return sb.toString();
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("📊 Résultats (%d élément(s)) :\n\n", results.size()));
+            for (int i = 0; i < results.size(); i++) {
+                Map<String, Object> row = results.get(i);
+                sb.append(i + 1).append(". ");
+                for (Map.Entry<String, Object> entry : row.entrySet()) {
+                    sb.append(entry.getValue()).append(" ");
+                }
+                sb.append("\n");
+            }
+            return sb.toString();
+        }
     }
+
 
     private String formatKey(String key) {
         Map<String, String> translations = new HashMap<>();
@@ -567,9 +771,7 @@ public class ChatAIService {
         return String.valueOf(value);
     }
 
-    /**
-     * Affiche les statistiques du cache
-     */
+
     public Map<String, Integer> getCacheStats() {
         Map<String, Integer> stats = new HashMap<>();
         stats.put("sqlCacheSize", sqlCache.size());
@@ -578,9 +780,7 @@ public class ChatAIService {
         return stats;
     }
 
-    /**
-     * Vide tout le cache
-     */
+
     public void clearCache() {
         sqlCache.clear();
         answerCache.clear();
@@ -588,9 +788,7 @@ public class ChatAIService {
         log.info("🗑️ All caches cleared");
     }
 
-    /**
-     * Vide le cache pour une question spécifique
-     */
+
     public void clearCacheForQuestion(String question) {
         String cacheKey = normalizeQuestion(question);
         sqlCache.remove(cacheKey);
@@ -598,38 +796,48 @@ public class ChatAIService {
         log.info("🗑️ Cache cleared for question: {}", question);
     }
 
-    /**
-     * MÉTHODE PRINCIPALE - Avec cache intelligent
-     */
-    /**
-     * MÉTHODE PRINCIPALE - Avec cache intelligent
-     */
+
     public String askQuestion(String question) {
+        long startTime = System.currentTimeMillis();
         log.info("========== 🤖 IA GEMINI WITH CACHE ==========");
         log.info("📝 Question: {}", question);
 
-        // 1. Vérifier si la réponse est déjà dans le cache
+        // 1. Vérifier si c'est une salutation
+        if (isGreeting(question)) {
+            String userName = getCurrentUserName();
+            String greetingResponse = getGreetingResponse(userName);
+            log.info("✅ Réponse de salutation générée");
+
+            // Add delay before returning
+            addDelay(startTime);
+            return greetingResponse;
+        }
+
+        // 2. Vérifier si la réponse est déjà dans le cache
         String cachedAnswer = getCachedAnswer(question);
         if (cachedAnswer != null) {
+            log.info("📦 [ANSWER CACHE HIT] Returning cached answer");
+            addDelay(startTime);
             return cachedAnswer;
         }
 
-        // 2. D'ABORD, essayer le pattern SQL (100% fiable)
+        // 3. D'ABORD, essayer le pattern SQL (100% fiable)
         String sqlQuery = generatePatternSQL(question);
         boolean patternUsed = true;
 
-        // 3. Si le pattern n'a pas trouvé, essayer l'API Gemini
+        // 4. Si le pattern n'a pas trouvé, essayer l'API Gemini
         if (sqlQuery == null && apiKey != null && !apiKey.isEmpty()) {
             log.info("🚀 No pattern match, attempting to use Gemini AI...");
             sqlQuery = generateSQLWithGemini(question);
             patternUsed = false;
         }
 
-        // 4. Si toujours pas de requête, afficher l'aide
+        // 5. Si toujours pas de requête, afficher l'aide
         if (sqlQuery == null) {
             log.info("📝 No SQL generated, showing help");
             String helpMessage = getHelpMessage();
             cacheAnswer(question, helpMessage);
+            addDelay(startTime);
             return helpMessage;
         }
 
@@ -647,13 +855,52 @@ public class ChatAIService {
                 log.info("✅ Réponse générée par PATTERN et mise en cache");
             }
 
+            // Add delay before returning
+            addDelay(startTime);
             return answer;
+
         } catch (Exception e) {
             log.error("❌ Erreur: {}", e.getMessage());
+            addDelay(startTime);
             return "❌ " + e.getMessage();
         }
     }
 
+    // Helper method to add delay
+    private void addDelay(long startTime) {
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        long delayNeeded = Math.max(0, 3000 - elapsedTime);
+
+        if (delayNeeded > 0) {
+            log.info("⏱️ Adding {}ms delay to simulate thinking time", delayNeeded);
+            try {
+                Thread.sleep(delayNeeded);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        log.info("✅ Total response time: {}ms", System.currentTimeMillis() - startTime);
+    }
+
+    private boolean isGreeting(String question) {
+        String q = question.toLowerCase().trim();
+
+        List<String> greetings = Arrays.asList(
+                "bonjour", "salut", "coucou", "hello", "bonsoir",
+                "hey", "yo", "bienvenue", "bonjour à tous", "bon matin"
+        );
+
+        // Supprimer les ponctuations
+        q = q.replaceAll("[?!,.!;:]", "");
+
+        for (String greeting : greetings) {
+            if (q.equals(greeting) || q.startsWith(greeting) || q.contains(greeting)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public String getCurrentModel() {
         return currentModel;
@@ -664,9 +911,66 @@ public class ChatAIService {
     }
 
 
-    /**
-     * Corrige les requêtes SQL incomplètes (coupées par l'API)
-     */
+    private String handleGreeting(String userQuestion) {
+        String q = userQuestion.toLowerCase().trim();
+
+        // Liste des salutations en français
+        List<String> greetings = Arrays.asList(
+                "bonjour", "salut", "coucou", "hello", "bonsoir", "bon matin",
+                "hey", "yo", "bienvenue", "bonjour à tous"
+        );
+
+        for (String greeting : greetings) {
+            if (q.contains(greeting) || q.equals(greeting)) {
+                return String.valueOf(true);
+            }
+        }
+        return String.valueOf(false);
+    }
+
+
+    private String getGreetingResponse(String userName) {
+        String name = (userName != null && !userName.isEmpty()) ? userName : "cher utilisateur";
+
+        // Liste des réponses aléatoires pour varier
+        List<String> responses = Arrays.asList(
+                "Bonjour " + name + " ! 👋 Comment puis-je vous aider aujourd'hui ?",
+                "Salut " + name + " ! 🌟 En quoi puis-je vous être utile ?",
+                "Bonjour " + name + " ! 😊 Quelle est votre question ?",
+                "Salut " + name + " ! 😊 Comment puis-je vous assister aujourd'hui ?"
+        );
+
+        // Retourner une réponse aléatoire
+        Random random = new Random();
+        return responses.get(random.nextInt(responses.size()));
+    }
+
+
+    private String getCurrentUserName() {
+        try {
+            // Méthode 1: Via le contexte Spring Security
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                Optional<User> userOpt = userRepository.findByUsername(username);
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    if (user.getFirstName() != null && user.getLastName() != null) {
+                        return user.getFirstName() + " " + user.getLastName();
+                    } else if (user.getFirstName() != null) {
+                        return user.getFirstName();
+                    } else if (user.getUsername() != null) {
+                        return user.getUsername();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not get current user name: {}", e.getMessage());
+        }
+        return "cher utilisateur";
+    }
+
+
     /*private String fixIncompleteSQL(String sqlQuery, String userQuestion) {
         if (sqlQuery == null || sqlQuery.trim().isEmpty()) {
             return null;
@@ -718,8 +1022,26 @@ public class ChatAIService {
 
 
     /**
-     * Corrige les requêtes SQL incomplètes (coupées par l'API)
+     * Récupère une valeur String d'un résultat
      */
+    private String getStringValue(Map<String, Object> row, String key) {
+        Object value = row.get(key);
+        if (value == null) return "N/A";
+        return String.valueOf(value);
+    }
+
+    /**
+     * Formate le montant pour l'affichage
+     */
+    private String getFormattedMontant(Map<String, Object> row, String key) {
+        Object value = row.get(key);
+        if (value == null) return "0,00";
+        if (value instanceof Number) {
+            return String.format("%,.2f", ((Number) value).doubleValue());
+        }
+        return String.valueOf(value);
+    }
+
     private String fixIncompleteSQL(String sqlQuery, String userQuestion) {
         if (sqlQuery == null || sqlQuery.trim().isEmpty()) {
             return null;
@@ -792,4 +1114,20 @@ public class ChatAIService {
 
         return sqlQuery;
     }
+
+
+    @Scheduled(fixedRate = 3600000) // Clear cache every hour
+    public void cleanExpiredCache() {
+        int sqlSize = sqlCache.size();
+        int answerSize = answerCache.size();
+        int querySize = queryResultCache.size();
+
+        sqlCache.clear();
+        answerCache.clear();
+        queryResultCache.clear();
+
+        log.info("🧹 Cache cleared - SQL: {}, Answers: {}, Query Results: {}",
+                sqlSize, answerSize, querySize);
+    }
+
 }

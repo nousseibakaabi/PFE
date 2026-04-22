@@ -29,12 +29,12 @@
   width: 120px;
   height: 120px;
   margin: 0 auto;
-  background-color: #e9ecef;
+  background-color: transparent;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 5px solid #dee2e6;
+  border: 5px solid transparent;
 }
 
 .user-details {

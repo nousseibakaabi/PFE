@@ -1,0 +1,245 @@
+<!-- Client Detail Dashboard -->
+<div class="p-4 mx-auto max-w-screen-2xl md:p-6" *ngIf="!loading && bilan; else loadingTemplate">
+  <!-- Header with Actions -->
+  <div class="mb-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700/50">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 flex-wrap">
+      <div class="flex items-center gap-3">
+        <button (click)="goBack()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+
+<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4" />
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16h.01" />
+</svg>
+
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-gray-800 dark:text-white">
+              {{ bilan.clientName }}
+            </h2>
+            <p class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">({{ bilan.clientCode }})</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button (click)="regenerateBilan()" [disabled]="regenerating" class="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+<button (click)="exportPdf()" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center gap-1.5">
+  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 4H20V20H4V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8 7H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M8 12H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M8 17H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <rect x="16" y="15" width="5" height="6" rx="1" fill="white" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M17 17L19 17" stroke="red" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M17 19L19 19" stroke="red" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>
+</button>
+
+<button (click)="exportExcel()" class="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm hover:shadow flex items-center gap-1.5">
+  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 4H20V20H4V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8 2V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M16 2V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M7 12H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M7 16H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M3 8H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M12 12L12 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M10 14L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>
+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Info Cards -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    <!-- Score Global -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700/30 shadow-sm hover:shadow transition-all duration-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">{{ 'Score Global' | translate }}</p>
+          <p class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ bilan.rating.overallScore }}/100</p>
+          <p class="text-xs text-gray-600 dark:text-gray-300">{{ bilan.rating.rating }} - {{ bilan.rating.ratingLabel }}</p>
+        </div>
+        <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <svg class="w-4 h-4 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conventions -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700/30 shadow-sm hover:shadow transition-all duration-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">{{ 'Conventions' | translate }}</p>
+          <p class="text-lg font-bold text-green-600 dark:text-green-400">{{ bilan.summary.totalConventions }}</p>
+          <p class="text-xs text-gray-600 dark:text-gray-300">{{ bilan.summary.activeConventions }} {{ 'actives' | translate }}</p>
+        </div>
+        <div class="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+          <svg class="w-4 h-4 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Overdue -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700/30 shadow-sm hover:shadow transition-all duration-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">{{ 'Total Impayé' | translate }}</p>
+          <p class="text-lg font-bold text-red-600 dark:text-red-400">{{ bilan.financialSummary.totalUnpaid | number:'1.2-2' }} {{ 'TND' | translate }}</p>
+          <p class="text-xs text-gray-600 dark:text-gray-300">{{ 'dont' | translate }} {{ bilan.financialSummary.totalOverdue | number:'1.2-2' }} {{ 'TND' | translate }} {{ 'en souffrance' | translate }}</p>
+        </div>
+        <div class="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+          <svg class="w-4 h-4 text-red-600 dark:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Compliance -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700/30 shadow-sm hover:shadow transition-all duration-200">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-0.5">{{ 'Taux Conformité' | translate }}</p>
+          <p class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ bilan.financialSummary.paymentComplianceRate }}%</p>
+          <p class="text-xs text-gray-600 dark:text-gray-300">{{ bilan.paymentStats.behaviorDescription }}</p>
+        </div>
+        <div class="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+          <svg class="w-4 h-4 text-purple-600 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+    <!-- Payment Distribution -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700/30 shadow-sm">
+      <div class="flex items-center gap-2 mb-4">
+        <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <h3 class="text-sm font-bold text-gray-800 dark:text-white">{{ 'Distribution Paiements' | translate }}</h3>
+      </div>
+      <div class="h-64">
+        <canvas id="paymentChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Yearly Evolution -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700/30 shadow-sm">
+      <div class="flex items-center gap-2 mb-4">
+        <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+        <h3 class="text-sm font-bold text-gray-800 dark:text-white">{{ 'Évolution Annuelle' | translate }}</h3>
+      </div>
+      <div class="h-64">
+        <canvas id="yearlyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Rating by Criteria -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700/30 shadow-sm">
+      <div class="flex items-center gap-2 mb-4">
+        <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+        </svg>
+        <h3 class="text-sm font-bold text-gray-800 dark:text-white">{{ 'Évaluation par Critère' | translate }}</h3>
+      </div>
+      <div class="h-64">
+        <canvas id="ratingChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rating Details -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <!-- Strengths -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700/30 shadow-sm">
+      <div class="flex items-center gap-2 mb-4">
+        <svg class="w-4 h-4 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="text-sm font-bold text-green-700 dark:text-green-300">{{ 'Points Forts' | translate }}</h3>
+      </div>
+      <ul class="space-y-2" *ngIf="bilan.rating.strengths && bilan.rating.strengths.length > 0; else noStrengths">
+        <li *ngFor="let strength of bilan.rating.strengths" class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+          <span class="text-sm text-gray-700 dark:text-gray-300">{{ strength }}</span>
+        </li>
+      </ul>
+      <ng-template #noStrengths>
+        <p class="text-sm text-gray-500 dark:text-gray-400 italic">{{ 'Aucun point fort identifié' | translate }}</p>
+      </ng-template>
+    </div>
+
+    <!-- Weaknesses -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700/30 shadow-sm">
+      <div class="flex items-center gap-2 mb-4">
+        <svg class="w-4 h-4 text-red-600 dark:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="text-sm font-bold text-red-700 dark:text-red-300">{{ 'Points à Améliorer' | translate }}</h3>
+      </div>
+      <ul class="space-y-2" *ngIf="bilan.rating.weaknesses && bilan.rating.weaknesses.length > 0; else noWeaknesses">
+        <li *ngFor="let weakness of bilan.rating.weaknesses" class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+          <span class="text-sm text-gray-700 dark:text-gray-300">{{ weakness }}</span>
+        </li>
+      </ul>
+      <ng-template #noWeaknesses>
+        <p class="text-sm text-gray-500 dark:text-gray-400 italic">{{ 'Aucun point faible identifié' | translate }}</p>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 border border-gray-100 dark:border-gray-700/30 shadow-sm">
+    <div class="flex items-center gap-2 mb-4">
+      <svg class="w-4 h-4 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+      <h3 class="text-sm font-bold text-blue-700 dark:text-blue-300">{{ 'Recommandations' | translate }}</h3>
+    </div>
+    <ul class="space-y-2">
+      <li *ngFor="let rec of bilan.recommendations" class="flex items-start gap-2">
+        <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-sm text-gray-700 dark:text-gray-300">{{ rec }}</span>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<ng-template #loadingTemplate>
+  <div class="flex justify-content-center align-items-center py-16">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-3 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+      <p class="text-gray-600 dark:text-gray-400">{{ 'Chargement du bilan client...' | translate }}</p>
+    </div>
+  </div>
+</ng-template>

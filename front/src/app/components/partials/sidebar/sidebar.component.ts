@@ -155,6 +155,8 @@ navigateWithLang(route: string): void {
       { path: 'chef/calendar', page: 'chef/calendar' },
       { path: 'chef', page: 'chef' },
       { path: 'requests', page: 'requests' },
+      { path: 'client-bilan', page: 'client-bilan' },
+      { path: 'revenu-bilan', page: 'revenu-bilan' },
       { path: 'profile', page: 'profile' }
     ];
     

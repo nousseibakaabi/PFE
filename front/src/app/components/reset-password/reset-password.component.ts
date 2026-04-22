@@ -111,7 +111,7 @@ private applyDarkMode(): void {
 
     this.authService.resetPassword(this.token, password, confirmPassword).subscribe({
       next: (response) => {
-        this.message = 'Password has been reset successfully.';
+        this.message = 'Mot de passe réinitialisé avec succès ! Redirection vers la page de connexion...';
         this.error = '';
         setTimeout(() => {
           this.router.navigate(['/']);

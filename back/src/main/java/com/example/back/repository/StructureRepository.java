@@ -1,4 +1,3 @@
-// StructureRepository.java
 package com.example.back.repository;
 
 import com.example.back.entity.Structure;
@@ -10,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface StructureRepository extends JpaRepository<Structure, Long> {
-    Optional<Structure> findByCode(String code);
+
     boolean existsByCode(String code);
     boolean existsByName(String name);
 
@@ -21,8 +20,6 @@ public interface StructureRepository extends JpaRepository<Structure, Long> {
     List<Structure> findByTypeStructure(String typeStructure);
 
     List<Structure> findByZoneGeographiqueId(Long zoneId);
-
-    // In StructureRepository.java - Add this method
 
     List<Structure> findByNameContaining(String name);
 

@@ -8,6 +8,7 @@ import com.example.back.payload.response.MessageResponse;
 import com.example.back.repository.RoleRepository;
 import com.example.back.repository.UserRepository;
 import com.example.back.service.AvatarService;
+import com.example.back.service.EmailService;
 import com.example.back.service.HistoryService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,9 @@ public class AdminController {
     @Autowired
     private HistoryService historyService;
 
+    @Autowired
+    private EmailService emailService;
+
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -58,6 +62,7 @@ public class AdminController {
     }
 
 
+
     @PostMapping("/users/{userId}/lock")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> lockUser(@PathVariable Long userId) {
@@ -68,11 +73,23 @@ public class AdminController {
 
             targetUser.setLockedByAdmin(true);
             targetUser.setAccountNonLocked(false);
+            userRepository.save(targetUser);
 
             // LOG HISTORY: User lock
             historyService.logUserLock(targetUser, currentUser);
 
-            return ResponseEntity.ok(new MessageResponse("User locked successfully"));
+            // SEND EMAIL TO LOCKED USER
+            try {
+                System.out.println("Sending lock email to: " + targetUser.getEmail());
+                emailService.sendAccountLockedByAdminEmail(targetUser.getEmail(), targetUser.getUsername());
+                System.out.println("Lock email sent successfully");
+            } catch (Exception e) {
+                System.err.println("Failed to send lock email: " + e.getMessage());
+                e.printStackTrace();
+                // Don't fail the request if email fails, just log it
+            }
+
+            return ResponseEntity.ok(new MessageResponse("User locked successfully and email notification sent"));
         } catch (Exception e) {
             log.error("Error locking user: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
@@ -91,11 +108,23 @@ public class AdminController {
             targetUser.setAccountNonLocked(true);
             targetUser.setFailedLoginAttempts(0);
             targetUser.setAccountLockedUntil(null);
+            userRepository.save(targetUser);
 
             // LOG HISTORY: User unlock
             historyService.logUserUnlock(targetUser, currentUser);
 
-            return ResponseEntity.ok(new MessageResponse("User unlocked successfully"));
+            // SEND EMAIL TO UNLOCKED USER
+            try {
+                System.out.println("Sending unlock email to: " + targetUser.getEmail());
+                emailService.sendAccountUnlockedByAdminEmail(targetUser.getEmail(), targetUser.getUsername());
+                System.out.println("Unlock email sent successfully");
+            } catch (Exception e) {
+                System.err.println("Failed to send unlock email: " + e.getMessage());
+                e.printStackTrace();
+                // Don't fail the request if email fails, just log it
+            }
+
+            return ResponseEntity.ok(new MessageResponse("User unlocked successfully and email notification sent"));
         } catch (Exception e) {
             log.error("Error unlocking user: ", e);
             return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));

@@ -1248,4 +1248,31 @@ public class HistoryService {
         }
     }
 
+
+
+// Add this method to HistoryService.java
+
+    public void logBilanGeneration(Structure client, LocalDateTime generatedAt) {
+        try {
+            User currentUser = getCurrentUser();
+
+            String description = String.format("Génération du bilan financier pour le client %s (%s)",
+                    client.getName(), client.getCode());
+
+            Map<String, Object> details = new HashMap<>();
+            details.put("clientId", client.getId());
+            details.put("clientName", client.getName());
+            details.put("clientCode", client.getCode());
+            details.put("generatedAt", generatedAt);
+            details.put("generatedBy", currentUser != null ? currentUser.getUsername() : "SYSTEM");
+
+            createHistory("BILAN_GENERATION", "STRUCTURE", client.getId(),
+                    client.getCode(), client.getName(), description, null, details, currentUser);
+
+            log.info("Bilan generation history logged for client {}", client.getCode());
+        } catch (Exception e) {
+            log.error("Failed to log bilan generation: {}", e.getMessage(), e);
+        }
+    }
+
 }

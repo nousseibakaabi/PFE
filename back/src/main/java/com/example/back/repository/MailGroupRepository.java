@@ -14,8 +14,6 @@ import java.util.Optional;
 @Repository
 public interface MailGroupRepository extends JpaRepository<MailGroup, Long> {
 
-    List<MailGroup> findByOwnerOrderByNameAsc(User owner);
-
     List<MailGroup> findByIsSystemTrue();
 
     Optional<MailGroup> findByNameAndIsSystemTrue(String name);
@@ -28,21 +26,11 @@ public interface MailGroupRepository extends JpaRepository<MailGroup, Long> {
     @Query("SELECT DISTINCT u FROM User u JOIN u.roles r WHERE r.name = :roleName")
     List<User> findUsersByRole(@Param("roleName") ERole roleName);
 
-    // Count methods for statistics
     long countByIsSystemTrue();
 
     @Query("SELECT COUNT(g) FROM MailGroup g WHERE g.isSystem = false AND (g.owner = :user OR :user MEMBER OF g.members)")
     long countCustomGroupsForUser(@Param("user") User user);
 
-    @Query("SELECT COUNT(g) FROM MailGroup g WHERE g.isSystem = true OR g.owner = :user OR :user MEMBER OF g.members")
-    long countAllGroupsForUser(@Param("user") User user);
-
-
-    // Get all groups with their mail statistics
-    @Query("SELECT g FROM MailGroup g")
-    List<MailGroup> findAllGroupsWithStats();
-
-    // Get groups for user with mail counts
     @Query("SELECT g FROM MailGroup g WHERE g.isSystem = true OR :user MEMBER OF g.members OR g.owner = :user")
     List<MailGroup> findGroupsForUserWithAccess(@Param("user") User user);
 

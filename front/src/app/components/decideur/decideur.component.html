@@ -1,254 +1,184 @@
 <!-- src/app/components/decideur/decideur.component.html -->
-<div class="p-4 mx-auto max-w-screen-2xl md:p-6">
-  <!-- Header -->
-  <div class="mb-6 bg-gradient-to-r from-emerald-700 to-emerald-900 rounded-2xl shadow-lg p-5">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl flex items-center justify-center">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-2xl font-bold text-white">Tableau de Bord Décideur</h1>
-          <p class="text-emerald-200 text-sm mt-1">Vue stratégique des activités</p>
-        </div>
+<div class="p-4 mx-auto max-w-screen-2xl md:p-6 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 min-h-screen rounded-2xl">
+  
+  <!-- Unique Strategic Dashboard Header -->
+  <div class="sticky top-0 z-40 mb-6">
+    <div class="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 dark:from-blue-700 dark:via-blue-600 dark:to-cyan-600 shadow-2xl rounded-2xl">
+      <!-- Animated Background Elements -->
+      <div class="absolute inset-0">
+        <!-- Floating Circles -->
+        <div class="absolute top-2 left-8 w-12 h-12 bg-white/10 rounded-full animate-bounce" style="animation-delay: 0s; animation-duration: 3s;"></div>
+        <div class="absolute top-4 right-12 w-8 h-8 bg-white/10 rounded-full animate-bounce" style="animation-delay: 1s; animation-duration: 4s;"></div>
+        <div class="absolute bottom-4 left-1/4 w-6 h-6 bg-white/10 rounded-full animate-bounce" style="animation-delay: 2s; animation-duration: 3.5s;"></div>
+        <div class="absolute bottom-2 right-1/3 w-8 h-8 bg-white/10 rounded-full animate-bounce" style="animation-delay: 0.5s; animation-duration: 4.5s;"></div>
+
+        <!-- Geometric Shapes -->
+        <div class="absolute top-8 left-1/3 w-4 h-4 bg-white/5 rotate-45 animate-pulse"></div>
+        <div class="absolute bottom-6 right-8 w-3 h-3 bg-white/5 rotate-12 animate-pulse" style="animation-delay: 1.5s;"></div>
+        <div class="absolute top-1/2 left-12 w-2 h-2 bg-white/5 rounded-full animate-ping" style="animation-delay: 2.5s;"></div>
       </div>
-      <button (click)="refreshStats()" 
-              class="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-medium transition-all duration-200 backdrop-blur-lg border border-white/20 flex items-center group">
-        <svg class="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        Actualiser
-      </button>
+
+      <!-- Main Header Content -->
+      <div class="relative z-10 p-4 md:p-6">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <!-- Left Section: Title and User Info -->
+          <div class="flex items-center gap-4">
+            <!-- Strategic Icon -->
+            <div class="relative">
+              <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <!-- Pulsing ring -->
+              <div class="absolute -inset-1 bg-white/20 rounded-xl animate-pulse"></div>
+            </div>
+
+            <!-- Title and User Info -->
+            <div class="text-white">
+              <h1 class="text-xl md:text-2xl font-bold tracking-tight mb-1">Bienvenue , {{ currentUser?.firstName }} {{ currentUser?.lastName }}</h1>
+              <p class="text-xs md:text-sm opacity-80">Voici les statistiques clés de votre activité</p>
+            </div>
+          </div>
+
+          <!-- Right Section: Actions and Stats -->
+          <div class="flex items-center gap-3">
+
+            <!-- Refresh Button -->
+            <button (click)="refreshStats()"
+                    class="group relative px-3 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg font-medium transition-all duration-300 flex items-center gap-1.5 hover:scale-105 shadow-lg">
+              <div class="relative">
+                <svg class="w-3 h-3 group-hover:animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <span class="hidden sm:inline text-xs">Actualiser</span>
+
+              <!-- Button glow effect -->
+              <div class="absolute inset-0 bg-white/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </button>
+          </div>
+        </div>
+
+
+      </div>
     </div>
   </div>
 
   <!-- Loading State -->
   <div *ngIf="isLoading" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-600 border-t-transparent mx-auto"></div>
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mx-auto"></div>
       <p class="mt-4 text-gray-600 dark:text-gray-400 text-sm font-medium">Chargement des statistiques...</p>
     </div>
   </div>
 
+  <br>
   <div *ngIf="!isLoading">
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <!-- Conventions Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-4 border border-gray-100 dark:border-gray-700/30">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Conventions</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ summaryStats.totalConventions || 0 }}</p>
-          </div>
-          <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-        </div>
-        <div class="mt-3 flex justify-between text-xs">
-          <span class="text-green-600 dark:text-green-400">{{ dashboardStats.activeConventions || 0 }} actives</span>
-          <span class="text-blue-600 dark:text-blue-400">{{ summaryStats.conventionsToday || 0 }} aujourd'hui</span>
-        </div>
-      </div>
+    <!-- Alert Carousel - Right after header -->
+    <div *ngIf="overdueAlerts.length > 0" class="mb-8">
 
-      <!-- Factures Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-4 border border-gray-100 dark:border-gray-700/30">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Factures</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ summaryStats.totalFactures || 0 }}</p>
-          </div>
-          <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      <!-- Carousel -->
+      <div class="relative">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div *ngFor="let alert of getPaginatedAlerts()" 
+               class="bg-gradient-to-br from-transparent to-transparent dark:from-red-950/20 dark:to-orange-950/20 backdrop-blur-sm border border-red-200 dark:border-red-800/50 rounded-xl p-4 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-start gap-3">
+              <div class="p-2 bg-red-100 dark:bg-red-900/40 rounded-lg flex-shrink-0">
+                <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-black-800 dark:text-white-300 line-clamp-2">{{ alert.message }}</p>
+                <p class="text-xs text-red-600 dark:text-red-400 mt-2">
+                  <span class="text-[10px] font-medium">{{'Status' | translate}}</span> • 
+                  <span class="text-[10px] opacity-75">{{ alert.priority }}</span>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="mt-3 flex justify-between text-xs">
-          <span class="text-red-600 dark:text-red-400">{{ summaryStats.overdueToday || 0 }} en retard</span>
-          <span class="text-green-600 dark:text-green-400">{{ summaryStats.facturesToday || 0 }} aujourd'hui</span>
-        </div>
-      </div>
 
-      <!-- Applications Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-4 border border-gray-100 dark:border-gray-700/30">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Applications</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ summaryStats.totalApplications || 0 }}</p>
+        <!-- Carousel Controls -->
+        <div *ngIf="getTotalAlertSlides() > 1" class="flex items-center justify-center gap-3 mt-4">
+          <div class="flex gap-2">
+            <button *ngFor="let dot of [].constructor(getTotalAlertSlides()); let i = index"
+                    (click)="goToAlertSlide(i)"
+                    [class.bg-red-600]="currentAlertSlide === i"
+                    [class.bg-gray-300]="currentAlertSlide !== i"
+                    class="h-2 rounded-full transition-all"
+                    [class.w-3]="currentAlertSlide === i"
+                    [class.w-2]="currentAlertSlide !== i">
+            </button>
           </div>
-          <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
-            <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </div>
-        </div>
-        <div class="mt-3 flex justify-between text-xs">
-          <span class="text-blue-600 dark:text-blue-400">{{ dashboardStats.activeApplications || 0 }} actives</span>
-          <span class="text-green-600 dark:text-green-400">{{ dashboardStats.completedApplications || 0 }} terminées</span>
-        </div>
-      </div>
-
-      <!-- Revenus Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-4 border border-gray-100 dark:border-gray-700/30">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">Revenus</p>
-            <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ formatCurrency(financialStats.totalRevenue || 0) }}</p>
-          </div>
-          <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-        </div>
-        <div class="mt-3 flex justify-between text-xs">
-          <span class="text-green-600 dark:text-green-400">{{ financialStats.collectionRate?.toFixed(1) || 0 }}% collecté</span>
-          <span class="text-orange-600 dark:text-orange-400">{{ formatCurrency(financialStats.pendingPayments || 0) }} en attente</span>
         </div>
       </div>
     </div>
 
+
     <!-- Charts Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       <!-- Convention Status Chart -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-gray-700/30">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-          <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+        <h3 class="text-[14px] font-semibold text-gray-800 dark:text-white mb-5 flex items-center">
+          <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-2.5">
+            <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a２ ２ ０ ０１２ －２v１４a２ ２ ０ ０１－２ ２h－２a２ ２ ０ ０１－２ －２z" />
+            </svg>
+          </div>
           Statut des Conventions
         </h3>
-        <div class="h-64">
+        <div class="h-40">
           <canvas #conventionStatusChart></canvas>
         </div>
       </div>
 
       <!-- Payment Status Chart -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-gray-700/30">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-          <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+        <h3 class="text-[14px] font-semibold text-gray-800 dark:text-white mb-5 flex items-center">
+          <div class="w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-2.5">
+            <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
           Statut des Paiements
         </h3>
-        <div class="h-64">
+        <div class="h-40">
           <canvas #paymentStatusChart></canvas>
         </div>
       </div>
     </div>
 
     <!-- Application Status Chart Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Application Status Chart -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-gray-700/30">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-          <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+        <h3 class="text-[14px] font-semibold text-gray-800 dark:text-white mb-5 flex items-center">
+  <div class="w-6 h-6 rounded-lg flex items-center justify-center mr-2.5" style="background-color: #00968820;">
+  <svg class="w-3 h-3" style="color: #009688;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+  </svg>
+</div>
           Statut des Applications
         </h3>
-        <div class="h-64">
+        <div class="h-40">
           <canvas #applicationStatusChart></canvas>
         </div>
       </div>
 
       <!-- Revenue Trend Chart -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-gray-700/30">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-          <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-          </svg>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+        <h3 class="text-[14px] font-semibold text-gray-800 dark:text-white mb-5 flex items-center">
+          <div class="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mr-2.5">
+            <svg class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+          </div>
           Tendances des Revenus
         </h3>
-        <div class="h-64">
+        <div class="h-48">
           <canvas #revenueTrendChart></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Top Conventions Table -->
-    <div class="mb-6">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700/30 overflow-hidden">
-        <div class="p-5 border-b border-gray-100 dark:border-gray-700/30">
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
-            <svg class="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-            </svg>
-            Top Conventions par Revenu
-          </h3>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full">
-            <thead class="bg-gray-50 dark:bg-gray-700/30">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Référence</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Libellé</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Structure</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Montant</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Statut</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-700/30">
-              <tr *ngFor="let conv of financialStats.topEarningConventions" class="hover:bg-gray-50 dark:hover:bg-gray-700/20">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ conv.reference }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ conv.libelle }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ conv.structure }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ formatCurrency(conv.montantTotal) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 py-1 text-xs font-medium rounded-full" 
-                        [ngClass]="{
-                          'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300': conv.etat === 'EN COURS',
-                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300': conv.etat === 'PLANIFIE',
-                          'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300': conv.etat === 'TERMINE',
-                          'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300': conv.etat === 'ARCHIVE'
-                        }">
-                    {{ conv.etat }}
-                  </span>
-                </td>
-              </tr>
-              <tr *ngIf="!financialStats.topEarningConventions?.length">
-                <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                  Aucune convention trouvée
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Overdue Alerts -->
-    <div *ngIf="overdueAlerts.length > 0" class="mb-6">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-200 dark:border-red-800/30 overflow-hidden">
-        <div class="p-5 border-b border-red-200 dark:border-red-800/30 bg-red-50 dark:bg-red-900/10">
-          <h3 class="text-lg font-semibold text-red-800 dark:text-red-300 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Alertes
-          </h3>
-        </div>
-        <div class="p-5">
-          <div class="space-y-3">
-            <div *ngFor="let alert of overdueAlerts" class="flex items-center p-3 bg-red-50 dark:bg-red-900/10 rounded-lg">
-              <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg mr-3">
-                <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div class="flex-1">
-                <p class="text-sm font-medium text-gray-800 dark:text-white">{{ alert.message }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {{ alert.type === 'INVOICE_OVERDUE' ? 'Facture' : 'Application' }} • 
-                  Priorité: {{ alert.priority }}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
