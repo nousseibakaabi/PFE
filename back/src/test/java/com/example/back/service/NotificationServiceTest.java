@@ -125,7 +125,7 @@ class NotificationServiceTest {
         testNotification = new Notification();
         testNotification.setId(1L);
         testNotification.setUser(testUser);
-        testNotification.setTitle("Facture Due in 3 Days");
+        testNotification.setTitle("Facture à échéance dans 3 jours");
         testNotification.setMessage("Test message");
         testNotification.setType("WARNING");
         testNotification.setNotificationType("FACTURE_DUE");
@@ -164,7 +164,7 @@ class NotificationServiceTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getTitle()).isEqualTo("Facture Due in 3 Days");
+        assertThat(result.getTitle()).isEqualTo("Facture à échéance dans 3 jours");
         assertThat(result.getType()).isEqualTo("WARNING");
 
         // Verify save was called multiple times (once per recipient, plus potentially in sendNotificationViaChannels)

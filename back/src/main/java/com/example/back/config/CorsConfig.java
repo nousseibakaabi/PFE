@@ -16,7 +16,6 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow Angular frontend
         configuration.setAllowedOriginPatterns(List.of("http://localhost:4200"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList(
@@ -30,7 +29,6 @@ public class CorsConfig {
         ));
         configuration.setAllowCredentials(true);
 
-        // IMPORTANT: Expose these headers for images
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Disposition",
