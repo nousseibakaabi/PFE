@@ -11,7 +11,6 @@ import com.example.back.service.*;
 import com.example.back.service.mapper.FactureMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,33 +28,34 @@ import java.util.stream.Collectors;
 public class FactureController {
 
 
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
 
-    @Autowired
-    private FactureRepository factureRepository;
+    private final FactureRepository factureRepository;
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final ConventionRepository conventionRepository;
 
-    @Autowired
-    private ConventionService conventionService;
+    private final ConventionService conventionService;
 
-    @Autowired
-    private FactureMapper factureMapper;
+    private final FactureMapper factureMapper;
 
-    @Autowired
-    private UserContextService userContextService;
+    private final UserContextService userContextService;
 
-    @Autowired
-    private HistoryService historyService;
+    private final HistoryService historyService;
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
+
+    public FactureController(EmailService emailService, FactureRepository factureRepository, ConventionRepository conventionRepository, ConventionService conventionService, FactureMapper factureMapper, UserContextService userContextService, HistoryService historyService, NotificationService notificationService) {
+        this.emailService = emailService;
+        this.factureRepository = factureRepository;
+        this.conventionRepository = conventionRepository;
+        this.conventionService = conventionService;
+        this.factureMapper = factureMapper;
+        this.userContextService = userContextService;
+        this.historyService = historyService;
+        this.notificationService = notificationService;
+    }
 
 
-
-    // Helper method to check if user can access invoice
     private boolean canAccessFacture(Long factureId, User currentUser) {
         Optional<Facture> factureOpt = factureRepository.findById(factureId);
         if (factureOpt.isEmpty()) {
@@ -204,7 +201,7 @@ public class FactureController {
             checkAndCreateNotificationForFacture(updated);
 
             // LOG HISTORY: Facture update
-            historyService.logFactureUpdate(oldFacture, updated, currentUser);
+            historyService.logFactureUpdate(oldFacture, updated);
 
             // Check if status changed
             if (!oldStatus.equals(updated.getStatutPaiement())) {
@@ -307,7 +304,7 @@ public class FactureController {
             }
 
             // LOG HISTORY: Payment registration
-            historyService.logFacturePayment(updated, currentUser, request.getReferencePaiement());
+            historyService.logFacturePayment(updated, request.getReferencePaiement());
 
             if (!oldStatus.equals(updated.getStatutPaiement())) {
                 historyService.logFactureStatusChange(updated, oldStatus, "PAYE");
@@ -397,7 +394,7 @@ public class FactureController {
             checkAndCreateNotificationForFacture(saved);
 
             // LOG HISTORY: Facture creation
-            historyService.logFactureCreate(saved, currentUser);
+            historyService.logFactureCreate(saved);
 
             conventionService.updateConventionStatusRealTime(saved.getConvention().getId());
 
@@ -700,14 +697,14 @@ public class FactureController {
                 List<Facture> facturesPayees = factureRepository.findByStatutPaiement("PAYE");
                 totalMontant = facturesPayees.stream()
                         .map(Facture::getMontantTTC)
-                        .filter(amount -> amount != null)
+                        .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
                 // Calculate total amount for unpaid invoices
                 List<Facture> facturesNonPayees = factureRepository.findByStatutPaiement("NON_PAYE");
                 totalMontantNonPaye = facturesNonPayees.stream()
                         .map(Facture::getMontantTTC)
-                        .filter(amount -> amount != null)
+                        .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
             } else {
                 // Get only user's invoices
@@ -717,14 +714,14 @@ public class FactureController {
                 totalMontant = userFactures.stream()
                         .filter(f -> "PAYE".equals(f.getStatutPaiement()))
                         .map(Facture::getMontantTTC)
-                        .filter(amount -> amount != null)
+                        .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
                 // Calculate unpaid amount
                 totalMontantNonPaye = userFactures.stream()
                         .filter(f -> !"PAYE".equals(f.getStatutPaiement()))
                         .map(Facture::getMontantTTC)
-                        .filter(amount -> amount != null)
+                        .filter(Objects::nonNull)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
             }
 

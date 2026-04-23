@@ -1,4 +1,3 @@
-// RenewalRequestDTO.java
 package com.example.back.payload.request;
 
 import lombok.Data;

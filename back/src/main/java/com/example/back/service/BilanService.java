@@ -25,9 +25,7 @@ public class BilanService {
     private final OldConventionRepository oldConventionRepository;
     private final OldFactureRepository oldFactureRepository;
 
-    /**
-     * Get bilan for all factures only
-     */
+   
     public BilanDTO getFacturesBilan(LocalDate startDate, LocalDate endDate) {
         log.info("Generating factures bilan from {} to {}", startDate, endDate);
 
@@ -50,9 +48,7 @@ public class BilanService {
         return bilan;
     }
 
-    /**
-     * Get bilan for all conventions only
-     */
+ 
     public BilanDTO getConventionsBilan(LocalDate startDate, LocalDate endDate, boolean includeOldVersions) {
         log.info("Generating conventions bilan from {} to {}, includeOld: {}", startDate, endDate, includeOldVersions);
 
@@ -103,9 +99,7 @@ public class BilanService {
         return bilan;
     }
 
-    /**
-     * Get combined bilan (conventions + factures)
-     */
+   
     public BilanDTO getCombinedBilan(LocalDate startDate, LocalDate endDate, boolean includeOldVersions) {
         log.info("Generating combined bilan from {} to {}, includeOld: {}", startDate, endDate, includeOldVersions);
 
@@ -156,9 +150,7 @@ public class BilanService {
         return bilan;
     }
 
-    /**
-     * Get bilan for a specific convention (includes its factures)
-     */
+  
     public BilanDTO getConventionBilan(Long conventionId) {
         log.info("Generating bilan for convention ID: {}", conventionId);
 
@@ -199,9 +191,7 @@ public class BilanService {
         return bilan;
     }
 
-    /**
-     * Get bilan by month
-     */
+  
     public BilanDTO getBilanByMonth(int year, int month, String type, boolean includeOldVersions) {
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDate startDate = yearMonth.atDay(1);
@@ -224,9 +214,7 @@ public class BilanService {
         return bilan;
     }
 
-    /**
-     * Get bilan by year
-     */
+  
     public BilanDTO getBilanByYear(int year, String type, boolean includeOldVersions) {
         LocalDate startDate = LocalDate.of(year, 1, 1);
         LocalDate endDate = LocalDate.of(year, 12, 31);
@@ -247,7 +235,6 @@ public class BilanService {
         return bilan;
     }
 
-    // ============= CONVERSION METHODS =============
 
     private BilanDTO.BilanItem convertConventionToBilanItem(Convention convention) {
         BilanDTO.BilanItem item = new BilanDTO.BilanItem();
@@ -376,7 +363,6 @@ public class BilanService {
         return item;
     }
 
-    // ============= SUMMARY UPDATE METHODS =============
 
     private void updateSummaryWithConvention(BilanDTO.BilanSummary summary, Convention convention, BilanDTO.InvoiceSummary invoiceSummary) {
         summary.setTotalConventions(summary.getTotalConventions() + 1);
@@ -391,6 +377,8 @@ public class BilanService {
             case "ARCHIVE":
                 summary.setArchivedConventions(summary.getArchivedConventions() + 1);
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + convention.getEtat());
         }
 
         if (convention.getMontantHT() != null) {

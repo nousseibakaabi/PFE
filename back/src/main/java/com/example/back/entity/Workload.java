@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 @Entity
 @Table(name = "workloads")
@@ -65,26 +63,4 @@ public class Workload {
         updatedAt = LocalDateTime.now();
     }
 
-    // Calculate workload percentage based on multiple factors
-    public Double calculateWorkloadPercentage() {
-        // Weight factors (configurable)
-        double countWeight = 0.4;      // 40% weight for number of apps
-        double valueWeight = 0.4;       // 40% weight for total value
-        double durationWeight = 0.2;    // 20% weight for total duration
-
-        // Calculate individual percentages
-        double countPercentage = (currentApplicationsCount * 100.0) / 5; // 5 is max apps
-        double valuePercentage = (totalApplicationsValue * 100.0) / 5000000.0; // 5M is max value
-        double durationPercentage = (totalApplicationsDuration * 100.0) / 730; // 730 days is max duration
-
-        // Cap at 100%
-        countPercentage = Math.min(countPercentage, 100);
-        valuePercentage = Math.min(valuePercentage, 100);
-        durationPercentage = Math.min(durationPercentage, 100);
-
-        // Calculate weighted average
-        return (countPercentage * countWeight) +
-                (valuePercentage * valueWeight) +
-                (durationPercentage * durationWeight);
-    }
 }

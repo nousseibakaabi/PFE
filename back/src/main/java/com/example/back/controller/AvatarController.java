@@ -29,10 +29,10 @@ public class AvatarController {
                 Files.createDirectories(uploadPath);
             }
 
-            // Generate unique filename
             String originalFilename = file.getOriginalFilename();
-            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String newFilename = UUID.randomUUID().toString() + fileExtension;
+            assert originalFilename != null;
+            String fileExtension = originalFilename.substring(".".lastIndexOf(originalFilename));
+            String newFilename = UUID.randomUUID() + fileExtension;
 
             // Save file
             Path filePath = uploadPath.resolve(newFilename);

@@ -5,11 +5,9 @@ import com.example.back.payload.request.ConventionRequest;
 import com.example.back.payload.request.RenewalRequestDTO;
 import com.example.back.repository.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -18,56 +16,53 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class ConventionService {
 
-    @Autowired
-    private EntitySyncService entitySyncService;
+    private final EntitySyncService entitySyncService;
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final ConventionRepository conventionRepository;
 
-    @Autowired
-    private FactureRepository factureRepository;
+    private final FactureRepository factureRepository;
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    private StructureRepository structureRepository;
+    private final StructureRepository structureRepository;
 
-    @Autowired
-    private ApplicationService applicationService;
+    private final ApplicationService applicationService;
 
-    @Autowired
-    private HistoryService historyService;
+    private final HistoryService historyService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
-    @Autowired
-    private MailService mailService;
+    private final RequestService requestService;
 
 
-    @Autowired
-    private RequestService requestService;
+    private final OldConventionRepository oldConventionRepository;
 
+    private final OldFactureRepository oldFactureRepository;
 
-    @Autowired
-    private OldConventionRepository oldConventionRepository;
+    private final WorkloadService workloadService;
 
-    @Autowired
-    private OldFactureRepository oldFactureRepository;
-
-    @Autowired
-    private WorkloadService workloadService;
-
+    public ConventionService(StructureRepository structureRepository, EntitySyncService entitySyncService, ConventionRepository conventionRepository, FactureRepository factureRepository, OldFactureRepository oldFactureRepository, WorkloadService workloadService, ApplicationRepository applicationRepository, ApplicationService applicationService, HistoryService historyService, UserRepository userRepository, NotificationService notificationService,OldConventionRepository oldConventionRepository, RequestService requestService) {
+        this.structureRepository = structureRepository;
+        this.entitySyncService = entitySyncService;
+        this.conventionRepository = conventionRepository;
+        this.factureRepository = factureRepository;
+        this.oldFactureRepository = oldFactureRepository;
+        this.workloadService = workloadService;
+        this.applicationRepository = applicationRepository;
+        this.applicationService = applicationService;
+        this.historyService = historyService;
+        this.userRepository = userRepository;
+        this.notificationService = notificationService;
+        this.oldConventionRepository = oldConventionRepository;
+        this.requestService = requestService;
+    }
 
 
     // ============= FINANCIAL CALCULATION METHODS =============
@@ -184,10 +179,10 @@ public class ConventionService {
                 return startDate.plusMonths(invoiceIndex);
 
             case "TRIMESTRIEL":
-                return startDate.plusMonths(invoiceIndex * 3);
+                return startDate.plusMonths(invoiceIndex * 3L);
 
             case "SEMESTRIEL":
-                return startDate.plusMonths(invoiceIndex * 6);
+                return startDate.plusMonths(invoiceIndex * 6L);
 
             case "ANNUEL":
                 return startDate.plusYears(invoiceIndex);
@@ -197,22 +192,7 @@ public class ConventionService {
                 return startDate.plusMonths(invoiceIndex);
         }
     }
-    /**
-     * Generate sequential invoice number that aligns with existing numbering
-     */
-    private String generateSequentialInvoiceNumber(Convention convention, int sequence) {
-        // Format: FACT-YYYY-CONV-YYYY-SEQ
-        return String.format("FACT-%s-%s-%03d",
-                LocalDate.now().getYear(),
-                convention.getReferenceConvention(),
-                sequence);
-    }
 
-/**
- * Generate invoices for a NEW convention
- * - Creates ALL invoices from scratch
- * - Used ONLY for new conventions (creation)
- */
 @Transactional
 public void generateInvoicesForConvention(Convention convention) {
     log.info("========== GENERATING INVOICES FOR NEW CONVENTION ==========");
@@ -254,7 +234,6 @@ public void generateInvoicesForConvention(Convention convention) {
     BigDecimal sum = BigDecimal.ZERO;
 
 
-    User currentUser = getCurrentUser();
     String conventionName = convention.getReferenceConvention();
 
     // Generate all invoices from scratch
@@ -312,30 +291,6 @@ public void generateInvoicesForConvention(Convention convention) {
 }
 
 
-
-    /**
-     * Generate a unique invoice number
-     */
-    private String generateUniqueInvoiceNumber(Convention convention, int sequence) {
-        String baseNumber = String.format("FACT-%d-%s-%03d",
-                LocalDate.now().getYear(),
-                convention.getReferenceConvention(),
-                sequence);
-
-        // Check if this number already exists
-        boolean exists = factureRepository.existsByNumeroFacture(baseNumber);
-        if (!exists) {
-            return baseNumber;
-        }
-
-        // If it exists, add a timestamp to make it unique
-        String timestamp = String.valueOf(System.currentTimeMillis()).substring(7);
-        return String.format("FACT-%d-%s-%03d-%s",
-                LocalDate.now().getYear(),
-                convention.getReferenceConvention(),
-                sequence,
-                timestamp);
-    }
 
     private void checkNotificationsForAllInvoices(Convention convention) {
         log.info("Checking notifications for all invoices of convention {}", convention.getReferenceConvention());
@@ -419,33 +374,6 @@ public void generateInvoicesForConvention(Convention convention) {
     }
     
 
-    /**
-     * Calculate total amount paid from paid invoices
-     */
-    private BigDecimal calculateTotalPaidAmount(List<Facture> paidInvoices) {
-        return paidInvoices.stream()
-                .map(Facture::getMontantTTC)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-
-/**
- * Regenerate invoices when convention is UPDATED
- * - PRESERVES paid invoices (never modify them)
- * - UPDATES existing unpaid invoices with new amounts/dates
- * - ADDS new invoices if more periods needed
- * - DELETES excess unpaid invoices if fewer periods needed - **GUARANTEED TO DELETE FROM THE END**
- */
-
-
-    /**
-     * Regenerate invoices when convention is UPDATED
-     * - PRESERVES paid invoices (never modify them)
-     * - UPDATES existing unpaid invoices with new amounts/dates
-     * - ADDS new invoices if more periods needed
-     * - DELETES excess unpaid invoices if fewer periods needed
-     */
     @Transactional
     public void regenerateInvoicesForConvention(Long conventionId) {
         Optional<Convention> conventionOpt = conventionRepository.findById(conventionId);
@@ -514,10 +442,8 @@ public void generateInvoicesForConvention(Convention convention) {
             return;
         }
 
-        // ============= LOG MODIFICATIONS TO EXISTING UNPAID INVOICES =============
         List<Facture> modifiedInvoices = new ArrayList<>();
 
-        // ============= STEP 1: DELETE EXCESS UNPAID INVOICES (FROM THE END) =============
         if (unpaidInvoices.size() > unpaidNeeded) {
             int excessCount = unpaidInvoices.size() - unpaidNeeded;
             log.info("Deleting {} excess unpaid invoices", excessCount);
@@ -615,7 +541,7 @@ public void generateInvoicesForConvention(Convention convention) {
                     oldClone.setStatutPaiement(invoice.getStatutPaiement());
                     oldClone.setNotes(invoice.getNotes());
 
-                    historyService.logFactureUpdate(oldClone, updated, currentUser);
+                    historyService.logFactureUpdate(oldClone, updated);
                     log.info("✅ Logged modification for invoice {}: amount {}→{}, date {}→{}",
                             oldNumero, oldMontant, amount, oldEcheance, newDueDate);
                 } catch (Exception e) {
@@ -724,26 +650,6 @@ private String generateFormattedInvoiceNumber(Convention convention, int sequenc
 }
 
 
-    private int calculateNumberOfInvoices(Convention convention) {
-        LocalDate start = convention.getDateDebut();
-        LocalDate end = convention.getDateFin();
-
-        switch (convention.getPeriodicite().toUpperCase()) {
-            case "MENSUEL":
-                return (int) (ChronoUnit.MONTHS.between(start, end.plusDays(1)));
-            case "TRIMESTRIEL":
-                int months = (int) ChronoUnit.MONTHS.between(start, end.plusDays(1));
-                return (int) Math.ceil(months / 3.0);
-            case "SEMESTRIEL":
-                months = (int) ChronoUnit.MONTHS.between(start, end.plusDays(1));
-                return (int) Math.ceil(months / 6.0);
-            case "ANNUEL":
-                return (int) (ChronoUnit.YEARS.between(start, end.plusDays(1)));
-            default:
-                return 1;
-        }
-    }
-
     private LocalDate calculateDueDate(LocalDate invoiceDate, String periodicite) {
         switch (periodicite.toUpperCase()) {
             case "MENSUEL":
@@ -759,22 +665,6 @@ private String generateFormattedInvoiceNumber(Convention convention, int sequenc
         }
     }
 
-    private LocalDate getNextPeriodDate(LocalDate currentDate, String periodicite) {
-        return calculateDueDate(currentDate, periodicite);
-    }
-
-    private String generateInvoiceNumber(Convention convention, int sequence) {
-        return String.format("FACT-%s-%s-%03d",
-                LocalDate.now().getYear(),
-                convention.getReferenceConvention(),
-                sequence);
-    }
-
-    // ============= CRUD OPERATIONS WITH FINANCIALS =============
-
-    /**
-     * Create convention with financial calculations
-     */
     @Transactional
     public Convention createConventionWithFinancials(ConventionRequest request, User currentUser) {
         log.info("Creating convention with financials for reference: {}", request.getReferenceConvention());
@@ -859,9 +749,6 @@ private String generateFormattedInvoiceNumber(Convention convention, int sequenc
         BigDecimal oldMontantTTC = convention.getMontantTTC();
         Long oldNbUsers = convention.getNbUsers();
         String oldStatus = convention.getEtat();
-        LocalDate oldStartDate = convention.getDateDebut();
-        LocalDate oldEndDate = convention.getDateFin();
-        String oldPeriodicite = convention.getPeriodicite();
 
         // Check if convention can be updated
         if ("TERMINE".equals(convention.getEtat())) {
@@ -1007,29 +894,6 @@ private String generateFormattedInvoiceNumber(Convention convention, int sequenc
         return userRepository.findByUsername(currentUsername).orElse(null);
     }
 
-    /**
-     * Check if financial data has changed
-     */
-    private boolean hasFinancialDataChanged(Convention convention, ConventionRequest request) {
-        boolean htChanged = !compareBigDecimal(convention.getMontantHT(), request.getMontantHT());
-        boolean tvaChanged = !compareBigDecimal(convention.getTva(), request.getTva());
-        boolean nbUsersChanged = !Objects.equals(convention.getNbUsers(), request.getNbUsers());
-
-        return htChanged || tvaChanged || nbUsersChanged;
-    }
-
-    private boolean hasDatesOrPeriodicityChanged(Convention convention, ConventionRequest request) {
-        boolean datesChanged = !convention.getDateDebut().equals(request.getDateDebut()) ||
-                !convention.getDateFin().equals(request.getDateFin());
-        boolean periodiciteChanged = !convention.getPeriodicite().equals(request.getPeriodicite());
-
-        if (datesChanged || periodiciteChanged) {
-            log.info("Dates or periodicity changed - Dates: {}, Periodicite: {}",
-                    datesChanged, periodiciteChanged);
-            return true;
-        }
-        return false;
-    }
 
     private boolean compareBigDecimal(BigDecimal bd1, BigDecimal bd2) {
         if (bd1 == null && bd2 == null) return true;
@@ -1037,13 +901,6 @@ private String generateFormattedInvoiceNumber(Convention convention, int sequenc
         return bd1.compareTo(bd2) == 0;
     }
 
-    private boolean compareInteger(Long i1, Long i2) {
-        if (i1 == null && i2 == null) return true;
-        if (i1 == null || i2 == null) return false;
-        return i1.equals(i2);
-    }
-
-    // ============= STATUS UPDATE METHODS =============
 
     @Transactional
     public void updateConventionStatusRealTime(Long conventionId) {
@@ -1098,9 +955,6 @@ private String generateFormattedInvoiceNumber(Convention convention, int sequenc
         List<Convention> activeConventions = conventionRepository.findByEtat("EN COURS");
         for (Convention convention : activeConventions) {
             if (convention.getDateFin() != null && today.isAfter(convention.getDateFin())) {
-                List<Facture> invoices = factureRepository.findByConventionId(convention.getId());
-                boolean allInvoicesPaid = invoices.stream()
-                        .allMatch(invoice -> "PAYE".equals(invoice.getStatutPaiement()));
 
 
             }
@@ -1638,66 +1492,6 @@ private String generateFormattedInvoiceNumber(Convention convention, int sequenc
         }
     }
 
-    /**
-     * Send renewal notification to chef
-     */
 
 
-    private void sendRenewalNotificationToChef(User chef, Application application, Convention newConvention) {
-        try {
-            log.info("Attempting to send renewal notification to chef: {}", chef.getEmail());
-
-            String subject = "🔄 Application renouvelée - " + application.getCode();
-
-            // FIXED: Don't use String.format with HTML containing % signs
-            // Build the content using concatenation instead
-            String content =
-                    "<!DOCTYPE html>" +
-                            "<html>" +
-                            "<head><meta charset='UTF-8'></head>" +
-                            "<body style='font-family: Arial, sans-serif;'>" +
-                            "<div style='max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;'>" +
-                            "<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0;'>" +
-                            "<h2 style='margin: 0;'>🔄 Application renouvelée</h2>" +
-                            "</div>" +
-                            "<div style='background: white; padding: 20px; border-radius: 0 0 10px 10px;'>" +
-                            "<p>Bonjour <strong>" + chef.getFirstName() + " " + chef.getLastName() + "</strong>,</p>" +
-                            "<p>L'application <strong>" + application.getCode() + " - " + application.getName() + "</strong> a été renouvelée.</p>" +
-                            "<div style='background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;'>" +
-                            "<p><strong>Nouvelle convention :</strong> " + newConvention.getReferenceConvention() + "</p>" +
-                            "</div>" +
-                            "<p>Vous restez assigné à cette application. Si vous ne pouvez pas continuer à travailler dessus, veuillez soumettre une demande de réassignation.</p>" +
-                            "<div style='text-align: center; margin: 30px 0;'>" +
-                            "<a href='http://localhost:4200/applications/" + application.getId() + "' style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;'>Voir l'application</a>" +
-                            "</div>" +
-                            "<p style='color: #666; font-size: 12px; margin-top: 20px;'>Cet email a été envoyé automatiquement.</p>" +
-                            "</div>" +
-                            "</div>" +
-                            "</body>" +
-                            "</html>";
-
-            // Get admin user as sender
-            User admin = userRepository.findAll().stream()
-                    .filter(u -> u.getRoles().stream()
-                            .anyMatch(r -> r.getName().name().equals("ROLE_ADMIN")))
-                    .findFirst()
-                    .orElse(null);
-
-            if (admin != null) {
-                com.example.back.payload.request.MailRequest request = new com.example.back.payload.request.MailRequest();
-                request.setSubject(subject);
-                request.setContent(content);
-                request.setTo(List.of(chef.getEmail()));
-                request.setImportance("NORMAL");
-
-                mailService.sendMail(request, admin, null);
-                log.info("✅ Renewal notification sent to chef {}", chef.getEmail());
-            } else {
-                log.error("No admin user found to send email");
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to send renewal notification: {}", e.getMessage(), e);
-        }
-    }
 }

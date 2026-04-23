@@ -5,29 +5,24 @@ import com.example.back.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.annotation.PostConstruct;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 @Service
 @Slf4j
@@ -37,15 +32,10 @@ public class ChatAIService {
     private String apiKey;
 
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    
 
-    @Autowired
-    private UserContextService userContextService; // Si vous avez un service pour le contexte utilisateur
-
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     private RestTemplate restTemplate;
     private ObjectMapper objectMapper;
@@ -57,7 +47,6 @@ public class ChatAIService {
 
 
     private final Map<String, Long> lastRequestTime = new ConcurrentHashMap<>();
-    private final long MIN_INTERVAL_MS = 500; // Minimum 500ms between requests
 
 
     // Cache pour les requêtes SQL (clé = question, valeur = SQL généré)
@@ -69,13 +58,18 @@ public class ChatAIService {
     // Cache pour les résultats de requêtes (clé = SQL hash, valeur = résultats)
     private final Map<String, List<Map<String, Object>>> queryResultCache = new ConcurrentHashMap<>();
 
-    private final List<String> STABLE_MODELS = Arrays.asList(
+    private final List<String> models = Arrays.asList(
             "gemini-2.0-flash",
             "gemini-2.0-flash-lite",
             "gemini-flash-latest",
             "gemini-1.5-flash",
             "gemini-1.5-pro"
     );
+
+    public ChatAIService(UserRepository userRepository, JdbcTemplate jdbcTemplate) {
+        this.userRepository = userRepository;
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @PostConstruct
     public void init() {
@@ -101,6 +95,8 @@ public class ChatAIService {
     private boolean canMakeRequest(String model) {
         long now = System.currentTimeMillis();
         Long lastTime = lastRequestTime.get(model);
+        // Minimum 500ms between requests
+        long MIN_INTERVAL_MS = 500;
         if (lastTime == null || (now - lastTime) >= MIN_INTERVAL_MS) {
             lastRequestTime.put(model, now);
             return true;
@@ -116,7 +112,7 @@ public class ChatAIService {
 
         List<String> modelsToTry = new ArrayList<>();
         modelsToTry.add(currentModel);
-        modelsToTry.addAll(STABLE_MODELS);
+        modelsToTry.addAll(models);
 
         Set<String> uniqueModels = new LinkedHashSet<>(modelsToTry);
 
@@ -179,119 +175,6 @@ public class ChatAIService {
         log.warn("⚠️ All Gemini models unavailable");
         return null;
     }
-    /*
-    private String generateSQLWithGemini(String userQuestion) {
-        // Vérifier le cache SQL
-        String cacheKey = normalizeQuestion(userQuestion);
-        if (sqlCache.containsKey(cacheKey)) {
-            log.info("📦 [SQL CACHE HIT] Using cached SQL for: {}", userQuestion);
-            return sqlCache.get(cacheKey);
-        }
-
-        String prompt = String.format("""
-            Tu es un expert SQL PostgreSQL. Voici le schéma COMPLET de la base de données:
-            
-            ===================================================
-            TABLE conventions
-            ===================================================
-            - id BIGINT PRIMARY KEY
-            - reference_convention VARCHAR(50) UNIQUE
-            - libelle VARCHAR(255) NOT NULL
-            - date_debut DATE NOT NULL
-            - date_fin DATE
-            - montant_ttc DECIMAL(15,2)
-            - etat VARCHAR(20) ('PLANIFIE', 'EN COURS', 'TERMINE', 'ARCHIVE')
-            - archived BOOLEAN DEFAULT false
-            
-            TABLE factures
-            - numero_facture VARCHAR(50) UNIQUE
-            - date_echeance DATE
-            - montant_ttc DECIMAL(15,2)
-            - statut_paiement VARCHAR(20) ('PAYE', 'NON_PAYE', 'EN_RETARD')
-            - archived BOOLEAN DEFAULT false
-            
-            TABLE applications
-            - code VARCHAR(50) UNIQUE
-            - name VARCHAR(255)
-            - client_name VARCHAR(255)
-            - status VARCHAR(20) ('PLANIFIE', 'EN_COURS', 'TERMINE')
-            - archived BOOLEAN DEFAULT false
-            
-            DATE AUJOURD'HUI: %s
-            
-            QUESTION: "%s"
-            
-            RÈGLES:
-            1. Réponds UNIQUEMENT avec la requête SQL, rien d'autre
-            2. Toujours ajouter archived = false
-            3. Utilise TO_CHAR(date, 'DD/MM/YYYY') pour les dates
-            4. La requête doit être COMPLÈTE et se terminer correctement
-            
-            REQUÊTE SQL COMPLÈTE:
-            """, LocalDate.now(), userQuestion);
-
-        String responseBody = callGeminiWithFallback(prompt);
-
-        if (responseBody == null) {
-            log.warn("Gemini API failed, will use fallback pattern");
-            return null;
-        }
-
-        try {
-            JsonNode root = objectMapper.readTree(responseBody);
-            String sqlQuery = root
-                    .path("candidates")
-                    .path(0)
-                    .path("content")
-                    .path("parts")
-                    .path(0)
-                    .path("text")
-                    .asText();
-
-            sqlQuery = sqlQuery.trim()
-                    .replaceAll("```sql\\n?", "")
-                    .replaceAll("```\\n?", "")
-                    .replaceAll("^`|`$", "")
-                    .replaceAll("\n", " ")
-                    .replaceAll("\\s+", " ");
-
-            // Nettoyer les fonctions TO_CHAR incomplètes
-            if (sqlQuery.contains("TO_CHAR(") && !sqlQuery.contains("'DD/MM/YYYY'")) {
-                sqlQuery = sqlQuery.replaceAll("TO_CHAR\\(([^,)]+)\\)", "TO_CHAR($1, 'DD/MM/YYYY')");
-            }
-
-            log.info("✅ SQL généré par GEMINI (brut): {}", sqlQuery);
-
-            // CORRECTION: Vérifier et corriger les requêtes incomplètes
-            sqlQuery = fixIncompleteSQL(sqlQuery, userQuestion);
-
-            if (sqlQuery == null) {
-                log.warn("Generated SQL is invalid, using fallback");
-                return null;
-            }
-
-            log.info("✅ SQL généré par GEMINI (corrigé): {}", sqlQuery);
-
-            if (!sqlQuery.toUpperCase().startsWith("SELECT")) {
-                log.warn("Generated non-SELECT query, using fallback");
-                return null;
-            }
-
-            // Mettre en cache SQL
-            sqlCache.put(cacheKey, sqlQuery);
-            log.info("💾 SQL cached for question: {}", userQuestion);
-
-            return sqlQuery;
-
-        } catch (Exception e) {
-            log.error("❌ Error parsing Gemini response: {}", e.getMessage());
-            return null;
-        }
-    }
-
-
-     */
-
 
     private String generateSQLWithGemini(String userQuestion) {
         String cacheKey = normalizeQuestion(userQuestion);
@@ -418,42 +301,6 @@ public class ChatAIService {
     }
 
 
-    private boolean isValidSQL(String sqlQuery) {
-        if (sqlQuery == null || sqlQuery.trim().isEmpty()) {
-            return false;
-        }
-
-        String sqlUpper = sqlQuery.toUpperCase().trim();
-
-        // Must start with SELECT
-        if (!sqlUpper.startsWith("SELECT")) {
-            return false;
-        }
-
-        // Must contain FROM
-        if (!sqlUpper.contains(" FROM ")) {
-            return false;
-        }
-
-        // Must end properly (not with incomplete clause)
-        if (sqlUpper.endsWith("_") || sqlUpper.endsWith(",") ||
-                sqlUpper.endsWith("WHERE") || sqlUpper.endsWith("AND") ||
-                sqlUpper.endsWith("OR")) {
-            return false;
-        }
-
-        // Check for balanced parentheses
-        int parentheses = 0;
-        for (char c : sqlQuery.toCharArray()) {
-            if (c == '(') parentheses++;
-            if (c == ')') parentheses--;
-            if (parentheses < 0) return false;
-        }
-
-        return parentheses == 0;
-    }
-
-
     private String normalizeQuestion(String question) {
         return question.toLowerCase().trim().replaceAll("\\s+", " ");
     }
@@ -481,7 +328,7 @@ public class ChatAIService {
             log.info("📦 [QUERY RESULT CACHE HIT] Using cached results for SQL: {}", sqlQuery);
             return queryResultCache.get(cacheKey);
         }
-        return null;
+        return Collections.emptyList();
     }
 
 
@@ -599,7 +446,8 @@ public class ChatAIService {
                 String montant = getFormattedMontant(row, "montant_ttc");
 
                 return String.format(
-                        "📋 Il y a une convention qui expire ce mois-ci :\n\n" +
+                        "📋 Il y a une convention qui expire ce mois-ci :\n" +
+                                "\n" +
                                 "La convention %s (%s) expire le %s avec un montant de %s TND.",
                         ref, libelle, dateFin, montant
                 );
@@ -754,7 +602,6 @@ public class ChatAIService {
         translations.put("name", "📝 Nom");
         translations.put("clientname", "👤 Client");
         translations.put("status", "📌 Statut");
-        translations.put("chefdeprojet", "👨‍💼 Chef");
         translations.put("chiffre_affaires", "💵 CA");
         return translations.getOrDefault(key.toLowerCase(), key);
     }
@@ -892,7 +739,7 @@ public class ChatAIService {
         );
 
         // Supprimer les ponctuations
-        q = q.replaceAll("[?!,.!;:]", "");
+        q = q.replaceAll("[?,.!;:]", "");
 
         for (String greeting : greetings) {
             if (q.equals(greeting) || q.startsWith(greeting) || q.contains(greeting)) {
@@ -902,32 +749,10 @@ public class ChatAIService {
         return false;
     }
 
-    public String getCurrentModel() {
-        return currentModel;
-    }
 
     public boolean isGeminiAvailable() {
         return apiKey != null && !apiKey.isEmpty();
     }
-
-
-    private String handleGreeting(String userQuestion) {
-        String q = userQuestion.toLowerCase().trim();
-
-        // Liste des salutations en français
-        List<String> greetings = Arrays.asList(
-                "bonjour", "salut", "coucou", "hello", "bonsoir", "bon matin",
-                "hey", "yo", "bienvenue", "bonjour à tous"
-        );
-
-        for (String greeting : greetings) {
-            if (q.contains(greeting) || q.equals(greeting)) {
-                return String.valueOf(true);
-            }
-        }
-        return String.valueOf(false);
-    }
-
 
     private String getGreetingResponse(String userName) {
         String name = (userName != null && !userName.isEmpty()) ? userName : "cher utilisateur";
@@ -940,7 +765,6 @@ public class ChatAIService {
                 "Salut " + name + " ! 😊 Comment puis-je vous assister aujourd'hui ?"
         );
 
-        // Retourner une réponse aléatoire
         Random random = new Random();
         return responses.get(random.nextInt(responses.size()));
     }
@@ -971,68 +795,13 @@ public class ChatAIService {
     }
 
 
-    /*private String fixIncompleteSQL(String sqlQuery, String userQuestion) {
-        if (sqlQuery == null || sqlQuery.trim().isEmpty()) {
-            return null;
-        }
 
-        String q = userQuestion.toLowerCase();
-
-        // Si la requête est déjà complète et se termine correctement
-        if (sqlQuery.toUpperCase().trim().endsWith(";") ||
-                sqlQuery.toUpperCase().matches(".*\\bFROM\\b.*\\w+$")) {
-            return sqlQuery;
-        }
-
-        log.warn("⚠️ SQL query seems incomplete: {}", sqlQuery);
-
-        // Cas 1: Requête coupée après TO_CHAR(
-        if (sqlQuery.contains("TO_CHAR(") && !sqlQuery.contains("'DD/MM/YYYY'")) {
-            if (q.contains("convention") && (q.contains("termin") || q.contains("fini"))) {
-                return "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE etat = 'TERMINE' AND archived = false ORDER BY date_fin DESC";
-            }
-            if (q.contains("convention") && q.contains("en cours")) {
-                return "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE etat = 'EN COURS' AND archived = false ORDER BY date_debut DESC";
-            }
-            if (q.contains("facture") && (q.contains("impay") || q.contains("non pay"))) {
-                return "SELECT numero_facture, TO_CHAR(date_echeance, 'DD/MM/YYYY') as date_echeance, montant_ttc, statut_paiement FROM factures WHERE statut_paiement IN ('NON_PAYE', 'EN_RETARD') AND archived = false ORDER BY date_echeance ASC";
-            }
-        }
-
-        // Cas 2: Requête très courte ou vide
-        if (sqlQuery.length() < 20) {
-            if (q.contains("convention") && (q.contains("termin") || q.contains("fini"))) {
-                return "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE etat = 'TERMINE' AND archived = false ORDER BY date_fin DESC";
-            }
-            if (q.contains("convention") && q.contains("en cours")) {
-                return "SELECT reference_convention, libelle, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, montant_ttc, etat FROM conventions WHERE etat = 'EN COURS' AND archived = false ORDER BY date_debut DESC";
-            }
-            if (q.contains("facture") && (q.contains("impay") || q.contains("non pay"))) {
-                return "SELECT numero_facture, TO_CHAR(date_echeance, 'DD/MM/YYYY') as date_echeance, montant_ttc, statut_paiement FROM factures WHERE statut_paiement IN ('NON_PAYE', 'EN_RETARD') AND archived = false ORDER BY date_echeance ASC";
-            }
-            if (q.contains("application") && q.contains("en cours")) {
-                return "SELECT code, name, client_name, TO_CHAR(date_debut, 'DD/MM/YYYY') as date_debut, TO_CHAR(date_fin, 'DD/MM/YYYY') as date_fin, status FROM applications WHERE status = 'EN_COURS' AND archived = false ORDER BY created_at DESC";
-            }
-        }
-
-        return sqlQuery;
-    }
-
-     */
-
-
-    /**
-     * Récupère une valeur String d'un résultat
-     */
     private String getStringValue(Map<String, Object> row, String key) {
         Object value = row.get(key);
         if (value == null) return "N/A";
         return String.valueOf(value);
     }
 
-    /**
-     * Formate le montant pour l'affichage
-     */
     private String getFormattedMontant(Map<String, Object> row, String key) {
         Object value = row.get(key);
         if (value == null) return "0,00";
@@ -1062,9 +831,7 @@ public class ChatAIService {
 
         log.warn("⚠️ SQL query incomplete, fixing: {}", sqlQuery);
 
-        // ============ CORRECTIONS SPÉCIFIQUES ============
-
-        // Cas: ORDER BY montant_ (coupé après montant_)
+      
         if (sqlQuery.contains("ORDER BY montant_") && !sqlQuery.contains("ASC") && !sqlQuery.contains("DESC")) {
             // Déterminer si c'est pour min ou max
             if (q.contains("min") || q.contains("faible") || q.contains("petit")) {
@@ -1085,7 +852,6 @@ public class ChatAIService {
             return sqlQuery + " ASC LIMIT 1";
         }
 
-        // Cas: Requête qui devrait avoir LIMIT
         if ((sqlQuery.contains("ORDER BY") && !sqlQuery.contains("LIMIT")) &&
                 (q.contains("plus") || q.contains("moins") || q.contains("max") || q.contains("min") ||
                         q.contains("élevé") || q.contains("faible") || q.contains("grand") || q.contains("petit"))) {
@@ -1096,7 +862,6 @@ public class ChatAIService {
             }
         }
 
-        // Cas: TO_CHAR sans fermeture
         if (sqlQuery.contains("TO_CHAR(") && !sqlQuery.contains("'DD/MM/YYYY')")) {
             sqlQuery = sqlQuery.replaceAll("TO_CHAR\\(([^,)]+)\\)", "TO_CHAR($1, 'DD/MM/YYYY')");
             // Vérifier à nouveau si complet
@@ -1105,7 +870,6 @@ public class ChatAIService {
             }
         }
 
-        // ============ FALLBACK: Utiliser le pattern SQL ============
         String fallbackSQL = generatePatternSQL(userQuestion);
         if (fallbackSQL != null) {
             log.info("📝 Using fallback pattern SQL instead of incomplete Gemini SQL");

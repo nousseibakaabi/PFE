@@ -27,7 +27,7 @@ public class MailGroup {
     private User owner;
 
     @Column(nullable = false)
-    private Boolean isSystem = false; // For default role-based groups
+    private Boolean isSystem = false;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

@@ -28,13 +28,12 @@ public class MailRecipient {
     private String name;
 
     @Column(nullable = false)
-    private String type = "TO"; // TO, CC, BCC
+    private String type = "TO";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user; // If recipient is a registered user
+    private User user;
 
-    // PER-USER STATUS FIELDS
     private Boolean isRead = false;
     private LocalDateTime readAt;
 

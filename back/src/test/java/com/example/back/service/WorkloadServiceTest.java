@@ -36,13 +36,8 @@ class WorkloadServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private ConventionRepository conventionRepository;
-
-    @Mock
     private MailService mailService;
 
-    @Mock
-    private SmsService smsService;
 
     @Mock
     private HistoryService historyService;

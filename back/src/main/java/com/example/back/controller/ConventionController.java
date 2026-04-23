@@ -13,7 +13,6 @@ import com.example.back.service.mapper.ConventionMapper;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,37 +31,40 @@ import org.springframework.data.domain.Pageable;
 @Slf4j
 public class ConventionController {
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final ConventionRepository conventionRepository;
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    private FactureRepository factureRepository;
+    private final FactureRepository factureRepository;
 
-    @Autowired
-    private ConventionService conventionService;
+    private final ConventionService conventionService;
 
-    @Autowired
-    private ConventionMapper conventionMapper;
+    private final ConventionMapper conventionMapper;
 
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private ApplicationService applicationService;
+    private final ApplicationService applicationService;
 
-    @Autowired
-    private HistoryService historyService;
+    private final HistoryService historyService;
 
 
-    @Autowired
-    private OldFactureRepository oldFactureRepository;
+    private final OldFactureRepository oldFactureRepository;
 
-    @Autowired
-    private OldConventionRepository oldConventionRepository;
+    private final OldConventionRepository oldConventionRepository;
+
+    public ConventionController(ConventionRepository conventionRepository, ApplicationRepository applicationRepository, FactureRepository factureRepository, ConventionService conventionService, ConventionMapper conventionMapper, UserRepository userRepository, ApplicationService applicationService, HistoryService historyService, OldFactureRepository oldFactureRepository, OldConventionRepository oldConventionRepository) {
+        this.conventionRepository = conventionRepository;
+        this.applicationRepository = applicationRepository;
+        this.factureRepository = factureRepository;
+        this.conventionService = conventionService;
+        this.conventionMapper = conventionMapper;
+        this.userRepository = userRepository;
+        this.applicationService = applicationService;
+        this.historyService = historyService;
+        this.oldFactureRepository = oldFactureRepository;
+        this.oldConventionRepository = oldConventionRepository;
+    }
 
 
     @PostMapping("/calculate-ttc")
@@ -254,7 +256,7 @@ public class ConventionController {
             if (application != null) {
                 List<Convention> allAppConventions = conventionRepository.findByApplication(application);
                 boolean allConventionsArchived = allAppConventions.stream()
-                        .allMatch(Conv -> Conv.getArchived());
+                        .allMatch(Convention::getArchived);
 
                 if (allConventionsArchived) {
                     // Archive the application
@@ -268,8 +270,7 @@ public class ConventionController {
                             application.getCode());
 
                     // LOG HISTORY: Application archive
-                    historyService.logApplicationArchive(application, currentUser,
-                            "Toutes les conventions sont archivées");
+                    historyService.logApplicationArchive(application, currentUser);
                 }
             }
 
@@ -565,7 +566,7 @@ public class ConventionController {
                             (c.getApplication() != null && c.getApplication().getId().equals(applicationId)))
                     .filter(c -> etat == null ||
                             (c.getEtat() != null && c.getEtat().equals(etat)))
-                    .collect(Collectors.toList());
+                    .toList();
 
             List<ConventionResponse> conventionResponses = filteredConventions.stream()
                     .map(conventionMapper::toResponse)
@@ -592,7 +593,7 @@ public class ConventionController {
             List<Convention> filteredConventions = conventions.stream()
                     .filter(c -> c.getStructureResponsable().getId().equals(structureId) ||
                             c.getStructureBeneficiel().getId().equals(structureId))
-                    .collect(Collectors.toList());
+                    .toList();
 
             List<ConventionResponse> conventionResponses = filteredConventions.stream()
                     .map(conventionMapper::toResponse)
@@ -647,7 +648,7 @@ public class ConventionController {
             List<Convention> filteredConventions = conventions.stream()
                     .filter(c -> c.getStructureResponsable().getZoneGeographique() != null &&
                             c.getStructureResponsable().getZoneGeographique().getId().equals(zoneId))
-                    .collect(Collectors.toList());
+                    .toList();
 
             List<ConventionResponse> conventionResponses = filteredConventions.stream()
                     .map(conventionMapper::toResponse)
@@ -701,7 +702,7 @@ public class ConventionController {
                                 java.time.LocalDate.now(), c.getDateFin());
                         return daysUntilEnd >= 0 && daysUntilEnd <= 30;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
             List<ConventionResponse> conventionResponses = expiringSoon.stream()
                     .map(conventionMapper::toResponse)
@@ -732,7 +733,7 @@ public class ConventionController {
 
 
 
-    @GetMapping("/projects/{projectId}/client-structure")
+    @GetMapping("/projects/{applicationId}/client-structure")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
     public ResponseEntity<?> getClientStructureFromApplication(@PathVariable Long applicationId) {
         try {
@@ -749,7 +750,6 @@ public class ConventionController {
         }
     }
 
-    // Add this method to ConventionController.java
     @GetMapping("/generate-reference")
     @PreAuthorize("hasAnyRole('ADMIN', 'COMMERCIAL_METIER')")
     public ResponseEntity<?> generateReferenceSuggestion() {

@@ -56,7 +56,6 @@ public class Convention {
     @Column(nullable = false)
     private String etat = "EN_ATTENTE";
 
-    // Archiving fields
     private Boolean archived = false;
     private LocalDateTime archivedAt;
     private String archivedBy;
@@ -89,31 +88,24 @@ public class Convention {
     private Long nbUsers;
 
 
-    // In Convention.java, add this field
     @Column(name = "renewal_version")
-    private Integer renewalVersion = 0; // 0 = original, 1 = first renewal, etc.
+    private Integer renewalVersion = 0;
 
     @OneToMany(mappedBy = "currentConvention", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OldConvention> oldVersions = new ArrayList<>();
 
-    // Getter and setter
     public Integer getRenewalVersion() { return renewalVersion; }
     public void setRenewalVersion(Integer renewalVersion) { this.renewalVersion = renewalVersion; }
-    public List<OldConvention> getOldVersions() { return oldVersions; }
-    public void setOldVersions(List<OldConvention> oldVersions) { this.oldVersions = oldVersions; }
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
 
-        // Get current user from security context
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
             Object principal = authentication.getPrincipal();
             if (principal instanceof UserDetails) {
-                // Here you would fetch the User entity and set it
-                // For now, we'll handle this in the service layer
             }
         }
 
@@ -127,154 +119,38 @@ public class Convention {
     }
 
 
-    /**
-     * Update convention status based on dates and invoice payments
-     * LOGIC:
-     * 1. If archived → ARCHIVE
-     * 2. If all invoices paid → TERMINE (highest priority after archived)
-     * 3. If today < start date → EN_ATTENTE
-     * 4. If has overdue unpaid invoices OR end date passed with unpaid invoices → EN_RETARD
-     * 5. If today >= start date → EN_COURS (default)
-     */
 
-    /**
-     * Check if all invoices are paid
-     */
     public void updateStatus() {
         LocalDate today = LocalDate.now();
 
-        // 1. If archived → ARCHIVE
         if (Boolean.TRUE.equals(archived)) {
             this.etat = "ARCHIVE";
             return;
         }
 
-        // 2. Check if all invoices are paid → TERMINE
         boolean allInvoicesPaid = areAllInvoicesPaid();
         if (allInvoicesPaid) {
             this.etat = "TERMINE";
             return;
         }
 
-        // 3. If today is before start date → PLANIFIE
         if (dateDebut != null && today.isBefore(dateDebut)) {
             this.etat = "PLANIFIE";
             return;
         }
 
-        // 4. Default: EN COURS
         this.etat = "EN COURS";
     }
 
-    /**
-     * Check if all invoices are paid
-     */
+
     public boolean areAllInvoicesPaid() {
-        // If no invoices, can't be TERMINE
         if (factures == null || factures.isEmpty()) {
             return false;
         }
-
-        // All invoices must be paid (status = "PAYE")
         return factures.stream()
                 .allMatch(facture -> "PAYE".equals(facture.getStatutPaiement()));
     }
-    /**
-     * Check if convention has any overdue unpaid invoices
-     */
 
-    /**
-     * Check if convention should transition from EN_ATTENTE to EN_COURS
-     * Called by scheduled tasks
-     */
-
-    /**
-     * Check if convention should transition from EN_COURS to EN_RETARD
-     * Called by scheduled tasks
-     */
-
-    /**
-     * Check if convention should be marked as TERMINE
-     * Called by scheduled tasks
-     */
-
-    /**
-     * Get count of paid invoices
-     */
-
-    /**
-     * Get count of unpaid invoices
-     */
-
-    /**
-     * Get count of overdue invoices
-     */
-
-    /**
-     * Get total amount of paid invoices
-     */
-
-    /**
-     * Get total amount of unpaid invoices
-     */
-    public java.math.BigDecimal getTotalUnpaidAmount() {
-        if (factures == null) {
-            return java.math.BigDecimal.ZERO;
-        }
-
-        return factures.stream()
-                .filter(facture -> !"PAYE".equals(facture.getStatutPaiement()))
-                .map(Facture::getMontantTTC)
-                .filter(amount -> amount != null)
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-    }
-
-    /**
-     * Check if convention is currently active (not archived and not TERMINE)
-     */
-    public boolean isActive() {
-        return !Boolean.TRUE.equals(archived) &&
-                !"TERMINE".equals(etat) &&
-                !"ARCHIVE".equals(etat);
-    }
-
-    /**
-     * Check if convention is expiring soon (within 30 days)
-     */
-    public boolean isExpiringSoon() {
-        if (dateFin == null) {
-            return false;
-        }
-
-        LocalDate today = LocalDate.now();
-        LocalDate thirtyDaysFromNow = today.plusDays(30);
-
-        return !dateFin.isBefore(today) && !dateFin.isAfter(thirtyDaysFromNow);
-    }
-
-    /**
-     * Get days until end date
-     */
-    public long getDaysUntilEnd() {
-        if (dateFin == null) {
-            return -1;
-        }
-
-        LocalDate today = LocalDate.now();
-        return java.time.temporal.ChronoUnit.DAYS.between(today, dateFin);
-    }
-
-    /**
-     * Get days since start date
-     */
-    public long getDaysSinceStart() {
-        LocalDate today = LocalDate.now();
-        return java.time.temporal.ChronoUnit.DAYS.between(dateDebut, today);
-    }
-
-    /**
-     * Archive the convention
-     */
     public void archive(String archivedBy, String reason) {
         this.archived = true;
         this.archivedAt = LocalDateTime.now();
@@ -283,131 +159,16 @@ public class Convention {
         this.etat = "ARCHIVE"; // Force status to ARCHIVE
     }
 
-    /**
-     * Restore the convention
-     */
+
     public void restore() {
         this.archived = false;
         this.archivedAt = null;
         this.archivedBy = null;
         this.archivedReason = null;
-        // Status will be updated by @PreUpdate when saved
     }
 
-    /**
-     * Generate invoices automatically based on periodicity
-     * This should be called after the convention is created
-     */
-    public void generateInvoices() {
-        if (montantTotal == null || periodicite == null || dateDebut == null || dateFin == null) {
-            throw new IllegalArgumentException("Missing required fields for invoice generation");
-        }
 
-        // Clear existing invoices (if any)
-        if (factures != null) {
-            factures.clear();
-        } else {
-            factures = new ArrayList<>();
-        }
 
-        // Calculate number of invoices based on periodicity
-        int numberOfInvoices = calculateNumberOfInvoices();
-
-        // Calculate invoice amount
-        java.math.BigDecimal invoiceAmount = montantTotal.divide(
-                java.math.BigDecimal.valueOf(numberOfInvoices),
-                2,
-                java.math.RoundingMode.HALF_UP
-        );
-
-        // Generate invoices
-        LocalDate currentDate = dateDebut;
-
-        for (int i = 1; i <= numberOfInvoices; i++) {
-            Facture facture = new Facture();
-            facture.setNumeroFacture(generateInvoiceNumber(i));
-            facture.setConvention(this);
-            facture.setDateFacturation(currentDate);
-            facture.setDateEcheance(calculateDueDate(currentDate));
-            facture.setMontantHT(invoiceAmount);
-            facture.setTva(new java.math.BigDecimal("19.00"));
-            facture.setStatutPaiement("NON_PAYE");
-            facture.setNotes(String.format("Facture %d/%d pour la convention %s",
-                    i, numberOfInvoices, referenceConvention));
-
-            factures.add(facture);
-
-            // Move to next period
-            currentDate = getNextPeriodDate(currentDate);
-        }
-    }
-
-    /**
-     * Calculate number of invoices based on periodicity
-     */
-    private int calculateNumberOfInvoices() {
-        if (periodicite == null || dateDebut == null || dateFin == null) {
-            return 1;
-        }
-
-        long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(dateDebut, dateFin) + 1;
-
-        switch (periodicite.toUpperCase()) {
-            case "MENSUEL":
-                return (int) Math.ceil(daysBetween / 30.0);
-            case "TRIMESTRIEL":
-                return (int) Math.ceil(daysBetween / 90.0);
-            case "SEMESTRIEL":
-                return (int) Math.ceil(daysBetween / 180.0);
-            case "ANNUEL":
-                return (int) Math.ceil(daysBetween / 365.0);
-            default:
-                return 1;
-        }
-    }
-
-    /**
-     * Calculate due date based on periodicite
-     */
-    private LocalDate calculateDueDate(LocalDate invoiceDate) {
-        if (periodicite == null) {
-            return invoiceDate.plusMonths(1);
-        }
-
-        switch (periodicite.toUpperCase()) {
-            case "MENSUEL":
-                return invoiceDate.plusMonths(1);
-            case "TRIMESTRIEL":
-                return invoiceDate.plusMonths(3);
-            case "SEMESTRIEL":
-                return invoiceDate.plusMonths(6);
-            case "ANNUEL":
-                return invoiceDate.plusYears(1);
-            default:
-                return invoiceDate.plusMonths(1);
-        }
-    }
-
-    /**
-     * Get next period date
-     */
-    private LocalDate getNextPeriodDate(LocalDate currentDate) {
-        return calculateDueDate(currentDate);
-    }
-
-    /**
-     * Generate invoice number
-     */
-    private String generateInvoiceNumber(int sequence) {
-        return String.format("FACT-%s-%s-%03d",
-                LocalDate.now().getYear(),
-                referenceConvention,
-                sequence);
-    }
-
-    /**
-     * Validate convention data
-     */
     public boolean isValid() {
         if (referenceConvention == null || referenceConvention.trim().isEmpty()) {
             return false;
@@ -425,43 +186,8 @@ public class Convention {
             return false;
         }
 
-
-
-        // If end date is provided, it must be after start date
-        if (dateFin != null && !dateFin.isAfter(dateDebut)) {
-            return false;
-        }
-
-        return true;
+        return dateFin == null || dateFin.isAfter(dateDebut);
     }
-
-    /**
-     * Get status color for UI display
-     */
-    public String getStatusColor() {
-        if (etat == null) {
-            return "gray";
-        }
-
-        switch (etat) {
-            case "PLANIFIE":
-                return "yellow";
-            case "EN COURS":
-                return "blue";
-            case "EN_RETARD":
-                return "red";
-            case "TERMINE":
-                return "green";
-            case "ARCHIVE":
-                return "gray";
-            default:
-                return "gray";
-        }
-    }
-
-    /**
-     * Get status label for UI display
-     */
 
     @Override
     public String toString() {
@@ -477,20 +203,6 @@ public class Convention {
                 '}';
     }
 
-
-
-
-
-    /**
-     * Get client name from project
-     */
-    public String getClientNameFromProject() {
-        return application != null ? application.getClientName() : null;
-    }
-
-    /**
-     * Get chef de projet from project
-     */
     public User getChefDeProjet() {
         return application != null ? application.getChefDeProjet() : null;
     }

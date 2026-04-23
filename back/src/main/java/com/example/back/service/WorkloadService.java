@@ -3,12 +3,10 @@ package com.example.back.service;
 import com.example.back.entity.*;
 import com.example.back.payload.response.MailResponse;
 import com.example.back.repository.ApplicationRepository;
-import com.example.back.repository.ConventionRepository;
 import com.example.back.repository.UserRepository;
 import com.example.back.repository.WorkloadRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -22,31 +20,31 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WorkloadService {
 
-    @Autowired
-    private WorkloadRepository workloadRepository;
+    private final WorkloadRepository workloadRepository;
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final MailService mailService;
 
-    @Autowired
-    private MailService mailService;
+    private final SmsService smsService;
 
-    @Autowired
-    private SmsService smsService;
-
-    @Autowired
-    private HistoryService historyService;
+    private final HistoryService historyService;
 
     // ============= THRESHOLDS =============
     private static final double BLOCK_THRESHOLD = 75.0;    // >80% = BLOCKED
     private static final double WARNING_THRESHOLD = 45.0;  // 70-80% = WARNING
     private static final double MEDIUM_THRESHOLD = 45.0;   // For UI display only
+
+    public WorkloadService(WorkloadRepository workloadRepository, ApplicationRepository applicationRepository, UserRepository userRepository,MailService mailService, SmsService smsService, HistoryService historyService) {
+        this.workloadRepository = workloadRepository;
+        this.applicationRepository = applicationRepository;
+        this.userRepository = userRepository;
+        this.mailService = mailService;
+        this.smsService = smsService;
+        this.historyService = historyService;
+    }
 
     /**
      * Initialize or update workload for a chef - FIXED to count ALL applications
@@ -124,31 +122,7 @@ public class WorkloadService {
         return saved;
     }
 
-    /**
-     * Calculate weighted workload percentage
-     */
-    private double calculateWorkloadPercentage(int currentApps, int maxApps,
-                                               double currentValue, double maxValue,
-                                               long currentDuration, long maxDuration) {
-        // Weight factors (configurable)
-        double countWeight = 0.4;      // 40% weight for number of apps
-        double valueWeight = 0.4;       // 40% weight for total value
-        double durationWeight = 0.2;    // 20% weight for total duration
 
-        // Calculate individual percentages (cap at 100%)
-        double countPercentage = Math.min((currentApps * 100.0) / maxApps, 100);
-        double valuePercentage = Math.min((currentValue * 100.0) / maxValue, 100);
-        double durationPercentage = Math.min((currentDuration * 100.0) / maxDuration, 100);
-
-        // Calculate weighted average
-        return (countPercentage * countWeight) +
-                (valuePercentage * valueWeight) +
-                (durationPercentage * durationWeight);
-    }
-
-    /**
-     * Calculate total value of an application from its conventions
-     */
     private double calculateApplicationValue(Application app) {
         if (app.getConventions() == null || app.getConventions().isEmpty()) {
             return 0.0;
@@ -420,7 +394,7 @@ public class WorkloadService {
         List<User> allChefs = userRepository.findAll().stream()
                 .filter(u -> u.getRoles().stream()
                         .anyMatch(r -> r.getName().name().equals("ROLE_CHEF_PROJET")))
-                .collect(Collectors.toList());
+                .toList();
 
         for (User chef : allChefs) {
             initializeWorkload(chef.getId());
@@ -776,34 +750,19 @@ public class WorkloadService {
         private Double projectedValue;
         private Long projectedDuration;
         private Double projectedWorkload;
-        private Boolean exceedsCount;
-        private Boolean exceedsValue;
-        private Boolean exceedsDuration;
 
         // Getters and setters
         public Double getCurrentWorkload() { return currentWorkload; }
         public void setCurrentWorkload(Double currentWorkload) { this.currentWorkload = currentWorkload; }
-        public Integer getCurrentCount() { return currentCount; }
         public void setCurrentCount(Integer currentCount) { this.currentCount = currentCount; }
-        public Double getCurrentValue() { return currentValue; }
         public void setCurrentValue(Double currentValue) { this.currentValue = currentValue; }
-        public Long getCurrentDuration() { return currentDuration; }
         public void setCurrentDuration(Long currentDuration) { this.currentDuration = currentDuration; }
-        public Integer getProjectedCount() { return projectedCount; }
         public void setProjectedCount(Integer projectedCount) { this.projectedCount = projectedCount; }
-        public Double getProjectedValue() { return projectedValue; }
         public void setProjectedValue(Double projectedValue) { this.projectedValue = projectedValue; }
-        public Long getProjectedDuration() { return projectedDuration; }
         public void setProjectedDuration(Long projectedDuration) { this.projectedDuration = projectedDuration; }
         public Double getProjectedWorkload() { return projectedWorkload; }
         public void setProjectedWorkload(Double projectedWorkload) { this.projectedWorkload = projectedWorkload; }
-        public Boolean getExceedsCount() { return exceedsCount; }
-        public void setExceedsCount(Boolean exceedsCount) { this.exceedsCount = exceedsCount; }
-        public Boolean getExceedsValue() { return exceedsValue; }
-        public void setExceedsValue(Boolean exceedsValue) { this.exceedsValue = exceedsValue; }
-        public Boolean getExceedsDuration() { return exceedsDuration; }
-        public void setExceedsDuration(Boolean exceedsDuration) { this.exceedsDuration = exceedsDuration; }
-    }
+            }
 
     public static class AlternativeChef {
         private Long chefId;
@@ -814,15 +773,11 @@ public class WorkloadService {
         private boolean canAccept;
 
         // Getters and setters
-        public Long getChefId() { return chefId; }
         public void setChefId(Long chefId) { this.chefId = chefId; }
-        public String getChefName() { return chefName; }
         public void setChefName(String chefName) { this.chefName = chefName; }
-        public Double getCurrentWorkload() { return currentWorkload; }
         public void setCurrentWorkload(Double currentWorkload) { this.currentWorkload = currentWorkload; }
         public Double getProjectedWorkload() { return projectedWorkload; }
         public void setProjectedWorkload(Double projectedWorkload) { this.projectedWorkload = projectedWorkload; }
-        public Double getWorkloadIncrease() { return workloadIncrease; }
         public void setWorkloadIncrease(Double workloadIncrease) { this.workloadIncrease = workloadIncrease; }
         public boolean isCanAccept() { return canAccept; }
         public void setCanAccept(boolean canAccept) { this.canAccept = canAccept; }

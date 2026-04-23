@@ -3,7 +3,6 @@ package com.example.back.service;
 import com.example.back.entity.ERole;
 import com.example.back.entity.User;
 import com.example.back.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -11,8 +10,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserContextService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public UserContextService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -30,11 +32,6 @@ public class UserContextService {
                 .anyMatch(role -> role.getName() == ERole.ROLE_ADMIN);
     }
 
-    public boolean isCommercialMetier() {
-        User user = getCurrentUser();
-        return user.getRoles().stream()
-                .anyMatch(role -> role.getName() == ERole.ROLE_COMMERCIAL_METIER);
-    }
 
     public boolean isDecideur() {
         User user = getCurrentUser();
@@ -42,9 +39,4 @@ public class UserContextService {
                 .anyMatch(role -> role.getName() == ERole.ROLE_DECIDEUR);
     }
 
-    public boolean isChefProjet() {
-        User user = getCurrentUser();
-        return user.getRoles().stream()
-                .anyMatch(role -> role.getName() == ERole.ROLE_CHEF_PROJET);
-    }
 }

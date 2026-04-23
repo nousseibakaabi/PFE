@@ -72,33 +72,24 @@ public class ApplicationResponse {
     public Boolean getArchived() { return archived; }
     public void setArchived(Boolean archived) { this.archived = archived; }
 
-    public LocalDateTime getArchivedAt() { return archivedAt; }
     public void setArchivedAt(LocalDateTime archivedAt) { this.archivedAt = archivedAt; }
 
-    public String getArchivedBy() { return archivedBy; }
     public void setArchivedBy(String archivedBy) { this.archivedBy = archivedBy; }
 
-    public String getArchivedReason() { return archivedReason; }
     public void setArchivedReason(String archivedReason) { this.archivedReason = archivedReason; }
 
-    // Add getters and setters
-    public Boolean getRenewed() { return renewed; }
     public void setRenewed(Boolean renewed) { this.renewed = renewed; }
 
-    public LocalDateTime getRenewedAt() { return renewedAt; }
     public void setRenewedAt(LocalDateTime renewedAt) { this.renewedAt = renewedAt; }
 
-    public String getRenewedBy() { return renewedBy; }
     public void setRenewedBy(String renewedBy) { this.renewedBy = renewedBy; }
 
-    // Getters and setters for new fields
     public LocalDateTime getTerminatedAt() { return terminatedAt; }
     public void setTerminatedAt(LocalDateTime terminatedAt) { this.terminatedAt = terminatedAt; }
 
     public String getTerminatedBy() { return terminatedBy; }
     public void setTerminatedBy(String terminatedBy) { this.terminatedBy = terminatedBy; }
 
-    public String getTerminationReason() { return terminationReason; }
     public void setTerminationReason(String terminationReason) { this.terminationReason = terminationReason; }
 
     public Long getDaysRemainingAtTermination() { return daysRemainingAtTermination; }

@@ -5,7 +5,6 @@ import com.example.back.entity.User;
 import com.example.back.repository.UserRepository;
 import com.example.back.service.NotificationService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,11 +19,14 @@ import java.util.Map;
 @Slf4j
 public class NotificationController {
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public NotificationController(NotificationService notificationService, UserRepository userRepository) {
+        this.notificationService = notificationService;
+        this.userRepository = userRepository;
+    }
 
     private String getCurrentUsername() {
         return SecurityContextHolder.getContext().getAuthentication().getName();

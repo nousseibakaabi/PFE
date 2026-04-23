@@ -4,18 +4,15 @@ import com.example.back.entity.Facture;
 import com.example.back.entity.Notification;
 import com.example.back.entity.User;
 import com.example.back.repository.NotificationRepository;
-import com.example.back.repository.UserRepository;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Service
 @Slf4j
@@ -36,11 +33,12 @@ public class SmsService {
     @Value("${sms.twilio.phone-number:}")
     private String twilioPhoneNumber;
 
-    @Value("${sms.sender-name:GestionApp}")
-    private String senderName;
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    private final NotificationRepository notificationRepository;
+
+    public SmsService(NotificationRepository notificationRepository) {
+        this.notificationRepository = notificationRepository;
+    }
 
     // ============= INITIALIZATION =============
 
@@ -57,88 +55,12 @@ public class SmsService {
         }
     }
 
-    // ============= PUBLIC METHODS =============
 
-    /**
-     * Send SMS for facture due notification
-     */
-    @Async
-    public void sendFactureDueSms(String phoneNumber, Facture facture, int daysUntilDue) {
-        log.info("📱 ===== SMS SENDING DEBUG =====");
-        log.info("📱 Original phone number from database: '{}'", phoneNumber);
-        log.info("📱 Original phone number length: {} characters",
-                phoneNumber != null ? phoneNumber.length() : 0);
-
-        if (!smsEnabled) {
-            log.warn("📱 SMS is disabled. Enable with sms.enabled=true in application.properties");
-            log.info("📱 Would send to: {} - Facture due in {} days", phoneNumber, daysUntilDue);
-            return;
-        }
-
-        try {
-            // Étape 1: Nettoyage du numéro
-            log.info("📱 Step 1: Cleaning phone number...");
-            String cleaned = cleanPhoneNumber(phoneNumber);
-            log.info("📱 After cleaning: '{}'", cleaned);
-
-            // Étape 2: Formatage selon les règles
-            log.info("📱 Step 2: Formatting number with rules...");
-            String formattedNumber = formatPhoneNumber(phoneNumber);
-            log.info("📱 Final formatted number: '{}'", formattedNumber);
-
-            // Étape 3: Validation
-            log.info("📱 Step 3: Validating number format...");
-            boolean isValid = isValidPhoneNumber(phoneNumber);
-            log.info("📱 Is valid phone number? {}", isValid);
-
-            if (!isValid) {
-                log.error("❌ Invalid phone number format: '{}'", phoneNumber);
-                return;
-            }
-
-            // Build SMS message
-            String message = buildFactureDueMessage(facture, daysUntilDue);
-            log.info("📱 Message to send: '{}'", message);
-            log.info("📱 Message length: {} characters", message.length());
-
-            // Send based on provider
-            boolean sent = false;
-
-            log.info("📱 Step 4: Sending via provider: {}", smsProvider);
-
-            if ("twilio".equals(smsProvider)) {
-                sent = sendViaTwilio(formattedNumber, message);
-            } else if ("mock".equals(smsProvider)) {
-                sent = sendViaMock(formattedNumber, message);
-            } else {
-                log.error("❌ Unknown SMS provider: {}", smsProvider);
-                sent = sendViaMock(formattedNumber, message);
-            }
-
-            if (sent) {
-                log.info("✅ SMS sent successfully to {} for facture {}",
-                        maskPhoneNumber(formattedNumber), facture.getNumeroFacture());
-            } else {
-                log.error("❌ Failed to send SMS to {}", maskPhoneNumber(formattedNumber));
-            }
-
-            log.info("📱 ===== END SMS DEBUG =====");
-
-        } catch (Exception e) {
-            log.error("❌ Failed to send SMS to {}: {}",
-                    maskPhoneNumber(phoneNumber), e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Send SMS from notification
-     */
     @Async
     public void sendNotificationSms(Notification notification, Facture facture, int daysUntilDue) {
         log.info("📱 [Notification ID: {}] Starting SMS process...", notification.getId());
 
         if (!smsEnabled) {
-            log.warn("📱 SMS is disabled. Enable with sms.enabled=true");
             return;
         }
 
@@ -196,12 +118,8 @@ public class SmsService {
      */
     @Async
     public void sendTestSms(String phoneNumber, String message) {
-        log.info("📱 ===== TEST SMS =====");
-        log.info("📱 To: {}", phoneNumber);
-        log.info("📱 Message: {}", message);
 
         if (!smsEnabled) {
-            log.warn("📱 SMS is disabled. Enable with sms.enabled=true");
             log.info("📱 TEST SMS WOULD BE SENT (mock mode)");
             return;
         }
@@ -257,22 +175,18 @@ public class SmsService {
 
         String result;
 
-        // Cas 1: Numéro Tunisien avec 0 (ex: 027405659)
         if (cleaned.startsWith("0") && cleaned.length() == 10) {
             result = "+216" + cleaned.substring(1);
             log.info("📱 Tunisian number with leading 0 → +216XXXXXXXX");
         }
-        // Cas 2: Numéro Tunisien sans indicatif (8 chiffres)
         else if (cleaned.matches("\\d{8}")) {
             result = "+216" + cleaned;
             log.info("📱 Tunisian number 8 digits → +216XXXXXXXX");
         }
-        // Cas 3: Déjà avec +
         else if (cleaned.startsWith("+")) {
             result = cleaned;
             log.info("📱 Already has country code");
         }
-        // Cas 4: Autre format
         else if (cleaned.matches("\\d+")) {
             if (cleaned.length() == 8) {
                 result = "+216" + cleaned;
@@ -390,57 +304,7 @@ public class SmsService {
         return true;
     }
 
-    /**
-     * Build SMS message for facture due
-     */
-    private String buildFactureDueMessage(Facture facture, int daysUntilDue) {
-        StringBuilder message = new StringBuilder();
 
-        // Add emoji based on urgency
-        if (daysUntilDue <= 0) {
-            message.append("🚨 ");
-        } else if (daysUntilDue <= 2) {
-            message.append("⚠️ ");
-        } else {
-            message.append("🔔 ");
-        }
-
-        message.append("Rappel Facture: ");
-        message.append(facture.getNumeroFacture());
-
-        if (daysUntilDue > 0) {
-            if (daysUntilDue == 1) {
-                message.append(" sera due DEMAIN");
-            } else {
-                message.append(" sera due dans ").append(daysUntilDue).append(" jours");
-            }
-        } else if (daysUntilDue == 0) {
-            message.append(" est due AUJOURD'HUI");
-        } else {
-            message.append(" est en RETARD de ").append(Math.abs(daysUntilDue)).append(" jours");
-        }
-
-        message.append(". Montant: ").append(facture.getMontantTTC()).append(" TND");
-
-        if (facture.getConvention() != null) {
-            message.append(". Convention: ").append(facture.getConvention().getReferenceConvention());
-        }
-
-        message.append(". Échéance: ").append(
-                facture.getDateEcheance().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-        );
-
-        // Keep SMS under 160 characters
-        if (message.length() > 160) {
-            return message.substring(0, 157) + "...";
-        }
-
-        return message.toString();
-    }
-
-    /**
-     * Build SMS message from notification
-     */
     private String buildNotificationMessage(Notification notification, Facture facture, int daysUntilDue) {
         StringBuilder message = new StringBuilder();
 
@@ -491,17 +355,12 @@ public class SmsService {
                 accountSid.substring(accountSid.length() - 4);
     }
 
-    /**
-     * Check if SMS is enabled in configuration
-     */
+
     public boolean isSmsEnabled() {
         return smsEnabled;
     }
 
 
-    /**
-     * Get SMS provider
-     */
     public String getSmsProvider() {
         return smsProvider;
     }
@@ -531,8 +390,7 @@ public class SmsService {
             log.info("📱 Message: '{}'", message);
             log.info("📱 Message length: {} characters", message.length());
 
-            // Send based on provider
-            boolean sent = false;
+            boolean sent;
 
             if ("twilio".equals(smsProvider)) {
                 sent = sendViaTwilio(formattedNumber, message);

@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class BilanDTO {
     private String title;
-    private String periodType; // "MONTH", "YEAR", "ALL_TIME"
+    private String periodType;
     private int year;
     private int month;
     private LocalDate startDate;

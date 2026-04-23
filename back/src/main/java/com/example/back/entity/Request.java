@@ -21,7 +21,7 @@ public class Request {
     private Long id;
 
     @Column(nullable = false)
-    private String requestType; // RENEWAL_ACCEPTANCE, REASSIGNMENT_SUGGESTION
+    private String requestType;
 
     @Column(nullable = false)
     private String status = "PENDING"; // PENDING, APPROVED, DENIED

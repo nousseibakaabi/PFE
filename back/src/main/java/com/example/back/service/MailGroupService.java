@@ -9,7 +9,6 @@ import com.example.back.repository.MailRepository;
 import com.example.back.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,15 +22,17 @@ import com.example.back.payload.response.MailStatsResponse.GroupMailStats;
 @Slf4j
 public class MailGroupService {
 
-    @Autowired
-    private MailGroupRepository groupRepository;
+    private final MailGroupRepository groupRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private MailRepository mailRepository;
+    private final MailRepository mailRepository;
 
+    public MailGroupService(MailGroupRepository groupRepository, UserRepository userRepository, MailRepository mailRepository) {
+        this.groupRepository = groupRepository;
+        this.userRepository = userRepository;
+        this.mailRepository = mailRepository;
+    }
 
 
     @Transactional
@@ -265,14 +266,6 @@ public class MailGroupService {
         return suggestions;
     }
 
-    public List<String> getEmailsFromGroup(Long groupId) {
-        MailGroup group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found"));
-
-        return group.getMembers().stream()
-                .map(User::getEmail)
-                .collect(Collectors.toList());
-    }
 
     private MailGroupResponse mapToResponse(MailGroup group) {
         MailGroupResponse response = new MailGroupResponse();

@@ -1,10 +1,8 @@
-// UserController.java
 package com.example.back.controller;
 
 import com.example.back.entity.User;
 import com.example.back.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +17,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -53,7 +54,7 @@ public class UserController {
             List<User> users = userRepository.findAll().stream()
                     .filter(user -> user.getRoles().stream()
                             .anyMatch(role -> role.getName().name().equals(roleWithPrefix)))
-                    .collect(Collectors.toList());
+                    .toList();
 
             List<Map<String, Object>> userResponses = users.stream()
                     .map(this::convertToResponse)

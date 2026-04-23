@@ -6,7 +6,6 @@ import com.example.back.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,14 +26,6 @@ class NotificationServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
 
-    @Mock
-    private FactureRepository factureRepository;
-
-    @Mock
-    private ConventionRepository conventionRepository;
-
-    @Mock
-    private UserRepository userRepository;
 
     @Mock
     private MailService mailService;
@@ -356,7 +347,7 @@ class NotificationServiceTest {
     @Test
     void deleteNotificationsForFacture_Success() {
         // Given
-        List<Notification> notifications = Arrays.asList(testNotification);
+        List<Notification> notifications = Collections.singletonList(testNotification);
         when(notificationRepository.findByReferenceIdAndReferenceType(1L, "FACTURE"))
                 .thenReturn(notifications);
         doNothing().when(notificationRepository).deleteAll(notifications);

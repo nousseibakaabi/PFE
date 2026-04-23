@@ -29,9 +29,5 @@ public class FactureHistoryData implements HistoryData {
     private Long conventionId;
     private String conventionReference;
 
-    // Add a method to clear convention data for update logs
-    public void clearConventionData() {
-        this.conventionId = null;
-        this.conventionReference = null;
-    }
+
 }

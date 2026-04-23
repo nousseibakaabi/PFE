@@ -9,14 +9,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.web.multipart.MultipartFile;
+
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -36,22 +34,11 @@ class MailServiceTest {
     private MailRecipientRepository recipientRepository;
 
     @Mock
-    private MailAttachmentRepository attachmentRepository;
-
-    @Mock
     private MailDraftRepository draftRepository;
-
-    @Mock
-    private MailFolderRepository folderRepository;
-
-    @Mock
-    private MailSignatureRepository signatureRepository;
 
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private MailDraftAttachmentRepository draftAttachmentRepository;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -219,7 +206,7 @@ class MailServiceTest {
     // ==================== FACTURE NOTIFICATION TESTS ====================
 
     @Test
-    void sendFactureDueNotification_Success() throws Exception {
+    void sendFactureDueNotification_Success()  {
         // Given
         Facture facture = new Facture();
         facture.setId(1L);

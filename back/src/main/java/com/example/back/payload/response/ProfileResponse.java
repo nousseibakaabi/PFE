@@ -86,14 +86,6 @@ public class ProfileResponse {
         this.phone = phone;
     }
 
-    public String getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
     public Boolean getEnabled() {
         return enabled;
     }
@@ -110,13 +102,6 @@ public class ProfileResponse {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getLastLogin() {
-        return lastLogin;
-    }
-
-    public void setLastLogin(LocalDateTime lastLogin) {
-        this.lastLogin = lastLogin;
-    }
 
     public List<String> getRoles() {
         return roles;
@@ -124,22 +109,6 @@ public class ProfileResponse {
 
     public void setRoles(List<String> roles) {
         this.roles = roles;
-    }
-    public String getProfileImage() {
-        return profileImage;
-    }
-
-    public void setProfileImage(String profileImage) {
-        this.profileImage = profileImage;
-    }
-
-
-    public String getNotifMode() {
-        return notifMode;
-    }
-
-    public void setNotifMode(String notifMode) {
-        this.notifMode = notifMode;
     }
 
 

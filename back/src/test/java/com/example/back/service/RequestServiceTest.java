@@ -32,22 +32,10 @@ class RequestServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private ApplicationRepository applicationRepository;
-
-    @Mock
-    private ConventionRepository conventionRepository;
-
-    @Mock
-    private WorkloadService workloadService;
-
-    @Mock
     private MailService mailService;
 
     @Mock
     private RequestMapper requestMapper;
-
-    @Mock
-    private HistoryService historyService;
 
     @InjectMocks
     private RequestService requestService;

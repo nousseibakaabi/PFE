@@ -35,8 +35,7 @@ public class MailFolder {
 
     private Boolean isSystem = false;
 
-    // Add this field
-    private String folderType; // "INBOX", "SENT", "DRAFTS", "STARRED", "ARCHIVE", "TRASH", "OFFICE", "PERSONAL", "FREELANCE", "SHARED", "CUSTOM"
+    private String folderType;
 
     private Integer orderIndex;
 

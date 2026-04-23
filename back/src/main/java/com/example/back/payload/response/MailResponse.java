@@ -1,4 +1,3 @@
-// MailResponse.java
 package com.example.back.payload.response;
 
 import lombok.Data;

@@ -42,28 +42,7 @@ class ConventionServiceTest {
     private ApplicationService applicationService;
 
     @Mock
-    private HistoryService historyService;
-
-    @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private NotificationService notificationService;
-
-    @Mock
-    private MailService mailService;
-
-    @Mock
-    private RequestService requestService;
-
-    @Mock
-    private OldConventionRepository oldConventionRepository;
-
-    @Mock
-    private OldFactureRepository oldFactureRepository;
-
-    @Mock
-    private WorkloadService workloadService;
 
     @Mock
     private Authentication authentication;

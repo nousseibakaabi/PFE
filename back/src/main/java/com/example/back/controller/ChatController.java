@@ -1,9 +1,7 @@
-// ChatController.java - Version simplifiée
 package com.example.back.controller;
 
 import com.example.back.service.ChatAIService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -11,13 +9,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.springframework.http.ResponseEntity.*;
+
 @RestController
 @RequestMapping("/api/chat")
 @Slf4j
 public class ChatController {
 
-    @Autowired
-    private ChatAIService chatAIService;
+    private final ChatAIService chatAIService;
+
+    public ChatController(ChatAIService chatAIService) {
+        this.chatAIService = chatAIService;
+    }
 
     @GetMapping("/cache/stats")
     @PreAuthorize("isAuthenticated()")
@@ -26,7 +29,7 @@ public class ChatController {
         response.put("success", true);
         response.put("data", chatAIService.getCacheStats());
         response.put("geminiAvailable", chatAIService.isGeminiAvailable());
-        return ResponseEntity.ok(response);
+        return ok(response);
     }
 
     @DeleteMapping("/cache/clear")
@@ -36,7 +39,7 @@ public class ChatController {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("message", "Cache vidé avec succès");
-        return ResponseEntity.ok(response);
+        return ok(response);
     }
 
     @DeleteMapping("/cache/question")
@@ -47,12 +50,13 @@ public class ChatController {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("message", "Cache vidé pour la question: " + question);
-        return ResponseEntity.ok(response);
+        return ok(response);
     }
 
     @PostMapping("/ask")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> askQuestion(@RequestBody Map<String, String> request) {
+        ResponseEntity<?> result;
         try {
             String question = request.get("question");
             log.info("📨 Nouvelle question: {}", question);
@@ -64,7 +68,7 @@ public class ChatController {
             response.put("answer", answer);
             response.put("question", question);
 
-            return ResponseEntity.ok(response);
+            result = ok(response);
 
         } catch (Exception e) {
             log.error("❌ Erreur: {}", e.getMessage());
@@ -72,8 +76,9 @@ public class ChatController {
             errorResponse.put("success", false);
             errorResponse.put("error", e.getMessage());
             errorResponse.put("answer", "❌ L'IA n'a pas pu traiter votre question: " + e.getMessage());
-            return ResponseEntity.ok(errorResponse);
+            result = ok(errorResponse);
         }
+        return result;
     }
 
 

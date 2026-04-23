@@ -1,12 +1,8 @@
 package com.example.back.service;
 
 import jakarta.mail.internet.InternetAddress;
-import org.apache.commons.codec.binary.Base64;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -20,8 +16,7 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
@@ -31,33 +26,16 @@ public class EmailService {
 
 
 
-    private String PRIMARY_COLOR = "#6EB9D5";
-    private String DARK_BLUE = "#2C5F8A";
-    private final String SUCCESS_COLOR = "#10b981";
-    private final String WARNING_COLOR = "#f59e0b";
-    private final String ERROR_COLOR = "#ef4444";
+    private  String primary = "#6EB9D5";
+    private String dark = "#2C5F8A";
+    private  String success = "#10b981";
+    private  String warning = "#f59e0b";
+    private  String error = "#ef4444";
 
-
-
-    private String getLogoBase64() {
-        try {
-            ClassPathResource resource = new ClassPathResource("images/logo.png");
-            System.out.println("Logo file exists: " + resource.exists());
-            System.out.println("Logo file path: " + resource.getPath());
-
-            byte[] fileBytes = resource.getInputStream().readAllBytes();
-            System.out.println("Logo file size: " + fileBytes.length + " bytes");
-
-            String base64 = Base64.encodeBase64String(fileBytes);
-            System.out.println("Base64 length: " + base64.length());
-
-            return base64;
-        } catch (Exception e) {
-            System.err.println("ERROR loading logo: " + e.getMessage());
-            e.printStackTrace();
-            return ""; // Return empty if logo not found
-        }
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
     }
+
 
     public void sendPasswordResetEmail(String to, String resetToken, String username) throws MessagingException {
         String resetLink = frontendUrl + "/reset-password?token=" + resetToken;
@@ -252,12 +230,12 @@ public class EmailService {
     </body>
     </html>
     """,
-                PRIMARY_COLOR, DARK_BLUE,  // gradient bar colors
-                PRIMARY_COLOR,              // greeting color
-                PRIMARY_COLOR,              // button text color
-                PRIMARY_COLOR,              // button border color
-                PRIMARY_COLOR,              // strong text color in info list
-                PRIMARY_COLOR,              // alt url color
+                primary, dark,  // gradient bar colors
+                primary,              // greeting color
+                primary,              // button text color
+                primary,              // button border color
+                primary,              // strong text color in info list
+                primary,              // alt url color
                 username,                   // greeting username
                 resetLink,                  // button link
                 resetLink                   // fallback link
@@ -436,15 +414,15 @@ public class EmailService {
     </body>
     </html>
     """,
-                SUCCESS_COLOR, "#0f9e6a",  // gradient bar colors
-                SUCCESS_COLOR,              // greeting color
-                SUCCESS_COLOR,              // badge color
+                success, "#0f9e6a",  // gradient bar colors
+                success,              // greeting color
+                success,              // badge color
                 username,                   // greeting username
-                SUCCESS_COLOR,              // strong text color (unique et fort)
-                SUCCESS_COLOR,              // strong text color (partagez jamais)
-                SUCCESS_COLOR,              // strong text color (régulièrement)
-                SUCCESS_COLOR,              // strong text color (double authentification)
-                PRIMARY_COLOR,              // team name color
+                success,              // strong text color (unique et fort)
+                success,              // strong text color (partagez jamais)
+                success,              // strong text color (régulièrement)
+                success,              // strong text color (double authentification)
+                primary,              // team name color
                 to                          // email recipient in footer
         );
 
@@ -641,12 +619,12 @@ public class EmailService {
     </body>
     </html>
     """,
-                ERROR_COLOR, "#b91c1c",      // gradient bar colors
-                ERROR_COLOR,                 // greeting color
-                ERROR_COLOR,                 // badge color
+                error, "#b91c1c",      // gradient bar colors
+                error,                 // greeting color
+                error,                 // badge color
                 username,                    // greeting username
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), // date
-                PRIMARY_COLOR,               // team name color
+                primary,               // team name color
                 to                           // email recipient in footer
         );
 
@@ -810,12 +788,12 @@ public class EmailService {
     </body>
     </html>
     """,
-                SUCCESS_COLOR, "#0f9e6a",  // gradient bar colors
-                SUCCESS_COLOR,              // greeting color
-                SUCCESS_COLOR,              // badge color
+                success, "#0f9e6a",  // gradient bar colors
+                success,              // greeting color
+                success,              // badge color
                 username,                   // greeting username
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), // date
-                PRIMARY_COLOR,              // team name color
+                primary,              // team name color
                 to                          // email recipient in footer
         );
 
@@ -1011,14 +989,14 @@ public class EmailService {
     </body>
     </html>
     """,
-                WARNING_COLOR, "#d97706",    // gradient bar colors
-                WARNING_COLOR,               // greeting color
-                WARNING_COLOR,               // badge color
-                WARNING_COLOR,               // timer color
+                warning, "#d97706",    // gradient bar colors
+                warning,               // greeting color
+                warning,               // badge color
+                warning,               // timer color
                 username,                    // greeting username
                 minutesRemaining,            // timer minutes
                 minutesRemaining,            // tips minutes
-                PRIMARY_COLOR,               // team name color
+                primary,               // team name color
                 to                           // email recipient in footer
         );
 

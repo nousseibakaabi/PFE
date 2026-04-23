@@ -24,7 +24,7 @@ public class OldConvention {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_convention_id", nullable = false)
-    private Convention currentConvention; // Link to the current convention
+    private Convention currentConvention;
 
     @Column(nullable = false)
     private String referenceConvention;

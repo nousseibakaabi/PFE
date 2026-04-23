@@ -69,41 +69,11 @@ public class HistoryMapper {
             }
         }
 
-        // Calculate changes summary safely
+        // Calculate changes summary safely - Refactored to use entrySet and eliminate multiple breaks/continues
         if (oldMap != null && newMap != null) {
             response.setHasChanges(true);
             try {
-                int changedFields = 0;
-
-                // Check all keys in newMap
-                for (String key : newMap.keySet()) {
-                    Object newValue = newMap.get(key);
-                    Object oldValue = oldMap.get(key);
-
-                    // Skip if both are null
-                    if (newValue == null && oldValue == null) {
-                        continue;
-                    }
-
-                    // If one is null and the other isn't, it's a change
-                    if (newValue == null || oldValue == null) {
-                        changedFields++;
-                        continue;
-                    }
-
-                    // Compare non-null values
-                    if (!newValue.equals(oldValue)) {
-                        changedFields++;
-                    }
-                }
-
-                // Also check for keys that are only in oldMap
-                for (String key : oldMap.keySet()) {
-                    if (!newMap.containsKey(key)) {
-                        changedFields++;
-                    }
-                }
-
+                int changedFields = calculateChangedFields(oldMap, newMap);
                 response.setChangedFieldsCount(changedFields);
             } catch (Exception e) {
                 log.error("Error counting changes for history {}: {}", history.getId(), e.getMessage());
@@ -115,6 +85,46 @@ public class HistoryMapper {
         response.setUserAgent(history.getUserAgent());
 
         return response;
+    }
+
+    private int calculateChangedFields(Map<String, Object> oldMap, Map<String, Object> newMap) {
+        int changedFields = 0;
+
+        for (Map.Entry<String, Object> newEntry : newMap.entrySet()) {
+            String key = newEntry.getKey();
+            Object newValue = newEntry.getValue();
+            Object oldValue = oldMap.get(key);
+
+            if (hasChanged(newValue, oldValue)) {
+                changedFields++;
+            }
+        }
+
+        // Check for keys that are only in oldMap
+        for (Map.Entry<String, Object> oldEntry : oldMap.entrySet()) {
+            String key = oldEntry.getKey();
+            if (!newMap.containsKey(key)) {
+                changedFields++;
+            }
+        }
+
+        return changedFields;
+    }
+
+
+    private boolean hasChanged(Object newValue, Object oldValue) {
+        // Both null -> no change
+        if (newValue == null && oldValue == null) {
+            return false;
+        }
+
+        // One is null, the other isn't -> change
+        if (newValue == null || oldValue == null) {
+            return true;
+        }
+
+        // Both non-null -> compare values
+        return !newValue.equals(oldValue);
     }
 
     private String getActionTypeLabel(String actionType) {
@@ -141,7 +151,7 @@ public class HistoryMapper {
             case "RENEW" : return "Renouvellement";
             case "REASSIGN_CHEF": return "Réassignation chef de projet";
             case "REQUEST_PROCESSED": return "Traitement de demande";
-            
+
             default: return actionType;
         }
     }

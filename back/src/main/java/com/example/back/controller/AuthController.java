@@ -11,10 +11,7 @@ import com.example.back.service.EmailService;
 import com.example.back.service.HistoryService;
 import com.example.back.service.LoginAttemptService;
 import com.example.back.service.TwoFactorService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,28 +38,31 @@ import java.util.stream.Collectors;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
-    @Autowired
-    private LoginAttemptService loginAttemptService;
+    private final LoginAttemptService loginAttemptService;
 
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
 
-    @Autowired
-    private HistoryService historyService;
+    private final HistoryService historyService;
 
-    @Autowired
-    private TwoFactorService twoFactorService;
+    private final TwoFactorService twoFactorService;
 
     private static final int MAX_FAILED_ATTEMPTS = 3;
+
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, JwtUtils jwtUtils, LoginAttemptService loginAttemptService, EmailService emailService, HistoryService historyService, TwoFactorService twoFactorService) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.jwtUtils = jwtUtils;
+        this.loginAttemptService = loginAttemptService;
+        this.emailService = emailService;
+        this.historyService = historyService;
+        this.twoFactorService = twoFactorService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -133,19 +133,11 @@ public class AuthController {
             // Si la 2FA est activée, on vérifie d'abord le mot de passe
             if (isTwoFactorEnabled) {
                 try {
-                    // Authentifier d'abord pour vérifier le mot de passe
-                    Authentication authentication = authenticationManager.authenticate(
-                            new UsernamePasswordAuthenticationToken(loginRequest.getUsernameOrEmail(),
-                                    loginRequest.getPassword()));
 
-                    // Si l'authentification réussit mais que la 2FA est activée
-                    // Générer un token temporaire pour la session 2FA
                     String tempToken = UUID.randomUUID().toString();
 
-                    // Stocker le token temporaire avec l'ID utilisateur
                     sessionCache.put(tempToken, existingUser.getId());
 
-                    // Réinitialiser les tentatives de login car le mot de passe est correct
                     loginAttemptService.loginSuccess(loginRequest.getUsernameOrEmail());
 
                     Map<String, Object> response = new HashMap<>();
@@ -423,14 +415,11 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> logoutUser() {
         // Récupérer l'utilisateur actuel pour l'historique
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
-            userRepository.findByUsername(auth.getName()).ifPresent(user -> {
-                // HISTORIQUE: Déconnexion utilisateur
-                historyService.logUserLogout(user);
-            });
+            userRepository.findByUsername(auth.getName()).ifPresent(historyService::logUserLogout);
         }
 
         return ResponseEntity.ok(new MessageResponse("Déconnexion réussie"));

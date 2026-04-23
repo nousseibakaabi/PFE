@@ -4,7 +4,6 @@ import com.example.back.entity.*;
 import com.example.back.repository.*;
 import com.example.back.service.UserContextService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,26 +23,29 @@ import java.util.stream.Collectors;
 @Slf4j
 public class StatsController {
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final ConventionRepository conventionRepository;
 
-    @Autowired
-    private FactureRepository factureRepository;
+    private final FactureRepository factureRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private StructureRepository structureRepository;
+    private final StructureRepository structureRepository;
 
-    @Autowired
-    private ZoneGeographiqueRepository zoneGeographiqueRepository;
+    private final ZoneGeographiqueRepository zoneGeographiqueRepository;
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    private UserContextService userContextService;
+    private final UserContextService userContextService;
+
+    public StatsController(ConventionRepository conventionRepository, FactureRepository factureRepository, UserRepository userRepository, StructureRepository structureRepository, ZoneGeographiqueRepository zoneGeographiqueRepository, ApplicationRepository applicationRepository, UserContextService userContextService) {
+        this.conventionRepository = conventionRepository;
+        this.factureRepository = factureRepository;
+        this.userRepository = userRepository;
+        this.structureRepository = structureRepository;
+        this.zoneGeographiqueRepository = zoneGeographiqueRepository;
+        this.applicationRepository = applicationRepository;
+        this.userContextService = userContextService;
+    }
 
     // ==================== HELPER METHODS FOR ACCESS CONTROL ====================
 
@@ -118,37 +121,44 @@ public class StatsController {
 
             Map<String, Object> stats = new HashMap<>();
 
-            if ("ADMIN".equals(userRole)) {
-                stats.putAll(getConventionStats());
-                stats.putAll(getFactureStats());
-                stats.putAll(getFinancialStats());
-                stats.putAll(getApplicationStats());
-                stats.putAll(getUserStats());
-                stats.putAll(getNomenclatureStats());
-                stats.putAll(getRecentActivity());
-                stats.putAll(getMonthlyTrends());
-            } else if ("DECIDEUR".equals(userRole)) {
-                stats.putAll(getConventionStats());
-                stats.putAll(getFactureStats());
-                stats.putAll(getFinancialStats());
-                stats.putAll(getApplicationStats());
-                stats.putAll(getNomenclatureStats());
-                stats.putAll(getRecentActivity());
-                stats.putAll(getMonthlyTrends());
-            } else if ("CHEF_PROJET".equals(userRole)) {
-                stats.putAll(getConventionStatsForChef(currentUser));
-                stats.putAll(getFactureStatsForChef(currentUser));
-                stats.putAll(getFinancialStatsForChef(currentUser));
-                stats.putAll(getApplicationStatsForChef(currentUser));
-                stats.putAll(getRecentActivityForChef(currentUser));
-                stats.putAll(getMonthlyTrendsForChef(currentUser));
-            } else if ("COMMERCIAL_METIER".equals(userRole)) {
-                stats.putAll(getConventionStatsForCommercial(currentUser));
-                stats.putAll(getFactureStatsForCommercial(currentUser));
-                stats.putAll(getFinancialStatsForCommercial(currentUser));
-                stats.putAll(getApplicationStatsForCommercial(currentUser));
-                stats.putAll(getRecentActivityForCommercial(currentUser));
-                stats.putAll(getMonthlyTrendsForCommercial(currentUser));
+            switch (userRole) {
+                case "ADMIN" -> {
+                    stats.putAll(getConventionStats());
+                    stats.putAll(getFactureStats());
+                    stats.putAll(getFinancialStats());
+                    stats.putAll(getApplicationStats());
+                    stats.putAll(getUserStats());
+                    stats.putAll(getNomenclatureStats());
+                    stats.putAll(getRecentActivity());
+                    stats.putAll(getMonthlyTrends());
+                }
+                case "DECIDEUR" -> {
+                    stats.putAll(getConventionStats());
+                    stats.putAll(getFactureStats());
+                    stats.putAll(getFinancialStats());
+                    stats.putAll(getApplicationStats());
+                    stats.putAll(getNomenclatureStats());
+                    stats.putAll(getRecentActivity());
+                    stats.putAll(getMonthlyTrends());
+                }
+                case "CHEF_PROJET" -> {
+                    stats.putAll(getConventionStatsForChef(currentUser));
+                    stats.putAll(getFactureStatsForChef(currentUser));
+                    stats.putAll(getFinancialStatsForChef(currentUser));
+                    stats.putAll(getApplicationStatsForChef(currentUser));
+                    stats.putAll(getRecentActivityForChef(currentUser));
+                    stats.putAll(getMonthlyTrendsForChef(currentUser));
+                }
+                case "COMMERCIAL_METIER" -> {
+                    stats.putAll(getConventionStatsForCommercial(currentUser));
+                    stats.putAll(getFactureStatsForCommercial(currentUser));
+                    stats.putAll(getFinancialStatsForCommercial(currentUser));
+                    stats.putAll(getApplicationStatsForCommercial(currentUser));
+                    stats.putAll(getRecentActivityForCommercial(currentUser));
+                    stats.putAll(getMonthlyTrendsForCommercial(currentUser));
+                }
+
+                default -> throw new IllegalStateException("Unexpected value: " + userRole);
             }
 
             Map<String, Object> response = new HashMap<>();
@@ -174,13 +184,12 @@ public class StatsController {
 
             Map<String, Object> stats = new HashMap<>();
 
-            if ("ADMIN".equals(userRole) || "DECIDEUR".equals(userRole)) {
-                stats = getConventionDetailedStatsForAdmin();
-            } else if ("CHEF_PROJET".equals(userRole)) {
-                stats = getConventionDetailedStatsForChef(currentUser);
-            } else if ("COMMERCIAL_METIER".equals(userRole)) {
-                stats = getConventionDetailedStatsForCommercial(currentUser);
-            }
+            stats = switch (userRole) {
+                case "ADMIN", "DECIDEUR" -> getConventionDetailedStatsForAdmin();
+                case "CHEF_PROJET" -> getConventionDetailedStatsForChef(currentUser);
+                case "COMMERCIAL_METIER" -> getConventionDetailedStatsForCommercial(currentUser);
+                default -> stats;
+            };
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -205,13 +214,12 @@ public class StatsController {
 
             Map<String, Object> stats = new HashMap<>();
 
-            if ("ADMIN".equals(userRole) || "DECIDEUR".equals(userRole)) {
-                stats = getFactureDetailedStatsForAdmin();
-            } else if ("CHEF_PROJET".equals(userRole)) {
-                stats = getFactureDetailedStatsForChef(currentUser);
-            } else if ("COMMERCIAL_METIER".equals(userRole)) {
-                stats = getFactureDetailedStatsForCommercial(currentUser);
-            }
+            stats = switch (userRole) {
+                case "ADMIN", "DECIDEUR" -> getFactureDetailedStatsForAdmin();
+                case "CHEF_PROJET" -> getFactureDetailedStatsForChef(currentUser);
+                case "COMMERCIAL_METIER" -> getFactureDetailedStatsForCommercial(currentUser);
+                default -> stats;
+            };
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -236,13 +244,12 @@ public class StatsController {
 
             Map<String, Object> stats = new HashMap<>();
 
-            if ("ADMIN".equals(userRole) || "DECIDEUR".equals(userRole)) {
-                stats = getApplicationDetailedStatsForAdmin();
-            } else if ("CHEF_PROJET".equals(userRole)) {
-                stats = getApplicationDetailedStatsForChef(currentUser);
-            } else if ("COMMERCIAL_METIER".equals(userRole)) {
-                stats = getApplicationDetailedStatsForCommercial(currentUser);
-            }
+            stats = switch (userRole) {
+                case "ADMIN", "DECIDEUR" -> getApplicationDetailedStatsForAdmin();
+                case "CHEF_PROJET" -> getApplicationDetailedStatsForChef(currentUser);
+                case "COMMERCIAL_METIER" -> getApplicationDetailedStatsForCommercial(currentUser);
+                default -> stats;
+            };
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -267,13 +274,12 @@ public class StatsController {
 
             Map<String, Object> stats = new HashMap<>();
 
-            if ("ADMIN".equals(userRole) || "DECIDEUR".equals(userRole)) {
-                stats = getFinancialDetailedStatsForAdmin();
-            } else if ("CHEF_PROJET".equals(userRole)) {
-                stats = getFinancialDetailedStatsForChef(currentUser);
-            } else if ("COMMERCIAL_METIER".equals(userRole)) {
-                stats = getFinancialDetailedStatsForCommercial(currentUser);
-            }
+            stats = switch (userRole) {
+                case "ADMIN", "DECIDEUR" -> getFinancialDetailedStatsForAdmin();
+                case "CHEF_PROJET" -> getFinancialDetailedStatsForChef(currentUser);
+                case "COMMERCIAL_METIER" -> getFinancialDetailedStatsForCommercial(currentUser);
+                default -> stats;
+            };
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -364,7 +370,7 @@ public class StatsController {
             List<User> nonAdminUsers = userRepository.findAll().stream()
                     .filter(user -> user.getRoles().stream()
                             .noneMatch(role -> role.getName() == ERole.ROLE_ADMIN))
-                    .collect(Collectors.toList());
+                    .toList();
 
             // Role Distribution (excluding admins)
             Map<String, Long> roleDistribution = nonAdminUsers.stream()
@@ -438,13 +444,12 @@ public class StatsController {
 
             Map<String, Object> summary = new HashMap<>();
 
-            if ("ADMIN".equals(userRole) || "DECIDEUR".equals(userRole)) {
-                summary = getSummaryStatsForAdmin();
-            } else if ("CHEF_PROJET".equals(userRole)) {
-                summary = getSummaryStatsForChef(currentUser);
-            } else if ("COMMERCIAL_METIER".equals(userRole)) {
-                summary = getSummaryStatsForCommercial(currentUser);
-            }
+            summary = switch (userRole) {
+                case "ADMIN", "DECIDEUR" -> getSummaryStatsForAdmin();
+                case "CHEF_PROJET" -> getSummaryStatsForChef(currentUser);
+                case "COMMERCIAL_METIER" -> getSummaryStatsForCommercial(currentUser);
+                default -> summary;
+            };
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -469,13 +474,12 @@ public class StatsController {
 
             List<Map<String, Object>> alerts = new ArrayList<>();
 
-            if ("ADMIN".equals(userRole) || "DECIDEUR".equals(userRole)) {
-                alerts = getOverdueAlertsForAdmin();
-            } else if ("CHEF_PROJET".equals(userRole)) {
-                alerts = getOverdueAlertsForChef(currentUser);
-            } else if ("COMMERCIAL_METIER".equals(userRole)) {
-                alerts = getOverdueAlertsForCommercial(currentUser);
-            }
+            alerts = switch (userRole) {
+                case "ADMIN", "DECIDEUR" -> getOverdueAlertsForAdmin();
+                case "CHEF_PROJET" -> getOverdueAlertsForChef(currentUser);
+                case "COMMERCIAL_METIER" -> getOverdueAlertsForCommercial(currentUser);
+                default -> alerts;
+            };
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -892,7 +896,7 @@ public class StatsController {
             List<Facture> monthFactures = allFactures.stream()
                     .filter(f -> f.getDateFacturation() != null &&
                             YearMonth.from(f.getDateFacturation()).equals(month))
-                    .collect(Collectors.toList());
+                    .toList();
 
             Map<String, BigDecimal> monthStats = new HashMap<>();
             monthStats.put("total", monthFactures.stream()
@@ -918,7 +922,7 @@ public class StatsController {
                     detail.put("montant", f.getMontantTTC());
                     detail.put("dateEcheance", f.getDateEcheance());
                     detail.put("joursRetard",
-                            java.time.temporal.ChronoUnit.DAYS.between(f.getDateEcheance(), LocalDate.now()));
+                            ChronoUnit.DAYS.between(f.getDateEcheance(), LocalDate.now()));
                     return detail;
                 })
                 .collect(Collectors.toList());
@@ -1157,14 +1161,14 @@ public class StatsController {
         // Overdue invoices
         List<Facture> overdueInvoices = factureRepository.findAll().stream()
                 .filter(f -> f.isEnRetard() || "EN_RETARD".equals(f.getStatutPaiement()))
-                .collect(Collectors.toList());
+                .toList();
 
         for (Facture invoice : overdueInvoices) {
             Map<String, Object> alert = new HashMap<>();
             alert.put("type", "INVOICE_OVERDUE");
             alert.put("message", String.format("Facture %s en retard de %d jours",
                     invoice.getNumeroFacture(),
-                    java.time.temporal.ChronoUnit.DAYS.between(invoice.getDateEcheance(), LocalDate.now())));
+                    ChronoUnit.DAYS.between(invoice.getDateEcheance(), LocalDate.now())));
             alert.put("convention", invoice.getConvention() != null ? invoice.getConvention().getReferenceConvention() : "N/A");
             alert.put("project", invoice.getConvention() != null && invoice.getConvention().getApplication() != null ?
                     invoice.getConvention().getApplication().getName() : "N/A");
@@ -1177,7 +1181,7 @@ public class StatsController {
         // Delayed applications
         List<Application> delayedApplications = applicationRepository.findAll().stream()
                 .filter(a -> a.getDaysRemaining() < 0 && !"TERMINE".equals(a.getStatus()))
-                .collect(Collectors.toList());
+                .toList();
 
         for (Application app : delayedApplications) {
             Map<String, Object> alert = new HashMap<>();
@@ -1196,7 +1200,7 @@ public class StatsController {
     }
 
     private String getOverduePriority(Facture invoice) {
-        long daysOverdue = java.time.temporal.ChronoUnit.DAYS.between(invoice.getDateEcheance(), LocalDate.now());
+        long daysOverdue = ChronoUnit.DAYS.between(invoice.getDateEcheance(), LocalDate.now());
         if (daysOverdue > 30) return "CRITICAL";
         if (daysOverdue > 15) return "HIGH";
         if (daysOverdue > 7) return "MEDIUM";
@@ -1536,7 +1540,7 @@ public class StatsController {
             List<Facture> monthFactures = chefFactures.stream()
                     .filter(f -> f.getDateFacturation() != null &&
                             YearMonth.from(f.getDateFacturation()).equals(month))
-                    .collect(Collectors.toList());
+                    .toList();
 
             Map<String, BigDecimal> monthStats = new HashMap<>();
             monthStats.put("total", monthFactures.stream()
@@ -1562,7 +1566,7 @@ public class StatsController {
                     detail.put("montant", f.getMontantTTC());
                     detail.put("dateEcheance", f.getDateEcheance());
                     detail.put("joursRetard",
-                            java.time.temporal.ChronoUnit.DAYS.between(f.getDateEcheance(), LocalDate.now()));
+                            ChronoUnit.DAYS.between(f.getDateEcheance(), LocalDate.now()));
                     return detail;
                 })
                 .collect(Collectors.toList());
@@ -1740,14 +1744,14 @@ public class StatsController {
         // Overdue invoices
         List<Facture> overdueInvoices = chefFactures.stream()
                 .filter(f -> f.isEnRetard() || "EN_RETARD".equals(f.getStatutPaiement()))
-                .collect(Collectors.toList());
+                .toList();
 
         for (Facture invoice : overdueInvoices) {
             Map<String, Object> alert = new HashMap<>();
             alert.put("type", "INVOICE_OVERDUE");
             alert.put("message", String.format("Facture %s en retard de %d jours",
                     invoice.getNumeroFacture(),
-                    java.time.temporal.ChronoUnit.DAYS.between(invoice.getDateEcheance(), LocalDate.now())));
+                    ChronoUnit.DAYS.between(invoice.getDateEcheance(), LocalDate.now())));
             alert.put("convention", invoice.getConvention() != null ? invoice.getConvention().getReferenceConvention() : "N/A");
             alert.put("amount", invoice.getMontantTTC());
             alert.put("dueDate", invoice.getDateEcheance());
@@ -1758,7 +1762,7 @@ public class StatsController {
         // Delayed applications
         List<Application> delayedApplications = chefApplications.stream()
                 .filter(a -> a.getDaysRemaining() < 0 && !"TERMINE".equals(a.getStatus()))
-                .collect(Collectors.toList());
+                .toList();
 
         for (Application app : delayedApplications) {
             Map<String, Object> alert = new HashMap<>();
@@ -2109,7 +2113,7 @@ public class StatsController {
             List<Facture> monthFactures = commercialFactures.stream()
                     .filter(f -> f.getDateFacturation() != null &&
                             YearMonth.from(f.getDateFacturation()).equals(month))
-                    .collect(Collectors.toList());
+                    .toList();
 
             Map<String, BigDecimal> monthStats = new HashMap<>();
             monthStats.put("total", monthFactures.stream()
@@ -2135,7 +2139,7 @@ public class StatsController {
                     detail.put("montant", f.getMontantTTC());
                     detail.put("dateEcheance", f.getDateEcheance());
                     detail.put("joursRetard",
-                            java.time.temporal.ChronoUnit.DAYS.between(f.getDateEcheance(), LocalDate.now()));
+                            ChronoUnit.DAYS.between(f.getDateEcheance(), LocalDate.now()));
                     return detail;
                 })
                 .collect(Collectors.toList());
@@ -2330,14 +2334,14 @@ public class StatsController {
         // Overdue invoices
         List<Facture> overdueInvoices = commercialFactures.stream()
                 .filter(f -> f.isEnRetard() || "EN_RETARD".equals(f.getStatutPaiement()))
-                .collect(Collectors.toList());
+                .toList();
 
         for (Facture invoice : overdueInvoices) {
             Map<String, Object> alert = new HashMap<>();
             alert.put("type", "INVOICE_OVERDUE");
             alert.put("message", String.format("Facture %s en retard de %d jours",
                     invoice.getNumeroFacture(),
-                    java.time.temporal.ChronoUnit.DAYS.between(invoice.getDateEcheance(), LocalDate.now())));
+                    ChronoUnit.DAYS.between(invoice.getDateEcheance(), LocalDate.now())));
             alert.put("convention", invoice.getConvention() != null ? invoice.getConvention().getReferenceConvention() : "N/A");
             alert.put("amount", invoice.getMontantTTC());
             alert.put("dueDate", invoice.getDateEcheance());
@@ -2348,7 +2352,7 @@ public class StatsController {
         // Delayed applications
         List<Application> delayedApplications = commercialApplications.stream()
                 .filter(a -> a.getDaysRemaining() < 0 && !"TERMINE".equals(a.getStatus()))
-                .collect(Collectors.toList());
+                .toList();
 
         for (Application app : delayedApplications) {
             Map<String, Object> alert = new HashMap<>();

@@ -4,7 +4,6 @@ import com.example.back.entity.PasswordResetToken;
 import com.example.back.entity.User;
 import com.example.back.repository.PasswordResetTokenRepository;
 import com.example.back.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,17 +13,20 @@ import java.util.Optional;
 @Service
 public class PasswordService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private PasswordResetTokenRepository tokenRepository;
+    private final PasswordResetTokenRepository tokenRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
+
+    public PasswordService(UserRepository userRepository, PasswordResetTokenRepository tokenRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
+        this.userRepository = userRepository;
+        this.tokenRepository = tokenRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
 
     @Transactional
     public boolean generateAndSendPasswordResetToken(String email) {
@@ -137,14 +139,5 @@ public class PasswordService {
         return userRepository.existsByEmail(email);
     }
 
-    // Get token for validation (optional)
-    public String getPasswordResetToken(String email) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Optional<PasswordResetToken> tokenOptional = tokenRepository.findByUser(user);
-            return tokenOptional.map(PasswordResetToken::getToken).orElse(null);
-        }
-        return null;
-    }
+
 }

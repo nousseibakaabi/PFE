@@ -12,7 +12,6 @@ import com.example.back.service.EmailService;
 import com.example.back.service.HistoryService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,23 +28,26 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AdminController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
-    @Autowired
-    private PasswordEncoder encoder;
+    private final PasswordEncoder encoder;
 
-    @Autowired
-    private AvatarService avatarService;
+    private final AvatarService avatarService;
 
-    @Autowired
-    private HistoryService historyService;
+    private final HistoryService historyService;
 
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
+
+    public AdminController(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, AvatarService avatarService, HistoryService historyService, EmailService emailService) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.encoder = encoder;
+        this.avatarService = avatarService;
+        this.historyService = historyService;
+        this.emailService = emailService;
+    }
 
 
     @GetMapping("/users")
@@ -75,10 +77,8 @@ public class AdminController {
             targetUser.setAccountNonLocked(false);
             userRepository.save(targetUser);
 
-            // LOG HISTORY: User lock
             historyService.logUserLock(targetUser, currentUser);
 
-            // SEND EMAIL TO LOCKED USER
             try {
                 System.out.println("Sending lock email to: " + targetUser.getEmail());
                 emailService.sendAccountLockedByAdminEmail(targetUser.getEmail(), targetUser.getUsername());
@@ -86,7 +86,6 @@ public class AdminController {
             } catch (Exception e) {
                 System.err.println("Failed to send lock email: " + e.getMessage());
                 e.printStackTrace();
-                // Don't fail the request if email fails, just log it
             }
 
             return ResponseEntity.ok(new MessageResponse("User locked successfully and email notification sent"));
@@ -109,11 +108,8 @@ public class AdminController {
             targetUser.setFailedLoginAttempts(0);
             targetUser.setAccountLockedUntil(null);
             userRepository.save(targetUser);
-
-            // LOG HISTORY: User unlock
             historyService.logUserUnlock(targetUser, currentUser);
 
-            // SEND EMAIL TO UNLOCKED USER
             try {
                 System.out.println("Sending unlock email to: " + targetUser.getEmail());
                 emailService.sendAccountUnlockedByAdminEmail(targetUser.getEmail(), targetUser.getUsername());
@@ -121,7 +117,6 @@ public class AdminController {
             } catch (Exception e) {
                 System.err.println("Failed to send unlock email: " + e.getMessage());
                 e.printStackTrace();
-                // Don't fail the request if email fails, just log it
             }
 
             return ResponseEntity.ok(new MessageResponse("User unlocked successfully and email notification sent"));
@@ -258,7 +253,6 @@ public class AdminController {
 
             targetUser.setDepartment(newDepartment);
 
-            // LOG HISTORY: Department change
             historyService.logUserDepartmentChange(targetUser, currentUser, oldDepartment, newDepartment);
 
             return ResponseEntity.ok(new MessageResponse("User department updated successfully"));
@@ -313,9 +307,6 @@ public class AdminController {
     }
 
 
-    /**
-     * Get current user
-     */
     private User getCurrentUser() {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(currentUsername).orElse(null);

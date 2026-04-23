@@ -5,7 +5,6 @@ import com.example.back.repository.UserRepository;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -14,15 +13,15 @@ import java.util.*;
 @Service
 public class TwoFactorService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     private final GoogleAuthenticator googleAuthenticator;
     private final SecureRandom secureRandom;
 
-    public TwoFactorService() {
+    public TwoFactorService(UserRepository userRepository) {
         this.googleAuthenticator = new GoogleAuthenticator();
         this.secureRandom = new SecureRandom();
+        this.userRepository = userRepository;
     }
 
     /**
@@ -54,9 +53,7 @@ public class TwoFactorService {
         return new TwoFactorSetup(secret, qrCodeUrl, backupCodes);
     }
 
-    /**
-     * Generate backup codes
-     */
+
     private List<String> generateBackupCodes(int count) {
         List<String> codes = new ArrayList<>();
         String characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -72,46 +69,19 @@ public class TwoFactorService {
         return codes;
     }
 
-    /**
-     * Verify TOTP code
-     */
+
     public boolean verifyCode(String secret, int code) {
         return googleAuthenticator.authorize(secret, code);
     }
 
-    /**
-     * Verify a backup code
-     */
-    public boolean verifyBackupCode(User user, String backupCode) {
-        String backupCodesJson = user.getTwoFactorBackupCodes();
-        if (backupCodesJson == null || backupCodesJson.isEmpty()) {
-            return false;
-        }
 
-        List<String> backupCodes = new ArrayList<>(Arrays.asList(backupCodesJson.split(",")));
 
-        if (backupCodes.contains(backupCode)) {
-            // Remove the used backup code
-            backupCodes.remove(backupCode);
-            user.setTwoFactorBackupCodes(String.join(",", backupCodes));
-            userRepository.save(user);
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Enable 2FA for user
-     */
     public void enableTwoFactor(User user) {
         user.setTwoFactorEnabled(true);
         userRepository.save(user);
     }
 
-    /**
-     * Disable 2FA for user
-     */
+
     public void disableTwoFactor(User user) {
         user.setTwoFactorEnabled(false);
         user.setTwoFactorSecret(null);
@@ -119,16 +89,11 @@ public class TwoFactorService {
         userRepository.save(user);
     }
 
-    /**
-     * Check if user has 2FA enabled
-     */
+
     public boolean isTwoFactorEnabled(User user) {
         return user.getTwoFactorEnabled() != null && user.getTwoFactorEnabled();
     }
 
-    /**
-     * DTO for 2FA setup response
-     */
     public static class TwoFactorSetup {
         private final String secret;
         private final String qrCodeUrl;

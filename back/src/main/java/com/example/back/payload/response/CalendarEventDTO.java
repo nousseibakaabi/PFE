@@ -12,7 +12,7 @@ public class CalendarEventDTO {
     private LocalDateTime start;
     private LocalDateTime end;
     private Boolean allDay;
-    private String type; // "INVOICE" or "PROJECT"
+    private String type;
     private String color;
     private Map<String, Object> extendedProps = new HashMap<>();
 

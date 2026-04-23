@@ -3,7 +3,6 @@ package com.example.back.controller;
 import com.example.back.payload.response.HistoryResponse;
 import com.example.back.service.HistoryService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,8 +18,11 @@ import java.util.Map;
 @Slf4j
 public class HistoryController {
 
-    @Autowired
-    private HistoryService historyService;
+    private final HistoryService historyService;
+
+    public HistoryController(HistoryService historyService) {
+        this.historyService = historyService;
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'DECIDEUR', 'COMMERCIAL_METIER', 'CHEF_PROJET')")
@@ -191,25 +193,7 @@ public class HistoryController {
         }
     }
 
-    /**
-     * TEST ENDPOINT - Remove in production
-     */
-    @PostMapping("/test/convention/{conventionId}")
-    @PreAuthorize("hasAnyRole('COMMERCIAL_METIER')")
-    public ResponseEntity<?> testConventionHistory(@PathVariable Long conventionId) {
-        try {
-            // This is just for testing - you'll need to inject ConventionRepository
-            // For now, return a test message
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Test endpoint - History should be working now");
-            response.put("note", "Try creating a new convention to see history entries");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Test history failed: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
-        }
-    }
+
 
     private Map<String, Object> createErrorResponse(String message) {
         Map<String, Object> response = new HashMap<>();

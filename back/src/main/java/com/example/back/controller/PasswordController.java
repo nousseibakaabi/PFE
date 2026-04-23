@@ -4,12 +4,10 @@ import com.example.back.payload.request.ChangePasswordRequest;
 import com.example.back.payload.request.ForgotPasswordRequest;
 import com.example.back.payload.request.ResetPasswordRequest;
 import com.example.back.security.services.UserDetailsImpl;
-import com.example.back.service.EmailService;
 import com.example.back.service.PasswordService;
 import com.example.back.service.TokenService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,23 +20,20 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class PasswordController {
 
-    @Autowired
-    private PasswordService passwordService;
+    private final PasswordService passwordService;
 
-    @Autowired
-    private TokenService tokenService;
+    private final TokenService tokenService;
 
-    @Autowired
-    private EmailService emailService;
-
-    // ========== FORGOT PASSWORD (Public) ==========
+    public PasswordController(PasswordService passwordService, TokenService tokenService) {
+        this.passwordService = passwordService;
+        this.tokenService = tokenService;
+    }
 
     @PostMapping("/forgot-password")
     @Transactional
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         String email = request.getEmail();
 
-        // First check if email exists
         if (!passwordService.emailExists(email)) {
             return ResponseEntity.badRequest()
                     .body(tokenService.generateErrorResponse("No account found with this email address."));
@@ -137,10 +132,6 @@ public class PasswordController {
                     .body(tokenService.generateErrorResponse("Email and newPassword are required"));
         }
 
-        // Generate token and send email (instead of returning token)
-        boolean emailSent = passwordService.generateAndSendPasswordResetToken(email);
-
-        // Return success message whether email exists or not
         return ResponseEntity.ok(tokenService.generateSuccessResponse(
                 "If an account exists with that email, password reset instructions have been sent."
         ));

@@ -13,7 +13,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,53 +28,49 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class MailService {
 
-    @Autowired
-    private MailRepository mailRepository;
+    private final MailRepository mailRepository;
 
-    @Autowired
-    private MailRecipientRepository recipientRepository;
+    private final MailRecipientRepository recipientRepository;
 
-    @Autowired
-    private MailAttachmentRepository attachmentRepository;
+    private final MailAttachmentRepository attachmentRepository;
 
-    @Autowired
-    private MailDraftRepository draftRepository;
+    private final MailDraftRepository draftRepository;
 
-    @Autowired
-    private MailFolderRepository folderRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private MailSignatureRepository signatureRepository;
+    private final MailDraftAttachmentRepository draftAttachmentRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private MailDraftAttachmentRepository draftAttachmentRepository;
+    private final MailMapper mailMapper;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final MailGroupService groupService;
 
-    @Autowired
-    private MailMapper mailMapper;
+    private final MailFolderService folderService;
 
-    @Autowired
-    private MailGroupService groupService;
-
-    @Autowired
-    private MailFolderService folderService;
-
-    @Autowired
-    private MailGroupRepository groupRepository;
+    private final MailGroupRepository groupRepository;
 
     @Value("${app.upload.dir:${user.home}/uploads/mails}")
     private String uploadDir;
+
+    public MailService(MailAttachmentRepository attachmentRepository, MailRepository mailRepository, MailRecipientRepository recipientRepository, MailDraftRepository draftRepository, MailGroupRepository groupRepository, UserRepository userRepository, MailDraftAttachmentRepository draftAttachmentRepository, ObjectMapper objectMapper, MailFolderService folderService, MailMapper mailMapper, MailGroupService groupService) {
+        this.attachmentRepository = attachmentRepository;
+        this.mailRepository = mailRepository;
+        this.recipientRepository = recipientRepository;
+        this.draftRepository = draftRepository;
+        this.groupRepository = groupRepository;
+        this.userRepository = userRepository;
+        this.draftAttachmentRepository = draftAttachmentRepository;
+        this.objectMapper = objectMapper;
+        this.folderService = folderService;
+        this.mailMapper = mailMapper;
+        this.groupService = groupService;
+    }
 
     // ============= SEND EMAIL =============
 
@@ -601,8 +596,6 @@ public class MailService {
     @Transactional
     public void performBatchAction(MailActionRequest request, String userEmail) {
         for (Long mailId : request.getMailIds()) {
-            Mail mail = mailRepository.findById(mailId)
-                    .orElseThrow(() -> new RuntimeException("Mail not found: " + mailId));
 
             switch (request.getAction()) {
                 case "READ":

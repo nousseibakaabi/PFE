@@ -21,7 +21,7 @@ public class DataInitializer implements CommandLineRunner {
     private MailGroupService mailGroupService;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         initializeRoles();
         initializeTunisianZones();
         initializeMailGroups();

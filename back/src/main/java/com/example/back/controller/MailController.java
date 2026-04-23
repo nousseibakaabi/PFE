@@ -1,4 +1,3 @@
-// MailController.java
 package com.example.back.controller;
 
 import com.example.back.entity.MailDraft;
@@ -17,7 +16,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
@@ -38,24 +36,26 @@ import java.util.*;
 @Slf4j
 public class MailController {
 
-    @Autowired
-    private MailService mailService;
+    private final MailService mailService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private MailAttachmentRepository attachmentRepository;
+    private final MailAttachmentRepository attachmentRepository;
 
-    @Autowired
-    private MailFolderRepository folderRepository;
+    private final MailFolderRepository folderRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private MailFolderService folderService;
+    private final MailFolderService folderService;
 
+    public MailController(MailAttachmentRepository attachmentRepository, MailService mailService, UserRepository userRepository, MailFolderRepository folderRepository, ObjectMapper objectMapper, MailFolderService folderService) {
+        this.attachmentRepository = attachmentRepository;
+        this.mailService = mailService;
+        this.userRepository = userRepository;
+        this.folderRepository = folderRepository;
+        this.objectMapper = objectMapper;
+        this.folderService = folderService;
+    }
 
 
     private String getCurrentUsername() {

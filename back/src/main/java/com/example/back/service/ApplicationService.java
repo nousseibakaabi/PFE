@@ -3,21 +3,18 @@ package com.example.back.service;
 import com.example.back.entity.*;
 import com.example.back.payload.request.ApplicationRequest;
 import com.example.back.payload.response.ApplicationResponse;
-import com.example.back.payload.response.MailResponse;
 import com.example.back.repository.*;
 import com.example.back.service.mapper.ApplicationMapper;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,46 +22,35 @@ import java.util.stream.Collectors;
 public class ApplicationService {
 
 
-    @Autowired
-    private EntitySyncService entitySyncService;
+    private final EntitySyncService entitySyncService;
 
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private StructureRepository structureRepository;
+    private final StructureRepository structureRepository;
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final ConventionRepository conventionRepository;
 
-    @Autowired
-    private ApplicationMapper applicationMapper;
+    private final ApplicationMapper applicationMapper;
 
-    @Autowired
-    private HistoryService historyService;
+    private final HistoryService historyService;
 
-    @Autowired
-    private SmsService smsService;
+    private final WorkloadService workloadService;
 
-    @Autowired
-    private MailService mailService;
+    public ApplicationService(EntitySyncService entitySyncService, ApplicationRepository applicationRepository, UserRepository userRepository, StructureRepository structureRepository, ConventionRepository conventionRepository, ApplicationMapper applicationMapper, HistoryService historyService , WorkloadService workloadService) {
+        this.entitySyncService = entitySyncService;
+        this.applicationRepository = applicationRepository;
+        this.userRepository = userRepository;
+        this.structureRepository = structureRepository;
+        this.conventionRepository = conventionRepository;
+        this.applicationMapper = applicationMapper;
+        this.historyService = historyService;
+        this.workloadService = workloadService;
+    }
 
-    @Autowired
-    private WorkloadService workloadService;
 
-    @Autowired
-    private NotificationRepository notificationRepository;
-
-    @Autowired
-    private NotificationService notificationService;
-
-    /**
-     * Create a new application
-     */
     @Transactional
     public ApplicationResponse createApplication(ApplicationRequest request) {
         try {
@@ -153,9 +139,7 @@ public class ApplicationService {
         }
     }
 
-    /**
-     * Update application
-     */
+
     @Transactional
     public ApplicationResponse updateApplication(Long id, ApplicationRequest request) {
         try {
@@ -301,9 +285,7 @@ public class ApplicationService {
         }
     }
 
-    /**
-     * Delete application with access control
-     */
+
     @Transactional
     public void deleteApplication(Long id) {
         try {
@@ -354,328 +336,6 @@ public class ApplicationService {
 
 
     @Transactional
-    public ApplicationResponse assignChefDeProjet(Long applicationId, Long chefDeProjetId) {
-        try {
-            // Check if current user is admin
-            String currentRole = getCurrentUserRole();
-            if (!"ROLE_ADMIN".equals(currentRole)) {
-                throw new RuntimeException("Only admin can assign chef de projet");
-            }
-
-            Application application = applicationRepository.findById(applicationId)
-                    .orElseThrow(() -> new RuntimeException("Application not found"));
-
-            User oldChef = application.getChefDeProjet();
-
-            User chefDeProjet = userRepository.findById(chefDeProjetId)
-                    .orElseThrow(() -> new RuntimeException("Chef de Projet not found"));
-
-            // Verify chef de projet has the correct role
-            if (!chefDeProjet.getRoles().stream()
-                    .anyMatch(role -> role.getName().name().equals("ROLE_CHEF_PROJET"))) {
-                throw new RuntimeException("Selected user is not a Chef de Projet");
-            }
-
-            // ===== USE WORKLOAD SERVICE TO HANDLE ASSIGNMENT =====
-            User currentUser = getCurrentUser();
-
-            WorkloadService.AssignmentResult result = workloadService.assignApplication(
-                    chefDeProjetId,
-                    applicationId,
-                    false // force = false by default
-            );
-
-            if (!result.isSuccess() && !result.isWarning()) {
-                throw new RuntimeException("Assignment failed: " + result.getMessage());
-            }
-
-            // LOG HISTORY: Assign chef de projet
-            Application updatedApplication = applicationRepository.findById(applicationId).get();
-            historyService.logApplicationAssignChef(updatedApplication, oldChef, chefDeProjet, currentUser);
-
-            return applicationMapper.toResponse(updatedApplication);
-
-        } catch (RuntimeException e) {
-            log.error("Error assigning chef de projet: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            log.error("Unexpected error assigning chef de projet: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to assign chef de projet");
-        }
-    }
-
-
-    private String formatAlternatives(List<WorkloadService.AlternativeChef> alternatives) {
-        if (alternatives == null || alternatives.isEmpty()) {
-            return "No available chefs found";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        for (WorkloadService.AlternativeChef alt : alternatives) {
-            sb.append(String.format("• %s (Current workload: %.1f%%, Projected: %.1f%%)\n",
-                    alt.getChefName(),
-                    alt.getCurrentWorkload(),
-                    alt.getProjectedWorkload()));
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Send assignment notification based on user's notification mode
-     */
-    private void sendAssignmentNotification(Application application, User chefDeProjet, User admin) {
-        log.info("========== ASSIGNMENT NOTIFICATION ==========");
-        log.info("Application: {} - {}", application.getCode(), application.getName());
-        log.info("Chef de Projet: {} (ID: {})", chefDeProjet.getUsername(), chefDeProjet.getId());
-        log.info("Chef Email: {}", chefDeProjet.getEmail());
-        log.info("Chef Phone: {}", chefDeProjet.getPhone());
-        log.info("Chef NotifMode: {}", chefDeProjet.getNotifMode());
-        log.info("Admin: {} {}", admin.getFirstName(), admin.getLastName());
-
-        String notifMode = chefDeProjet.getNotifMode();
-        if (notifMode == null || notifMode.trim().isEmpty()) {
-            notifMode = "email"; // Default to email
-            log.info("NotifMode was null/empty, defaulting to: {}", notifMode);
-        }
-
-        String subject = "📋 Nouvelle application assignée: " + application.getCode();
-        String message = buildAssignmentMessage(application, admin);
-
-        boolean emailSent = false;
-        boolean smsSent = false;
-
-        // Send email if mode is email or both
-        if (notifMode.equals("email") || notifMode.equals("both")) {
-            log.info("Attempting to send EMAIL to: {}", chefDeProjet.getEmail());
-            emailSent = sendAssignmentEmail(chefDeProjet, subject, message);
-            if (emailSent) {
-                log.info("✅ EMAIL sent successfully to {}", chefDeProjet.getEmail());
-            } else {
-                log.error("❌ Failed to send EMAIL to {}", chefDeProjet.getEmail());
-            }
-        }
-
-        // Send SMS if mode is sms or both
-        if (notifMode.equals("sms") || notifMode.equals("both")) {
-            log.info("Attempting to send SMS to: {}", chefDeProjet.getPhone());
-            smsSent = sendAssignmentSms(chefDeProjet, message);
-            if (smsSent) {
-                log.info("✅ SMS sent successfully to {}", chefDeProjet.getPhone());
-            } else {
-                log.error("❌ Failed to send SMS to {}", chefDeProjet.getPhone());
-            }
-        }
-
-        log.info("Notification results - Email: {}, SMS: {}", emailSent, smsSent);
-        log.info("========== END NOTIFICATION ==========");
-    }
-
-
-    private void sendAssignmentEmailViaNotification(User chefDeProjet, Notification notification, Facture dummyFacture) {
-        try {
-            // Use your existing mail service that works with notifications
-            // You'll need to modify your MailService to handle assignment notifications
-            // or use the notification service
-            if (notificationService != null) {
-                notificationService.sendNotificationViaChannels(notification, dummyFacture, 0);
-                log.info("✅ Email notification sent via notification service to {}", chefDeProjet.getEmail());
-            } else {
-                log.error("NotificationService not available");
-            }
-        } catch (Exception e) {
-            log.error("❌ Failed to send email notification: {}", e.getMessage());
-        }
-    }
-
-    private void sendAssignmentSmsViaNotification(User chefDeProjet, Notification notification, Facture dummyFacture) {
-        try {
-            if (chefDeProjet.getPhone() == null || chefDeProjet.getPhone().isEmpty()) {
-                log.warn("⚠️ User {} has no phone number, cannot send SMS", chefDeProjet.getUsername());
-                return;
-            }
-
-            if (notificationService != null) {
-                notificationService.sendNotificationViaChannels(notification, dummyFacture, 0);
-                log.info("✅ SMS notification sent via notification service to {}", chefDeProjet.getPhone());
-            } else {
-                log.error("NotificationService not available");
-            }
-        } catch (Exception e) {
-            log.error("❌ Failed to send SMS notification: {}", e.getMessage());
-        }
-    }
-
-    /**
-     * Send email notification
-     */
-    private boolean sendAssignmentEmail(User chefDeProjet, String subject, String message) {
-        try {
-            log.info("Preparing email for: {}", chefDeProjet.getEmail());
-
-            // Create HTML email content
-            String htmlContent = buildHtmlEmailContent(chefDeProjet, message);
-
-            // Get system sender
-            User systemSender = getSystemSender();
-
-            com.example.back.payload.request.MailRequest request = new com.example.back.payload.request.MailRequest();
-            request.setSubject(subject);
-            request.setContent(htmlContent);
-            request.setTo(java.util.Arrays.asList(chefDeProjet.getEmail()));
-            request.setImportance("NORMAL");
-
-            log.info("Calling mailService.sendMail()...");
-            MailResponse response = mailService.sendMail(request, systemSender, null);
-
-            log.info("Mail created with ID: {}", response.getId());
-            return true;
-
-        } catch (Exception e) {
-            log.error("Failed to send email: {}", e.getMessage(), e);
-            return false;
-        }
-    }
-
-    /**
-     * Send SMS notification
-     */
-    private boolean sendAssignmentSms(User chefDeProjet, String message) {
-        try {
-            // Check if user has phone number
-            if (chefDeProjet.getPhone() == null || chefDeProjet.getPhone().isEmpty()) {
-                log.warn("User {} has no phone number, skipping SMS", chefDeProjet.getUsername());
-                return false;
-            }
-
-            // Check if SMS is enabled
-            if (!smsService.isSmsEnabled()) {
-                log.warn("SMS is disabled in configuration");
-                return false;
-            }
-
-            // SMS should be shorter, so use a condensed version
-            String smsMessage = buildSmsMessage(message);
-            log.info("SMS message: {}", smsMessage);
-
-            // Use the appropriate SMS method
-            smsService.sendTestSms(chefDeProjet.getPhone(), smsMessage);
-
-            log.info("SMS sent to {}", chefDeProjet.getPhone());
-            return true;
-
-        } catch (Exception e) {
-            log.error("Failed to send SMS: {}", e.getMessage(), e);
-            return false;
-        }
-    }
-
-    /**
-     * Build the assignment message
-     */
-    private String buildAssignmentMessage(Application application, User admin) {
-        return String.format(
-                "Vous avez été assigné comme Chef de Projet pour l'application %s - %s par %s %s.\n\n" +
-                        "Détails de l'application:\n" +
-                        "• Code: %s\n" +
-                        "• Nom: %s\n" +
-                        "• Client: %s\n" +
-                        "• Email client: %s\n" +
-                        "• Téléphone client: %s\n" +
-                        "• Dates: %s - %s\n" +
-                        "• Statut: %s\n\n" +
-                        "Connectez-vous à l'application pour plus de détails.",
-
-                application.getCode(),
-                application.getName(),
-                admin.getFirstName(),
-                admin.getLastName(),
-                application.getCode(),
-                application.getName(),
-                application.getClientName(),
-                application.getClientEmail() != null ? application.getClientEmail() : "Non spécifié",
-                application.getClientPhone() != null ? application.getClientPhone() : "Non spécifié",
-                application.getDateDebut() != null ? application.getDateDebut().toString() : "Non définie",
-                application.getDateFin() != null ? application.getDateFin().toString() : "Non définie",
-                application.getStatus()
-        );
-    }
-
-    /**
-     * Build HTML email content
-     */
-    private String buildHtmlEmailContent(User chefDeProjet, String message) {
-        return "<!DOCTYPE html>" +
-                "<html>" +
-                "<head>" +
-                "<meta charset='UTF-8'>" +
-                "<style>" +
-                "body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
-                ".container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
-                ".header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0; }" +
-                ".content { background: #f9f9f9; padding: 20px; border-radius: 0 0 10px 10px; }" +
-                ".footer { margin-top: 20px; font-size: 12px; color: #999; text-align: center; }" +
-                "</style>" +
-                "</head>" +
-                "<body>" +
-                "<div class='container'>" +
-                "<div class='header'>" +
-                "<h2>📋 Nouvelle assignation Chef de Projet</h2>" +
-                "</div>" +
-                "<div class='content'>" +
-                "<p>Bonjour <strong>" + chefDeProjet.getFirstName() + " " + chefDeProjet.getLastName() + "</strong>,</p>" +
-                "<p>" + message.replace("\n", "<br>") + "</p>" +
-                "</div>" +
-                "<div class='footer'>" +
-                "<p>Cet email a été envoyé automatiquement par le système de gestion.</p>" +
-                "</div>" +
-                "</div>" +
-                "</body>" +
-                "</html>";
-    }
-
-    /**
-     * Build SMS message (shorter version)
-     */
-    private String buildSmsMessage(String fullMessage) {
-        // Extract just the essential info for SMS
-        String[] lines = fullMessage.split("\n");
-        StringBuilder sms = new StringBuilder();
-
-        for (String line : lines) {
-            if (line.contains("assigné comme Chef de Projet")) {
-                sms.append(line).append(" ");
-            } else if (line.contains("• Code:")) {
-                sms.append(line.replace("• ", "")).append(" ");
-            } else if (line.contains("• Nom:")) {
-                sms.append(line.replace("• ", "")).append(" ");
-            } else if (line.contains("• Client:")) {
-                sms.append(line.replace("• ", "")).append(" ");
-            } else if (line.contains("Connectez-vous")) {
-                // Don't include login message in SMS to save space
-                break;
-            }
-        }
-
-        return sms.toString().trim();
-    }
-
-    /**
-     * Get system sender user (you may need to create this user)
-     */
-    private User getSystemSender() {
-        return userRepository.findByUsername("system")
-                .orElseGet(() -> {
-                    // If system user doesn't exist, return the admin as fallback
-                    return userRepository.findByUsername("admin")
-                            .orElseThrow(() -> new RuntimeException("No system or admin user found"));
-                });
-    }
-
-    /**
-     * Update application dates based on a convention
-     * This is called when a convention is created or updated
-     */
-    @Transactional
     public void updateApplicationDatesFromConvention(Long applicationId, LocalDate conventionStartDate, LocalDate conventionEndDate) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
@@ -713,9 +373,7 @@ public class ApplicationService {
         }
     }
 
-    /**
-     * Clone application for history
-     */
+
     private Application cloneApplication(Application app) {
         Application clone = new Application();
         clone.setId(app.getId());
@@ -736,37 +394,27 @@ public class ApplicationService {
         return clone;
     }
 
-    /**
-     * Get current authenticated user
-     */
     private String getCurrentUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth.getName();
     }
 
-    /**
-     * Get current user role
-     */
+
     private String getCurrentUserRole() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth.getAuthorities().stream()
                 .findFirst()
-                .map(grantedAuthority -> grantedAuthority.getAuthority())
+                .map(GrantedAuthority::getAuthority)
                 .orElse("ROLE_USER");
     }
 
-    /**
-     * Get current user entity
-     */
+
     private User getCurrentUser() {
         String username = getCurrentUsername();
         return userRepository.findByUsername(username).orElse(null);
     }
 
 
-    /**
-     * Get application by ID with access control
-     */
     public ApplicationResponse getApplicationById(Long id) {
         try {
             String currentUsername = getCurrentUsername();
@@ -804,12 +452,6 @@ public class ApplicationService {
     }
 
 
-    // In ApplicationService.java - Add this method
-
-    /**
-     * Manually set application status to TERMINE
-     * This bypasses automatic date-based logic
-     */
     @Transactional
     public ApplicationResponse manuallyTerminateApplication(Long id, String reason) {
         try {
@@ -851,9 +493,7 @@ public class ApplicationService {
     }
 
 
-    /**
-     * Get all applications with access control
-     */
+
     public List<ApplicationResponse> getAllApplications() {
         try {
             String currentUsername = getCurrentUsername();
@@ -891,9 +531,6 @@ public class ApplicationService {
     }
 
 
-    /**
-     * Get applications by Chef de Projet
-     */
     public List<ApplicationResponse> getApplicationsByChefDeProjet(Long chefDeProjetId) {
         try {
             List<Application> applications = applicationRepository.findByChefDeProjetId(chefDeProjetId);
@@ -906,9 +543,7 @@ public class ApplicationService {
         }
     }
 
-    /**
-     * Search applications with filters
-     */
+
     public List<ApplicationResponse> searchApplications(
             String code, String name, String clientName,
             Long chefDeProjetId, String status) {
@@ -941,11 +576,9 @@ public class ApplicationService {
     }
 
 
-    /**
-     * Calculate and update application status automatically
-     */
+
     @Transactional
-    public void calculateApplicationStatus(Long applicationId) {
+    public void calculateApplicationStatus(Long applicationId) throws RuntimeException {
         try {
             Application application = applicationRepository.findById(applicationId)
                     .orElseThrow(() -> new RuntimeException("Application not found"));
@@ -961,9 +594,7 @@ public class ApplicationService {
         }
     }
 
-    /**
-     * Get application dashboard statistics
-     */
+
     public Map<String, Object> getApplicationDashboard() {
         try {
             String currentUsername = getCurrentUsername();
@@ -1018,10 +649,7 @@ public class ApplicationService {
         }
     }
 
-    /**
-     * Find or create Structure based on application client name
-     * This is used when creating a convention for an application
-     */
+
     public Structure getOrCreateStructureForApplication(Long applicationId) {
         try {
             Application application = applicationRepository.findById(applicationId)
@@ -1074,12 +702,7 @@ public class ApplicationService {
     }
 
 
-    /**
-     * Generate suggested application code
-     * Format: APP-YYYY-XXX where XXX is auto-incremented sequence
-     */
 
-    // ApplicationService.java
     public String generateSuggestedApplicationCode() {
         int currentYear = LocalDate.now().getYear();
         String yearStr = String.valueOf(currentYear);
@@ -1129,16 +752,6 @@ public class ApplicationService {
     }
 
 
-    /**
-     * Sync all application dates based on its conventions
-     * For multiple conventions, we need to decide which convention's dates to follow
-     * Since an app can have multiple conventions, we need to define the logic:
-     * - Should it follow the most recent convention?
-     * - Should it take the earliest start and latest end?
-     * <p>
-     * Based on your statement "the app will always follow the convention",
-     * I'll assume you want it to follow the most recently created/updated convention
-     */
     @Transactional
     public void syncApplicationDatesWithAllConventions(Long applicationId) {
         Application application = applicationRepository.findById(applicationId)
@@ -1179,9 +792,7 @@ public class ApplicationService {
         }
     }
 
-    /**
-     * Get date summary for an application based on its conventions
-     */
+
     public Map<String, Object> getApplicationDateSummary(Long applicationId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
@@ -1221,9 +832,6 @@ public class ApplicationService {
     }
 
 
-    /**
-     * Get all applications that don't have any conventions
-     */
     public List<ApplicationResponse> getApplicationsWithoutConventions() {
         try {
             List<Application> applications = applicationRepository.findApplicationsWithoutConventions();
@@ -1236,58 +844,7 @@ public class ApplicationService {
         }
     }
 
-    private Notification createAssignmentNotification(Application application, User chefDeProjet, User admin) {
-        try {
-            Notification notification = new Notification();
-            notification.setUser(chefDeProjet);
-            notification.setTitle("📋 Nouvelle application assignée");
-            notification.setType("SUCCESS");
-            notification.setNotificationType("APPLICATION_ASSIGNED");
 
-            String message = String.format(
-                    "Vous avez été assigné comme Chef de Projet pour l'application %s - %s par %s %s.\n\n" +
-                            "Détails de l'application:\n" +
-                            "• Code: %s\n" +
-                            "• Nom: %s\n" +
-                            "• Client: %s\n" +
-                            "• Dates: %s - %s\n" +
-                            "• Statut: %s",
-                    application.getCode(),
-                    application.getName(),
-                    admin.getFirstName(),
-                    admin.getLastName(),
-                    application.getCode(),
-                    application.getName(),
-                    application.getClientName(),
-                    application.getDateDebut() != null ? application.getDateDebut().toString() : "Non définie",
-                    application.getDateFin() != null ? application.getDateFin().toString() : "Non définie",
-                    application.getStatus()
-            );
-            notification.setMessage(message);
-
-            notification.setReferenceId(application.getId());
-            notification.setReferenceType("APPLICATION");
-            notification.setReferenceCode(application.getCode());
-
-            notification.setIsRead(false);
-            notification.setIsSent(false);
-            notification.setEmailSent(false);
-            notification.setSmsSent(false);
-
-            // Save to database
-            return notificationRepository.save(notification);
-        } catch (Exception e) {
-            log.error("Failed to create assignment notification", e);
-            return null;
-        }
-    }
-
-
-// Add these methods to your ApplicationService class
-
-    /**
-     * Check if current user is admin
-     */
     private boolean isAdmin() {
         User currentUser = getCurrentUser();
         if (currentUser == null) return false;
@@ -1296,18 +853,9 @@ public class ApplicationService {
                 .anyMatch(role -> role.getName().name().equals("ROLE_ADMIN"));
     }
 
-    /**
-     * Get archived applications for current user (with role-based filtering)
-     */
-    /**
-     * Get archived applications for current user (with role-based filtering)
-     */
-    public List<ApplicationResponse> getArchivedApplicationsForCurrentUser() {
+    public List<ApplicationResponse> getArchivedApplicationsForCurrentUser() throws RuntimeException {
         try {
             User currentUser = getCurrentUser();
-            if (currentUser == null) {
-                throw new RuntimeException("User not authenticated");
-            }
 
             List<Application> archivedApps;
 

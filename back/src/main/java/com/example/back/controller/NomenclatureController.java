@@ -7,7 +7,6 @@ import com.example.back.repository.*;
 import com.example.back.service.EntitySyncService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,24 +23,26 @@ import java.util.Optional;
 @Slf4j
 public class NomenclatureController {
 
-    @Autowired
-    private EntitySyncService entitySyncService;
+    private final EntitySyncService entitySyncService;
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    private ZoneGeographiqueRepository zoneGeographiqueRepository;
+    private final ZoneGeographiqueRepository zoneGeographiqueRepository;
 
-    @Autowired
-    private StructureRepository structureRepository;
+    private final StructureRepository structureRepository;
 
-    @Autowired
-    private FactureRepository factureRepository;
+    private final FactureRepository factureRepository;
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final ConventionRepository conventionRepository;
 
+    public NomenclatureController(EntitySyncService entitySyncService, ApplicationRepository applicationRepository, ZoneGeographiqueRepository zoneGeographiqueRepository, StructureRepository structureRepository, FactureRepository factureRepository, ConventionRepository conventionRepository) {
+        this.entitySyncService = entitySyncService;
+        this.applicationRepository = applicationRepository;
+        this.zoneGeographiqueRepository = zoneGeographiqueRepository;
+        this.structureRepository = structureRepository;
+        this.factureRepository = factureRepository;
+        this.conventionRepository = conventionRepository;
+    }
 
 
     // ==================== ZONES GÉOGRAPHIQUES ====================

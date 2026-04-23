@@ -5,10 +5,8 @@ public class ProfileUpdateRequest {
     private String lastName;
     private String phone;
     private String department;
-    private String profileImage;
 
 
-    // Getters and Setters
     public String getFirstName() {
         return firstName;
     }
@@ -37,15 +35,4 @@ public class ProfileUpdateRequest {
         return department;
     }
 
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
-    public String getProfileImage() {
-        return profileImage;
-    }
-
-    public void setProfileImage(String profileImage) {
-        this.profileImage = profileImage;
-    }
 }

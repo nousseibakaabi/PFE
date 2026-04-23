@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -376,29 +377,29 @@ public class ClientBilanService {
         List<ClientBilanResponse.PaymentRecord> records = new ArrayList<>();
 
         for (Facture facture : factures) {
-            ClientBilanResponse.PaymentRecord record = new ClientBilanResponse.PaymentRecord();
-            record.setInvoiceId(facture.getId());
-            record.setInvoiceNumber(facture.getNumeroFacture());
-            record.setInvoiceDate(facture.getDateFacturation());
-            record.setDueDate(facture.getDateEcheance());
-            record.setPaymentDate(facture.getDatePaiement());
-            record.setAmount(facture.getMontantTTC());
-            record.setPaymentStatus(facture.getStatutPaiement());
-            record.setPaymentReference(facture.getReferencePaiement());
+            ClientBilanResponse.PaymentRecord rec = new ClientBilanResponse.PaymentRecord();
+            rec.setInvoiceId(facture.getId());
+            rec.setInvoiceNumber(facture.getNumeroFacture());
+            rec.setInvoiceDate(facture.getDateFacturation());
+            rec.setDueDate(facture.getDateEcheance());
+            rec.setPaymentDate(facture.getDatePaiement());
+            rec.setAmount(facture.getMontantTTC());
+            rec.setPaymentStatus(facture.getStatutPaiement());
+            rec.setPaymentReference(facture.getReferencePaiement());
 
             if (facture.getDatePaiement() != null && facture.getDateEcheance() != null) {
                 long daysLate = ChronoUnit.DAYS.between(facture.getDateEcheance(), facture.getDatePaiement());
-                record.setDaysLate((int) daysLate);
-                if (daysLate < 0) record.setPaymentTiming("ADVANCE");
-                else if (daysLate == 0) record.setPaymentTiming("ON_TIME");
-                else record.setPaymentTiming("LATE");
+                rec.setDaysLate((int) daysLate);
+                if (daysLate < 0) rec.setPaymentTiming("ADVANCE");
+                else if (daysLate == 0) rec.setPaymentTiming("ON_TIME");
+                else rec.setPaymentTiming("LATE");
             } else if ("PAYE".equals(facture.getStatutPaiement())) {
-                record.setPaymentTiming("ON_TIME");
-                record.setDaysLate(0);
+                rec.setPaymentTiming("ON_TIME");
+                rec.setDaysLate(0);
             } else {
-                record.setPaymentTiming("PENDING");
+                rec.setPaymentTiming("PENDING");
             }
-            records.add(record);
+            records.add(rec);
         }
 
         records.sort((a, b) -> {
@@ -434,14 +435,14 @@ public class ClientBilanService {
                     .sorted((a, b) -> Long.compare(ChronoUnit.DAYS.between(b.getDateEcheance(), b.getDatePaiement()), ChronoUnit.DAYS.between(a.getDateEcheance(), a.getDatePaiement())))
                     .limit(5)
                     .map(f -> {
-                        ClientBilanResponse.LatePaymentRecord record = new ClientBilanResponse.LatePaymentRecord();
-                        record.setInvoiceNumber(f.getNumeroFacture());
-                        record.setDueDate(f.getDateEcheance());
-                        record.setPaymentDate(f.getDatePaiement());
-                        record.setDaysLate((int) ChronoUnit.DAYS.between(f.getDateEcheance(), f.getDatePaiement()));
-                        record.setAmount(f.getMontantTTC());
-                        record.setConventionReference(convention.getReferenceConvention());
-                        return record;
+                        ClientBilanResponse.LatePaymentRecord reco = new ClientBilanResponse.LatePaymentRecord();
+                        reco.setInvoiceNumber(f.getNumeroFacture());
+                        reco.setDueDate(f.getDateEcheance());
+                        reco.setPaymentDate(f.getDatePaiement());
+                        reco.setDaysLate((int) ChronoUnit.DAYS.between(f.getDateEcheance(), f.getDatePaiement()));
+                        reco.setAmount(f.getMontantTTC());
+                        reco.setConventionReference(convention.getReferenceConvention());
+                        return reco;
                     })
                     .collect(Collectors.toList());
             details.setWorstLatePayments(worst);
@@ -465,7 +466,10 @@ public class ClientBilanService {
 
     private ClientBilanResponse.PaymentStats buildPaymentStats(List<Convention> conventions) {
         ClientBilanResponse.PaymentStats stats = new ClientBilanResponse.PaymentStats();
-        int totalPayments = 0, onTime = 0, late = 0, advance = 0;
+        int totalPayments = 0;
+        int onTime = 0;
+        int late = 0;
+        int advance = 0;
 
         for (Convention convention : conventions) {
             List<Facture> factures = factureRepository.findByConventionId(convention.getId());
@@ -524,8 +528,13 @@ public class ClientBilanService {
 
     private ClientBilanResponse.FinancialSummary buildFinancialSummary(List<Convention> conventions) {
         ClientBilanResponse.FinancialSummary summary = new ClientBilanResponse.FinancialSummary();
-        BigDecimal totalContractValue = BigDecimal.ZERO, totalPaid = BigDecimal.ZERO, totalUnpaid = BigDecimal.ZERO, totalOverdue = BigDecimal.ZERO;
-        Map<Integer, BigDecimal> yearlyTotal = new TreeMap<>(), yearlyPaid = new TreeMap<>(), yearlyUnpaid = new TreeMap<>();
+        BigDecimal totalContractValue = BigDecimal.ZERO;
+        BigDecimal totalPaid = BigDecimal.ZERO;
+        BigDecimal totalUnpaid = BigDecimal.ZERO;
+        BigDecimal totalOverdue = BigDecimal.ZERO;
+        Map<Integer, BigDecimal> yearlyTotal = new TreeMap<>();
+        Map<Integer, BigDecimal> yearlyPaid = new TreeMap<>();
+        Map<Integer, BigDecimal> yearlyUnpaid = new TreeMap<>();
 
         for (Convention convention : conventions) {
             BigDecimal contractValue = convention.getMontantTTC() != null ? convention.getMontantTTC() : BigDecimal.ZERO;
@@ -612,7 +621,8 @@ public class ClientBilanService {
         rating.setContractComplianceScore(complianceScore);
         rating.setActivityScore(activityScore);
 
-        List<String> strengths = new ArrayList<>(), weaknesses = new ArrayList<>();
+        List<String> strengths = new ArrayList<>();
+        List<String> weaknesses = new ArrayList<>();
 
         if (paymentStats.getLatePayments() == 0 && paymentStats.getTotalPayments() > 0) strengths.add("Excellent historique de paiement - Aucun retard");
         else if (paymentStats.getLatePercentage().doubleValue() <= 10) strengths.add("Très bon historique de paiement - Moins de 10% de retards");
@@ -665,6 +675,9 @@ public class ClientBilanService {
                 recommendations.add("🔴 Engager les procédures de recouvrement");
                 recommendations.add("🔴 Alerter la direction");
                 break;
+
+            default:
+                throw new IllegalStateException("Unexpected value: " + rating.getRating());
         }
 
         ClientBilanResponse.PaymentStats paymentStats = response.getPaymentStats();
@@ -797,8 +810,6 @@ public class ClientBilanService {
             CellStyle headerStyle = createExcelHeaderStyle(workbook);
             CellStyle titleStyle = createExcelTitleStyle(workbook);
             CellStyle boldStyle = createExcelBoldStyle(workbook);
-            CellStyle currencyStyle = createExcelCurrencyStyle(workbook);
-            CellStyle dateStyle = createExcelDateStyle(workbook);
 
             // Sheet 1: Client Info
             Sheet infoSheet = workbook.createSheet("Informations Client");
@@ -853,7 +864,7 @@ public class ClientBilanService {
             // Sheet 2: Conventions
             Sheet convSheet = workbook.createSheet("Conventions");
             rowNum = 0;
-            org.apache.poi.ss.usermodel.Row convHeaderRow = convSheet.createRow(rowNum++);
+            Row convHeaderRow = convSheet.createRow(rowNum++);
             String[] convHeaders = {"Référence", "Libellé", "Application", "Date Début", "Date Fin", "Statut", "Montant TTC", "Périodicité", "Factures", "Montant Payé"};
             for (int i = 0; i < convHeaders.length; i++) {
                 org.apache.poi.ss.usermodel.Cell cell = convHeaderRow.createCell(i);
@@ -861,12 +872,12 @@ public class ClientBilanService {
                 cell.setCellStyle(headerStyle);
             }
             for (ClientBilanResponse.ConventionBilan conv : bilan.getConventions()) {
-                org.apache.poi.ss.usermodel.Row row = convSheet.createRow(rowNum++);
+                Row row = convSheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(conv.getReferenceConvention());
                 row.createCell(1).setCellValue(conv.getLibelle());
                 row.createCell(2).setCellValue(conv.getApplicationName() != null ? conv.getApplicationName() : "N/A");
-                if (conv.getDateDebut() != null) row.createCell(3).setCellValue(java.sql.Date.valueOf(conv.getDateDebut()));
-                if (conv.getDateFin() != null) row.createCell(4).setCellValue(java.sql.Date.valueOf(conv.getDateFin()));
+                if (conv.getDateDebut() != null) row.createCell(3).setCellValue(Date.valueOf(conv.getDateDebut()));
+                if (conv.getDateFin() != null) row.createCell(4).setCellValue(Date.valueOf(conv.getDateFin()));
                 row.createCell(5).setCellValue(conv.getEtat());
                 if (conv.getMontantTTC() != null) row.createCell(6).setCellValue(conv.getMontantTTC().doubleValue());
                 row.createCell(7).setCellValue(conv.getPeriodicite() != null ? conv.getPeriodicite() : "N/A");
@@ -1016,27 +1027,7 @@ public class ClientBilanService {
         return style;
     }
 
-    private CellStyle createExcelCurrencyStyle(Workbook workbook) {
-        CellStyle style = workbook.createCellStyle();
-        CreationHelper createHelper = workbook.getCreationHelper();
-        style.setDataFormat(createHelper.createDataFormat().getFormat("#,##0.00"));
-        style.setBorderBottom(BorderStyle.THIN);
-        style.setBorderTop(BorderStyle.THIN);
-        style.setBorderLeft(BorderStyle.THIN);
-        style.setBorderRight(BorderStyle.THIN);
-        return style;
-    }
 
-    private CellStyle createExcelDateStyle(Workbook workbook) {
-        CellStyle style = workbook.createCellStyle();
-        CreationHelper createHelper = workbook.getCreationHelper();
-        style.setDataFormat(createHelper.createDataFormat().getFormat("dd/MM/yyyy"));
-        style.setBorderBottom(BorderStyle.THIN);
-        style.setBorderTop(BorderStyle.THIN);
-        style.setBorderLeft(BorderStyle.THIN);
-        style.setBorderRight(BorderStyle.THIN);
-        return style;
-    }
 
     private void addExcelRow(Sheet sheet, int rowNum, String label, String value, CellStyle boldStyle) {
         Row row = sheet.createRow(rowNum);

@@ -203,18 +203,13 @@ public class Application {
     }
 
 
-    // Get application status color for UI
     public String getStatusColor() {
-        switch (status) {
-            case "PLANIFIE":
-                return "yellow";
-            case "EN_COURS":
-                return "blue";
-            case "TERMINE":
-                return "green";
-            default:
-                return "gray";
-        }
+        return switch (status) {
+            case "PLANIFIE" -> "yellow";
+            case "EN_COURS" -> "blue";
+            case "TERMINE" -> "green";
+            default -> "gray";
+        };
     }
 
 
@@ -298,7 +293,6 @@ public class Application {
 
         // Update the existing updateStatusBasedOnDates method
         public void updateStatusBasedOnDates() {
-            // If status is TERMINE and we have a terminatedAt date, respect it
             if ("TERMINE".equals(this.status) && this.terminatedAt != null) {
                 // Keep as terminated - don't auto-update
                 return;

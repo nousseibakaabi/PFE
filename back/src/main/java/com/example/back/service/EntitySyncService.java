@@ -16,24 +16,23 @@ import java.util.Objects;
 @Slf4j
 public class EntitySyncService {
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final ConventionRepository conventionRepository;
 
-    @Autowired
-    private FactureRepository factureRepository;
+    private final FactureRepository factureRepository;
 
-    @Autowired
-    private StructureRepository structureRepository;
+    private final StructureRepository structureRepository;
 
-    @Autowired
-    private HistoryService historyService;
 
-    /**
-     * When Application is updated, sync to Conventions and Factures
-     */
+    public EntitySyncService(ApplicationRepository applicationRepository, ConventionRepository conventionRepository, FactureRepository factureRepository, StructureRepository structureRepository) {
+        this.applicationRepository = applicationRepository;
+        this.conventionRepository = conventionRepository;
+        this.factureRepository = factureRepository;
+        this.structureRepository = structureRepository;
+    }
+
+
     @Transactional
     public void syncApplicationChanges(Application oldApp, Application newApp) {
         log.info("========== SYNCING APPLICATION CHANGES ==========");
@@ -113,9 +112,7 @@ public class EntitySyncService {
         log.info("========== FINISHED SYNCING APPLICATION CHANGES ==========");
     }
 
-    /**
-     * When Convention is updated, sync to Application and Factures
-     */
+
     @Transactional
     public void syncConventionChanges(Convention oldConv, Convention newConv) {
         log.info("========== SYNCING CONVENTION CHANGES ==========");
@@ -158,9 +155,7 @@ public class EntitySyncService {
         log.info("========== FINISHED SYNCING CONVENTION CHANGES ==========");
     }
 
-    /**
-     * When Structure is updated, sync to Conventions and Applications
-     */
+
     @Transactional
     public void syncStructureChanges(Structure oldStruct, Structure newStruct) {
         log.info("========== SYNCING STRUCTURE CHANGES ==========");

@@ -8,7 +8,6 @@ import com.example.back.repository.*;
 import com.example.back.service.mapper.RequestMapper;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,44 +18,33 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RequestService {
 
-    @Autowired
-    private RequestRepository requestRepository;
+    private final RequestRepository requestRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final WorkloadService workloadService;
 
-    @Autowired
-    private WorkloadService workloadService;
+    private final MailService mailService;
 
-    @Autowired
-    private MailService mailService;
+    private final RequestMapper requestMapper;
 
-    @Autowired
-    private RequestMapper requestMapper;
+    private final HistoryService historyService;
 
-    @Autowired
-    private HistoryService historyService;
+    public RequestService(RequestRepository requestRepository, UserRepository userRepository, ApplicationRepository applicationRepository, WorkloadService workloadService, MailService mailService, RequestMapper requestMapper, HistoryService historyService) {
+        this.requestRepository = requestRepository;
+        this.userRepository = userRepository;
+        this.applicationRepository = applicationRepository;
+        this.workloadService = workloadService;
+        this.mailService = mailService;
+        this.requestMapper = requestMapper;
+        this.historyService = historyService;
+    }
 
-    // ============= SCENARIO 1: APP CREATED BY ADMIN =============
 
-    /**
-     * Send email to admin that app is renewed (Scenario 1 - initial notification)
-     */
     @Transactional
     public void sendRenewalNotificationToAdmin(Application application, Convention newConvention, User admin) {
-        log.info("========== SCENARIO 1: SENDING RENEWAL NOTIFICATION TO ADMIN ==========");
-        log.info("Application ID: {}, Code: {}", application.getId(), application.getCode());
-        log.info("Application created by: {}", application.getCreatedBy() != null ?
-                application.getCreatedBy().getUsername() : "UNKNOWN");
-        log.info("Current chef assigned: {}", application.getChefDeProjet() != null ?
-                application.getChefDeProjet().getUsername() : "NONE");
-        log.info("New convention: {}", newConvention.getReferenceConvention());
 
         String subject = "🔄 Application renouvelée - " + application.getCode();
 
@@ -78,19 +66,9 @@ public class RequestService {
         log.info("========== END SCENARIO 1 NOTIFICATION ==========");
     }
 
-    /**
-     * Create renewal acceptance request for chef de projet (when admin needs to ask chef)
-     * Scenario 1.1: Admin sends request to chef asking if they want to continue
-     */
+
     @Transactional
     public Request createRenewalAcceptanceRequest(Convention convention, User chefDeProjet, User admin) {
-        log.info("========== SCENARIO 1.1: CREATING RENEWAL ACCEPTANCE REQUEST ==========");
-        log.info("Convention: {}", convention.getReferenceConvention());
-        log.info("Application: {} - {}", convention.getApplication().getCode(), convention.getApplication().getName());
-        log.info("Chef de projet (target): {} (ID: {})", chefDeProjet.getUsername(), chefDeProjet.getId());
-        log.info("Admin (requester): {} (ID: {})", admin.getUsername(), admin.getId());
-        log.info("Application created by: {}", convention.getApplication().getCreatedBy() != null ?
-                convention.getApplication().getCreatedBy().getUsername() : "UNKNOWN");
 
         Request request = new Request();
         request.setRequestType("RENEWAL_ACCEPTANCE");
@@ -105,31 +83,20 @@ public class RequestService {
                 convention.getApplication().getName() + " ?");
 
         Request savedRequest = requestRepository.save(request);
-        log.info("✅ Request saved with ID: {}", savedRequest.getId());
 
         // Send email notification to chef de projet
         sendRenewalAcceptanceRequestEmail(chefDeProjet, convention, savedRequest, admin);
 
-        log.info("========== END SCENARIO 1.1 REQUEST CREATION ==========");
         return savedRequest;
     }
 
-    /**
-     * Send reassignment notification to chef (when chef is free)
-     * Scenario 1.2: Chef is free - just send notification
-     */
+
     @Transactional
     public void sendReassignmentNotificationToChef(User chef, Application application, Convention convention, User admin) {
-        log.info("========== SCENARIO 1.2: SENDING REASSIGNMENT NOTIFICATION TO FREE CHEF ==========");
-        log.info("Chef: {} (ID: {})", chef.getUsername(), chef.getId());
-        log.info("Application: {} - {}", application.getCode(), application.getName());
-        log.info("Convention: {}", convention.getReferenceConvention());
-        log.info("Application created by: {}", application.getCreatedBy() != null ?
-                application.getCreatedBy().getUsername() : "UNKNOWN");
 
         String subject = "📋 Réassignation suite au renouvellement - " + application.getCode();
 
-        String content = buildReassignmentEmail(chef, application, convention, admin);
+        String content = buildReassignmentEmail(chef, application, convention);
 
         sendEmail(chef, subject, content, admin);
 
@@ -137,20 +104,9 @@ public class RequestService {
         log.info("========== END SCENARIO 1.2 NOTIFICATION ==========");
     }
 
-    // ============= SCENARIO 2: APP CREATED BY CHEF DE PROJET =============
 
-    /**
-     * Send notification to chef that their app is renewed (Scenario 2 - initial notification)
-     */
     @Transactional
     public void sendRenewalNotificationToChef(User chef, Application application, Convention newConvention) {
-        log.info("========== SCENARIO 2: SENDING RENEWAL NOTIFICATION TO CHEF ==========");
-        log.info("Chef: {} (ID: {})", chef.getUsername(), chef.getId());
-        log.info("Application: {} - {}", application.getCode(), application.getName());
-        log.info("Application created by: {}", application.getCreatedBy() != null ?
-                application.getCreatedBy().getUsername() : "UNKNOWN");
-        log.info("Is creator the same as current chef? {}",
-                application.getCreatedBy() != null && application.getCreatedBy().getId().equals(chef.getId()));
 
         String subject = "🔄 Votre application a été renouvelée - " + application.getCode();
 
@@ -164,20 +120,10 @@ public class RequestService {
         log.info("========== END SCENARIO 2 NOTIFICATION ==========");
     }
 
-    /**
-     * Create reassignment suggestion from chef to admin (when chef cannot continue)
-     * Scenario 2.2: Chef cannot work on it, sends request with recommendation
-     */
+
     @Transactional
     public Request createReassignmentSuggestion(Convention convention, User chefDeProjet,
                                                 User recommendedChef, String reason, String recommendations) {
-        log.info("========== SCENARIO 2.2: CREATING REASSIGNMENT SUGGESTION ==========");
-        log.info("Chef de projet (requester): {} (ID: {})", chefDeProjet.getUsername(), chefDeProjet.getId());
-        log.info("Recommended chef: {}", recommendedChef != null ?
-                recommendedChef.getUsername() + " (ID: " + recommendedChef.getId() + ")" : "NONE");
-        log.info("Application: {} - {}", convention.getApplication().getCode(), convention.getApplication().getName());
-        log.info("Reason: {}", reason);
-        log.info("Recommendations: {}", recommendations);
 
         // Get admin
         User admin = getAdmin();
@@ -185,7 +131,6 @@ public class RequestService {
             log.error("❌ No admin found to create request");
             throw new RuntimeException("No admin found");
         }
-        log.info("Admin (target): {} (ID: {})", admin.getUsername(), admin.getId());
 
         Request request = new Request();
         request.setRequestType("REASSIGNMENT_SUGGESTION");
@@ -200,7 +145,6 @@ public class RequestService {
         request.setRecommendations(recommendations);
 
         Request savedRequest = requestRepository.save(request);
-        log.info("✅ Request saved with ID: {}", savedRequest.getId());
 
         // Send email to admin
         sendReassignmentSuggestionToAdminEmail(chefDeProjet, recommendedChef, convention, savedRequest, admin);
@@ -209,18 +153,9 @@ public class RequestService {
         return savedRequest;
     }
 
-    // ============= REQUEST PROCESSING METHODS =============
 
-    /**
-     * Process a request (approve/deny) - Main entry point
-     */
     @Transactional
     public RequestResponse processRequest(RequestActionDTO actionDTO, User processor) {
-        log.info("========== PROCESSING REQUEST ==========");
-        log.info("Request ID: {}", actionDTO.getRequestId());
-        log.info("Action: {}", actionDTO.getAction());
-        log.info("Processor: {} (ID: {})", processor.getUsername(), processor.getId());
-        log.info("Is admin: {}", isAdmin(processor));
 
         Request request = requestRepository.findById(actionDTO.getRequestId())
                 .orElseThrow(() -> {
@@ -252,15 +187,8 @@ else {
     }
 
 
-    /**
-     * Handle reassignment request from chef (admin responding to chef's request)
-     */
     @Transactional
     public RequestResponse handleReassignmentRequestFromChef(Request request, RequestActionDTO actionDTO, User processor) {
-        log.info("========== HANDLING REASSIGNMENT REQUEST FROM CHEF ==========");
-        log.info("Request ID: {}", request.getId());
-        log.info("Processor: {} (ID: {})", processor.getUsername(), processor.getId());
-        log.info("Is admin: {}", isAdmin(processor));
 
         // Verify that the processor is admin
         if (!isAdmin(processor)) {
@@ -271,33 +199,26 @@ else {
         if ("APPROVE".equals(actionDTO.getAction())) {
             log.info("Admin APPROVING the reassignment request");
 
-            // Determine which chef to assign
-            User recommendedChef = null;
+            User recommendedChef ;
 
             // If admin selected a different chef in the action, use that
             if (actionDTO.getRecommendedChefId() != null) {
                 recommendedChef = userRepository.findById(actionDTO.getRecommendedChefId())
                         .orElseThrow(() -> new RuntimeException("Recommended chef not found"));
-                log.info("Admin selected recommended chef: {} (ID: {})",
-                        recommendedChef.getUsername(), recommendedChef.getId());
+
             }
             // Otherwise use the chef originally recommended in the request
             else if (request.getRecommendedChef() != null) {
                 recommendedChef = request.getRecommendedChef();
-                log.info("Using originally recommended chef: {} (ID: {})",
-                        recommendedChef.getUsername(), recommendedChef.getId());
+
             } else {
-                log.error("❌ No recommended chef specified");
                 throw new RuntimeException("No recommended chef specified");
             }
 
             // Check workload of recommended chef
-            log.info("Checking workload for recommended chef {}...", recommendedChef.getUsername());
             boolean canAccept = checkChefWorkload(recommendedChef, request.getApplication());
-            log.info("Workload check result: canAccept = {}", canAccept);
 
             if (!canAccept) {
-                log.error("❌ Recommended chef {} has too high workload", recommendedChef.getUsername());
                 throw new RuntimeException("Le chef recommandé a une charge de travail trop élevée");
             }
 
@@ -305,14 +226,9 @@ else {
             Application app = request.getApplication();
             User oldChef = app.getChefDeProjet();
 
-            log.info("Updating application {} - current chef: {}, new chef: {}",
-                    app.getCode(),
-                    oldChef != null ? oldChef.getUsername() : "none",
-                    recommendedChef.getUsername());
 
             app.setChefDeProjet(recommendedChef);
             applicationRepository.save(app);
-            log.info("✅ Application updated with new chef");
 
             historyService.logChefReassignment(app, oldChef, recommendedChef, processor,
                     request.getReason() + (request.getRecommendations() != null ? " - " + request.getRecommendations() : ""));
@@ -325,14 +241,13 @@ else {
             request.setProcessedAt(LocalDateTime.now());
 
             // Send emails: one to old chef (requester) and one to new chef
+            assert oldChef != null;
             sendReassignmentRequestApprovedEmails(request, recommendedChef, oldChef, processor);
-            log.info("✅ Approval emails sent");
 
         } else if ("DENY".equals(actionDTO.getAction())) {
             log.info("Admin DENYING the reassignment request");
 
             if (actionDTO.getReason() == null || actionDTO.getReason().trim().isEmpty()) {
-                log.error("❌ Denial reason is required but was empty");
                 throw new RuntimeException("Reason is required when denying");
             }
 
@@ -344,15 +259,12 @@ else {
 
             // Send denial email to the requesting chef
             sendReassignmentRequestDeniedEmail(request, actionDTO.getReason(), processor);
-            log.info("✅ Denial email sent to chef");
 
         } else {
-            log.error("❌ Invalid action: {}", actionDTO.getAction());
             throw new RuntimeException("Invalid action: " + actionDTO.getAction());
         }
 
         Request updatedRequest = requestRepository.save(request);
-        log.info("✅ Request updated with status: {}", updatedRequest.getStatus());
         log.info("========== END REASSIGNMENT REQUEST HANDLING ==========");
 
         return requestMapper.toResponse(updatedRequest);
@@ -423,9 +335,7 @@ else {
         log.info("✅ Assignment email sent to new chef {}", newChef.getEmail());
     }
 
-    /**
-     * Send email when reassignment request is denied
-     */
+
     private void sendReassignmentRequestDeniedEmail(Request request, String reason, User admin) {
         User chef = request.getRequester();
 
@@ -454,20 +364,11 @@ else {
                 "</html>";
 
         sendEmail(chef, subject, content, admin);
-        log.info("✅ Denial email sent to chef {}", chef.getEmail());
     }
 
-    /**
-     * Handle renewal acceptance requests (chef responding to admin's question)
-     */
+
     @Transactional
     public RequestResponse handleRenewalAcceptance(Request request, RequestActionDTO actionDTO, User processor) {
-        log.info("========== HANDLING RENEWAL ACCEPTANCE ==========");
-        log.info("Request ID: {}", request.getId());
-        log.info("Processor: {} (ID: {})", processor.getUsername(), processor.getId());
-        log.info("Target user should be: {} (ID: {})",
-                request.getTargetUser() != null ? request.getTargetUser().getUsername() : "null",
-                request.getTargetUser() != null ? request.getTargetUser().getId() : "null");
 
         // Verify that the processor is the target user (the chef who should respond)
         if (request.getTargetUser() == null || !request.getTargetUser().getId().equals(processor.getId())) {
@@ -494,7 +395,6 @@ else {
 
             // Chef denies - need reason
             if (actionDTO.getReason() == null || actionDTO.getReason().trim().isEmpty()) {
-                log.error("❌ Denial reason is required but was empty");
                 throw new RuntimeException("Reason is required when denying");
             }
 
@@ -515,20 +415,16 @@ else {
 
             log.info("✅ Chef {} denied renewal acceptance. Reason: {}", processor.getUsername(), actionDTO.getReason());
         } else {
-            log.error("❌ Invalid action: {}", actionDTO.getAction());
             throw new RuntimeException("Invalid action: " + actionDTO.getAction());
         }
 
         Request updatedRequest = requestRepository.save(request);
-        log.info("✅ Request updated with status: {}", updatedRequest.getStatus());
         log.info("========== END RENEWAL ACCEPTANCE HANDLING ==========");
 
         return requestMapper.toResponse(updatedRequest);
     }
 
-    /**
-     * Handle reassignment suggestion requests (admin responding to chef's suggestion)
-     */
+
     @Transactional
     public RequestResponse handleReassignmentSuggestion(Request request, RequestActionDTO actionDTO, User processor) {
         log.info("========== HANDLING REASSIGNMENT SUGGESTION ==========");
@@ -546,7 +442,7 @@ else {
             log.info("Admin APPROVING the suggestion");
 
             // Determine which chef to assign
-            User recommendedChef = null;
+            User recommendedChef ;
 
             // If admin selected a different chef in the action, use that
             if (actionDTO.getRecommendedChefId() != null) {
@@ -594,6 +490,7 @@ else {
             request.setProcessedAt(LocalDateTime.now());
 
             // Send emails to both chefs
+            assert oldChef != null;
             sendReassignmentApprovedEmails(request, recommendedChef, oldChef, processor);
             log.info("✅ Approval emails sent");
 
@@ -625,12 +522,7 @@ else {
         return requestMapper.toResponse(updatedRequest);
     }
 
-    // ============= WORKLOAD CHECK METHOD =============
 
-    /**
-     * Check if chef can accept the application based on workload
-     * Uses the existing WorkloadService
-     */
     private boolean checkChefWorkload(User chef, Application application) {
         try {
             log.info("Checking workload for chef {} (ID: {}) on application {} (ID: {})",
@@ -670,15 +562,10 @@ else {
         }
     }
 
-    // ============= REQUEST RETRIEVAL METHODS =============
 
-    /**
-     * Get all requests for current user
-     */
     public List<RequestResponse> getUserRequests(User user) {
         log.info("========== FETCHING REQUESTS FOR USER ==========");
         log.info("User: {} (ID: {})", user.getUsername(), user.getId());
-        log.info("Is admin: {}", isAdmin(user));
 
         List<Request> requests = requestRepository.findUserRequests(user);
 
@@ -701,9 +588,7 @@ else {
         return responses;
     }
 
-    /**
-     * Get requests by status
-     */
+
     public List<RequestResponse> getRequestsByStatus(String status) {
         log.info("Fetching requests with status: {}", status);
         List<Request> requests = requestRepository.findByStatus(status);
@@ -714,7 +599,6 @@ else {
                 .collect(Collectors.toList());
     }
 
-    // ============= EMAIL BUILDING METHODS =============
 
     private String buildRenewalNotificationToAdminEmail(Application application, Convention convention) {
         User currentChef = application.getChefDeProjet();
@@ -886,7 +770,7 @@ else {
         log.info("✅ Renewal denied email sent to admin");
     }
 
-    private String buildReassignmentEmail(User chef, Application application, Convention convention, User admin) {
+    private String buildReassignmentEmail(User chef, Application application, Convention convention) {
         return "<!DOCTYPE html>" +
                 "<html>" +
                 "<head><meta charset='UTF-8'></head>" +
@@ -1073,11 +957,13 @@ else {
             request.setTo(List.of(recipient.getEmail()));
             request.setImportance("NORMAL");
 
+            assert sender != null;
             MailResponse response = mailService.sendMail(request, sender, null);
 
             log.info("✅ Email sent successfully. Mail ID: {}", response.getId());
 
         } catch (Exception e) {
+            assert recipient != null;
             log.error("❌ Failed to send email to {}: {}", recipient.getEmail(), e.getMessage(), e);
         }
     }
@@ -1157,7 +1043,7 @@ else {
         log.info("✅ Request saved with ID: {}", savedRequest.getId());
 
         // Send email notification to admin
-        sendReassignmentRequestFromChefToAdminEmail(chefDeProjet, recommendedChef, application, convention, savedRequest, admin);
+        sendReassignmentRequestFromChefToAdminEmail(chefDeProjet, recommendedChef, application, savedRequest, admin);
 
         log.info("========== END CREATING REASSIGNMENT REQUEST FROM CHEF ==========");
         return savedRequest;
@@ -1167,7 +1053,7 @@ else {
      * Send email to admin about reassignment request from chef
      */
     private void sendReassignmentRequestFromChefToAdminEmail(User chef, User recommendedChef,
-                                                             Application application, Convention convention,
+                                                             Application application,
                                                              Request request, User admin) {
         String subject = "📋 Demande de réassignation - " + application.getCode();
 

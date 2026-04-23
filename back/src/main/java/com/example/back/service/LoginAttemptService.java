@@ -2,7 +2,6 @@ package com.example.back.service;
 
 import com.example.back.entity.User;
 import com.example.back.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -10,14 +9,17 @@ import java.time.LocalDateTime;
 @Service
 public class LoginAttemptService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
 
     private static final int MAX_FAILED_ATTEMPTS = 3;
     private static final int LOCK_TIME_MINUTES = 15;
+
+    public LoginAttemptService(UserRepository userRepository, EmailService emailService) {
+        this.userRepository = userRepository;
+        this.emailService = emailService;
+    }
 
     public void loginFailed(String usernameOrEmail) {
         User user = userRepository.findByUsernameOrEmail(usernameOrEmail).orElse(null);

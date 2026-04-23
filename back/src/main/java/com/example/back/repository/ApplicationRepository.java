@@ -21,7 +21,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findByChefDeProjet(User chefDeProjet);
 
-    // Check if application has conventions
     @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END " +
             "FROM Convention c WHERE c.application.id = :applicationId")
     boolean hasConventions(@Param("applicationId") Long applicationId);

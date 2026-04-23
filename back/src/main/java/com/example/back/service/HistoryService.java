@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -31,20 +30,20 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HistoryService {
 
-    @Autowired
-    private HistoryRepository historyRepository;
+    private final HistoryRepository historyRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private HistoryMapper historyMapper;
+    private final HistoryMapper historyMapper;
 
     private final ObjectMapper objectMapper;
 
-    public HistoryService() {
+    public HistoryService(HistoryRepository historyRepository, UserRepository userRepository, HistoryMapper historyMapper) {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
+        this.historyRepository = historyRepository;
+        this.userRepository = userRepository;
+        this.historyMapper = historyMapper;
     }
 
     // ==================== CONVERSION METHODS ====================
@@ -220,32 +219,6 @@ public class HistoryService {
         }
     }
 
-    public void logUserCreate(User newUser, User createdBy) {
-        try {
-            UserHistoryData data = convertToHistoryData(newUser);
-            String description = String.format("Création de l'utilisateur %s %s (%s) par %s %s",
-                    newUser.getFirstName(), newUser.getLastName(), newUser.getUsername(),
-                    createdBy.getFirstName(), createdBy.getLastName());
-            createHistory("CREATE", "USER", newUser.getId(), newUser.getUsername(),
-                    newUser.getFirstName() + " " + newUser.getLastName(), description, null, data, createdBy);
-        } catch (Exception e) {
-            log.error("Failed to log user creation: {}", e.getMessage());
-        }
-    }
-
-    public void logUserUpdate(User oldUser, User newUser) {
-        try {
-            UserHistoryData oldData = convertToHistoryData(oldUser);
-            UserHistoryData newData = convertToHistoryData(newUser);
-
-            String description = String.format("Mise à jour de l'utilisateur %s %s",
-                    newUser.getFirstName(), newUser.getLastName());
-            createHistory("UPDATE", "USER", newUser.getId(), newUser.getUsername(),
-                    newUser.getFirstName() + " " + newUser.getLastName(), description, oldData, newData, newUser);
-        } catch (Exception e) {
-            log.error("Failed to log user update: {}", e.getMessage());
-        }
-    }
 
     public void logUserLock(User user, User lockedBy) {
         try {
@@ -273,16 +246,6 @@ public class HistoryService {
         }
     }
 
-    public void logPasswordChange(User user) {
-        try {
-            String description = String.format("Changement de mot de passe pour l'utilisateur %s %s",
-                    user.getFirstName(), user.getLastName());
-            createHistory("PASSWORD_CHANGE", "USER", user.getId(), user.getUsername(),
-                    user.getFirstName() + " " + user.getLastName(), description, null, null, user);
-        } catch (Exception e) {
-            log.error("Failed to log password change: {}", e.getMessage());
-        }
-    }
 
     public void logUserRoleChange(User user, User changedBy, List<String> oldRoles, List<String> newRoles) {
         try {
@@ -521,18 +484,6 @@ public class HistoryService {
     }
 
 
-    public void logConventionDelete(Convention convention, User deletedBy) {
-        try {
-            ConventionHistoryData data = convertToHistoryData(convention);
-            String description = String.format("Suppression de la convention %s (%s) par %s %s",
-                    convention.getReferenceConvention(), convention.getLibelle(),
-                    deletedBy.getFirstName(), deletedBy.getLastName());
-            createHistory("DELETE", "CONVENTION", convention.getId(), convention.getReferenceConvention(),
-                    convention.getLibelle(), description, data, null, deletedBy);
-        } catch (Exception e) {
-            log.error("Failed to log convention deletion: {}", e.getMessage());
-        }
-    }
 
     public void logConventionArchive(Convention convention, User archivedBy, String reason) {
         try {
@@ -605,13 +556,8 @@ public class HistoryService {
         }
     }
 
-    // ==================== FACTURE HISTORY METHODS ====================
 
-
-    // Add/Update these methods in HistoryService.java
-
-    // Make sure this method exists and is called when facture is created
-    public void logFactureCreate(Facture facture, User createdBy) {
+    public void logFactureCreate(Facture facture) {
         try {
             FactureHistoryData data = convertToHistoryData(facture);
 
@@ -645,7 +591,7 @@ public class HistoryService {
     }
 
     // Make sure update is properly logged
-    public void logFactureUpdate(Facture oldFacture, Facture newFacture, User updatedBy) {
+    public void logFactureUpdate(Facture oldFacture, Facture newFacture) {
         try {
             // Use filtered versions without convention data
             FactureHistoryData oldData = convertToHistoryDataForUpdate(oldFacture);
@@ -771,7 +717,7 @@ public class HistoryService {
         }
     }
 
-    public void logFacturePayment(Facture facture, User registeredBy, String referencePaiement) {
+    public void logFacturePayment(Facture facture, String referencePaiement) {
         try {
             // Calculate payment timing
             String paymentTiming = "";
@@ -931,9 +877,7 @@ public class HistoryService {
         return null;
     }
 
-    private long getDaysBetween(LocalDate start, LocalDate end) {
-        return java.time.temporal.ChronoUnit.DAYS.between(start, end);
-    }
+
 
     private String getRoleDisplay(User user) {
         if (user == null || user.getRoles() == null || user.getRoles().isEmpty()) {
@@ -1138,7 +1082,7 @@ public class HistoryService {
 
     // Add to HistoryService.java
 
-    public void logApplicationArchive(Application application, User archivedBy, String reason) {
+    public void logApplicationArchive(Application application, User archivedBy) {
         try {
             ApplicationHistoryData data = convertToHistoryData(application);
             String description = String.format("Archivage automatique de l'application %s - Toutes ses conventions sont archivées",
@@ -1152,7 +1096,6 @@ public class HistoryService {
 
     public void logApplicationRestore(Application application, User restoredBy) {
         try {
-            ApplicationHistoryData data = convertToHistoryData(application);
             String description = String.format("Restauration de l'application %s - Convention restaurée",
                     application.getCode());
 
@@ -1189,36 +1132,6 @@ public class HistoryService {
 
 
 
-    // Add to HistoryService.java
-
-   /* public void logFactureEmailSent(Facture facture, User user, String recipientEmail, boolean isReminder) {
-        History history = new History();
-        history.setTimestamp(LocalDateTime.now());
-        history.setActionType(isReminder ? "REMINDER_SENT" : "EMAIL_SENT");
-        history.setEntityType("FACTURE");
-        history.setEntityId(facture.getId());
-        history.setEntityCode(facture.getNumeroFacture());
-        history.setUser(user);
-
-        String description = isReminder ?
-                String.format("Relance de paiement envoyée à %s", recipientEmail) :
-                String.format("Facture envoyée par email à %s", recipientEmail);
-        history.setDescription(description);
-
-        Map<String, Object> details = new HashMap<>();
-        details.put("recipientEmail", recipientEmail);
-        details.put("isReminder", isReminder);
-        details.put("factureNumber", facture.getNumeroFacture());
-
-        history.setNewValues(details.toString());
-
-        historyRepository.save(history);
-    }
-
-    */
-
-
-    // Add to HistoryService.java - make sure logFactureEmailSent is implemented
     public void logFactureEmailSent(Facture facture, User user, String recipientEmail, boolean isReminder) {
         try {
             Map<String, Object> details = new HashMap<>();

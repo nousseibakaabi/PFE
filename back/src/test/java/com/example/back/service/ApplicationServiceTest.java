@@ -8,7 +8,6 @@ import com.example.back.service.mapper.ApplicationMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -35,31 +34,10 @@ class ApplicationServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private StructureRepository structureRepository;
-
-    @Mock
-    private ConventionRepository conventionRepository;
-
-    @Mock
     private ApplicationMapper applicationMapper;
 
     @Mock
     private HistoryService historyService;
-
-    @Mock
-    private SmsService smsService;
-
-    @Mock
-    private MailService mailService;
-
-    @Mock
-    private WorkloadService workloadService;
-
-    @Mock
-    private NotificationRepository notificationRepository;
-
-    @Mock
-    private NotificationService notificationService;
 
     @Mock
     private Authentication authentication;
@@ -332,7 +310,7 @@ class ApplicationServiceTest {
     @Test
     void getAllApplications_AsAdmin() {
         // Given
-        List<Application> applications = Arrays.asList(testApplication);
+        List<Application> applications = Collections.singletonList(testApplication);
 
         mockAuthentication(testAdmin, "ROLE_ADMIN");
         when(applicationRepository.findByArchivedFalse()).thenReturn(applications);
@@ -349,7 +327,7 @@ class ApplicationServiceTest {
     @Test
     void getAllApplications_AsChefDeProjet() {
         // Given
-        List<Application> applications = Arrays.asList(testApplication);
+        List<Application> applications = Collections.singletonList(testApplication);
 
         mockAuthentication(testChef, "ROLE_CHEF_PROJET");
         when(userRepository.findByUsername("chef")).thenReturn(Optional.of(testChef));
@@ -373,7 +351,7 @@ class ApplicationServiceTest {
     @Test
     void getUnassignedApplications_Success() {
         // Given
-        List<Application> unassignedApps = Arrays.asList(testApplication);
+        List<Application> unassignedApps = Collections.singletonList(testApplication);
 
         when(applicationRepository.findByChefDeProjetIsNull()).thenReturn(unassignedApps);
         when(applicationMapper.toResponse(any(Application.class))).thenReturn(testResponse);

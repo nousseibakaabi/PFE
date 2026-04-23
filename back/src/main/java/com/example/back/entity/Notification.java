@@ -33,19 +33,19 @@ public class Notification {
     private String type; // INFO, WARNING, SUCCESS, DANGER
 
     @Column(name = "notification_type", nullable = false)
-    private String notificationType; // FACTURE_DUE, FACTURE_OVERDUE, etc.
+    private String notificationType;
 
     @Column(name = "reference_id")
-    private Long referenceId; // ID of the related entity (facture ID)
+    private Long referenceId;
 
     @Column(name = "reference_type")
-    private String referenceType; // FACTURE, CONVENTION, APPLICATION
+    private String referenceType;
 
     @Column(name = "reference_code")
-    private String referenceCode; // Human-readable reference (facture number, convention ref)
+    private String referenceCode;
 
     @Column(name = "days_until_due")
-    private Integer daysUntilDue; // For due notifications: 5,4,3,2,1,0
+    private Integer daysUntilDue;
 
     @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
@@ -88,13 +88,11 @@ public class Notification {
         updatedAt = LocalDateTime.now();
     }
 
-    // Helper method to mark as read
     public void markAsRead() {
         this.isRead = true;
         this.readAt = LocalDateTime.now();
     }
 
-    // Helper to check if notification is for a facture
     public boolean isFactureNotification() {
         return "FACTURE".equals(referenceType);
     }

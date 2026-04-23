@@ -1,22 +1,16 @@
 package com.example.back.service;
 
-import com.example.back.entity.User;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
 
 @Service
 public class AvatarService {
 
-    @Value("${server.url:http://localhost:8084}")
-    private String serverUrl;
 
     @PostConstruct
     public void init() {
@@ -82,23 +76,6 @@ public class AvatarService {
         }
     }
 
-    public String saveAvatarFile(MultipartFile file, String username) throws IOException {
-        String currentDir = System.getProperty("user.dir");
-        Path uploadPath = Paths.get(currentDir, "uploads", "avatars");
-
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-        String originalFilename = file.getOriginalFilename();
-        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String newFilename = username + "_" + UUID.randomUUID().toString() + fileExtension;
-
-        Path filePath = uploadPath.resolve(newFilename);
-        Files.copy(file.getInputStream(), filePath);
-
-        return "/uploads/avatars/" + newFilename;
-    }
 
     private String generateShortSvgUrl(String initials) {
         // Fallback: Generate Base64 encoded SVG with thin border, small font, perfect centering

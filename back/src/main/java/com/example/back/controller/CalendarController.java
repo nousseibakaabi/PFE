@@ -5,7 +5,6 @@ import com.example.back.payload.response.CalendarEventDTO;
 import com.example.back.repository.FactureRepository;
 import com.example.back.service.UserContextService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,12 +22,15 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CalendarController {
 
-    @Autowired
-    private FactureRepository factureRepository;
+    private final FactureRepository factureRepository;
 
 
-    @Autowired
-    private UserContextService userContextService;
+    private final UserContextService userContextService;
+
+    public CalendarController(FactureRepository factureRepository, UserContextService userContextService) {
+        this.factureRepository = factureRepository;
+        this.userContextService = userContextService;
+    }
 
     // Helper method to filter invoices based on user role
     private List<Facture> getAccessibleInvoices(User currentUser, List<Facture> allInvoices) {
@@ -216,7 +215,7 @@ public class CalendarController {
             // Calculate amounts only for accessible invoices
             BigDecimal totalOverdueAmount = overdueInvoices.stream()
                     .map(Facture::getMontantTTC)
-                    .filter(amount -> amount != null)
+                    .filter(Objects::nonNull)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             stats.put("overdueAmount", totalOverdueAmount);

@@ -14,10 +14,8 @@ import com.example.back.service.WorkloadService;
 import com.example.back.service.mapper.ConventionMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -31,25 +29,26 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ApplicationController {
 
-    @Autowired
-    private ApplicationService applicationService;
+    private final ApplicationService applicationService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final ConventionRepository conventionRepository;
 
-    @Autowired
-    private ConventionMapper conventionMapper;
+    private final ConventionMapper conventionMapper;
 
-    @Autowired
-    private WorkloadService workloadService;
+    private final WorkloadService workloadService;
 
-
+    public ApplicationController(ApplicationService applicationService, UserRepository userRepository, ApplicationRepository applicationRepository, ConventionRepository conventionRepository, ConventionMapper conventionMapper, WorkloadService workloadService) {
+        this.applicationService = applicationService;
+        this.userRepository = userRepository;
+        this.applicationRepository = applicationRepository;
+        this.conventionRepository = conventionRepository;
+        this.conventionMapper = conventionMapper;
+        this.workloadService = workloadService;
+    }
 
 
     @GetMapping
@@ -293,11 +292,9 @@ public class ApplicationController {
         try {
             log.info("GET /api/applications/conventions/{} called", chefDeProjetId);
 
-            // Verify the chef de projet exists
             User chefDeProjet = userRepository.findById(chefDeProjetId)
                     .orElseThrow(() -> new RuntimeException("Chef de projet not found"));
 
-            // Get all applications for this chef de projet
             List<Application> applications = applicationRepository.findByChefDeProjet(chefDeProjet);
 
             if (applications.isEmpty()) {
@@ -310,13 +307,10 @@ public class ApplicationController {
                 return ResponseEntity.ok(response);
             }
 
-            // Get conventions for these applications
             List<Convention> conventions = new ArrayList<>();
             for (Application application : applications) {
-                // Use findByApplicationAndArchivedFalse or findByApplication if the method doesn't exist
                 List<Convention> appConventions;
 
-                // Try different repository methods
                 try {
                     // Method 1: If you have a custom query method
                     appConventions = conventionRepository.findByApplicationAndArchivedFalse(application);
@@ -352,10 +346,6 @@ public class ApplicationController {
         }
     }
 
-
-    /**
-     * Get date summary for an application (to see if dates are synced with conventions)
-     */
     @GetMapping("/{id}/date-summary")
     @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET', 'COMMERCIAL_METIER', 'DECIDEUR')")
     public ResponseEntity<?> getApplicationDateSummary(@PathVariable Long id) {

@@ -1,22 +1,16 @@
 package com.example.back.service;
 
 import com.example.back.entity.*;
-import com.example.back.payload.history.*;
 import com.example.back.payload.response.HistoryResponse;
 import com.example.back.repository.HistoryRepository;
-import com.example.back.repository.UserRepository;
 import com.example.back.service.mapper.HistoryMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,14 +27,10 @@ class HistoryServiceTest {
     @Mock
     private HistoryRepository historyRepository;
 
-    @Mock
-    private UserRepository userRepository;
 
     @Mock
     private HistoryMapper historyMapper;
 
-    @Mock
-    private Authentication authentication;
 
     @InjectMocks
     private HistoryService historyService;
@@ -126,19 +116,8 @@ class HistoryServiceTest {
         testHistory.setDescription("Test description");
         testHistory.setTimestamp(LocalDateTime.now());
 
-        // DO NOT stub authentication here - it will be stubbed in individual tests
     }
 
-    private void setupAuthentication(User user, String role) {
-        when(authentication.getName()).thenReturn(user.getUsername());
-        when(authentication.getAuthorities()).thenAnswer(invocation -> {
-            Collection<org.springframework.security.core.GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(() -> role);
-            return authorities;
-        });
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
-    }
 
     // ==================== USER HISTORY TESTS ====================
 

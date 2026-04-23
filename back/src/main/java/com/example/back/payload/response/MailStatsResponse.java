@@ -19,11 +19,9 @@ public class MailStatsResponse {
     private long customGroupsCount;
     private long totalGroupsCount;
 
-    // New: Group mail statistics
     private long groupMailsCount;
     private long unreadGroupMailsCount;
 
-    // Per-group statistics (optional - can be used for detailed views)
     private List<GroupMailStats> groupStats;
 
     @Data

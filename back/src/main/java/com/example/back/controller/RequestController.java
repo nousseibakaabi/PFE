@@ -14,7 +14,6 @@ import com.example.back.service.RequestService;
 import com.example.back.service.WorkloadService;
 import com.example.back.service.mapper.RequestMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,25 +32,26 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RequestController {
 
-    @Autowired
-    private RequestService requestService;
+    private final RequestService requestService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private WorkloadService workloadService;
+    private final WorkloadService workloadService;
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final ConventionRepository conventionRepository;
 
-    @Autowired
-    private RequestMapper requestMapper;
+    private final RequestMapper requestMapper;
 
-
+    public RequestController(RequestService requestService, UserRepository userRepository, WorkloadService workloadService, ApplicationRepository applicationRepository, ConventionRepository conventionRepository, RequestMapper requestMapper) {
+        this.requestService = requestService;
+        this.userRepository = userRepository;
+        this.workloadService = workloadService;
+        this.applicationRepository = applicationRepository;
+        this.conventionRepository = conventionRepository;
+        this.requestMapper = requestMapper;
+    }
 
 
     private User getCurrentUser() {
@@ -145,7 +145,7 @@ public class RequestController {
             User currentUser = getCurrentUser();
             chefs = chefs.stream()
                     .filter(c -> !c.getId().equals(currentUser.getId()))
-                    .collect(Collectors.toList());
+                    .toList();
 
             // Get workload info
             List<Map<String, Object>> chefList = new ArrayList<>();

@@ -14,7 +14,6 @@ import com.example.back.repository.UserRepository;
 import com.example.back.service.mapper.MailMapper;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,33 +30,30 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MailFolderService {
 
-    @Autowired
-    private MailFolderRepository folderRepository;
+    private final MailFolderRepository folderRepository;
 
-    @Autowired
-    private MailGroupRepository groupRepository;
+    private final MailGroupRepository groupRepository;
 
-    @Autowired
-    private MailRepository mailRepository;
+    private final MailRepository mailRepository;
 
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private MailMapper mailMapper;
+    private final MailMapper mailMapper;
 
     // Folder types
     public static final String FOLDER_INBOX = "INBOX";
-    public static final String FOLDER_SENT = "SENT";
-    public static final String FOLDER_DRAFTS = "DRAFTS";
-    public static final String FOLDER_STARRED = "STARRED";
-    public static final String FOLDER_ARCHIVE = "ARCHIVE";
-    public static final String FOLDER_TRASH = "TRASH";
+
     public static final String FOLDER_OFFICE = "OFFICE";
     public static final String FOLDER_PERSONAL = "PERSONAL";
     public static final String FOLDER_FREELANCE = "FREELANCE";
     public static final String FOLDER_SHARED = "SHARED";
     public static final String FOLDER_CUSTOM = "CUSTOM";
+
+    public MailFolderService(MailFolderRepository folderRepository, MailGroupRepository groupRepository, MailRepository mailRepository, MailMapper mailMapper) {
+        this.folderRepository = folderRepository;
+        this.groupRepository = groupRepository;
+        this.mailRepository = mailRepository;
+        this.mailMapper = mailMapper;
+    }
 
     @Transactional
     public void initializeDefaultFolders(User user) {
@@ -112,58 +108,6 @@ public class MailFolderService {
         log.info("Default folders created for user: {}", user.getEmail());
     }
 
-    @Transactional
-    public void addMailToFolder(Long mailId, String folderType, User user) {
-        log.info("Adding mail {} to folder {} for user {}", mailId, folderType, user.getEmail());
-
-        Mail mail = mailRepository.findById(mailId)
-                .orElseThrow(() -> new RuntimeException("Mail not found"));
-
-        // Check if user has access to this mail
-        boolean hasAccess = mail.getSender().getId().equals(user.getId()) ||
-                mail.getRecipients().stream().anyMatch(r -> r.getUser() != null && r.getUser().getId().equals(user.getId()));
-
-        if (!hasAccess) {
-            throw new RuntimeException("Access denied");
-        }
-
-        // Check if already in folder
-        boolean alreadyInFolder = folderRepository.isMailInFolder(mailId, user.getId(), folderType);
-        if (alreadyInFolder) {
-            return; // Already there
-        }
-
-        // Create folder association
-        MailFolder folder = new MailFolder();
-        folder.setUser(user);
-        folder.setMail(mail);
-        folder.setName(getFolderNameFromType(folderType));
-        folder.setFolderType(folderType);
-        folder.setColor(getFolderColorFromType(folderType));
-        folder.setIsSystem(true);
-
-        folderRepository.save(folder);
-    }
-
-    @Transactional
-    public void removeMailFromFolder(Long mailId, String folderType, User user) {
-        log.info("Removing mail {} from folder {} for user {}", mailId, folderType, user.getEmail());
-        folderRepository.removeMailFromFolder(mailId, user.getId(), folderType);
-    }
-
-    @Transactional
-    public void moveMailToFolder(Long mailId, String fromFolder, String toFolder, User user) {
-        if (fromFolder != null && !fromFolder.isEmpty()) {
-            removeMailFromFolder(mailId, fromFolder, user);
-        }
-        addMailToFolder(mailId, toFolder, user);
-    }
-
-    public Page<MailResponse> getMailsByFolder(String folderType, User user, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("sentAt").descending());
-        Page<Mail> mails = folderRepository.findMailsByFolderType(folderType, user, pageable);
-        return mails.map(mail -> mailMapper.toResponse(mail, user.getEmail()));
-    }
 
 
     public Page<MailResponse> getMailsForGroup(Long groupId, User user, int page, int size) {
@@ -189,44 +133,6 @@ public class MailFolderService {
         return mails.map(mail -> mailMapper.toResponse(mail, user.getEmail()));
     }
 
-    public List<MailFolderResponse> getUserFoldersWithCounts(User user) {
-        // Initialize folders if needed
-        initializeDefaultFolders(user);
-
-        List<MailFolder> folders = folderRepository.findAllByUserOrdered(user);
-        Map<String, Long> folderCounts = getFolderCounts(user);
-        Map<String, Long> unreadCounts = getUnreadCounts(user);
-
-        List<MailFolderResponse> responses = new ArrayList<>();
-
-        // Add the default folder types in order
-        addFolderResponse(responses, "Inbox", FOLDER_INBOX, "#3B82F6", folderCounts, unreadCounts);
-        addFolderResponse(responses, "Office", FOLDER_OFFICE, "#3B82F6", folderCounts, unreadCounts);
-        addFolderResponse(responses, "Personal", FOLDER_PERSONAL, "#10B981", folderCounts, unreadCounts);
-        addFolderResponse(responses, "Freelance", FOLDER_FREELANCE, "#8B5CF6", folderCounts, unreadCounts);
-        addFolderResponse(responses, "Shared", FOLDER_SHARED, "#F59E0B", folderCounts, unreadCounts);
-
-        // Add custom folders
-        List<MailFolder> customFolders = folders.stream()
-                .filter(f -> FOLDER_CUSTOM.equals(f.getFolderType()))
-                .collect(Collectors.toList());
-
-        for (MailFolder folder : customFolders) {
-            MailFolderResponse response = new MailFolderResponse();
-            response.setId(folder.getId());
-            response.setName(folder.getName());
-            response.setColor(folder.getColor());
-            response.setFolderType(folder.getFolderType());
-            response.setIsSystem(folder.getIsSystem());
-            response.setMailCount(0);
-            response.setUnreadCount(0);
-            responses.add(response);
-        }
-
-        return responses;
-    }
-
-
 
     public List<MailGroupResponse> getGroupsWithUnreadCounts(User user) {
         List<MailGroup> groups = groupRepository.findGroupsForUserWithAccess(user);
@@ -251,59 +157,9 @@ public class MailFolderService {
         return responses;
     }
 
-    private void addFolderResponse(List<MailFolderResponse> responses, String name, String type, String color,
-                                   Map<String, Long> counts, Map<String, Long> unreadCounts) {
-        MailFolderResponse response = new MailFolderResponse();
-        response.setName(name);
-        response.setFolderType(type);
-        response.setColor(color);
-        response.setIsSystem(true);
-        response.setMailCount(counts.getOrDefault(type, 0L).intValue());
-        response.setUnreadCount(unreadCounts.getOrDefault(type, 0L).intValue());
-        responses.add(response);
-    }
 
-    private Map<String, Long> getFolderCounts(User user) {
-        Map<String, Long> counts = new HashMap<>();
-        counts.put(FOLDER_INBOX, mailRepository.countInboxByUser(user));
-        counts.put(FOLDER_OFFICE, folderRepository.countByFolderTypeAndUser(FOLDER_OFFICE, user));
-        counts.put(FOLDER_PERSONAL, folderRepository.countByFolderTypeAndUser(FOLDER_PERSONAL, user));
-        counts.put(FOLDER_FREELANCE, folderRepository.countByFolderTypeAndUser(FOLDER_FREELANCE, user));
-        counts.put(FOLDER_SHARED, folderRepository.countByFolderTypeAndUser(FOLDER_SHARED, user));
-        return counts;
-    }
 
-    private Map<String, Long> getUnreadCounts(User user) {
-        Map<String, Long> counts = new HashMap<>();
-        counts.put(FOLDER_INBOX, mailRepository.countUnreadByUser(user));
-        counts.put(FOLDER_OFFICE, folderRepository.countUnreadByFolderTypeAndUser(FOLDER_OFFICE, user));
-        counts.put(FOLDER_PERSONAL, folderRepository.countUnreadByFolderTypeAndUser(FOLDER_PERSONAL, user));
-        counts.put(FOLDER_FREELANCE, folderRepository.countUnreadByFolderTypeAndUser(FOLDER_FREELANCE, user));
-        counts.put(FOLDER_SHARED, folderRepository.countUnreadByFolderTypeAndUser(FOLDER_SHARED, user));
-        return counts;
-    }
 
-    private String getFolderNameFromType(String folderType) {
-        switch (folderType) {
-            case FOLDER_OFFICE: return "Office";
-            case FOLDER_PERSONAL: return "Personal";
-            case FOLDER_FREELANCE: return "Freelance";
-            case FOLDER_SHARED: return "Shared";
-            case FOLDER_INBOX: return "Inbox";
-            default: return "Folder";
-        }
-    }
-
-    private String getFolderColorFromType(String folderType) {
-        switch (folderType) {
-            case FOLDER_OFFICE: return "#3B82F6";
-            case FOLDER_PERSONAL: return "#10B981";
-            case FOLDER_FREELANCE: return "#8B5CF6";
-            case FOLDER_SHARED: return "#F59E0B";
-            case FOLDER_INBOX: return "#3B82F6";
-            default: return "#6B7280";
-        }
-    }
 
     private MailGroupResponse mapGroupToResponse(MailGroup group) {
         MailGroupResponse response = new MailGroupResponse();

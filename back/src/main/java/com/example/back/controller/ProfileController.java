@@ -6,8 +6,6 @@ import com.example.back.payload.response.MessageResponse;
 import com.example.back.payload.response.ProfileResponse;
 import com.example.back.repository.UserRepository;
 import com.example.back.security.services.UserDetailsImpl;
-import com.example.back.service.AvatarService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -29,11 +27,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/profile")
 public class ProfileController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private AvatarService avatarService;
+    public ProfileController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
@@ -142,7 +141,7 @@ public class ProfileController {
 
         String originalFilename = file.getOriginalFilename();
         String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String newFilename = username + "_" + UUID.randomUUID().toString() + fileExtension;
+        String newFilename = username + "_" + UUID.randomUUID()+ fileExtension;
 
         Path filePath = uploadPath.resolve(newFilename);
         Files.copy(file.getInputStream(), filePath);

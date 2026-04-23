@@ -7,7 +7,6 @@ import com.example.back.repository.UserRepository;
 import com.example.back.security.services.UserDetailsImpl;
 import com.example.back.service.TwoFactorService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -21,15 +20,15 @@ import java.util.Map;
 @RequestMapping("/api/2fa")
 public class TwoFactorController {
 
-    @Autowired
-    private TwoFactorService twoFactorService;
+    private final TwoFactorService twoFactorService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    /**
-     * Setup 2FA - generates secret and QR code
-     */
+    public TwoFactorController(TwoFactorService twoFactorService, UserRepository userRepository) {
+        this.twoFactorService = twoFactorService;
+        this.userRepository = userRepository;
+    }
+
     @PostMapping("/setup")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> setupTwoFactor() {
@@ -50,9 +49,6 @@ public class TwoFactorController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Verify and enable 2FA
-     */
     @PostMapping("/verify")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> verifyAndEnable(@Valid @RequestBody TwoFactorRequest request) {
@@ -91,9 +87,7 @@ public class TwoFactorController {
         }
     }
 
-    /**
-     * Disable 2FA
-     */
+
     @PostMapping("/disable")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> disableTwoFactor(@Valid @RequestBody TwoFactorRequest request) {
@@ -127,9 +121,7 @@ public class TwoFactorController {
         }
     }
 
-    /**
-     * Get 2FA status
-     */
+
     @GetMapping("/status")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getTwoFactorStatus() {

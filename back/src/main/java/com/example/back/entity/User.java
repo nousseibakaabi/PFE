@@ -23,7 +23,6 @@ import java.util.Set;
         })
 public class User {
 
-    // Getters and Setters
     @Setter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -135,8 +134,6 @@ public class User {
 
 
 
-
-    // Lifecycle Callbacks
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -148,7 +145,6 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
-    // Constructors
     public User() {}
 
     public User(String username, String email, String password) {
@@ -207,21 +203,9 @@ public class User {
         this.createdAt = createdAt;
     }
 
-
-    public void setCredentialsNonExpired(Boolean credentialsNonExpired) {
-        this.credentialsNonExpired = credentialsNonExpired;
-    }
-
-
     public void setAccountNonLocked(Boolean accountNonLocked) {
         this.accountNonLocked = accountNonLocked;
     }
-
-
-    public void setAccountNonExpired(Boolean accountNonExpired) {
-        this.accountNonExpired = accountNonExpired;
-    }
-
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
@@ -291,25 +275,24 @@ public class User {
         this.id = id;
     }
 
-    // In User entity, update getters:
     public Boolean getLockedByAdmin() {
-        return lockedByAdmin != null ? lockedByAdmin : false;
+        return lockedByAdmin != null && lockedByAdmin;
     }
 
     public Boolean getEnabled() {
-        return enabled != null ? enabled : true;
+        return enabled == null || enabled;
     }
 
     public Boolean getAccountNonExpired() {
-        return accountNonExpired != null ? accountNonExpired : true;
+        return accountNonExpired == null || accountNonExpired;
     }
 
     public Boolean getAccountNonLocked() {
-        return accountNonLocked != null ? accountNonLocked : true;
+        return accountNonLocked == null || accountNonLocked;
     }
 
     public Boolean getCredentialsNonExpired() {
-        return credentialsNonExpired != null ? credentialsNonExpired : true;
+        return credentialsNonExpired == null || credentialsNonExpired;
     }
 
 
@@ -326,10 +309,8 @@ public class User {
         return notifMode != null ? notifMode : "email";
     }
 
-
-    // Getters et setters pour les nouveaux champs
     public Boolean getTwoFactorEnabled() {
-        return twoFactorEnabled != null ? twoFactorEnabled : false;
+        return twoFactorEnabled != null && twoFactorEnabled;
     }
 
     public String getTwoFactorSecret() {
@@ -347,6 +328,5 @@ public class User {
     public void setTwoFactorBackupCodes(String twoFactorBackupCodes) {
         this.twoFactorBackupCodes = twoFactorBackupCodes;
     }
-
 
 }

@@ -76,16 +76,16 @@ public class UserDetailsImpl implements UserDetails {
         }
 
         // Get enabled value
-        boolean isEnabled = user.getEnabled() != null ? user.getEnabled().booleanValue() : true;
+        boolean isEnabled = user.getEnabled() == null || user.getEnabled().booleanValue();
 
         // Get account non expired
-        boolean isAccountNonExpired = user.getAccountNonExpired() != null ? user.getAccountNonExpired().booleanValue() : true;
+        boolean isAccountNonExpired = user.getAccountNonExpired() == null || user.getAccountNonExpired().booleanValue();
 
         // Get credentials non expired
-        boolean isCredentialsNonExpired = user.getCredentialsNonExpired() != null ? user.getCredentialsNonExpired().booleanValue() : true;
+        boolean isCredentialsNonExpired = user.getCredentialsNonExpired() == null || user.getCredentialsNonExpired().booleanValue();
 
         // Get two factor enabled
-        Boolean isTwoFactorEnabled = user.getTwoFactorEnabled() != null ? user.getTwoFactorEnabled() : false;
+        Boolean isTwoFactorEnabled = user.getTwoFactorEnabled() != null && user.getTwoFactorEnabled();
 
         return new UserDetailsImpl(
                 user.getId(),

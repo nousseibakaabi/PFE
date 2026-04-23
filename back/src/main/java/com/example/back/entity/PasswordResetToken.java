@@ -44,22 +44,12 @@ public class PasswordResetToken {
         return LocalDateTime.now().isAfter(expiryDate);
     }
 
-
-    // Helper method to generate a new token
     public String generateToken() {
         return UUID.randomUUID().toString();
     }
 
-    // Helper method to calculate expiry date (24 hours from now)
     public LocalDateTime calculateExpiryDate() {
         return LocalDateTime.now().plusHours(24);
-    }
-
-    // Update your constructor or create a method to set new token
-    public void resetToken() {
-        this.token = generateToken();
-        this.expiryDate = calculateExpiryDate();
-        this.used = false;
     }
 
     public Long getId() {
@@ -76,10 +66,6 @@ public class PasswordResetToken {
 
     public void setUsed(Boolean used) {
         this.used = used;
-    }
-
-    public LocalDateTime getExpiryDate() {
-        return expiryDate;
     }
 
     public void setExpiryDate(LocalDateTime expiryDate) {

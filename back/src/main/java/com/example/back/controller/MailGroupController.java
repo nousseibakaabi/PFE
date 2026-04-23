@@ -7,7 +7,6 @@ import com.example.back.payload.response.MailGroupResponse;
 import com.example.back.repository.UserRepository;
 import com.example.back.service.MailGroupService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,11 +22,14 @@ import java.util.Map;
 @Slf4j
 public class MailGroupController {
 
-    @Autowired
-    private MailGroupService groupService;
+    private final MailGroupService groupService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public MailGroupController(MailGroupService groupService, UserRepository userRepository) {
+        this.groupService = groupService;
+        this.userRepository = userRepository;
+    }
 
     private String getCurrentUsername() {
         return SecurityContextHolder.getContext().getAuthentication().getName();

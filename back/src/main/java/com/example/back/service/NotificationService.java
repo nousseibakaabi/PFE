@@ -3,7 +3,6 @@ package com.example.back.service;
 import com.example.back.entity.*;
 import com.example.back.repository.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,33 +23,27 @@ import java.util.stream.Collectors;
 @Slf4j
 public class NotificationService {
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    private final NotificationRepository notificationRepository;
 
-    @Autowired
-    private FactureRepository factureRepository;
+    private final FactureRepository factureRepository;
 
-    @Autowired
-    private ConventionRepository conventionRepository;
+    private final MailService mailService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private MailService mailService;
-
-    @Autowired
-    private SmsService smsService;
+    private final SmsService smsService;
 
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate; // For WebSocket real-time updates
+    private final SimpMessagingTemplate messagingTemplate; // For WebSocket real-time updates
 
-    // ============= NOTIFICATION CREATION =============
+    public NotificationService(NotificationRepository notificationRepository, FactureRepository factureRepository, MailService mailService, SmsService smsService, SimpMessagingTemplate messagingTemplate) {
+        this.notificationRepository = notificationRepository;
+        this.factureRepository = factureRepository;
+        this.mailService = mailService;
+        this.smsService = smsService;
+        this.messagingTemplate = messagingTemplate;
+    }
 
-    /**
-     * Create a facture due notification
-     */
+
+
     @Transactional
     public Notification createFactureDueNotification(Facture facture, int daysUntilDue) {
         log.info("Creating due notification for facture {} ({} days until due)",
@@ -133,9 +126,7 @@ public class NotificationService {
         return firstNotification;
     }
 
-    /**
-     * Get recipients for a facture notification
-     */
+
     private List<User> getFactureRecipients(Facture facture) {
         Set<User> recipients = new HashSet<>();
 
@@ -162,9 +153,6 @@ public class NotificationService {
         return new ArrayList<>(recipients);
     }
 
-    /**
-     * Create the notification message for a facture
-     */
     private String createFactureDueMessage(Facture facture, int daysUntilDue) {
         Convention convention = facture.getConvention();
         Application application = convention != null ? convention.getApplication() : null;
@@ -198,9 +186,6 @@ public class NotificationService {
         return message.toString();
     }
 
-    /**
-     * Send notification via user's preferred channels (email/SMS)
-     */
 
     public void sendNotificationViaChannels(Notification notification, Facture facture, int daysUntilDue) {
         User user = notification.getUser();
@@ -238,9 +223,6 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
-    /**
-     * Send real-time notification via WebSocket
-     */
     private void sendRealtimeNotification(Notification notification) {
         try {
             // Create a DTO for frontend
@@ -269,12 +251,7 @@ public class NotificationService {
         }
     }
 
-    // ============= SCHEDULED TASKS =============
 
-    /**
-     * Check for unpaid invoices approaching due date
-     * Runs daily at 8 AM
-     */
     @Scheduled(cron = "0 * * * * *")  // Toutes les minutes
     @Transactional
     public void checkUnpaidInvoices() {
@@ -329,9 +306,7 @@ public class NotificationService {
         log.info("✅ [SCHEDULER] Completed in {}ms - Created: {}, Skipped: {}",
                 duration, notificationsCreated, notificationsSkipped);
     }
-    /**
-     * Process a single invoice for due date notifications
-     */
+
     private void processInvoiceDueDate(Facture facture, LocalDate today) {
         if (facture.getDateEcheance() == null) {
             return;
@@ -359,9 +334,7 @@ public class NotificationService {
             }
         }
     }
-    /**
-     * Hourly check to ensure notifications are sent (retry failed sends)
-     */
+
     @Scheduled(cron = "0 0 * * * *") // Every hour
     @Transactional
     public void retryFailedNotifications() {
@@ -378,26 +351,15 @@ public class NotificationService {
         }
     }
 
-    // ============= NOTIFICATION MANAGEMENT =============
-
-    /**
-     * Get user's notifications
-     */
     public Page<Notification> getUserNotifications(User user, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return notificationRepository.findByUserOrderByCreatedAtDesc(user, pageable);
     }
 
-    /**
-     * Get unread notifications count
-     */
     public long getUnreadCount(User user) {
         return notificationRepository.countByUserAndIsReadFalse(user);
     }
 
-    /**
-     * Mark notification as read
-     */
     @Transactional
     public Notification markAsRead(Long notificationId, User user) {
         Notification notification = notificationRepository.findById(notificationId)
@@ -411,17 +373,13 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    /**
-     * Mark all notifications as read for a user
-     */
+
     @Transactional
     public int markAllAsRead(User user) {
         return notificationRepository.markAllAsRead(user, LocalDateTime.now());
     }
 
-    /**
-     * Delete notification
-     */
+
     @Transactional
     public void deleteNotification(Long notificationId, User user) {
         Notification notification = notificationRepository.findById(notificationId)
@@ -434,9 +392,7 @@ public class NotificationService {
         notificationRepository.delete(notification);
     }
 
-    /**
-     * Clean up old read notifications (run weekly)
-     */
+
     @Scheduled(cron = "0 0 2 * * SUN") // Every Sunday at 2 AM
     @Transactional
     public void cleanupOldNotifications() {

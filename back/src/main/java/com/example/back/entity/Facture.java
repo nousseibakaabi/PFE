@@ -161,7 +161,7 @@ public class Facture {
             parts.add(years + (years == 1 ? " an" : " ans"));
         }
         if (months > 0) {
-            parts.add(months + (months == 1 ? " mois" : " mois"));
+            parts.add(months + (months == 1 ? " mois" : " months"));
         }
         if (remainingDays > 0) {
             parts.add(remainingDays + (remainingDays == 1 ? " jour" : " jours"));
@@ -182,20 +182,14 @@ public class Facture {
         String type = (String) details.get("type");
         String message = (String) details.get("message");
 
-        switch (type) {
-            case "AVANCE":
-                return "Payé en avance de " + message;
-            case "RETARD":
-                return "Payé avec " + message + " de retard";
-            case "PONCTUEL":
-                return "Payé à la date d'échéance";
-            case "EN_ATTENTE":
-                return message + " restants";
-            case "EN_RETARD":
-                return message + " de retard";
-            default:
-                return statutPaiement;
-        }
+        return switch (type) {
+            case "AVANCE" -> "Payé en avance de " + message;
+            case "RETARD" -> "Payé avec " + message + " de retard";
+            case "PONCTUEL" -> "Payé à la date d'échéance";
+            case "EN_ATTENTE" -> message + " restants";
+            case "EN_RETARD" -> message + " de retard";
+            default -> statutPaiement;
+        };
     }
 
     @Transient
@@ -205,19 +199,13 @@ public class Facture {
 
         String type = (String) details.get("type");
 
-        switch (type) {
-            case "AVANCE":
-                return "emerald"; // Green for advance payment
-            case "PONCTUEL":
-                return "green"; // Darker green for on-time payment
-            case "EN_ATTENTE":
-                return "blue"; // Blue for pending payment
-            case "RETARD":
-            case "EN_RETARD":
-                return "red"; // Red for late payment
-            default:
-                return "gray";
-        }
+        return switch (type) {
+            case "AVANCE" -> "emerald"; // Green for advance payment
+            case "PONCTUEL" -> "green"; // Darker green for on-time payment
+            case "EN_ATTENTE" -> "blue"; // Blue for pending payment
+            case "RETARD", "EN_RETARD" -> "red"; // Red for late payment
+            default -> "gray";
+        };
     }
 
     @Transient
