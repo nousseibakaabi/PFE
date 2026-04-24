@@ -72,16 +72,6 @@ public class AuthController {
             User existingUser = userRepository.findByUsernameOrEmail(loginRequest.getUsernameOrEmail()).orElse(null);
 
             if (existingUser != null) {
-
-                System.out.println("=== DEBUG CONNEXION ===");
-                System.out.println("Utilisateur: " + existingUser.getUsername());
-                System.out.println("Activé: " + existingUser.getEnabled());
-                System.out.println("Verrouillé par admin: " + existingUser.getLockedByAdmin());
-                System.out.println("Compte non verrouillé: " + existingUser.getAccountNonLocked());
-                System.out.println("Compte verrouillé jusqu'au: " + existingUser.getAccountLockedUntil());
-                System.out.println("2FA activée: " + existingUser.getTwoFactorEnabled());
-                System.out.println("=======================");
-
                 // Vérifier si verrouillé par l'administrateur
                 if (existingUser.getLockedByAdmin()) {
                     Map<String, Object> response = new HashMap<>();
@@ -209,11 +199,8 @@ public class AuthController {
                         response.put("message", "Compte verrouillé par l'administrateur. Contactez l'admin pour déverrouiller.");
 
                         try {
-                            System.out.println("Tentative d'envoi d'email de verrouillage admin à: " + user.getEmail());
                             emailService.sendAccountLockedByAdminEmail(user.getEmail(), user.getUsername());
-                            System.out.println("Email de verrouillage admin envoyé avec succès");
                         } catch (Exception emailEx) {
-                            System.err.println("Échec d'envoi de l'email de verrouillage admin: " + emailEx.getMessage());
                             emailEx.printStackTrace();
                             response.put("emailError", "Échec d'envoi de l'email de verrouillage admin: " + emailEx.getMessage());
                         }
@@ -237,7 +224,6 @@ public class AuthController {
                                     minutesRemaining
                             );
                         } catch (Exception emailEx) {
-                            System.err.println("Échec d'envoi de l'email de verrouillage temporaire: " + emailEx.getMessage());
                             emailEx.printStackTrace();
                         }
                     }
@@ -298,12 +284,7 @@ public class AuthController {
                 response.put("minutesRemaining", minutesRemaining);
                 response.put("secondsRemaining", secondsRemaining);
 
-                System.out.println("=== ACCOUNT LOCKED ===");
-                System.out.println("User: " + user.getUsername());
-                System.out.println("Locked until: " + user.getAccountLockedUntil());
-                System.out.println("Minutes remaining: " + minutesRemaining);
-                System.out.println("Seconds remaining: " + secondsRemaining);
-                System.out.println("======================");
+
             }
         } else if (failedAttempts == MAX_FAILED_ATTEMPTS - 1) {
             // Last attempt before lock (2nd failed attempt)

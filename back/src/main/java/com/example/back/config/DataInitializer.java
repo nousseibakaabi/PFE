@@ -4,21 +4,23 @@ import com.example.back.entity.*;
 import com.example.back.repository.RoleRepository;
 import com.example.back.repository.ZoneGeographiqueRepository;
 import com.example.back.service.MailGroupService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
-    @Autowired
-    private ZoneGeographiqueRepository zoneGeographiqueRepository;
+    private final ZoneGeographiqueRepository zoneGeographiqueRepository;
 
-    @Autowired
-    private MailGroupService mailGroupService;
+    private final MailGroupService mailGroupService;
+
+    public DataInitializer(RoleRepository roleRepository, ZoneGeographiqueRepository zoneGeographiqueRepository, MailGroupService mailGroupService) {
+        this.roleRepository = roleRepository;
+        this.zoneGeographiqueRepository = zoneGeographiqueRepository;
+        this.mailGroupService = mailGroupService;
+    }
 
     @Override
     public void run(String... args) {
@@ -34,7 +36,6 @@ public class DataInitializer implements CommandLineRunner {
             roleRepository.save(new Role(ERole.ROLE_DECIDEUR, "Décideur role"));
             roleRepository.save(new Role(ERole.ROLE_CHEF_PROJET, "Chef de Projet role"));
 
-            System.out.println("Roles initialized successfully!");
         }
     }
 
@@ -53,14 +54,11 @@ public class DataInitializer implements CommandLineRunner {
 
                 zoneGeographiqueRepository.save(zone);
             }
-            System.out.println("24 Tunisian governorates created successfully!");
         }
     }
 
     private void initializeMailGroups() {
-        System.out.println("Initializing default mail groups...");
         mailGroupService.initializeDefaultGroups();
-        System.out.println("Default mail groups initialized");
     }
 
     private String getZoneNameFromCode(String code) {

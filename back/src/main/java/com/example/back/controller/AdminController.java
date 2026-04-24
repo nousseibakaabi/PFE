@@ -80,11 +80,8 @@ public class AdminController {
             historyService.logUserLock(targetUser, currentUser);
 
             try {
-                System.out.println("Sending lock email to: " + targetUser.getEmail());
                 emailService.sendAccountLockedByAdminEmail(targetUser.getEmail(), targetUser.getUsername());
-                System.out.println("Lock email sent successfully");
             } catch (Exception e) {
-                System.err.println("Failed to send lock email: " + e.getMessage());
                 e.printStackTrace();
             }
 
@@ -111,11 +108,8 @@ public class AdminController {
             historyService.logUserUnlock(targetUser, currentUser);
 
             try {
-                System.out.println("Sending unlock email to: " + targetUser.getEmail());
                 emailService.sendAccountUnlockedByAdminEmail(targetUser.getEmail(), targetUser.getUsername());
-                System.out.println("Unlock email sent successfully");
             } catch (Exception e) {
-                System.err.println("Failed to send unlock email: " + e.getMessage());
                 e.printStackTrace();
             }
 
@@ -209,10 +203,9 @@ public class AdminController {
                                         .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                                 roles.add(chefProjetRole);
                                 break;
+
                             default:
-                                Role defaultRole = roleRepository.findByName(ERole.ROLE_COMMERCIAL_METIER)
-                                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                                roles.add(defaultRole);
+                                throw new IllegalStateException("Unexpected value: " + role.toLowerCase());
                         }
                     }
                 });
@@ -290,7 +283,7 @@ public class AdminController {
 
             // LOG HISTORY: Role change
             historyService.logUserRoleChange(targetUser, currentUser, oldRoles,
-                    newRoleValues.stream().collect(Collectors.toList()));
+                    new ArrayList<>(newRoleValues));
 
             return ResponseEntity.ok(new MessageResponse("User roles updated successfully"));
         } catch (Exception e) {
