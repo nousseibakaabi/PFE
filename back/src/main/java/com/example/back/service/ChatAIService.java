@@ -447,7 +447,6 @@ public class ChatAIService {
 
                 return String.format(
                         "📋 Il y a une convention qui expire ce mois-ci :\n" +
-                                "\n" +
                                 "La convention %s (%s) expire le %s avec un montant de %s TND.",
                         ref, libelle, dateFin, montant
                 );
@@ -504,9 +503,6 @@ public class ChatAIService {
                 (q.contains("impay") || q.contains("non pay"))) {
 
             int count = results.size();
-            if (count == 0) {
-                return "✅ Toutes les factures sont payées ! Aucune facture impayée.";
-            }
 
             BigDecimal totalMontant = BigDecimal.ZERO;
             for (Map<String, Object> row : results) {
@@ -528,7 +524,7 @@ public class ChatAIService {
                 );
             } else {
                 return String.format(
-                        "⚠️ %d factures impayées pour un montant total de %.2f TND.\n\n" +
+                        "⚠️ %d factures impayées pour un montant total de %.2f TND.\n" +
                                 "💡 Pensez à les régler avant la date d'échéance.",
                         count, totalMontant
                 );
@@ -546,18 +542,12 @@ public class ChatAIService {
         // ============ CONVENTIONS EN COURS ============
         if ((q.contains("convention") || q.contains("conventions")) && q.contains("en cours")) {
             int count = results.size();
-            if (count == 0) {
-                return "📭 Aucune convention en cours pour le moment.";
-            }
             return String.format("📋 Il y a actuellement %d convention(s) en cours.", count);
         }
 
         // ============ APPLICATIONS EN COURS ============
         if ((q.contains("application") || q.contains("applications")) && q.contains("en cours")) {
             int count = results.size();
-            if (count == 0) {
-                return "📭 Aucune application en cours pour le moment.";
-            }
             return String.format("📱 Il y a actuellement %d application(s) en cours.", count);
         }
 
@@ -756,19 +746,8 @@ public class ChatAIService {
 
     private String getGreetingResponse(String userName) {
         String name = (userName != null && !userName.isEmpty()) ? userName : "cher utilisateur";
-
-        // Liste des réponses aléatoires pour varier
-        List<String> responses = Arrays.asList(
-                "Bonjour " + name + " ! 👋 Comment puis-je vous aider aujourd'hui ?",
-                "Salut " + name + " ! 🌟 En quoi puis-je vous être utile ?",
-                "Bonjour " + name + " ! 😊 Quelle est votre question ?",
-                "Salut " + name + " ! 😊 Comment puis-je vous assister aujourd'hui ?"
-        );
-
-        Random random = new Random();
-        return responses.get(random.nextInt(responses.size()));
+        return "Bonjour " + name + " ! 👋 Comment puis-je vous aider aujourd'hui ?";
     }
-
 
     private String getCurrentUserName() {
         try {

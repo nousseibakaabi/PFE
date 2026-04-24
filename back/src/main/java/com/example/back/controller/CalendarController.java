@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/calendar")
-@CrossOrigin(origins = "*")
 @Slf4j
 public class CalendarController {
 

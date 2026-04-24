@@ -201,7 +201,6 @@ public class AuthController {
                         try {
                             emailService.sendAccountLockedByAdminEmail(user.getEmail(), user.getUsername());
                         } catch (Exception emailEx) {
-                            emailEx.printStackTrace();
                             response.put("emailError", "Échec d'envoi de l'email de verrouillage admin: " + emailEx.getMessage());
                         }
                     } else if (user.getAccountLockedUntil() != null &&
@@ -224,7 +223,7 @@ public class AuthController {
                                     minutesRemaining
                             );
                         } catch (Exception emailEx) {
-                            emailEx.printStackTrace();
+                            response.put("emailError", "Échec d'envoi de l'email: " + emailEx.getMessage());
                         }
                     }
                 }

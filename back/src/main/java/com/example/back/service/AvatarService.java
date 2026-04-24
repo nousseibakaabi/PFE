@@ -70,7 +70,6 @@ public class AvatarService {
 
         } catch (IOException e) {
             System.err.println("Failed to save avatar: " + e.getMessage());
-            e.printStackTrace();
             // Fallback to Base64
             return generateShortSvgUrl(initials);
         }

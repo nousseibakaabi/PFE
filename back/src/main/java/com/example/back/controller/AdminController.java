@@ -82,7 +82,7 @@ public class AdminController {
             try {
                 emailService.sendAccountLockedByAdminEmail(targetUser.getEmail(), targetUser.getUsername());
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Failed to send email to: {}",e);
             }
 
             return ResponseEntity.ok(new MessageResponse("User locked successfully and email notification sent"));
@@ -110,7 +110,7 @@ public class AdminController {
             try {
                 emailService.sendAccountUnlockedByAdminEmail(targetUser.getEmail(), targetUser.getUsername());
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Failed to send email to: {}",e);
             }
 
             return ResponseEntity.ok(new MessageResponse("User unlocked successfully and email notification sent"));
