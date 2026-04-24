@@ -76,4 +76,25 @@ class MailGroupControllerTest {
                 .containsEntry("success", false)
                 .containsEntry("message", "duplicate");
     }
+
+    @Test
+    void remainingEndpoints_returnBadRequestWhenCurrentUserCannotBeResolved() {
+        User authUser = ControllerTestSupport.user(1L, "alice", ERole.ROLE_COMMERCIAL_METIER);
+        ControllerTestSupport.authenticate(authUser);
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.empty());
+
+        MailGroupRequest request = new MailGroupRequest();
+        request.setName("Team");
+
+        List<ResponseEntity<?>> responses = List.of(
+                controller.getGroup(1L),
+                controller.getSuggestions("term"),
+                controller.updateGroup(1L, request),
+                controller.deleteGroup(1L),
+                controller.addMember(1L, 2L),
+                controller.removeMember(1L, 2L)
+        );
+
+        assertThat(responses).allSatisfy(response -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
+    }
 }

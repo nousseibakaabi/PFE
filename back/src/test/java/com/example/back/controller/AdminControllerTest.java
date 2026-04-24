@@ -1,6 +1,7 @@
 package com.example.back.controller;
 
 import com.example.back.entity.ERole;
+import com.example.back.entity.Role;
 import com.example.back.entity.User;
 import com.example.back.payload.request.SignupRequest;
 import com.example.back.payload.response.MessageResponse;
@@ -23,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -143,5 +145,39 @@ class AdminControllerTest {
         Map<String, Object> body = (Map<String, Object>) response.getBody();
         assertThat(body).containsEntry("success", true);
         assertThat((List<?>) body.get("roles")).hasSize(3);
+    }
+
+    @Test
+    void getLockedUsers_returnsUsersLockedByAdminOrTimeWindow() {
+        User regular = ControllerTestSupport.user(2L, "regular", ERole.ROLE_COMMERCIAL_METIER);
+        User locked = ControllerTestSupport.user(3L, "locked", ERole.ROLE_COMMERCIAL_METIER);
+        locked.setLockedByAdmin(true);
+        User tempLocked = ControllerTestSupport.user(4L, "temp", ERole.ROLE_COMMERCIAL_METIER);
+        tempLocked.setAccountLockedUntil(LocalDateTime.now().plusMinutes(10));
+
+        when(userRepository.findAll()).thenReturn(List.of(regular, locked, tempLocked));
+
+        ResponseEntity<List<User>> response = controller.getLockedUsers();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).extracting(User::getUsername).containsExactlyInAnyOrder("locked", "temp");
+    }
+
+    @Test
+    void updateUserRoles_updatesAssignedRoles() {
+        User admin = ControllerTestSupport.user(1L, "admin", ERole.ROLE_ADMIN);
+        User regular = ControllerTestSupport.user(2L, "regular", ERole.ROLE_COMMERCIAL_METIER);
+        ControllerTestSupport.authenticate(admin);
+        Role decideurRole = new Role();
+        decideurRole.setName(ERole.ROLE_DECIDEUR);
+
+        when(userRepository.findByUsername("admin")).thenReturn(Optional.of(admin));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(regular));
+        when(roleRepository.findByName(ERole.ROLE_DECIDEUR)).thenReturn(Optional.of(decideurRole));
+
+        ResponseEntity<?> response = controller.updateUserRoles(2L, Map.of("roles", List.of("ROLE_DECIDEUR")));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(((MessageResponse) response.getBody()).getMessage()).isEqualTo("User roles updated successfully");
     }
 }

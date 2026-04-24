@@ -4,12 +4,14 @@ import com.example.back.entity.Application;
 import com.example.back.entity.ERole;
 import com.example.back.entity.User;
 import com.example.back.payload.request.CreateReassignmentRequestDTO;
+import com.example.back.payload.request.RequestActionDTO;
 import com.example.back.repository.ApplicationRepository;
 import com.example.back.repository.ConventionRepository;
 import com.example.back.repository.UserRepository;
 import com.example.back.service.RequestService;
 import com.example.back.service.WorkloadService;
 import com.example.back.service.mapper.RequestMapper;
+import com.example.back.payload.response.RequestResponse;
 import com.example.back.support.ControllerTestSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -99,5 +101,48 @@ class RequestControllerTest {
         assertThat((Map<String, Object>) response.getBody())
                 .containsEntry("success", false)
                 .containsEntry("message", "Vous n'êtes pas le créateur de cette application");
+    }
+
+    @Test
+    void getUserRequests_returnsServiceData() {
+        User currentUser = ControllerTestSupport.user(1L, "chef1", ERole.ROLE_CHEF_PROJET);
+        ControllerTestSupport.authenticate(currentUser);
+        when(userRepository.findByUsername("chef1")).thenReturn(Optional.of(currentUser));
+        when(requestService.getUserRequests(currentUser)).thenReturn(List.of(new RequestResponse()));
+
+        ResponseEntity<?> response = controller.getUserRequests();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("count", 1);
+    }
+
+    @Test
+    void getRequestsByStatus_returnsServiceData() {
+        when(requestService.getRequestsByStatus("PENDING")).thenReturn(List.of(new RequestResponse()));
+
+        ResponseEntity<?> response = controller.getRequestsByStatus("PENDING");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("count", 1);
+    }
+
+    @Test
+    void processRequest_returnsWrappedResponse() {
+        User currentUser = ControllerTestSupport.user(1L, "chef1", ERole.ROLE_CHEF_PROJET);
+        RequestActionDTO actionDTO = new RequestActionDTO();
+        actionDTO.setRequestId(5L);
+        actionDTO.setAction("APPROVE");
+        RequestResponse requestResponse = new RequestResponse();
+
+        ControllerTestSupport.authenticate(currentUser);
+        when(userRepository.findByUsername("chef1")).thenReturn(Optional.of(currentUser));
+        when(requestService.processRequest(actionDTO, currentUser)).thenReturn(requestResponse);
+
+        ResponseEntity<?> response = controller.processRequest(actionDTO);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("message", "Request processed successfully")
+                .containsEntry("data", requestResponse);
     }
 }

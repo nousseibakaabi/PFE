@@ -98,4 +98,22 @@ class StatsControllerTest {
         assertThat(body).containsEntry("success", true);
         assertThat(data).containsKey("usersByRole");
     }
+
+    @Test
+    void userContextDependentEndpoints_returnBadRequestWhenCurrentUserFails() {
+        when(userContextService.getCurrentUser()).thenThrow(new RuntimeException("missing"));
+
+        List<ResponseEntity<?>> responses = List.of(
+                controller.getDashboardStats(),
+                controller.getConventionDetailedStats(),
+                controller.getFactureDetailedStats(),
+                controller.getApplicationDetailedStats(),
+                controller.getFinancialDetailedStats(),
+                controller.getNomenclatureDetailedStats(),
+                controller.getSummaryStats(),
+                controller.getOverdueAlerts()
+        );
+
+        assertThat(responses).allSatisfy(response -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
+    }
 }

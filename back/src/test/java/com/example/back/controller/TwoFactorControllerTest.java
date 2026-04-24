@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,5 +72,36 @@ class TwoFactorControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(((MessageResponse) response.getBody()).getMessage()).isEqualTo("Invalid code format");
+    }
+
+    @Test
+    void disableTwoFactor_whenCodeIsValid_disablesFeature() {
+        User user = ControllerTestSupport.user(1L, "alice", ERole.ROLE_COMMERCIAL_METIER);
+        user.setTwoFactorSecret("secret");
+        ControllerTestSupport.authenticate(user);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(twoFactorService.verifyCode("secret", 123456)).thenReturn(true);
+
+        TwoFactorRequest request = new TwoFactorRequest();
+        request.setCode("123456");
+
+        ResponseEntity<?> response = controller.disableTwoFactor(request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(((MessageResponse) response.getBody()).getMessage()).isEqualTo("2FA désactivée avec succès !");
+        verify(twoFactorService).disableTwoFactor(user);
+    }
+
+    @Test
+    void getTwoFactorStatus_returnsFlag() {
+        User user = ControllerTestSupport.user(1L, "alice", ERole.ROLE_COMMERCIAL_METIER);
+        ControllerTestSupport.authenticate(user);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(twoFactorService.isTwoFactorEnabled(user)).thenReturn(true);
+
+        ResponseEntity<?> response = controller.getTwoFactorStatus();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("enabled", true);
     }
 }

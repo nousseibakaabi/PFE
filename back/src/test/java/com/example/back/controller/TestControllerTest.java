@@ -28,4 +28,36 @@ class TestControllerTest {
                 .containsEntry("service", "Test Controller");
         assertThat(response).containsKey("timestamp");
     }
+
+    @Test
+    void userAccess_returnsExpectedMessage() {
+        assertThat(controller.userAccess()).isEqualTo("User Content.");
+    }
+
+    @Test
+    void adminAccess_returnsExpectedMessage() {
+        assertThat(controller.adminAccess()).isEqualTo("Admin Board.");
+    }
+
+    @Test
+    void commercialAccess_returnsExpectedMessage() {
+        assertThat(controller.commercialAccess()).isEqualTo("Commercial Metier Board.");
+    }
+
+    @Test
+    void decideurAccess_returnsExpectedMessage() {
+        assertThat(controller.decideurAccess()).isEqualTo("Decideur Board.");
+    }
+
+    @Test
+    void chefProjetAccess_returnsExpectedMessage() {
+        assertThat(controller.chefProjetAccess()).isEqualTo("Chef de Projet Board.");
+    }
+
+    @Test
+    void ping_returnsPongPayload() {
+        assertThat(controller.ping())
+                .containsEntry("message", "pong")
+                .containsEntry("status", "OK");
+    }
 }

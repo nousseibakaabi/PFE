@@ -1,10 +1,16 @@
 package com.example.back.controller;
 
 import com.example.back.entity.ERole;
+import com.example.back.entity.MailDraft;
 import com.example.back.entity.MailFolder;
 import com.example.back.entity.User;
+import com.example.back.payload.request.MailActionRequest;
+import com.example.back.payload.request.MailDraftRequest;
+import com.example.back.payload.request.MailRequest;
 import com.example.back.payload.response.MailFolderResponse;
+import com.example.back.payload.response.MailGroupResponse;
 import com.example.back.payload.response.MailResponse;
+import com.example.back.payload.response.MailStatsResponse;
 import com.example.back.repository.MailAttachmentRepository;
 import com.example.back.repository.MailFolderRepository;
 import com.example.back.repository.UserRepository;
@@ -21,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
 
 import java.util.List;
 import java.util.Map;
@@ -103,5 +110,59 @@ class MailControllerTest {
         Map<String, Object> body = (Map<String, Object>) response.getBody();
         assertThat(body).containsEntry("success", true).containsEntry("message", "Folder created successfully");
         assertThat(body.get("data")).isInstanceOf(MailFolderResponse.class);
+    }
+
+    @Test
+    void remainingEndpoints_returnBadRequestWhenCurrentUserCannotBeResolved() {
+        User authUser = ControllerTestSupport.user(1L, "alice", ERole.ROLE_COMMERCIAL_METIER);
+        ControllerTestSupport.authenticate(authUser);
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.empty());
+
+        MailRequest mailRequest = new MailRequest();
+        mailRequest.setSubject("Subject");
+        mailRequest.setContent("Content");
+        mailRequest.setTo(List.of("a@example.com"));
+        MailDraftRequest draftRequest = new MailDraftRequest();
+        draftRequest.setSubject("Draft");
+        MailActionRequest actionRequest = new MailActionRequest();
+
+        List<ResponseEntity<?>> responses = List.of(
+                controller.sendMail(mailRequest, null),
+                controller.saveDraft(draftRequest, null),
+                controller.getDrafts(),
+                controller.getDraftById(1L),
+                controller.updateDraft(1L, draftRequest, null),
+                controller.deleteDraft(1L),
+                controller.getSent(0, 20),
+                controller.getStarred(0, 20),
+                controller.getArchived(0, 20),
+                controller.getTrash(0, 20),
+                controller.getMailById(1L),
+                controller.searchMails("q", 0, 20),
+                controller.performBatchAction(actionRequest),
+                controller.markAsRead(1L),
+                controller.markAsUnread(1L),
+                controller.toggleStar(1L),
+                controller.toggleArchive(1L),
+                controller.deleteMail(1L),
+                controller.restoreMail(1L),
+                controller.getStats(),
+                controller.getFolders(),
+                controller.createFolder(Map.of("name", "x")),
+                controller.deleteFolder(1L),
+                controller.getGroupMails(1L, 0, 20),
+                controller.getGroupsWithUnread()
+        );
+
+        assertThat(responses).allSatisfy(response -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    void downloadAttachment_whenAttachmentMissing_returnsBadRequest() {
+        when(attachmentRepository.findById(99L)).thenReturn(Optional.empty());
+
+        ResponseEntity<Resource> response = controller.downloadAttachment(99L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 }

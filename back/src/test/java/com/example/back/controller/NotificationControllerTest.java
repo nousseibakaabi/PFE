@@ -75,4 +75,51 @@ class NotificationControllerTest {
                 .containsEntry("message", "Notification deleted successfully");
         verify(notificationService).deleteNotification(9L, user);
     }
+
+    @Test
+    void getUnreadCount_returnsCountOnly() {
+        User user = ControllerTestSupport.user(1L, "alice", ERole.ROLE_COMMERCIAL_METIER);
+        ControllerTestSupport.authenticate(user);
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user));
+        when(notificationService.getUnreadCount(user)).thenReturn(4L);
+
+        ResponseEntity<?> response = controller.getUnreadCount();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("success", true)
+                .containsEntry("count", 4L);
+    }
+
+    @Test
+    void markAsRead_returnsNotification() {
+        User user = ControllerTestSupport.user(1L, "alice", ERole.ROLE_COMMERCIAL_METIER);
+        Notification notification = new Notification();
+        notification.setId(6L);
+        ControllerTestSupport.authenticate(user);
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user));
+        when(notificationService.markAsRead(6L, user)).thenReturn(notification);
+
+        ResponseEntity<?> response = controller.markAsRead(6L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("message", "Notification marked as read")
+                .containsEntry("data", notification);
+    }
+
+    @Test
+    void markAllAsRead_returnsAffectedCount() {
+        User user = ControllerTestSupport.user(1L, "alice", ERole.ROLE_COMMERCIAL_METIER);
+        ControllerTestSupport.authenticate(user);
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user));
+        when(notificationService.markAllAsRead(user)).thenReturn(5);
+
+        ResponseEntity<?> response = controller.markAllAsRead();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("message", "All notifications marked as read")
+                .containsEntry("count", 5);
+    }
 }

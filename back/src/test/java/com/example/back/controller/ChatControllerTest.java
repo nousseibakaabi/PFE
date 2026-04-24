@@ -45,4 +45,28 @@ class ChatControllerTest {
                 .containsEntry("success", true)
                 .containsEntry("message", "Cache vidé avec succès");
     }
+
+    @Test
+    void getCacheStats_returnsServiceStats() {
+        when(chatAIService.getCacheStats()).thenReturn(Map.of("entries", 10));
+        when(chatAIService.isGeminiAvailable()).thenReturn(true);
+
+        ResponseEntity<?> response = controller.getCacheStats();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("success", true)
+                .containsEntry("data", Map.of("entries", 10))
+                .containsEntry("geminiAvailable", true);
+    }
+
+    @Test
+    void clearCacheForQuestion_clearsQuestionSpecificEntry() {
+        ResponseEntity<?> response = controller.clearCacheForQuestion(Map.of("question", "Q1"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("success", true)
+                .containsEntry("message", "Cache vidé pour la question: Q1");
+    }
 }

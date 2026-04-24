@@ -78,4 +78,45 @@ class PasswordControllerTest {
                 .containsEntry("message", "New password and confirmation do not match");
         verifyNoInteractions(passwordService);
     }
+
+    @Test
+    void validateResetToken_returnsValidityPayload() {
+        when(passwordService.validateResetToken("token-1")).thenReturn(true);
+
+        ResponseEntity<?> response = controller.validateResetToken("token-1");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("token", "token-1")
+                .containsEntry("valid", true)
+                .containsEntry("message", "Token is valid");
+    }
+
+    @Test
+    void resetPassword_whenPasswordsMismatch_returnsBadRequest() {
+        com.example.back.payload.request.ResetPasswordRequest request = new com.example.back.payload.request.ResetPasswordRequest();
+        request.setToken("abc");
+        ReflectionTestUtils.setField(request, "newPassword", "one");
+        ReflectionTestUtils.setField(request, "confirmPassword", "two");
+
+        when(tokenService.generateErrorResponse("Passwords do not match"))
+                .thenReturn(Map.of("success", false, "message", "Passwords do not match"));
+
+        ResponseEntity<?> response = controller.resetPassword(request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("message", "Passwords do not match");
+    }
+
+    @Test
+    void quickReset_whenPayloadMissingFields_returnsBadRequest() {
+        when(tokenService.generateErrorResponse("Email and newPassword are required"))
+                .thenReturn(Map.of("success", false, "message", "Email and newPassword are required"));
+
+        ResponseEntity<?> response = controller.quickReset(Map.of("email", "a@example.com"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("message", "Email and newPassword are required");
+    }
 }

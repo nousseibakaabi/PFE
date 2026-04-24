@@ -5,6 +5,8 @@ import com.example.back.entity.ERole;
 import com.example.back.entity.Facture;
 import com.example.back.entity.User;
 import com.example.back.payload.request.FactureRequest;
+import com.example.back.payload.request.PaiementRequest;
+import com.example.back.payload.request.SendEmailRequest;
 import com.example.back.payload.response.FactureResponse;
 import com.example.back.repository.ConventionRepository;
 import com.example.back.repository.FactureRepository;
@@ -25,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -110,5 +113,35 @@ class FactureControllerTest {
                 .containsEntry("data", factureResponse);
         verify(historyService).logFactureCreate(any(Facture.class));
         verify(conventionService).updateConventionStatusRealTime(7L);
+    }
+
+    @Test
+    void remainingEndpoints_returnBadRequestWhenCurrentUserLookupFails() {
+        when(userContextService.getCurrentUser()).thenThrow(new RuntimeException("missing"));
+
+        PaiementRequest paiementRequest = new PaiementRequest();
+        paiementRequest.setFactureId(1L);
+        FactureRequest factureRequest = new FactureRequest();
+        factureRequest.setConventionId(1L);
+        factureRequest.setDateEcheance(LocalDate.now());
+        factureRequest.setMontantHT(BigDecimal.ONE);
+        SendEmailRequest sendEmailRequest = new SendEmailRequest();
+        sendEmailRequest.setFactureId(1L);
+
+        List<ResponseEntity<?>> responses = List.of(
+                controller.updateFacture(1L, factureRequest),
+                controller.deleteFacture(1L),
+                controller.registerPaiement(paiementRequest),
+                controller.getAllFactures(),
+                controller.getFacturesByConvention(1L),
+                controller.getFacturesByStatut("PAYE"),
+                controller.getFacturesEnRetard(),
+                controller.getStats(),
+                controller.getRecentFactures(),
+                controller.getMontantTotal(),
+                controller.sendFactureEmail(sendEmailRequest)
+        );
+
+        assertThat(responses).allSatisfy(response -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
     }
 }

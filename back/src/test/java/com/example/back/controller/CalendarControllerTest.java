@@ -77,4 +77,80 @@ class CalendarControllerTest {
                 .containsEntry("success", false)
                 .containsEntry("message", "Failed to fetch calendar stats");
     }
+
+    @Test
+    void getUpcomingInvoices_returnsOnlyAccessibleUpcomingEvents() {
+        User commercial = ControllerTestSupport.user(5L, "commercial", ERole.ROLE_COMMERCIAL_METIER);
+        Facture accessible = facture(10L, "FACT-010", commercial, null, LocalDate.now().plusDays(5), "NON_PAYE");
+        Facture inaccessible = facture(11L, "FACT-011", ControllerTestSupport.user(6L, "other", ERole.ROLE_COMMERCIAL_METIER),
+                null, LocalDate.now().plusDays(6), "NON_PAYE");
+
+        when(userContextService.getCurrentUser()).thenReturn(commercial);
+        when(factureRepository.findByDateEcheanceBetweenAndStatutPaiementNot(
+                LocalDate.now(), LocalDate.now().plusMonths(1), "PAYE"))
+                .thenReturn(List.of(accessible, inaccessible));
+
+        ResponseEntity<?> response = controller.getUpcomingInvoices();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("success", true)
+                .containsEntry("count", 1);
+    }
+
+    @Test
+    void getOverdueInvoices_returnsAccessibleOverdueEvents() {
+        User admin = ControllerTestSupport.user(7L, "admin", ERole.ROLE_ADMIN);
+        Facture overdue = facture(12L, "FACT-012", admin, null, LocalDate.now().minusDays(2), "EN_RETARD");
+
+        when(userContextService.getCurrentUser()).thenReturn(admin);
+        when(factureRepository.findFacturesEnRetard(LocalDate.now())).thenReturn(List.of(overdue));
+
+        ResponseEntity<?> response = controller.getOverdueInvoices();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("success", true)
+                .containsEntry("count", 1);
+    }
+
+    @Test
+    void getAllEvents_returnsCombinedAccessibleEvents() {
+        User decideur = ControllerTestSupport.user(8L, "decideur", ERole.ROLE_DECIDEUR);
+        LocalDate start = LocalDate.now().minusDays(1);
+        LocalDate end = LocalDate.now().plusDays(7);
+        Facture facture = facture(13L, "FACT-013", decideur, null, LocalDate.now().plusDays(3), "NON_PAYE");
+
+        when(userContextService.getCurrentUser()).thenReturn(decideur);
+        when(factureRepository.findByDateEcheanceBetween(start, end)).thenReturn(List.of(facture));
+
+        ResponseEntity<?> response = controller.getAllEvents(start, end);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody())
+                .containsEntry("success", true)
+                .containsEntry("count", 1)
+                .containsEntry("userRole", "DECIDEUR");
+    }
+
+    private Facture facture(Long id, String numero, User createdBy, User chefDeProjet, LocalDate dateEcheance, String statutPaiement) {
+        Convention convention = new Convention();
+        convention.setId(id + 100);
+        convention.setReferenceConvention("CONV-" + numero);
+        convention.setCreatedBy(createdBy);
+
+        Application application = new Application();
+        application.setClientName("Client " + numero);
+        application.setChefDeProjet(chefDeProjet);
+        convention.setApplication(application);
+
+        Facture facture = new Facture();
+        facture.setId(id);
+        facture.setNumeroFacture(numero);
+        facture.setConvention(convention);
+        facture.setDateEcheance(dateEcheance);
+        facture.setMontantTTC(new BigDecimal("1000"));
+        facture.setStatutPaiement(statutPaiement);
+        return facture;
+    }
 }

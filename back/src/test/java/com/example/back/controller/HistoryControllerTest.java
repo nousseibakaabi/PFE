@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -59,5 +60,67 @@ class HistoryControllerTest {
         Map<String, Object> stats = (Map<String, Object>) body.get("data");
         assertThat(body).containsEntry("success", true);
         assertThat(stats).containsEntry("totalEntries", 1L);
+    }
+
+    @Test
+    void getRecentHistory_returnsLimitedEntries() {
+        when(historyService.getRecentHistory(5)).thenReturn(List.of(new HistoryResponse()));
+
+        ResponseEntity<?> response = controller.getRecentHistory(5);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("count", 1);
+    }
+
+    @Test
+    void getHistoryByUser_returnsEntries() {
+        when(historyService.getHistoryByUser(4L)).thenReturn(List.of(new HistoryResponse()));
+
+        ResponseEntity<?> response = controller.getHistoryByUser(4L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("count", 1);
+    }
+
+    @Test
+    void getHistoryByEntity_returnsEntries() {
+        when(historyService.getHistoryByEntity("CONVENTION", 9L)).thenReturn(List.of(new HistoryResponse()));
+
+        ResponseEntity<?> response = controller.getHistoryByEntity("CONVENTION", 9L);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("count", 1);
+    }
+
+    @Test
+    void getHistoryByDate_returnsDateEcho() {
+        LocalDate date = LocalDate.of(2026, 4, 1);
+        when(historyService.getHistoryByDate(date)).thenReturn(List.of(new HistoryResponse()));
+
+        ResponseEntity<?> response = controller.getHistoryByDate(date);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("date", "2026-04-01");
+    }
+
+    @Test
+    void getHistoryGroupedByDay_returnsTotalDays() {
+        when(historyService.getHistoryGroupedByDay()).thenReturn(Map.of(LocalDate.of(2026, 4, 1), List.of(new HistoryResponse())));
+
+        ResponseEntity<?> response = controller.getHistoryGroupedByDay();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("totalDays", 1);
+    }
+
+    @Test
+    void searchHistory_returnsEntries() {
+        when(historyService.searchHistory("APP", "CREATE", 2L, LocalDate.of(2026, 4, 1)))
+                .thenReturn(List.of(new HistoryResponse()));
+
+        ResponseEntity<?> response = controller.searchHistory("APP", "CREATE", 2L, LocalDate.of(2026, 4, 1));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("count", 1);
     }
 }

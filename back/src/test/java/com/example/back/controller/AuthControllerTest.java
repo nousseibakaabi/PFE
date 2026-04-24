@@ -19,6 +19,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.core.MethodParameter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -113,5 +116,22 @@ class AuthControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(((MessageResponse) response.getBody()).getMessage()).isEqualTo("Déconnexion réussie");
         verify(historyService).logUserLogout(user);
+    }
+
+    @Test
+    void handleValidationExceptions_returnsStructuredErrors() throws Exception {
+        LoginRequest request = new LoginRequest();
+        BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(request, "loginRequest");
+        bindingResult.rejectValue("password", "NotBlank", "must not be blank");
+        MethodParameter methodParameter = new MethodParameter(
+                AuthController.class.getMethod("authenticateUser", LoginRequest.class),
+                0
+        );
+        MethodArgumentNotValidException exception = new MethodArgumentNotValidException(methodParameter, bindingResult);
+
+        ResponseEntity<?> response = controller.handleValidationExceptions(exception);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat((Map<String, Object>) response.getBody()).containsEntry("success", false);
     }
 }
