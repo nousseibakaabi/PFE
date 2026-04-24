@@ -97,12 +97,5 @@ public class JwtUtils {
         return false;
     }
 
-    // Extract claims for additional checks
-    public Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
+
 }
