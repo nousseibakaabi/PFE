@@ -52,7 +52,7 @@ public class ApplicationController {
 
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET', 'COMMERCIAL_METIER', 'DECIDEUR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET', 'COMMERCIAL_METIER', 'DECIDEUR')")  // ← ADD THIS
     public ResponseEntity<?> getAllApplications() {
         try {
             log.info("GET /api/applications called - Fetching all applications");
@@ -73,7 +73,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET', 'COMMERCIAL_METIER', 'DECIDEUR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET', 'COMMERCIAL_METIER', 'DECIDEUR')")  // ← ADD THIS
     public ResponseEntity<?> getApplicationById(@PathVariable Long id) {
         try {
             ApplicationResponse application = applicationService.getApplicationById(id);
@@ -90,7 +90,7 @@ public class ApplicationController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")  // ← ADD THIS
     public ResponseEntity<?> createApplication(@Valid @RequestBody ApplicationRequest request) {
         try {
             ApplicationResponse application = applicationService.createApplication(request);
@@ -126,22 +126,6 @@ public class ApplicationController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")
-    public ResponseEntity<?> deleteApplication(@PathVariable Long id) {
-        try {
-            applicationService.deleteApplication(id);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Application deleted successfully");
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("Error deleting application: ", e);
-            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
-        }
-    }
 
     @GetMapping("/chef-projet/{chefDeProjetId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")
@@ -482,8 +466,7 @@ public class ApplicationController {
     }
 
 
-    // In ApplicationController.java - Add:
-// In ApplicationController.java - Add this endpoint
+
     @GetMapping("/archived")
     @PreAuthorize("hasAnyRole('ADMIN', 'CHEF_PROJET')")
     public ResponseEntity<?> getArchivedApplications() {

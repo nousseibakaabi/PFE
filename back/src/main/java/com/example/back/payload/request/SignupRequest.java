@@ -86,6 +86,11 @@ public class SignupRequest {
         return department;
     }
 
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+
     public Set<String> getRoles() {
         return roles;
     }
