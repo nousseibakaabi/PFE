@@ -14,6 +14,13 @@ import java.util.List;
 public interface FactureRepository extends JpaRepository<Facture, Long> {
 
 
+    @Query("SELECT DISTINCT f FROM Facture f " +
+            "LEFT JOIN FETCH f.convention c " +
+            "LEFT JOIN FETCH c.structureBeneficiel s " +
+            "LEFT JOIN FETCH c.structureResponsable sr " +
+            "LEFT JOIN FETCH c.application a")
+    List<Facture> findAllWithConventionAndStructure();
+
     boolean existsByNumeroFacture(String numeroFacture);
 
 

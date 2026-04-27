@@ -1,4 +1,3 @@
-// Structure.java
 package com.example.back.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
