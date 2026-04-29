@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FactureRepository extends JpaRepository<Facture, Long> {
@@ -16,10 +17,21 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
 
     @Query("SELECT DISTINCT f FROM Facture f " +
             "LEFT JOIN FETCH f.convention c " +
-            "LEFT JOIN FETCH c.structureBeneficiel s " +
-            "LEFT JOIN FETCH c.structureResponsable sr " +
-            "LEFT JOIN FETCH c.application a")
+            "LEFT JOIN FETCH c.structureBeneficiel " +
+            "LEFT JOIN FETCH c.structureResponsable")
     List<Facture> findAllWithConventionAndStructure();
+
+
+
+    Optional<Facture> findByNumeroFacture(String numeroFacture);
+
+    @Query("SELECT DISTINCT f FROM Facture f " +
+            "LEFT JOIN FETCH f.convention c " +
+            "LEFT JOIN FETCH c.structureBeneficiel " +
+            "LEFT JOIN FETCH c.structureResponsable " +
+            "WHERE f.numeroFacture = :numeroFacture")
+    Optional<Facture> findByNumeroFactureWithRelations(@Param("numeroFacture") String numeroFacture);
+
 
     boolean existsByNumeroFacture(String numeroFacture);
 
@@ -62,5 +74,30 @@ public interface FactureRepository extends JpaRepository<Facture, Long> {
     void deleteByConventionId(@Param("conventionId") Long conventionId);
 
     List<Facture> findByDateFacturationBetween(LocalDate startDate, LocalDate endDate);
+
+
+    @Query("SELECT DISTINCT f FROM Facture f " +
+            "LEFT JOIN FETCH f.convention c " +
+            "LEFT JOIN FETCH c.structureBeneficiel " +
+            "LEFT JOIN FETCH c.structureResponsable " +
+            "LEFT JOIN FETCH c.application " +
+            "WHERE f.id = :id")
+    Optional<Facture> findByIdWithAllRelations(@Param("id") Long id);
+
+    // For training data loading - THIS IS WHAT YOU NEED
+    @Query("SELECT DISTINCT f FROM Facture f " +
+            "LEFT JOIN FETCH f.convention c " +
+            "LEFT JOIN FETCH c.structureBeneficiel sb " +
+            "LEFT JOIN FETCH c.structureResponsable sr " +
+            "WHERE f.datePaiement IS NOT NULL")
+    List<Facture> findAllPaidWithRelations();
+
+    // For loading ALL invoices during initialization
+    @Query("SELECT DISTINCT f FROM Facture f " +
+            "LEFT JOIN FETCH f.convention c " +
+            "LEFT JOIN FETCH c.structureBeneficiel sb " +
+            "LEFT JOIN FETCH c.structureResponsable sr")
+    List<Facture> findAllWithAllRelations();
+
 
 }

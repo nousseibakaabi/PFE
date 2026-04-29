@@ -61,6 +61,7 @@ import { ClientListComponent } from './components/client-list/client-list.compon
 import { ClientDetailComponent } from './components/client-detail/client-detail.component';
 import { BilanRevenueComponent } from './components/bilan-revenue/bilan-revenue.component';
 import { BilanOneComponent } from './components/bilan-one/bilan-one.component';
+import { RiskAIComponent } from './components/risk-ai/risk-ai.component';
 
 @NgModule({
   declarations: [
@@ -112,6 +113,7 @@ import { BilanOneComponent } from './components/bilan-one/bilan-one.component';
       ClientDetailComponent,
       BilanRevenueComponent,
       BilanOneComponent,
+      RiskAIComponent,
     ],
   imports: [
     BrowserModule,

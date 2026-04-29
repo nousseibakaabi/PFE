@@ -162,6 +162,38 @@
               <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Calendrier' | translate }}</span>
             </a>
           </li>
+                    <li>
+  <a (click)="navigateWithLang('/risk')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'risk' ? 'menu-item-active' : 'menu-item-inactive'">
+    <svg 
+      width="19" 
+      height="19" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      class="transition-colors duration-200"
+      [class.text-blue-500]="currentPage === 'risk'"
+      [class.text-gray-500]="currentPage !== 'risk'"
+    >
+      <path 
+        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" 
+        stroke="currentColor" 
+        stroke-width="1.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        class="group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200"
+      />
+      <path 
+        d="M3 3V21H21" 
+        stroke="currentColor" 
+        stroke-width="1.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        class="group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200"
+      />
+    </svg>
+    <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Risk Recommondations' | translate }}</span>
+  </a>
+</li>
         </ul>
       </div>
     </nav>
@@ -205,6 +237,8 @@
               <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Demandes' | translate }}</span>
             </a>
           </li>
+
+          
         </ul>
       </div>
     </nav>
@@ -286,7 +320,39 @@
     <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Bilan des revenus' | translate }}</span>
   </a>
 </li>
-        
+       
+          <li>
+  <a (click)="navigateWithLang('/risk')" class="menu-item group cursor-pointer py-2" [class]="currentPage === 'risk' ? 'menu-item-active' : 'menu-item-inactive'">
+    <svg 
+      width="19" 
+      height="19" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      class="transition-colors duration-200"
+      [class.text-blue-500]="currentPage === 'risk'"
+      [class.text-gray-500]="currentPage !== 'risk'"
+    >
+      <path 
+        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" 
+        stroke="currentColor" 
+        stroke-width="1.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        class="group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200"
+      />
+      <path 
+        d="M3 3V21H21" 
+        stroke="currentColor" 
+        stroke-width="1.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        class="group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200"
+      />
+    </svg>
+    <span class="min-text" [class]="isSidebarOpen || !isDesktop ? '' : 'lg:hidden lg:group-hover:inline'">{{ 'Risk Recommondations' | translate }}</span>
+  </a>
+</li>
 
 
         </ul>

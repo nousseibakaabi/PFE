@@ -56,7 +56,7 @@ export class AppComponent implements OnInit {
   }
   
   showLayout(): boolean {
-    const layoutRoutes = ['/profile','/admin','/conventions','/factures','/commercial','/decideur','/chef' ,'/calendar' ,'/mailBox','/application','/notifications','/requests','/planFacturation', '/chat' ,'/client-bilan','/revenu-bilan'];
+    const layoutRoutes = ['/profile','/admin','/conventions','/factures','/commercial','/decideur','/chef' ,'/calendar' ,'/mailBox','/application','/notifications','/requests','/planFacturation', '/chat' ,'/client-bilan','/revenu-bilan','/risk'];
     return layoutRoutes.some(route => this.currentRoute.includes(route));
   }
 }

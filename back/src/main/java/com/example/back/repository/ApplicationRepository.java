@@ -8,12 +8,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
 
     boolean existsByCode(String code);
     boolean existsByName(String name);
+    Optional<Application> findByCode(String code);
     List<Application> findByChefDeProjetAndArchivedTrue(@Param("chef") User chef);
 
     @Query("SELECT a FROM Application a WHERE a.archived = true")

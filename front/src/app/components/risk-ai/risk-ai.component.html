@@ -1,0 +1,554 @@
+<!-- src/app/components/risk-ai/risk-ai.component.html -->
+<div class="risk-ai-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>🤖 AI Risk Prediction & Management</h1>
+    <p class="subtitle">Intelligent invoice risk analysis with deep learning</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button 
+      [class.active]="activeTab === 'dashboard'"
+      (click)="switchTab('dashboard')">
+      📊 Dashboard
+    </button>
+    <button 
+      [class.active]="activeTab === 'upcoming'"
+      (click)="switchTab('upcoming')">
+      ⏰ Upcoming
+    </button>
+    <button 
+      [class.active]="activeTab === 'predictions'"
+      (click)="switchTab('predictions')">
+      🔮 Predictions
+    </button>
+    <button 
+      [class.active]="activeTab === 'batch'"
+      (click)="switchTab('batch')">
+      📦 Batch Analysis
+    </button>
+    <button 
+      [class.active]="activeTab === 'recommendations'"
+      (click)="switchTab('recommendations')">
+      💡 Recommendations
+    </button>
+    <button 
+      [class.active]="activeTab === 'admin'"
+      (click)="switchTab('admin')">
+      ⚙️ Admin
+    </button>
+  </div>
+
+  <!-- Add this right after the header in your HTML -->
+<div *ngIf="successMessage" class="alert alert-success">
+  ✅ {{ successMessage }}
+</div>
+<div *ngIf="errorMessage" class="alert alert-danger">
+  ❌ {{ errorMessage }}
+</div>
+
+  <!-- Dashboard Tab -->
+  <div *ngIf="activeTab === 'dashboard'" class="tab-content">
+    <div class="dashboard-header">
+      <h2>Risk Dashboard</h2>
+      <button (click)="loadDashboard()" [disabled]="loading.dashboard" class="btn-refresh">
+        🔄 Refresh
+      </button>
+    </div>
+
+    <div *ngIf="loading.dashboard" class="loading">
+      <div class="spinner"></div>
+      <p>Loading dashboard...</p>
+    </div>
+
+    <div *ngIf="!loading.dashboard && dashboardData" class="dashboard-cards">
+      <div class="card">
+        <div class="card-icon">👥</div>
+        <div class="card-content">
+          <h3>Clients Analyzed</h3>
+          <div class="card-value">{{ dashboardData.totalClientsAnalyzed }}</div>
+        </div>
+      </div>
+
+      <div class="card critical">
+        <div class="card-icon">⚠️</div>
+        <div class="card-content">
+          <h3>Critical Clients</h3>
+          <div class="card-value">{{ dashboardData.criticalClients }}</div>
+        </div>
+      </div>
+
+      <div class="card high-risk">
+        <div class="card-icon">🔴</div>
+        <div class="card-content">
+          <h3>High Risk Clients</h3>
+          <div class="card-value">{{ dashboardData.highRiskClients }}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <div class="card-content">
+          <h3>Overdue Amount</h3>
+          <div class="card-value">{{ dashboardData.totalOverdueAmount | currency:'TND':'symbol':'1.2-2' }}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-content">
+          <h3>Average Risk Score</h3>
+          <div class="card-value">{{ formatPercentage(dashboardData.averageRiskScore / 100) }}</div>
+        </div>
+      </div>
+    </div>
+
+<!-- Dashboard Summary Section -->
+<div *ngIf="dashboardSummary" class="dashboard-summary">
+  <h3>Risk Level Distribution (Next 30 Days)</h3>
+  <div class="risk-distribution">
+    <div *ngFor="let item of dashboardSummary.summary.riskLevelCounts | keyvalue" 
+         class="risk-stat" 
+         [style.border-left-color]="getRiskColor(item.key)">
+      <div class="risk-stat-label">{{ item.key }}</div>
+      <div class="risk-stat-count">{{ item.value }}</div>
+      <div class="risk-stat-amount">{{ formatCurrency(getAmountByRisk(item.key)) }}</div>
+    </div>
+  </div>
+  <div class="summary-totals">
+    <div>Total Invoices: {{ dashboardSummary.summary.totalInvoices }}</div>
+    <div>Total Amount: {{ formatCurrency(dashboardSummary.summary.totalAmount) }}</div>
+  </div>
+</div>
+  </div>
+
+  <!-- Upcoming Invoices Tab -->
+  <div *ngIf="activeTab === 'upcoming'" class="tab-content">
+    <div class="upcoming-header">
+      <h2>📋 Upcoming & Overdue Invoices</h2>
+      <div class="upcoming-controls">
+        <form [formGroup]="upcomingDaysForm" (ngSubmit)="loadUpcomingInvoices()">
+          <div class="form-group inline">
+            <label>Days ahead:</label>
+            <input type="number" formControlName="days" min="1" max="90">
+            <button type="submit" [disabled]="loading.upcoming">🔍 Search</button>
+          </div>
+        </form>
+        <button (click)="refreshUpcomingInvoices()" [disabled]="loading.refreshUpcoming" class="btn-refresh">
+          🔄 Refresh Predictions
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="loading.upcoming" class="loading">
+      <div class="spinner"></div>
+      <p>Loading upcoming invoices...</p>
+    </div>
+
+    <div *ngIf="!loading.upcoming && upcomingSummary" class="upcoming-summary">
+      <div class="summary-card">
+        <span>📊 Total: {{ upcomingSummary.totalInvoices }}</span>
+        <span class="critical">⚠️ Critical: {{ upcomingSummary.criticalCount }}</span>
+        <span class="high-risk">🔴 High Risk: {{ upcomingSummary.highRiskCount }}</span>
+        <span>💰 Overdue Amount: {{ formatCurrency(upcomingSummary.totalOverdueAmount) }}</span>
+      </div>
+    </div>
+
+    <div *ngIf="!loading.upcoming && upcomingInvoices.length === 0" class="empty-state">
+      <p>No upcoming or overdue invoices found.</p>
+    </div>
+
+    <div *ngIf="upcomingInvoices.length > 0" class="invoices-list">
+      <div *ngFor="let invoice of upcomingInvoices" class="invoice-card" 
+           [class.overdue]="invoice.isOverdue"
+           [style.border-left-color]="invoice.riskColor">
+        <div class="invoice-header">
+          <div class="invoice-number">{{ invoice.invoiceNumber }}</div>
+          <div class="invoice-risk-badge" [style.background]="invoice.riskColor">
+            {{ invoice.riskLevel }}
+          </div>
+        </div>
+        <div class="invoice-details">
+          <div class="detail-row">
+            <span>Client:</span>
+            <strong>{{ invoice.clientName || 'N/A' }}</strong>
+          </div>
+          <div class="detail-row">
+            <span>Amount:</span>
+            <strong>{{ formatCurrency(invoice.amount) }}</strong>
+          </div>
+          <div class="detail-row">
+            <span>Due Date:</span>
+            <strong [class.overdue-text]="invoice.isOverdue">
+              {{ formatDate(invoice.dueDate) }}
+              <span *ngIf="invoice.isOverdue" class="overdue-badge">
+                (Overdue by {{ invoice.overdueDays }} days)
+              </span>
+              <span *ngIf="!invoice.isOverdue && invoice.daysUntilDue <= 7" class="soon-badge">
+                (Due in {{ invoice.daysUntilDue }} days)
+              </span>
+            </strong>
+          </div>
+          <div class="detail-row">
+            <span>Risk Score:</span>
+            <div class="risk-score-bar">
+              <div class="risk-score-fill" [style.width]="invoice.riskScore + '%'" 
+                   [style.background]="invoice.riskColor"></div>
+              <span class="risk-score-value">{{ invoice.riskScore }}%</span>
+            </div>
+          </div>
+          <div class="detail-row" *ngIf="invoice.predictedDelayDays > 0">
+            <span>Predicted Delay:</span>
+            <strong>{{ invoice.predictedDelayDays }} days</strong>
+          </div>
+        </div>
+        <div class="invoice-recommendations" *ngIf="invoice.recommendations.length > 0">
+          <div class="recommendation-title">💡 AI Recommendations:</div>
+          <ul>
+            <li *ngFor="let rec of invoice.recommendations.slice(0, 2)">{{ rec }}</li>
+          </ul>
+        </div>
+        <div class="invoice-actions">
+          <button (click)="selectedFactureNumero = invoice.invoiceNumber; loadInvoiceRecommendations()" class="btn-small">
+            📋 Get Recommendations
+          </button>
+          <button (click)="selectedFactureNumero = invoice.invoiceNumber; debugRawPrediction()" class="btn-small btn-debug">
+            🐛 Debug
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Predictions Tab -->
+  <div *ngIf="activeTab === 'predictions'" class="tab-content">
+    <div class="prediction-section">
+      <h2>Risk Prediction</h2>
+      
+      <!-- Existing Invoice Prediction -->
+      <div class="prediction-form">
+        <h3>Predict Existing Invoice</h3>
+        <form [formGroup]="predictionForm" (ngSubmit)="predictInvoiceRisk()">
+          <div class="form-group">
+            <label>Invoice Number:</label>
+            <input type="text" formControlName="numeroFacture" placeholder="Enter invoice number (e.g., FACT-2026-001)">
+            <button type="submit" [disabled]="loading.prediction || predictionForm.invalid">
+              {{ loading.prediction ? 'Analyzing...' : 'Predict Risk' }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- New Invoice Prediction -->
+      <div class="prediction-form">
+        <h3>Predict New Invoice (Pre-creation)</h3>
+        <form [formGroup]="newInvoiceForm" (ngSubmit)="predictNewInvoice()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Client Code:</label>
+              <input type="text" formControlName="clientCode" placeholder="Client code">
+            </div>
+            <div class="form-group">
+              <label>Amount (TND):</label>
+              <input type="number" formControlName="amount" placeholder="Invoice amount" step="0.01">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Due Date:</label>
+              <input type="date" formControlName="dueDate">
+            </div>
+            <div class="form-group">
+              <label>Application Code (optional):</label>
+              <input type="text" formControlName="applicationCode" placeholder="Application code">
+            </div>
+          </div>
+          <button type="submit" [disabled]="loading.prediction || newInvoiceForm.invalid">
+            {{ loading.prediction ? 'Assessing...' : 'Assess Risk' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Prediction Results -->
+      <div *ngIf="currentPrediction" class="prediction-results">
+        <h3>Prediction Results for Invoice #{{ selectedFactureNumero }}</h3>
+        
+        <div class="risk-level" [style.border-left-color]="currentPrediction.level.color">
+          <div class="risk-badge" [style.background]="currentPrediction.level.color">
+            {{ currentPrediction.level.label }}
+          </div>
+          <div class="risk-metrics">
+            <div class="metric">
+              <span class="metric-label">Probability:</span>
+              <span class="metric-value">{{ formatPercentage(currentPrediction.probability) }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Confidence:</span>
+              <span class="metric-value">{{ formatPercentage(currentPrediction.confidence) }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Predicted Delay:</span>
+              <span class="metric-value">{{ currentPrediction.predictedDelayDays }} days</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="explanation">
+          <h4>📝 Explanation</h4>
+          <p>{{ currentPrediction.explanation }}</p>
+        </div>
+
+        <div class="feature-contributions" *ngIf="currentPrediction.featureContributions">
+          <h4>🔍 Key Risk Factors</h4>
+          <div class="features-grid">
+            <div *ngFor="let item of currentPrediction.featureContributions | keyvalue" 
+                 class="feature-item">
+              <span class="feature-name">{{ item.key }}:</span>
+              <div class="feature-bar">
+                <div class="feature-bar-fill" 
+                     [style.width]="item.value + '%'"
+                     [style.background]="getRiskColor('HIGH')"></div>
+              </div>
+              <span class="feature-value">{{ item.value.toFixed(1) }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="recommendations-list" *ngIf="currentPrediction.recommendations.length > 0">
+          <h4>💡 AI Recommendations</h4>
+          <ul>
+            <li *ngFor="let rec of currentPrediction.recommendations">{{ rec }}</li>
+          </ul>
+        </div>
+
+        <div class="action-buttons">
+          <button (click)="loadInvoiceRecommendations()" class="btn-recommendations">
+            💡 Get Detailed Recommendations
+          </button>
+          <button (click)="debugCurrentInvoice()" class="btn-debug">
+            🐛 Debug Features
+          </button>
+          <button (click)="debugRawPrediction()" class="btn-debug">
+            🔬 Raw Prediction
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Batch Analysis Tab -->
+  <div *ngIf="activeTab === 'batch'" class="tab-content">
+    <h2>Batch Client Risk Analysis</h2>
+    
+    <div class="batch-form">
+      <form [formGroup]="batchForm" (ngSubmit)="loadClientBatchPrediction()">
+        <div class="form-group">
+          <label>Client Code:</label>
+          <input type="text" formControlName="clientCode" placeholder="Enter client code">
+          <button type="submit" [disabled]="loading.batch || batchForm.invalid">
+            {{ loading.batch ? 'Analyzing...' : 'Analyze All Invoices' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div *ngIf="batchResults" class="batch-results">
+      <h3>Analysis Results for Client #{{ selectedClientCode }}</h3>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">{{ batchResults.statistics.totalInvoices }}</div>
+          <div class="stat-label">Total Invoices</div>
+        </div>
+        <div class="stat-card critical">
+          <div class="stat-value">{{ batchResults.statistics.criticalCount }}</div>
+          <div class="stat-label">Critical Risk</div>
+        </div>
+        <div class="stat-card very-high">
+          <div class="stat-value">{{ batchResults.statistics.veryHighCount }}</div>
+          <div class="stat-label">Very High Risk</div>
+        </div>
+        <div class="stat-card high-risk">
+          <div class="stat-value">{{ batchResults.statistics.highCount }}</div>
+          <div class="stat-label">High Risk</div>
+        </div>
+        <div class="stat-card medium">
+          <div class="stat-value">{{ batchResults.statistics.mediumCount }}</div>
+          <div class="stat-label">Medium Risk</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ batchResults.statistics.averageRiskScore | number:'1.0-0' }}%</div>
+          <div class="stat-label">Avg Risk Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ batchResults.statistics.totalPredictedDelay }}</div>
+          <div class="stat-label">Total Delay Days</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ formatPercentage(batchResults.statistics.averageConfidence) }}</div>
+          <div class="stat-label">Avg Confidence</div>
+        </div>
+      </div>
+
+      <div class="invoices-list">
+        <h4>Invoice Risk Breakdown</h4>
+        <div *ngFor="let invoice of batchResults.predictions; let i = index" class="invoice-item">
+          <div class="invoice-number">Invoice #{{ i + 1 }}</div>
+          <div class="invoice-risk" [style.background]="invoice.level.color">
+            {{ invoice.level.label }}
+          </div>
+          <div class="invoice-details">
+            <div class="invoice-delay">Predicted Delay: {{ invoice.predictedDelayDays }} days</div>
+            <div class="invoice-probability">Risk Probability: {{ formatPercentage(invoice.probability) }}</div>
+            <div class="invoice-confidence">Confidence: {{ formatPercentage(invoice.confidence) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button (click)="selectedClientCode = batchForm.get('clientCode')?.value; loadClientRecommendations()" class="btn-strategic">
+          📋 Generate Strategic Recommendations
+        </button>
+        <button (click)="selectedClientCode = batchForm.get('clientCode')?.value; activeTab = 'recommendations'" class="btn-secondary">
+          👁️ View Recommendations
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendations Tab -->
+  <div *ngIf="activeTab === 'recommendations'" class="tab-content">
+    <h2>AI Recommendations</h2>
+    
+    <!-- Client Code Input for Recommendations -->
+    <div class="recommendation-input">
+      <h3>Get Client Recommendations</h3>
+      <form [formGroup]="clientRecForm" (ngSubmit)="loadClientRecommendations()">
+        <div class="form-group inline">
+          <label>Client Code:</label>
+          <input type="text" formControlName="clientCode" placeholder="Enter client code">
+          <button type="submit" [disabled]="loading.recommendations || clientRecForm.invalid">
+            {{ loading.recommendations ? 'Loading...' : 'Get Client Recommendations' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div *ngIf="invoiceRecommendations.length > 0" class="recommendations-section">
+      <h3>📌 Invoice-Specific Recommendations</h3>
+      <div class="recommendations-list">
+        <div *ngFor="let rec of invoiceRecommendations" class="recommendation-card" 
+             [class.strategic]="rec.priority === 'URGENT'">
+          <div class="recommendation-header">
+            <div class="recommendation-priority">{{ getPriorityIcon(rec.priority) }} {{ rec.priority | uppercase }}</div>
+            <div *ngIf="rec.title" class="recommendation-title">{{ rec.title }}</div>
+          </div>
+          <div class="recommendation-description">{{ rec.description }}</div>
+          <div *ngIf="rec.action && rec.action !== rec.description" class="recommendation-action">
+            <strong>Action required:</strong> {{ rec.action }}
+          </div>
+          <div *ngIf="rec.dueDate" class="recommendation-date">📅 Due: {{ formatDate(rec.dueDate) }}</div>
+          <div *ngIf="rec.generatedAt" class="recommendation-date">🕐 Generated: {{ formatDate(rec.generatedAt) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="clientRecommendations.length > 0" class="recommendations-section">
+      <h3>🏢 Strategic Client Recommendations</h3>
+      <div class="recommendations-list">
+        <div *ngFor="let rec of clientRecommendations" class="recommendation-card strategic">
+          <div class="recommendation-header">
+            <div class="recommendation-priority">{{ getPriorityIcon(rec.priority) }} {{ rec.priority | uppercase }}</div>
+            <div *ngIf="rec.title" class="recommendation-title">{{ rec.title }}</div>
+          </div>
+          <div class="recommendation-description">{{ rec.description }}</div>
+          <div *ngIf="rec.action && rec.action !== rec.description" class="recommendation-action">
+            <strong>Action required:</strong> {{ rec.action }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="invoiceRecommendations.length === 0 && clientRecommendations.length === 0 && !loading.recommendations" class="empty-state">
+      <p>No recommendations yet. Select an invoice or enter a client code to generate recommendations.</p>
+    </div>
+
+    <div *ngIf="loading.recommendations" class="loading">
+      <div class="spinner"></div>
+      <p>Loading recommendations...</p>
+    </div>
+  </div>
+
+  <!-- Admin Tab -->
+  <div *ngIf="activeTab === 'admin'" class="tab-content">
+    <h2>Administration</h2>
+    
+    <div class="admin-section">
+      <div class="admin-card">
+        <h3>🤖 Model Management</h3>
+        <div class="admin-buttons">
+          <button (click)="loadModelInfo()" [disabled]="loading.modelInfo" class="btn-admin">
+            📊 Load Model Info
+          </button>
+          <button (click)="retrainModel()" [disabled]="loading.retrain" class="btn-admin btn-warning">
+            🔄 Retrain Model
+          </button>
+          <button (click)="forceRetrainModel()" [disabled]="loading.retrain" class="btn-admin btn-danger">
+            ⚡ Force Retrain (Full Rebuild)
+          </button>
+          <button (click)="clearCache()" class="btn-admin btn-secondary">
+            🗑️ Clear Cache
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>🧪 Debug & Testing</h3>
+        <div class="admin-buttons">
+          <button (click)="testModelLearning()" class="btn-admin">
+            🎯 Test Model Learning
+          </button>
+          <button (click)="viewTrainingData()" class="btn-admin">
+            📈 View Training Data
+          </button>
+          <button (click)="checkHealth()" class="btn-admin">
+            💚 Health Check
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="modelInfo" class="model-info">
+        <h3>Model Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Model Type:</span>
+            <span class="info-value">{{ modelInfo.modelType }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Input Features:</span>
+            <span class="info-value">{{ modelInfo.inputFeatures }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Hidden Layers:</span>
+            <span class="info-value">{{ modelInfo.hiddenLayers }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Risk Levels:</span>
+            <span class="info-value">{{ modelInfo.riskLevels }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Last Training:</span>
+            <span class="info-value">{{ modelInfo.lastTrainingDate | date }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Status:</span>
+            <span class="info-value status-badge" [class.active]="modelInfo.status === 'Active'">
+              {{ modelInfo.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

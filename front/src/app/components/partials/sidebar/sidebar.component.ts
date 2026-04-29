@@ -157,6 +157,7 @@ navigateWithLang(route: string): void {
       { path: 'requests', page: 'requests' },
       { path: 'client-bilan', page: 'client-bilan' },
       { path: 'revenu-bilan', page: 'revenu-bilan' },
+      { path: 'risk', page: 'risk' },
       { path: 'profile', page: 'profile' }
     ];
     

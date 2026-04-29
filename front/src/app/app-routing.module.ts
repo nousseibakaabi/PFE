@@ -35,6 +35,7 @@ import { ClientListComponent } from './components/client-list/client-list.compon
 import { ClientDetailComponent } from './components/client-detail/client-detail.component';
 import { BilanRevenueComponent } from './components/bilan-revenue/bilan-revenue.component';
 import { BilanOneComponent } from './components/bilan-one/bilan-one.component';
+import { RiskAIComponent } from './components/risk-ai/risk-ai.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -207,6 +208,8 @@ data: { roles: ['ROLE_ADMIN', 'ROLE_DECIDEUR','ROLE_COMMERCIAL_METIER','ROLE_CHE
 
      { path: 'revenu-bilan', component: BilanRevenueComponent ,canActivate: [AuthGuard] },
      { path: 'revenu-bilan/convention/:id', component: BilanOneComponent ,canActivate: [AuthGuard] },
+
+       { path: 'risk', component: RiskAIComponent, canActivate: [AuthGuard] },
 
   
   { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },
